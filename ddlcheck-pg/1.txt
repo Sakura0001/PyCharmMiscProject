@@ -1,0 +1,3366 @@
+下面是这两段代码合起来后的完整说明文档。整体上，它是一个 **PostgreSQL 并发 DDL/DML 模糊压测工具**，用于在多个数据库、多张随机表上持续并发执行 DDL、DML、事务、会话、对象管理、索引、触发器、规则、函数、过程等 SQL 操作，并记录可复现产物。
+
+---
+
+# 一、总体说明
+
+## 1.1 这两段代码合起来做了什么
+
+这是一套面向 PostgreSQL 的 **并发 DDL/DML Fuzz Stress Runner**。
+
+它的核心目标是：
+
+1. 按数据库名前缀查找目标数据库，例如：
+
+   ```sql
+   stress_pg_%
+   ```
+
+2. 在这些数据库中查找 `public` schema 下的基础表，主要面向随机表生成器 `pg_random_table_generator.py` 生成的表，例如：
+
+   ```text
+   t_rand%
+   ```
+
+3. 周期性读取这些表的元数据，包括：
+
+   * 列
+   * 列类型
+   * 是否可空
+   * 是否生成列
+   * 索引
+   * B-tree 索引
+   * CHECK 约束
+   * 触发器
+   * 继承列
+   * 主键列
+   * INSERT / UPDATE rule
+
+4. 根据元数据构造合法或尽量合法的 DDL / DML SQL。
+
+5. 按配置的并发度同时执行：
+
+   * DDL 操作
+   * DML 操作
+   * 事务操作
+   * 会话级操作
+   * 查询工具类操作
+
+6. 把每次生成和执行的 SQL 都记录下来，方便复现问题。
+
+7. 最后输出压测统计结果和错误汇总。
+
+---
+
+# 二、程序总流程
+
+## 2.1 启动阶段
+
+程序入口是：
+
+```python
+if __name__ == "__main__":
+    main()
+```
+
+`main()` 做以下事情：
+
+1. 解析命令行参数。
+2. 读取配置文件。
+3. 命令行参数覆盖配置文件参数。
+4. 校验参数合法性。
+5. 创建本次运行目录：
+
+   ```text
+   output_pg/run_YYYYMMDD_HHMMSS/
+   ```
+6. 初始化记录器 `Recorder`。
+7. 初始化 PostgreSQL CLI 执行器 `PgCli`。
+8. 探测当前用户权限。
+9. 写出命令覆盖矩阵：
+
+   ```text
+   command_coverage_matrix.json
+   ```
+10. 如果配置了 bootstrap，则自动创建测试库和导入随机表。
+11. 开始并发压测循环。
+
+---
+
+## 2.2 压测循环阶段
+
+在 `duration_seconds` 指定的时间内，程序循环执行：
+
+1. 周期性刷新 catalog。
+2. 可选清理非基础对象。
+3. 重新发现数据库和表。
+4. 多线程读取表元数据。
+5. 按 DDL / DML 并发度生成操作计划。
+6. 为每个操作选择目标表。
+7. 根据操作 key 构造 SQL。
+8. 把 SQL 写入 `ddl.sql` 或 `dml.sql`。
+9. 用线程并发执行所有 SQL。
+10. 记录执行结果。
+11. 统计成功、失败、错误类型。
+12. 到期后写出 `summary.json`。
+
+---
+
+# 三、输入配置覆盖范围
+
+## 3.1 命令行参数
+
+代码支持这些 CLI 参数：
+
+| 参数                         | 作用                      |
+| -------------------------- | ----------------------- |
+| `--config`                 | 配置文件路径                  |
+| `--postgres-host`          | PostgreSQL host         |
+| `--postgres-port`          | PostgreSQL port         |
+| `--postgres-user`          | PostgreSQL 用户           |
+| `--postgres-pwd`           | PostgreSQL 密码           |
+| `--maintenance-db`         | 维护数据库，默认 `postgres`     |
+| `--db-prefix`              | 目标数据库名前缀                |
+| `--mode`                   | 运行模式：`ddl`、`dml`、`both` |
+| `--ddl-concurrency`        | DDL 并发数                 |
+| `--dml-concurrency`        | DML 并发数                 |
+| `--duration-seconds`       | 压测持续时间                  |
+| `--output-dir`             | 输出目录                    |
+| `--psql-binary`            | `psql` 二进制路径            |
+| `--connect-timeout`        | 连接超时                    |
+| `--bootstrap-db-count`     | 自动创建测试库数量               |
+| `--table-generator-script` | 随机表生成器脚本路径              |
+
+---
+
+## 3.2 配置文件参数
+
+除了 CLI 参数，配置文件还支持：
+
+| 配置项                            | 作用                 |
+| ------------------------------ | ------------------ |
+| `bootstrap_table_generator`    | bootstrap 随机表生成器参数 |
+| `bootstrap_table_config_file`  | bootstrap 表生成配置文件  |
+| `catalog_refresh_seconds`      | catalog 刷新周期       |
+| `metadata_fetch_concurrency`   | 元数据读取并发度           |
+| `cleanup_before_refresh`       | 是否刷新前清理非基础对象       |
+| `base_table_prefix`            | 基础表名前缀，默认 `t_rand` |
+| `progress_interval_seconds`    | 进度日志打印间隔           |
+| `ignored_sql_error_substrings` | 忽略的错误文本            |
+
+---
+
+# 四、数据库和表发现范围
+
+## 4.1 数据库发现
+
+函数：
+
+```python
+list_databases()
+```
+
+执行逻辑等价于：
+
+```sql
+SELECT datname
+FROM pg_database
+WHERE datistemplate = false
+  AND datallowconn = true
+  AND datname LIKE '<db_prefix>%'
+ORDER BY datname;
+```
+
+覆盖范围：
+
+| 类型           | 是否覆盖 |
+| ------------ | ---- |
+| 普通可连接数据库     | 覆盖   |
+| template 数据库 | 不覆盖  |
+| 不允许连接的数据库    | 不覆盖  |
+| 不符合前缀的数据库    | 不覆盖  |
+
+---
+
+## 4.2 表发现
+
+函数：
+
+```python
+list_tables()
+```
+
+扫描范围：
+
+```sql
+public schema
+```
+
+表类型：
+
+| PostgreSQL `relkind`       | 类型    | 是否覆盖   |
+| -------------------------- | ----- | ------ |
+| `r`                        | 普通表   | 覆盖     |
+| `p`                        | 分区表父表 | 覆盖     |
+| 分区子表 `relispartition=true` | 分区子表  | 排除     |
+| `v`                        | 普通视图  | 不作为基础表 |
+| `m`                        | 物化视图  | 不作为基础表 |
+| `f`                        | 外部表   | 不覆盖    |
+| `S`                        | 序列    | 不作为基础表 |
+
+筛选条件核心是：
+
+```sql
+c.relkind IN ('r','p')
+AND c.relispartition = false
+AND n.nspname = 'public'
+```
+
+---
+
+# 五、元数据采集覆盖范围
+
+函数：
+
+```python
+fetch_table_meta()
+```
+
+返回结构：
+
+```python
+TableMeta(
+    columns,
+    indexes,
+    btree_indexes,
+    checks,
+    triggers,
+    inherited_columns,
+    primary_key_columns,
+    insert_update_rules,
+)
+```
+
+---
+
+## 5.1 列元数据
+
+来源：
+
+```sql
+information_schema.columns
+```
+
+采集字段：
+
+| 字段             | 含义               |
+| -------------- | ---------------- |
+| `column_name`  | 列名               |
+| `udt_name`     | PostgreSQL 内部类型名 |
+| `is_nullable`  | 是否允许 NULL        |
+| `is_generated` | 是否生成列            |
+
+列元组格式：
+
+```python
+(name, udt_name, is_nullable, is_generated)
+```
+
+---
+
+## 5.2 索引元数据
+
+来源：
+
+```sql
+pg_index
+pg_class
+pg_am
+```
+
+采集内容：
+
+| 内容         | 说明                 |
+| ---------- | ------------------ |
+| 所有索引名      | 存入 `indexes`       |
+| B-tree 索引名 | 存入 `btree_indexes` |
+
+B-tree 索引用于：
+
+```sql
+CLUSTER table USING index
+```
+
+---
+
+## 5.3 CHECK 约束
+
+来源：
+
+```sql
+pg_constraint
+```
+
+筛选条件：
+
+```sql
+contype = 'c'
+```
+
+覆盖：
+
+| 约束类型        | 是否采集            |
+| ----------- | --------------- |
+| CHECK       | 是               |
+| PRIMARY KEY | 单独采集            |
+| FOREIGN KEY | 不在 `checks` 中采集 |
+| UNIQUE      | 不在 `checks` 中采集 |
+| EXCLUDE     | 不采集             |
+
+---
+
+## 5.4 触发器
+
+来源：
+
+```sql
+pg_trigger
+```
+
+筛选条件：
+
+```sql
+NOT g.tgisinternal
+```
+
+覆盖：
+
+| 触发器类型    | 是否采集 |
+| -------- | ---- |
+| 用户自定义触发器 | 是    |
+| 内部触发器    | 否    |
+| 外键内部触发器  | 否    |
+
+---
+
+## 5.5 继承列
+
+来源：
+
+```sql
+pg_attribute.attinhcount > 0
+```
+
+作用：
+
+程序会尽量避免修改继承来的列，防止 DDL 在继承表或分区表上失败。
+
+---
+
+## 5.6 主键列
+
+来源：
+
+```sql
+information_schema.table_constraints
+information_schema.key_column_usage
+```
+
+筛选条件：
+
+```sql
+constraint_type = 'PRIMARY KEY'
+```
+
+作用：
+
+程序会尽量避免对主键列做这些操作：
+
+* 修改类型
+* 设置默认值
+* 设置 NOT NULL
+* DROP NOT NULL
+* 作为普通可修改列
+
+---
+
+## 5.7 INSERT / UPDATE Rule
+
+来源：
+
+```sql
+pg_rules
+```
+
+筛选：
+
+```sql
+rulename <> '_RETURN'
+```
+
+并判断 rule 定义中是否包含：
+
+```text
+ON INSERT TO
+ON UPDATE TO
+```
+
+作用：
+
+DML 运行前会尝试删除非 `_RETURN` rule，降低 `INSERT ON CONFLICT`、`MERGE`、`RETURNING` 与 rule 冲突的概率。
+
+---
+
+# 六、DDL 覆盖总览
+
+DDL 操作 key 来自：
+
+```python
+DDL_KEYS
+```
+
+总共覆盖 58 类 DDL / utility 操作。
+
+---
+
+## 6.1 ALTER TABLE 列操作
+
+### 6.1.1 新增普通列
+
+key：
+
+```text
+ddl_add_column
+```
+
+生成语句：
+
+```sql
+ALTER TABLE table ADD COLUMN c_stress_xxx <type>;
+```
+
+列类型由现有表结构决定，优先从已有列类型映射。
+
+---
+
+### 6.1.2 新增生成列
+
+key：
+
+```text
+ddl_add_gen
+```
+
+生成语句：
+
+```sql
+ALTER TABLE table
+ADD COLUMN c_stress_xxx <type>
+GENERATED ALWAYS AS (<expr>) STORED|VIRTUAL;
+```
+
+覆盖的生成列类型：
+
+| 生成列 SQL 类型  |
+| ----------- |
+| `BIGINT`    |
+| `NUMERIC`   |
+| `TEXT`      |
+| `BOOLEAN`   |
+| `DATE`      |
+| `TIMESTAMP` |
+| `JSONB`     |
+
+生成列存储模式：
+
+| 模式        |
+| --------- |
+| `STORED`  |
+| `VIRTUAL` |
+
+注意：PostgreSQL 16 及之前主要支持 `STORED` 生成列，`VIRTUAL` 在部分版本可能失败。因此这里属于 fuzz 覆盖，允许失败并记录。
+
+---
+
+### 6.1.3 新增后删除 stress 列
+
+key：
+
+```text
+ddl_drop_stress_col
+```
+
+生成语句模式：
+
+```sql
+ALTER TABLE table ADD COLUMN c_stress_xxx <type>;
+UPDATE table SET c_stress_xxx = <fill_expr> WHERE c_stress_xxx IS NULL;
+ALTER TABLE table DROP COLUMN c_stress_xxx;
+```
+
+覆盖：
+
+* `ADD COLUMN`
+* `UPDATE` 填充
+* `DROP COLUMN`
+
+---
+
+### 6.1.4 新增后重命名列
+
+key：
+
+```text
+ddl_rename_col
+```
+
+生成语句模式：
+
+```sql
+ALTER TABLE table ADD COLUMN c_stress_xxx <type>;
+UPDATE table SET c_stress_xxx = <fill_expr> WHERE c_stress_xxx IS NULL;
+ALTER TABLE table RENAME COLUMN c_stress_xxx TO c_stress2_xxx;
+```
+
+覆盖：
+
+* `ADD COLUMN`
+* `RENAME COLUMN`
+
+---
+
+### 6.1.5 修改列类型
+
+key：
+
+```text
+ddl_alter_col_type
+```
+
+生成语句：
+
+```sql
+ALTER TABLE table
+ALTER COLUMN column TYPE TEXT USING column::text;
+```
+
+安全策略：
+
+程序会尽量避开：
+
+* 继承列
+* 主键列
+* `id`
+* 被 view 引用的列
+* 被 rule 引用的列
+* 被 generated column 依赖的列
+
+---
+
+### 6.1.6 设置默认值
+
+key：
+
+```text
+ddl_set_default
+```
+
+生成语句：
+
+```sql
+ALTER TABLE table ALTER COLUMN column SET DEFAULT <literal>;
+```
+
+默认值根据列类型生成。
+
+---
+
+### 6.1.7 删除默认值
+
+key：
+
+```text
+ddl_drop_default
+```
+
+生成语句：
+
+```sql
+ALTER TABLE table ALTER COLUMN column DROP DEFAULT;
+```
+
+---
+
+### 6.1.8 设置 NOT NULL
+
+key：
+
+```text
+ddl_set_not_null
+```
+
+生成语句模式：
+
+```sql
+UPDATE table
+SET column = COALESCE(<fill_expr>, <nonnull_literal>)
+WHERE column IS NULL;
+
+ALTER TABLE table ALTER COLUMN column SET NOT NULL;
+```
+
+覆盖：
+
+* 数据预填充
+* `SET NOT NULL`
+
+---
+
+### 6.1.9 删除 NOT NULL
+
+key：
+
+```text
+ddl_drop_not_null
+```
+
+生成语句：
+
+```sql
+ALTER TABLE table ALTER COLUMN column DROP NOT NULL;
+```
+
+---
+
+## 6.2 CHECK 约束操作
+
+### 6.2.1 添加 CHECK 约束
+
+key：
+
+```text
+ddl_add_check
+```
+
+生成语句：
+
+```sql
+ALTER TABLE table
+ADD CONSTRAINT chk_stress_xxx
+CHECK (<expr>) NOT VALID;
+```
+
+CHECK 表达式根据列类型生成。
+
+---
+
+### 6.2.2 添加后删除 CHECK 约束
+
+key：
+
+```text
+ddl_drop_check
+```
+
+生成语句：
+
+```sql
+ALTER TABLE table
+ADD CONSTRAINT chk_stress_xxx CHECK (id IS NOT NULL) NOT VALID;
+
+ALTER TABLE table DROP CONSTRAINT chk_stress_xxx;
+```
+
+---
+
+## 6.3 索引操作
+
+### 6.3.1 创建索引
+
+key：
+
+```text
+ddl_create_index
+```
+
+生成语句模式：
+
+```sql
+CREATE INDEX idx_stress_xxx
+ON table USING <index_method> (<expr_or_column>);
+```
+
+覆盖的索引访问方法：
+
+| 索引方法     | 覆盖情况            |
+| -------- | --------------- |
+| `btree`  | 覆盖              |
+| `hash`   | 覆盖              |
+| `brin`   | 覆盖              |
+| `gin`    | 覆盖              |
+| `gist`   | 覆盖              |
+| `spgist` | 覆盖              |
+| `bloom`  | 覆盖，需要 extension |
+
+如果选中 bloom，会先执行：
+
+```sql
+CREATE EXTENSION IF NOT EXISTS bloom;
+```
+
+---
+
+### 6.3.2 删除 stress 索引
+
+key：
+
+```text
+ddl_drop_stress_index
+```
+
+生成语句：
+
+```sql
+CREATE INDEX idx_stress_xxx ON table ...;
+DROP INDEX idx_stress_xxx;
+```
+
+---
+
+### 6.3.3 重命名索引
+
+key：
+
+```text
+ddl_rename_index
+```
+
+生成语句：
+
+```sql
+CREATE INDEX idx_stress_xxx ON table ...;
+ALTER INDEX idx_stress_xxx RENAME TO idx_stress2_xxx;
+```
+
+---
+
+### 6.3.4 REINDEX 表
+
+key：
+
+```text
+ddl_reindex_table
+```
+
+生成语句：
+
+```sql
+REINDEX TABLE table;
+```
+
+---
+
+### 6.3.5 CLUSTER 表
+
+key：
+
+```text
+ddl_cluster_table
+```
+
+如果已有 B-tree 索引：
+
+```sql
+CLUSTER table USING existing_btree_index;
+```
+
+如果没有 B-tree 索引：
+
+```sql
+CREATE INDEX idx_stress_xxx ON table (id);
+CLUSTER table USING idx_stress_xxx;
+```
+
+---
+
+## 6.4 ANALYZE / VACUUM
+
+### 6.4.1 ANALYZE
+
+key：
+
+```text
+ddl_analyze_table
+```
+
+生成语句：
+
+```sql
+ANALYZE table;
+```
+
+---
+
+### 6.4.2 VACUUM ANALYZE
+
+key：
+
+```text
+ddl_vacuum_analyze
+```
+
+生成语句：
+
+```sql
+VACUUM (ANALYZE) table;
+```
+
+---
+
+## 6.5 视图覆盖
+
+### 6.5.1 创建普通视图 / 临时视图 / 递归视图
+
+key：
+
+```text
+ddl_create_view
+```
+
+生成形式包括：
+
+```sql
+CREATE VIEW ...
+CREATE OR REPLACE VIEW ...
+CREATE TEMP VIEW ...
+CREATE RECURSIVE VIEW ...
+```
+
+可选 view options：
+
+```sql
+WITH (security_barrier=true|false)
+WITH (security_invoker=true|false)
+```
+
+可选 CHECK OPTION：
+
+```sql
+WITH CASCADED CHECK OPTION
+WITH LOCAL CHECK OPTION
+```
+
+普通视图示例：
+
+```sql
+CREATE VIEW public.v_stress_xxx AS
+SELECT col1, col2
+FROM table
+WHERE col1 IS NOT NULL
+WITH LOCAL CHECK OPTION;
+```
+
+递归视图示例：
+
+```sql
+CREATE RECURSIVE VIEW public.v_stress_xxx (n) AS
+WITH RECURSIVE r(n) AS (...)
+SELECT n FROM r;
+```
+
+---
+
+### 6.5.2 ALTER VIEW
+
+key：
+
+```text
+ddl_alter_view
+```
+
+生成语句：
+
+```sql
+CREATE VIEW ...;
+ALTER VIEW public.v_stress_xxx SET (security_barrier=true);
+```
+
+---
+
+### 6.5.3 DROP VIEW
+
+key：
+
+```text
+ddl_drop_view
+```
+
+生成语句：
+
+```sql
+CREATE VIEW public.v_stress_xxx AS SELECT * FROM table LIMIT 10;
+DROP VIEW public.v_stress_xxx;
+```
+
+---
+
+## 6.6 物化视图覆盖
+
+### 6.6.1 CREATE MATERIALIZED VIEW
+
+key：
+
+```text
+ddl_create_matview
+```
+
+生成语句覆盖：
+
+```sql
+CREATE MATERIALIZED VIEW [IF NOT EXISTS] public.mv_stress_xxx
+[(column_list)]
+[USING heap]
+[WITH (...)]
+[TABLESPACE pg_default]
+AS SELECT ...
+WITH DATA | WITH NO DATA;
+```
+
+WITH 参数覆盖：
+
+| 参数                              |
+| ------------------------------- |
+| `fillfactor=70/80/90/100`       |
+| `autovacuum_enabled=true/false` |
+
+---
+
+### 6.6.2 REFRESH MATERIALIZED VIEW
+
+key：
+
+```text
+ddl_refresh_matview
+```
+
+生成语句：
+
+```sql
+CREATE MATERIALIZED VIEW ...;
+REFRESH MATERIALIZED VIEW [CONCURRENTLY] public.mv_stress_xxx [WITH DATA|WITH NO DATA];
+```
+
+注意：
+
+代码避免了：
+
+```sql
+REFRESH MATERIALIZED VIEW CONCURRENTLY ... WITH NO DATA
+```
+
+因为 PostgreSQL 不允许这两者组合。
+
+---
+
+### 6.6.3 DROP MATERIALIZED VIEW
+
+key：
+
+```text
+ddl_drop_matview
+```
+
+生成语句：
+
+```sql
+CREATE MATERIALIZED VIEW ...;
+DROP MATERIALIZED VIEW public.mv_stress_xxx;
+```
+
+---
+
+## 6.7 触发器覆盖
+
+### 6.7.1 CREATE TRIGGER
+
+key：
+
+```text
+ddl_create_trigger
+```
+
+触发器函数：
+
+```sql
+CREATE OR REPLACE FUNCTION public.fn_stress_xxx()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  IF TG_LEVEL = 'STATEMENT' THEN
+    RETURN NULL;
+  END IF;
+
+  IF TG_OP = 'DELETE' THEN
+    RETURN OLD;
+  END IF;
+
+  RETURN NEW;
+END
+$$;
+```
+
+执行关键字随机选择：
+
+```sql
+EXECUTE FUNCTION
+EXECUTE PROCEDURE
+```
+
+---
+
+### 6.7.2 覆盖的触发器类型
+
+代码覆盖 7 类触发器变体。
+
+#### 变体 1：BEFORE UPDATE 行级触发器
+
+```sql
+CREATE OR REPLACE TRIGGER trg_stress_xxx
+BEFORE UPDATE ON table
+FOR EACH ROW
+WHEN (OLD IS DISTINCT FROM NEW)
+EXECUTE FUNCTION public.fn_stress_xxx();
+```
+
+覆盖点：
+
+| 项                           | 覆盖 |
+| --------------------------- | -- |
+| `BEFORE`                    | 是  |
+| `UPDATE`                    | 是  |
+| `FOR EACH ROW`              | 是  |
+| `WHEN` 条件                   | 是  |
+| `OLD` / `NEW`               | 是  |
+| `CREATE OR REPLACE TRIGGER` | 是  |
+
+---
+
+#### 变体 2：AFTER INSERT OR DELETE 语句级触发器
+
+```sql
+CREATE TRIGGER trg_stress_xxx
+AFTER INSERT OR DELETE ON table
+FOR EACH STATEMENT
+EXECUTE FUNCTION public.fn_stress_xxx();
+```
+
+覆盖点：
+
+| 项                    | 覆盖 |
+| -------------------- | -- |
+| `AFTER`              | 是  |
+| `INSERT`             | 是  |
+| `DELETE`             | 是  |
+| `FOR EACH STATEMENT` | 是  |
+
+---
+
+#### 变体 3：AFTER TRUNCATE 触发器
+
+```sql
+CREATE TRIGGER trg_stress_xxx
+AFTER TRUNCATE ON table
+FOR EACH STATEMENT
+EXECUTE FUNCTION public.fn_stress_xxx();
+```
+
+覆盖点：
+
+| 项                       | 覆盖 |
+| ----------------------- | -- |
+| `TRUNCATE` event        | 是  |
+| statement-level trigger | 是  |
+
+---
+
+#### 变体 4：BEFORE UPDATE OF column
+
+```sql
+CREATE TRIGGER trg_stress_xxx
+BEFORE UPDATE OF column ON table
+FOR EACH ROW
+EXECUTE FUNCTION public.fn_stress_xxx();
+```
+
+覆盖点：
+
+| 项                  | 覆盖 |
+| ------------------ | -- |
+| `UPDATE OF column` | 是  |
+| 指定列触发              | 是  |
+
+---
+
+#### 变体 5：CONSTRAINT TRIGGER
+
+```sql
+CREATE CONSTRAINT TRIGGER trg_stress_xxx
+AFTER INSERT OR UPDATE ON table
+DEFERRABLE INITIALLY DEFERRED
+FOR EACH ROW
+EXECUTE FUNCTION public.fn_stress_xxx();
+```
+
+覆盖点：
+
+| 项                        | 覆盖 |
+| ------------------------ | -- |
+| `CONSTRAINT TRIGGER`     | 是  |
+| `DEFERRABLE`             | 是  |
+| `INITIALLY DEFERRED`     | 是  |
+| `AFTER INSERT OR UPDATE` | 是  |
+
+---
+
+#### 变体 6：transition table 触发器
+
+```sql
+CREATE TRIGGER trg_stress_xxx
+AFTER UPDATE ON table
+REFERENCING OLD TABLE AS ot_xxx NEW TABLE AS nt_xxx
+FOR EACH STATEMENT
+EXECUTE FUNCTION public.fn_stress_xxx();
+```
+
+覆盖点：
+
+| 项                            | 覆盖 |
+| ---------------------------- | -- |
+| `REFERENCING OLD TABLE`      | 是  |
+| `REFERENCING NEW TABLE`      | 是  |
+| transition table             | 是  |
+| statement-level AFTER UPDATE | 是  |
+
+---
+
+#### 变体 7：视图上的 INSTEAD OF 触发器
+
+```sql
+CREATE OR REPLACE VIEW public.v_stress_xxx AS
+SELECT * FROM table LIMIT 10;
+
+CREATE TRIGGER trg_stress_xxx
+INSTEAD OF INSERT OR UPDATE OR DELETE ON public.v_stress_xxx
+FOR EACH ROW
+EXECUTE FUNCTION public.fn_stress_xxx();
+```
+
+覆盖点：
+
+| 项                 | 覆盖 |
+| ----------------- | -- |
+| 视图触发器             | 是  |
+| `INSTEAD OF`      | 是  |
+| `INSERT`          | 是  |
+| `UPDATE`          | 是  |
+| `DELETE`          | 是  |
+| row-level trigger | 是  |
+
+---
+
+### 6.7.3 DROP TRIGGER
+
+key：
+
+```text
+ddl_drop_trigger
+```
+
+流程：
+
+1. 创建触发器。
+2. 动态查找同名 trigger 所在 relation。
+3. 执行动态 SQL 删除 trigger。
+4. 删除 trigger function。
+5. 删除辅助 view。
+
+核心语句：
+
+```sql
+DROP TRIGGER IF EXISTS trigger_name ON schema.table;
+DROP FUNCTION IF EXISTS public.fn_stress_xxx() CASCADE;
+DROP VIEW IF EXISTS public.v_stress_xxx CASCADE;
+```
+
+---
+
+## 6.8 表对象操作
+
+### 6.8.1 CREATE TABLE LIKE
+
+key：
+
+```text
+ddl_create_table_like
+```
+
+生成语句：
+
+```sql
+CREATE TABLE public.trct_xxx
+(LIKE table INCLUDING ALL);
+```
+
+覆盖：
+
+| 选项              |
+| --------------- |
+| `LIKE`          |
+| `INCLUDING ALL` |
+
+---
+
+### 6.8.2 TRUNCATE TABLE
+
+key：
+
+```text
+ddl_truncate_trct_table
+```
+
+生成语句：
+
+```sql
+CREATE TABLE public.trct_xxx (LIKE table INCLUDING ALL);
+TRUNCATE TABLE public.trct_xxx;
+```
+
+---
+
+### 6.8.3 DROP TABLE
+
+key：
+
+```text
+ddl_drop_trct_table
+```
+
+生成语句：
+
+```sql
+CREATE TABLE public.trct_xxx (LIKE table INCLUDING ALL);
+DROP TABLE public.trct_xxx;
+```
+
+---
+
+### 6.8.4 CREATE TABLE AS
+
+key：
+
+```text
+ddl_create_table_as
+```
+
+生成语句：
+
+```sql
+CREATE TABLE public.trct_xxx AS
+SELECT * FROM table LIMIT 10;
+```
+
+---
+
+## 6.9 Schema 操作
+
+### 6.9.1 CREATE SCHEMA
+
+key：
+
+```text
+ddl_create_schema
+```
+
+```sql
+CREATE SCHEMA s_stress_xxx;
+```
+
+---
+
+### 6.9.2 ALTER SCHEMA RENAME
+
+key：
+
+```text
+ddl_alter_schema
+```
+
+```sql
+CREATE SCHEMA s_stress_xxx;
+ALTER SCHEMA s_stress_xxx RENAME TO s_stress2_xxx;
+```
+
+---
+
+### 6.9.3 DROP SCHEMA
+
+key：
+
+```text
+ddl_drop_schema
+```
+
+```sql
+CREATE SCHEMA s_stress_xxx;
+DROP SCHEMA s_stress_xxx CASCADE;
+```
+
+---
+
+## 6.10 Sequence 操作
+
+### 6.10.1 CREATE SEQUENCE
+
+key：
+
+```text
+ddl_create_sequence
+```
+
+```sql
+CREATE SEQUENCE public.seq_stress_xxx
+START WITH 1
+INCREMENT BY 1;
+```
+
+---
+
+### 6.10.2 ALTER SEQUENCE
+
+key：
+
+```text
+ddl_alter_sequence
+```
+
+```sql
+CREATE SEQUENCE public.seq_stress_xxx START WITH 1;
+ALTER SEQUENCE public.seq_stress_xxx INCREMENT BY 2;
+```
+
+---
+
+### 6.10.3 DROP SEQUENCE
+
+key：
+
+```text
+ddl_drop_sequence
+```
+
+```sql
+CREATE SEQUENCE public.seq_stress_xxx START WITH 1;
+DROP SEQUENCE public.seq_stress_xxx;
+```
+
+---
+
+## 6.11 COMMENT 覆盖
+
+### 6.11.1 COMMENT ON TABLE
+
+key：
+
+```text
+ddl_comment_on_table
+```
+
+```sql
+COMMENT ON TABLE table IS 'stress comment';
+```
+
+---
+
+### 6.11.2 COMMENT ON COLUMN
+
+key：
+
+```text
+ddl_comment_on_column
+```
+
+```sql
+COMMENT ON COLUMN table.column IS 'stress col comment';
+```
+
+---
+
+## 6.12 GRANT / REVOKE 覆盖
+
+### 6.12.1 GRANT TABLE
+
+key：
+
+```text
+ddl_grant_table
+```
+
+```sql
+GRANT SELECT, UPDATE ON table TO PUBLIC;
+```
+
+---
+
+### 6.12.2 REVOKE TABLE
+
+key：
+
+```text
+ddl_revoke_table
+```
+
+```sql
+GRANT SELECT ON table TO PUBLIC;
+REVOKE SELECT ON table FROM PUBLIC;
+```
+
+---
+
+## 6.13 Function 覆盖
+
+### 6.13.1 CREATE FUNCTION
+
+key：
+
+```text
+ddl_create_function
+```
+
+```sql
+CREATE OR REPLACE FUNCTION public.fn_stress2_xxx(x int)
+RETURNS int
+LANGUAGE sql
+AS $$ SELECT x+1 $$;
+```
+
+---
+
+### 6.13.2 ALTER FUNCTION
+
+key：
+
+```text
+ddl_alter_function
+```
+
+```sql
+CREATE OR REPLACE FUNCTION public.fn_stress2_xxx(x int)
+RETURNS int
+LANGUAGE sql
+AS $$ SELECT x+1 $$;
+
+ALTER FUNCTION public.fn_stress2_xxx(int) OWNER TO CURRENT_USER;
+```
+
+---
+
+### 6.13.3 DROP FUNCTION
+
+key：
+
+```text
+ddl_drop_function
+```
+
+```sql
+CREATE OR REPLACE FUNCTION public.fn_stress2_xxx(x int)
+RETURNS int
+LANGUAGE sql
+AS $$ SELECT x+1 $$;
+
+DROP FUNCTION public.fn_stress2_xxx(int);
+```
+
+---
+
+## 6.14 Procedure 覆盖
+
+### 6.14.1 CREATE PROCEDURE
+
+key：
+
+```text
+ddl_create_procedure
+```
+
+```sql
+CREATE OR REPLACE PROCEDURE public.p_stress_xxx(IN x int)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  PERFORM x;
+END
+$$;
+```
+
+---
+
+### 6.14.2 ALTER PROCEDURE
+
+key：
+
+```text
+ddl_alter_procedure
+```
+
+```sql
+CREATE OR REPLACE PROCEDURE public.p_stress_xxx(IN x int)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  PERFORM x;
+END
+$$;
+
+ALTER PROCEDURE public.p_stress_xxx(int) OWNER TO CURRENT_USER;
+```
+
+---
+
+### 6.14.3 DROP PROCEDURE
+
+key：
+
+```text
+ddl_drop_procedure
+```
+
+```sql
+CREATE OR REPLACE PROCEDURE public.p_stress_xxx(IN x int)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  PERFORM x;
+END
+$$;
+
+DROP PROCEDURE public.p_stress_xxx(int);
+```
+
+---
+
+## 6.15 Rule 覆盖
+
+### 6.15.1 CREATE RULE
+
+key：
+
+```text
+ddl_create_rule
+```
+
+```sql
+CREATE RULE r_stress_xxx
+AS ON UPDATE TO table
+DO INSTEAD NOTHING;
+```
+
+覆盖：
+
+| Rule 类型              | 是否覆盖 |
+| -------------------- | ---- |
+| `ON UPDATE`          | 是    |
+| `DO INSTEAD NOTHING` | 是    |
+| `ON INSERT`          | 不创建  |
+| `ON DELETE`          | 不创建  |
+| `DO ALSO`            | 不覆盖  |
+
+---
+
+### 6.15.2 DROP RULE
+
+key：
+
+```text
+ddl_drop_rule
+```
+
+```sql
+CREATE RULE r_stress_xxx
+AS ON UPDATE TO table
+DO INSTEAD NOTHING;
+
+DROP RULE r_stress_xxx ON table;
+```
+
+---
+
+## 6.16 Domain 覆盖
+
+### 6.16.1 CREATE DOMAIN
+
+key：
+
+```text
+ddl_create_domain
+```
+
+```sql
+CREATE DOMAIN public.d_stress_xxx
+AS integer
+CHECK (VALUE IS NOT NULL);
+```
+
+---
+
+### 6.16.2 ALTER DOMAIN
+
+key：
+
+```text
+ddl_alter_domain
+```
+
+```sql
+CREATE DOMAIN public.d_stress_xxx AS integer;
+ALTER DOMAIN public.d_stress_xxx SET DEFAULT 0;
+```
+
+---
+
+### 6.16.3 DROP DOMAIN
+
+key：
+
+```text
+ddl_drop_domain
+```
+
+```sql
+CREATE DOMAIN public.d_stress_xxx AS integer;
+DROP DOMAIN public.d_stress_xxx;
+```
+
+---
+
+## 6.17 Type 覆盖
+
+### 6.17.1 CREATE TYPE
+
+key：
+
+```text
+ddl_create_type
+```
+
+```sql
+CREATE TYPE public.t_stress_xxx
+AS ENUM ('a','b');
+```
+
+---
+
+### 6.17.2 DROP TYPE
+
+key：
+
+```text
+ddl_drop_type
+```
+
+```sql
+CREATE TYPE public.t_stress_xxx
+AS ENUM ('a','b');
+DROP TYPE public.t_stress_xxx;
+```
+
+覆盖：
+
+| 类型对象           | 是否覆盖 |
+| -------------- | ---- |
+| ENUM type      | 是    |
+| composite type | 否    |
+| range type     | 否    |
+| base type      | 否    |
+
+---
+
+## 6.18 系统级 / 权限敏感操作
+
+这些操作在覆盖矩阵中标记为：
+
+```text
+implemented_with_capability_probe
+```
+
+但实际构造 SQL 时只是直接生成，没有在 `build_ddl_sql()` 内按权限跳过。
+
+### 6.18.1 ALTER SYSTEM SET
+
+key：
+
+```text
+ddl_alter_system_set
+```
+
+```sql
+ALTER SYSTEM SET application_name = 'pg_stress';
+```
+
+---
+
+### 6.18.2 ALTER SYSTEM RESET
+
+key：
+
+```text
+ddl_alter_system_reset
+```
+
+```sql
+ALTER SYSTEM RESET application_name;
+```
+
+---
+
+### 6.18.3 CHECKPOINT
+
+key：
+
+```text
+ddl_checkpoint
+```
+
+```sql
+CHECKPOINT;
+```
+
+---
+
+### 6.18.4 CREATE ROLE
+
+key：
+
+```text
+ddl_create_role
+```
+
+```sql
+CREATE ROLE stress_role_xxx NOLOGIN;
+```
+
+---
+
+### 6.18.5 DROP ROLE
+
+key：
+
+```text
+ddl_drop_role
+```
+
+```sql
+CREATE ROLE stress_role_xxx NOLOGIN;
+DROP ROLE stress_role_xxx;
+```
+
+---
+
+# 七、DML 覆盖总览
+
+DML 操作 key 来自：
+
+```python
+DML_KEYS
+```
+
+共覆盖 32 类 DML / transaction / utility / session 操作。
+
+---
+
+## 7.1 SELECT 类
+
+### 7.1.1 普通 SELECT
+
+key：
+
+```text
+dml_select
+```
+
+```sql
+SELECT * FROM table LIMIT 10;
+```
+
+---
+
+### 7.1.2 SELECT FOR UPDATE
+
+key：
+
+```text
+dml_select_for_update
+```
+
+```sql
+SELECT id FROM table LIMIT 1 FOR UPDATE;
+```
+
+---
+
+### 7.1.3 SELECT FOR SHARE
+
+key：
+
+```text
+dml_select_for_share
+```
+
+```sql
+SELECT id FROM table LIMIT 1 FOR SHARE;
+```
+
+---
+
+### 7.1.4 EXISTS
+
+key：
+
+```text
+dml_exists
+```
+
+```sql
+SELECT EXISTS (
+  SELECT 1 FROM table WHERE id IS NOT NULL
+);
+```
+
+---
+
+### 7.1.5 WITH 查询
+
+key：
+
+```text
+dml_with_query
+```
+
+```sql
+WITH z AS (
+  SELECT id FROM table LIMIT 3
+)
+SELECT * FROM z;
+```
+
+---
+
+### 7.1.6 UNION ALL
+
+key：
+
+```text
+dml_union
+```
+
+```sql
+(SELECT id FROM table LIMIT 1)
+UNION ALL
+(SELECT id FROM table LIMIT 1);
+```
+
+---
+
+### 7.1.7 VALUES
+
+key：
+
+```text
+dml_values
+```
+
+```sql
+VALUES (1),(2),(3);
+```
+
+---
+
+## 7.2 UPDATE 类
+
+### 7.2.1 简单 UPDATE
+
+key：
+
+```text
+dml_update_simple
+```
+
+执行前会先尝试删除 rule：
+
+```sql
+DO $$
+DECLARE r record;
+BEGIN
+  FOR r IN
+    SELECT rulename
+    FROM pg_rules
+    WHERE schemaname = ...
+      AND tablename = ...
+      AND rulename <> '_RETURN'
+  LOOP
+    EXECUTE format('DROP RULE IF EXISTS %I ON %I.%I', ...);
+  END LOOP;
+END $$;
+```
+
+然后执行：
+
+```sql
+UPDATE table
+SET column = column
+WHERE ctid IN (
+  SELECT ctid FROM table LIMIT 1
+);
+```
+
+---
+
+### 7.2.2 UPDATE FROM
+
+key：
+
+```text
+dml_update_from
+```
+
+```sql
+UPDATE table t
+SET column = s.column
+FROM (
+  SELECT ctid, column FROM table LIMIT 1
+) s
+WHERE t.ctid = s.ctid;
+```
+
+---
+
+### 7.2.3 UPDATE CTE
+
+key：
+
+```text
+dml_update_cte
+```
+
+```sql
+WITH c AS (
+  SELECT ctid FROM table LIMIT 1
+)
+UPDATE table
+SET column = column
+WHERE ctid IN (SELECT ctid FROM c);
+```
+
+---
+
+### 7.2.4 UPDATE RETURNING
+
+key：
+
+```text
+dml_returning
+```
+
+主路径：
+
+```sql
+UPDATE table
+SET column = column
+WHERE ctid IN (
+  SELECT ctid FROM table LIMIT 1
+)
+RETURNING id;
+```
+
+如果遇到 rule / 权限 / feature 问题，会 fallback 到无 `RETURNING` 的 UPDATE。
+
+---
+
+## 7.3 DELETE 类
+
+### 7.3.1 简单 DELETE
+
+key：
+
+```text
+dml_delete_simple
+```
+
+```sql
+DELETE FROM table
+WHERE ctid IN (
+  SELECT ctid FROM table LIMIT 1
+);
+```
+
+---
+
+### 7.3.2 DELETE USING
+
+key：
+
+```text
+dml_delete_using
+```
+
+```sql
+DELETE FROM table t
+USING (
+  SELECT ctid FROM table LIMIT 1
+) s
+WHERE t.ctid = s.ctid;
+```
+
+---
+
+## 7.4 INSERT 类
+
+### 7.4.1 INSERT SELECT
+
+key：
+
+```text
+dml_insert_select
+```
+
+代码实际生成：
+
+```sql
+INSERT INTO table (cols...)
+SELECT cols...
+FROM table
+LIMIT 1
+ON CONFLICT DO NOTHING;
+```
+
+它会包在 PL/pgSQL DO 块里，并在失败时 fallback 到普通 INSERT。
+
+---
+
+### 7.4.2 INSERT VALUES
+
+key：
+
+```text
+dml_insert_values
+```
+
+注意：虽然 key 叫 `dml_insert_values`，但实际 SQL 和 `dml_insert_select` 一样，仍然是：
+
+```sql
+INSERT INTO table (cols...)
+SELECT cols...
+FROM table
+LIMIT 1
+ON CONFLICT DO NOTHING;
+```
+
+也就是说，这里 **没有真正生成 `INSERT ... VALUES (...)`**。
+
+---
+
+## 7.5 MERGE
+
+key：
+
+```text
+dml_merge
+```
+
+生成语句：
+
+```sql
+MERGE INTO table t
+USING (
+  SELECT id FROM table LIMIT 1
+) s
+ON t.id = s.id
+WHEN MATCHED THEN
+  UPDATE SET column = t.column;
+```
+
+保护逻辑：
+
+* MERGE 只选择没有继承列的表。
+* 执行前会尝试清理 rule。
+* 如果遇到 `feature_not_supported` 或 `insufficient_privilege`，fallback 到普通 UPDATE。
+
+---
+
+## 7.6 LOCK
+
+key：
+
+```text
+dml_lock
+```
+
+```sql
+BEGIN;
+LOCK TABLE table IN SHARE ROW EXCLUSIVE MODE;
+COMMIT;
+```
+
+覆盖：
+
+| 项                         | 覆盖 |
+| ------------------------- | -- |
+| 显式事务                      | 是  |
+| 表锁                        | 是  |
+| `SHARE ROW EXCLUSIVE` 锁模式 | 是  |
+
+---
+
+## 7.7 PREPARE / EXECUTE
+
+key：
+
+```text
+dml_prepare_execute
+```
+
+```sql
+PREPARE p_xxx(bigint) AS
+SELECT id FROM table WHERE id = $1;
+
+EXECUTE p_xxx(1);
+
+DEALLOCATE p_xxx;
+```
+
+覆盖：
+
+| 项            |
+| ------------ |
+| `PREPARE`    |
+| 参数化 SQL      |
+| `EXECUTE`    |
+| `DEALLOCATE` |
+
+---
+
+## 7.8 事务语句覆盖
+
+### 7.8.1 BEGIN / COMMIT
+
+key：
+
+```text
+dml_begin_commit
+```
+
+```sql
+BEGIN;
+COMMIT;
+```
+
+---
+
+### 7.8.2 BEGIN / ROLLBACK
+
+key：
+
+```text
+dml_begin_rollback
+```
+
+```sql
+BEGIN;
+ROLLBACK;
+```
+
+---
+
+### 7.8.3 SAVEPOINT / RELEASE
+
+key：
+
+```text
+dml_savepoint_release
+```
+
+```sql
+BEGIN;
+SAVEPOINT s1;
+RELEASE SAVEPOINT s1;
+COMMIT;
+```
+
+---
+
+### 7.8.4 SET TRANSACTION
+
+key：
+
+```text
+dml_set_transaction
+```
+
+```sql
+BEGIN;
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+COMMIT;
+```
+
+覆盖的隔离级别：
+
+```text
+READ COMMITTED
+```
+
+没有覆盖：
+
+* `READ UNCOMMITTED`
+* `REPEATABLE READ`
+* `SERIALIZABLE`
+* `READ ONLY`
+* `DEFERRABLE`
+
+---
+
+## 7.9 EXPLAIN
+
+key：
+
+```text
+dml_explain
+```
+
+```sql
+EXPLAIN SELECT * FROM table LIMIT 5;
+```
+
+---
+
+## 7.10 Cursor
+
+key：
+
+```text
+dml_declare_fetch_close
+```
+
+```sql
+BEGIN;
+DECLARE c_xxx CURSOR FOR SELECT id FROM table;
+FETCH 5 FROM c_xxx;
+CLOSE c_xxx;
+COMMIT;
+```
+
+覆盖：
+
+| 项                |
+| ---------------- |
+| `DECLARE CURSOR` |
+| `FETCH`          |
+| `CLOSE`          |
+
+---
+
+## 7.11 DO 块
+
+key：
+
+```text
+dml_do
+```
+
+```sql
+DO $$
+BEGIN
+  PERFORM 1;
+END
+$$;
+```
+
+---
+
+## 7.12 LISTEN / NOTIFY / UNLISTEN
+
+key：
+
+```text
+dml_listen_notify_unlisten
+```
+
+```sql
+LISTEN stress_chan;
+NOTIFY stress_chan;
+UNLISTEN stress_chan;
+```
+
+---
+
+## 7.13 SHOW / SET / RESET
+
+### 7.13.1 SHOW
+
+key：
+
+```text
+dml_show
+```
+
+```sql
+SHOW server_version;
+```
+
+---
+
+### 7.13.2 SET / RESET
+
+key：
+
+```text
+dml_set_reset
+```
+
+```sql
+SET application_name = 'pg_stress';
+RESET application_name;
+```
+
+---
+
+## 7.14 DISCARD TEMP
+
+key：
+
+```text
+dml_discard_temp
+```
+
+```sql
+DISCARD TEMP;
+```
+
+---
+
+## 7.15 COPY TO STDOUT
+
+key：
+
+```text
+dml_copy_to_stdout
+```
+
+```sql
+COPY (
+  SELECT id FROM table LIMIT 5
+) TO STDOUT;
+```
+
+---
+
+## 7.16 SELECT INTO
+
+key：
+
+```text
+dml_select_into
+```
+
+```sql
+DROP TABLE IF EXISTS public.tmp_sel_xxx;
+
+SELECT *
+INTO public.tmp_sel_xxx
+FROM table
+LIMIT 3;
+
+DROP TABLE public.tmp_sel_xxx;
+```
+
+覆盖：
+
+| 项             |
+| ------------- |
+| `SELECT INTO` |
+| 临时测试表创建       |
+| 显式 DROP       |
+
+注意：创建的是 `public.tmp_sel_xxx`，不是 PostgreSQL `TEMP TABLE`。
+
+---
+
+## 7.17 CALL Procedure
+
+key：
+
+```text
+dml_call
+```
+
+```sql
+CREATE OR REPLACE PROCEDURE public.p_call_xxx(IN x int)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  PERFORM x;
+END
+$$;
+
+CALL public.p_call_xxx(1);
+
+DROP PROCEDURE public.p_call_xxx(int);
+```
+
+---
+
+# 八、列类型覆盖说明
+
+代码主要从 PostgreSQL `udt_name` 映射到 SQL 类型。
+
+## 8.1 ADD COLUMN 可覆盖类型
+
+函数：
+
+```python
+pick_stress_add_column_profile()
+```
+
+支持映射：
+
+| `udt_name`    | SQL 类型             |
+| ------------- | ------------------ |
+| `int2`        | `SMALLINT`         |
+| `int4`        | `INTEGER`          |
+| `int8`        | `BIGINT`           |
+| `float4`      | `REAL`             |
+| `float8`      | `DOUBLE PRECISION` |
+| `numeric`     | `NUMERIC`          |
+| `bool`        | `BOOLEAN`          |
+| `text`        | `TEXT`             |
+| `varchar`     | `VARCHAR(128)`     |
+| `bpchar`      | `CHAR(32)`         |
+| `date`        | `DATE`             |
+| `timestamp`   | `TIMESTAMP`        |
+| `timestamptz` | `TIMESTAMPTZ`      |
+| `time`        | `TIME`             |
+| `timetz`      | `TIMETZ`           |
+| `uuid`        | `UUID`             |
+| `json`        | `JSON`             |
+| `jsonb`       | `JSONB`            |
+
+如果找不到合适列，fallback：
+
+```sql
+BIGINT
+```
+
+---
+
+## 8.2 生成列覆盖类型
+
+`ddl_add_gen` 覆盖：
+
+| SQL 类型      |
+| ----------- |
+| `BIGINT`    |
+| `NUMERIC`   |
+| `TEXT`      |
+| `BOOLEAN`   |
+| `DATE`      |
+| `TIMESTAMP` |
+| `JSONB`     |
+
+---
+
+## 8.3 默认值生成覆盖
+
+函数：
+
+```python
+_default_literal_for_udt()
+```
+
+覆盖：
+
+| `udt_name`                             | 默认值                                            |
+| -------------------------------------- | ---------------------------------------------- |
+| `int2/int4/int8/numeric/float4/float8` | `1`                                            |
+| `bool`                                 | `true`                                         |
+| `text/varchar/bpchar`                  | `'stress_default'`                             |
+| `date`                                 | `DATE '2000-01-01'`                            |
+| `timestamp`                            | `TIMESTAMP '2000-01-01 00:00:00'`              |
+| `timestamptz`                          | `TIMESTAMPTZ '2000-01-01 00:00:00+00'`         |
+| `uuid`                                 | `'00000000-0000-0000-0000-000000000001'::uuid` |
+| `json`                                 | `'{}'::json`                                   |
+| `jsonb`                                | `'{}'::jsonb`                                  |
+| 其他                                     | `NULL`                                         |
+
+---
+
+## 8.4 非空填充值覆盖
+
+函数：
+
+```python
+_nonnull_literal_for_sql_type()
+```
+
+覆盖：
+
+| SQL 类型族   | 填充值                               |
+| --------- | --------------------------------- |
+| 数值型       | `0`                               |
+| boolean   | `false`                           |
+| uuid      | 固定 UUID                           |
+| json      | `'{}'::json`                      |
+| jsonb     | `'{}'::jsonb`                     |
+| date      | `DATE '2000-01-01'`               |
+| timestamp | `TIMESTAMP '2000-01-01 00:00:00'` |
+| time      | `TIME '00:00:00'`                 |
+| char/text | `'stress'`                        |
+| 其他        | `NULL`                            |
+
+---
+
+## 8.5 UPDATE 填充值覆盖
+
+函数：
+
+```python
+_realistic_fill_expr_for_udt()
+```
+
+覆盖：
+
+| `udt_name`              | 填充值表达式                                 |   |           |
+| ----------------------- | -------------------------------------- | - | --------- |
+| `int2/int4/int8`        | `COALESCE(id,0)+1`                     |   |           |
+| `numeric/float4/float8` | `COALESCE(id,0)::numeric / 10.0 + 0.1` |   |           |
+| `bool`                  | `id % 2 = 0`                           |   |           |
+| `text/varchar/bpchar`   | `'stress_'                             |   | id::text` |
+| `date`                  | `DATE '2000-01-01' + id offset`        |   |           |
+| `timestamp`             | timestamp + interval                   |   |           |
+| `timestamptz`           | timestamptz + interval                 |   |           |
+| `uuid`                  | 固定 UUID                                |   |           |
+| `json`                  | `json_build_object(...)`               |   |           |
+| `jsonb`                 | `jsonb_build_object(...)`              |   |           |
+| 其他                      | `NULL`                                 |   |           |
+
+---
+
+# 九、索引类型与列类型匹配覆盖
+
+索引构造函数：
+
+```python
+_pick_create_index_sql()
+```
+
+## 9.1 B-tree
+
+所有 eligible 列都可生成：
+
+```sql
+CREATE INDEX ... USING btree (column);
+```
+
+eligible 列排除：
+
+* 生成列
+* 继承列
+
+---
+
+## 9.2 Hash
+
+所有 eligible 列都可生成：
+
+```sql
+CREATE INDEX ... USING hash (column);
+```
+
+---
+
+## 9.3 BRIN
+
+适用类型：
+
+| 类型族           |
+| ------------- |
+| `int2`        |
+| `int4`        |
+| `int8`        |
+| `numeric`     |
+| `float4`      |
+| `float8`      |
+| `date`        |
+| `timestamp`   |
+| `timestamptz` |
+| `time`        |
+| `timetz`      |
+| `bool`        |
+
+---
+
+## 9.4 GIN
+
+适用类型：
+
+| 类型                    | 生成方式                                            |
+| --------------------- | ----------------------------------------------- |
+| `text/varchar/bpchar` | `to_tsvector('simple', COALESCE(col::text,''))` |
+| `json/jsonb`          | `USING gin (column)`                            |
+
+---
+
+## 9.5 GiST
+
+适用类型：
+
+| 类型                    | 生成方式                                            |
+| --------------------- | ----------------------------------------------- |
+| `text/varchar/bpchar` | `to_tsvector('simple', COALESCE(col::text,''))` |
+
+---
+
+## 9.6 SP-GiST
+
+适用类型：
+
+| 类型        |
+| --------- |
+| `text`    |
+| `varchar` |
+| `bpchar`  |
+
+生成：
+
+```sql
+CREATE INDEX ... USING spgist (column);
+```
+
+注意：不是所有文本类型默认都一定支持 SP-GiST operator class，因此这里可能产生失败，符合 fuzz 压测预期。
+
+---
+
+## 9.7 Bloom
+
+适用类型：
+
+| 类型族     |
+| ------- |
+| 数值型     |
+| 文本型     |
+| boolean |
+| uuid    |
+
+生成前会执行：
+
+```sql
+CREATE EXTENSION IF NOT EXISTS bloom;
+```
+
+还会生成 1 到 4 列的多列 bloom 索引：
+
+```sql
+CREATE INDEX ... USING bloom (col1, col2, col3);
+```
+
+---
+
+# 十、CHECK 表达式覆盖
+
+函数：
+
+```python
+_build_realistic_check_expr()
+```
+
+根据列类型随机选择 CHECK 表达式。
+
+| 类型                      | CHECK 示例                                              |
+| ----------------------- | ----------------------------------------------------- |
+| 整数                      | `col BETWEEN -1000000000 AND 1000000000`              |
+| numeric / float         | `ABS(col) < 1e12`                                     |
+| bool                    | `col IN (true, false)`                                |
+| text / varchar / bpchar | `char_length(col) BETWEEN 1 AND 256`                  |
+| date                    | `col BETWEEN DATE '1970-01-01' AND DATE '2100-12-31'` |
+| timestamp               | timestamp 范围                                          |
+| timestamptz             | timestamptz 范围                                        |
+| time / timetz           | `TIME '00:00:00'` 到 `TIME '23:59:59'`                 |
+| uuid                    | UUID 正则匹配                                             |
+| json / jsonb            | `jsonb_typeof(...) IN (...)`                          |
+
+如果没有合适列，fallback：
+
+```sql
+(id IS NULL OR id >= 0)
+```
+
+---
+
+# 十一、对象命名规则
+
+每次操作都会生成唯一 suffix：
+
+```python
+suffix = f"{op_id}_{random.randint(1,9999)}"
+```
+
+对象名前缀如下：
+
+| 对象          | 命名前缀                         |
+| ----------- | ---------------------------- |
+| stress 列    | `c_stress_`                  |
+| stress 列 2  | `c_stress2_`                 |
+| stress 索引   | `idx_stress_`                |
+| stress 索引 2 | `idx_stress2_`               |
+| 视图          | `v_stress_`                  |
+| 物化视图        | `mv_stress_`                 |
+| 函数          | `fn_stress_` / `fn_stress2_` |
+| 过程          | `p_stress_` / `p_call_`      |
+| 触发器         | `trg_stress_`                |
+| 临时测试表       | `trct_`                      |
+| schema      | `s_stress_`                  |
+| sequence    | `seq_stress_`                |
+| domain      | `d_stress_`                  |
+| enum type   | `t_stress_`                  |
+| rule        | `r_stress_`                  |
+| role        | `stress_role_`               |
+
+所有名称截断到 63 字符以内，适配 PostgreSQL identifier 长度限制。
+
+---
+
+# 十二、并发模型
+
+## 12.1 DDL / DML 并发
+
+每一轮会生成：
+
+```python
+ddl_concurrency 个 DDL 操作
+dml_concurrency 个 DML 操作
+```
+
+例如：
+
+```json
+{
+  "ddl_concurrency": 4,
+  "dml_concurrency": 8
+}
+```
+
+则每批计划 12 个操作。
+
+---
+
+## 12.2 key rotation 覆盖机制
+
+DDL key 队列：
+
+```python
+ddl_q = list(DDL_KEYS)
+```
+
+DML key 队列：
+
+```python
+dml_q = list(DML_KEYS)
+```
+
+每次取队首 key，然后再 append 回队尾。
+
+效果是：
+
+```text
+不是纯随机选操作，而是轮转覆盖所有 key。
+```
+
+这保证长时间运行时，每种 DDL / DML 类型都会被计划到。
+
+---
+
+## 12.3 执行线程
+
+每个操作一个线程：
+
+```python
+threading.Thread(target=run_one_op, ...)
+```
+
+同一批次内的 SQL 会并发执行。
+
+---
+
+# 十三、清理逻辑
+
+函数：
+
+```python
+cleanup_non_base_objects()
+```
+
+每次 catalog refresh 前可选执行。
+
+## 13.1 删除非基础表
+
+删除 `public` 下所有不是 `base_table_prefix%` 的普通表：
+
+```sql
+DROP TABLE IF EXISTS public.<name> CASCADE;
+```
+
+默认基础表前缀：
+
+```text
+t_rand
+```
+
+---
+
+## 13.2 删除视图
+
+```sql
+DROP VIEW IF EXISTS public.<name> CASCADE;
+```
+
+---
+
+## 13.3 删除物化视图
+
+```sql
+DROP MATERIALIZED VIEW IF EXISTS public.<name> CASCADE;
+```
+
+---
+
+# 十四、Bootstrap 逻辑
+
+如果配置：
+
+```python
+bootstrap_db_count > 0
+```
+
+程序会自动：
+
+1. 删除同名数据库。
+2. 创建数据库。
+3. 调用 `pg_random_table_generator.py` 生成 SQL。
+4. 导入生成的 SQL 文件。
+
+数据库命名：
+
+```text
+<db_prefix>0
+<db_prefix>1
+<db_prefix>2
+...
+```
+
+如果生成 SQL 中包含：
+
+```sql
+FOREIGN KEY
+```
+
+则串行导入，避免外键依赖顺序问题。
+
+如果没有外键，则并行导入 SQL 文件。
+
+---
+
+# 十五、输出产物说明
+
+运行目录：
+
+```text
+<output_dir>/run_YYYYMMDD_HHMMSS/
+```
+
+## 15.1 `ddl.sql`
+
+记录所有计划执行的 DDL SQL：
+
+```sql
+-- ddl_add_column|ddl_add_column
+ALTER TABLE ...;
+```
+
+---
+
+## 15.2 `dml.sql`
+
+记录所有计划执行的 DML SQL：
+
+```sql
+-- dml_select|dml_select
+SELECT * FROM ... LIMIT 10;
+```
+
+---
+
+## 15.3 `operations.jsonl`
+
+每一行是一条操作执行记录，包含：
+
+| 字段           | 含义            |
+| ------------ | ------------- |
+| `ts_utc`     | UTC 开始时间      |
+| `kind`       | `ddl` 或 `dml` |
+| `op_name`    | 操作名           |
+| `db`         | 数据库           |
+| `table`      | 表             |
+| `sql`        | 执行 SQL        |
+| `ok`         | 是否成功          |
+| `returncode` | psql 返回码      |
+| `elapsed_ms` | 执行耗时          |
+| `stdout`     | 标准输出          |
+| `stderr`     | 标准错误          |
+
+---
+
+## 15.4 `failed_operations.jsonl`
+
+记录失败操作。
+
+如果错误文本包含配置中的：
+
+```python
+ignored_sql_error_substrings
+```
+
+则不写入失败文件。
+
+---
+
+## 15.5 `bootstrap.jsonl`
+
+记录 bootstrap 阶段：
+
+* DROP DATABASE
+* CREATE DATABASE
+* 调用随机表生成器
+* 导入 SQL 文件
+
+---
+
+## 15.6 `summary.json`
+
+记录最终汇总：
+
+| 字段                 | 含义       |
+| ------------------ | -------- |
+| `started_at`       | 开始时间     |
+| `finished_at`      | 结束时间     |
+| `elapsed_seconds`  | 实际运行秒数   |
+| `db_prefix`        | 数据库前缀    |
+| `db_count`         | 数据库数量    |
+| `table_count`      | 表数量      |
+| `mode`             | 运行模式     |
+| `ddl_concurrency`  | DDL 并发   |
+| `dml_concurrency`  | DML 并发   |
+| `duration_seconds` | 目标压测时长   |
+| `total`            | 总执行次数    |
+| `success`          | 成功次数     |
+| `failed`           | 失败次数     |
+| `ddl_total`        | DDL 执行次数 |
+| `dml_total`        | DML 执行次数 |
+| `error_counts`     | 错误分类统计   |
+| `capabilities`     | 用户权限     |
+| `output_dir`       | 输出目录     |
+
+---
+
+# 十六、权限探测覆盖
+
+函数：
+
+```python
+detect_capabilities()
+```
+
+探测：
+
+| 权限         | 字段               |
+| ---------- | ---------------- |
+| superuser  | `is_superuser`   |
+| createdb   | `can_createdb`   |
+| createrole | `can_createrole` |
+
+SQL：
+
+```sql
+SELECT rolsuper, rolcreatedb, rolcreaterole
+FROM pg_roles
+WHERE rolname = current_user;
+```
+
+注意：探测结果会进入 summary 和启动日志，但部分权限敏感 SQL 仍然会被构造执行，失败会被记录。
+
+---
+
+# 十七、覆盖矩阵总结
+
+## 17.1 DDL 覆盖大类
+
+| 大类                                      | 覆盖 |
+| --------------------------------------- | -- |
+| `ALTER TABLE ADD COLUMN`                | 是  |
+| generated column                        | 是  |
+| `DROP COLUMN`                           | 是  |
+| `RENAME COLUMN`                         | 是  |
+| `ALTER COLUMN TYPE`                     | 是  |
+| `SET/DROP DEFAULT`                      | 是  |
+| `SET/DROP NOT NULL`                     | 是  |
+| `ADD/DROP CHECK`                        | 是  |
+| `CREATE/DROP/RENAME INDEX`              | 是  |
+| `REINDEX`                               | 是  |
+| `CLUSTER`                               | 是  |
+| `ANALYZE`                               | 是  |
+| `VACUUM ANALYZE`                        | 是  |
+| `CREATE/ALTER/DROP VIEW`                | 是  |
+| `CREATE/REFRESH/DROP MATERIALIZED VIEW` | 是  |
+| `CREATE/DROP TRIGGER`                   | 是  |
+| `CREATE TABLE LIKE`                     | 是  |
+| `CREATE TABLE AS`                       | 是  |
+| `TRUNCATE`                              | 是  |
+| `DROP TABLE`                            | 是  |
+| `CREATE/ALTER/DROP SCHEMA`              | 是  |
+| `CREATE/ALTER/DROP SEQUENCE`            | 是  |
+| `COMMENT`                               | 是  |
+| `GRANT/REVOKE`                          | 是  |
+| `CREATE/ALTER/DROP FUNCTION`            | 是  |
+| `CREATE/ALTER/DROP PROCEDURE`           | 是  |
+| `CREATE/DROP RULE`                      | 是  |
+| `CREATE/ALTER/DROP DOMAIN`              | 是  |
+| `CREATE/DROP TYPE`                      | 是  |
+| `ALTER SYSTEM`                          | 是  |
+| `CHECKPOINT`                            | 是  |
+| `CREATE/DROP ROLE`                      | 是  |
+
+---
+
+## 17.2 DML / utility 覆盖大类
+
+| 大类                              | 覆盖 |
+| ------------------------------- | -- |
+| `SELECT`                        | 是  |
+| `SELECT FOR UPDATE`             | 是  |
+| `SELECT FOR SHARE`              | 是  |
+| `UPDATE`                        | 是  |
+| `UPDATE FROM`                   | 是  |
+| `UPDATE WITH CTE`               | 是  |
+| `DELETE`                        | 是  |
+| `DELETE USING`                  | 是  |
+| `INSERT SELECT`                 | 是  |
+| `INSERT ON CONFLICT DO NOTHING` | 是  |
+| `MERGE`                         | 是  |
+| `WITH` 查询                       | 是  |
+| `UNION ALL`                     | 是  |
+| `VALUES`                        | 是  |
+| `EXISTS`                        | 是  |
+| `RETURNING`                     | 是  |
+| `LOCK TABLE`                    | 是  |
+| `PREPARE/EXECUTE/DEALLOCATE`    | 是  |
+| `BEGIN/COMMIT`                  | 是  |
+| `BEGIN/ROLLBACK`                | 是  |
+| `SAVEPOINT/RELEASE`             | 是  |
+| `EXPLAIN`                       | 是  |
+| cursor                          | 是  |
+| `DO` block                      | 是  |
+| `LISTEN/NOTIFY/UNLISTEN`        | 是  |
+| `SHOW`                          | 是  |
+| `SET/RESET`                     | 是  |
+| `SET TRANSACTION`               | 是  |
+| `DISCARD TEMP`                  | 是  |
+| `COPY TO STDOUT`                | 是  |
+| `SELECT INTO`                   | 是  |
+| `CALL`                          | 是  |
+
+---
+
+# 十八、未覆盖或覆盖较弱的内容
+
+这份代码覆盖面很广，但仍有一些明显未覆盖或弱覆盖点。
+
+## 18.1 表类型未充分覆盖
+
+未覆盖或不作为目标表：
+
+| 类型                  | 状态  |
+| ------------------- | --- |
+| 外部表                 | 未覆盖 |
+| 临时表作为基础表            | 未覆盖 |
+| unlogged table 专门创建 | 未覆盖 |
+| 分区子表                | 排除  |
+| TOAST 表             | 不覆盖 |
+| system catalog 表    | 不覆盖 |
+
+---
+
+## 18.2 约束类型覆盖不完整
+
+| 约束          | 状态                      |
+| ----------- | ----------------------- |
+| CHECK       | 覆盖                      |
+| NOT NULL    | 覆盖                      |
+| DEFAULT     | 覆盖                      |
+| PRIMARY KEY | 只识别，不创建                 |
+| UNIQUE      | 不创建                     |
+| FOREIGN KEY | bootstrap 可能有，但本工具不主动创建 |
+| EXCLUDE     | 不创建                     |
+
+---
+
+## 18.3 索引细节未覆盖
+
+未明显覆盖：
+
+* partial index
+* expression index 除了 tsvector 场景
+* unique index
+* INCLUDE column
+* operator class 显式指定
+* collate 显式指定
+* sort order `ASC/DESC`
+* `NULLS FIRST/LAST`
+* `CONCURRENTLY`
+* `DROP INDEX CONCURRENTLY`
+
+---
+
+## 18.4 Trigger 未覆盖点
+
+已覆盖很多 trigger 形态，但未覆盖：
+
+* `ENABLE TRIGGER`
+* `DISABLE TRIGGER`
+* `ALTER TABLE ENABLE ALWAYS TRIGGER`
+* `ALTER TABLE ENABLE REPLICA TRIGGER`
+* event trigger
+* trigger rename
+* trigger owner 权限类操作
+
+---
+
+## 18.5 View 未覆盖点
+
+未明显覆盖：
+
+* `ALTER VIEW RENAME`
+* `ALTER VIEW OWNER TO`
+* `ALTER VIEW ALTER COLUMN SET DEFAULT`
+* `DROP VIEW CASCADE/RESTRICT` 随机化
+* recursive view 的更多复杂形式
+
+---
+
+## 18.6 Function / Procedure 未覆盖点
+
+未覆盖或弱覆盖：
+
+* 多参数函数
+* variadic 参数
+* polymorphic 类型
+* volatility：`IMMUTABLE/STABLE/VOLATILE`
+* strictness：`STRICT`
+* security definer
+* parallel safety
+* cost / rows
+* function rename
+* language C/internal
+
+---
+
+## 18.7 DML 未覆盖点
+
+未覆盖或弱覆盖：
+
+| DML 能力                      | 状态               |
+| --------------------------- | ---------------- |
+| 真正的 `INSERT VALUES`         | key 存在，但实际没有生成   |
+| `UPDATE RETURNING *`        | 只 returning `id` |
+| `DELETE RETURNING`          | 未覆盖              |
+| `INSERT RETURNING`          | 未覆盖              |
+| `ON CONFLICT DO UPDATE`     | 未覆盖              |
+| 多分支 MERGE                   | 未覆盖              |
+| `WHEN NOT MATCHED`          | 未覆盖              |
+| window function             | 未覆盖              |
+| aggregate query             | 未覆盖              |
+| join query                  | 覆盖较弱             |
+| subquery complex expression | 覆盖较弱             |
+
+---
+
+# 十九、代码中的几个重要风险点
+
+## 19.1 `ddl_insert_values` 名不副实
+
+DML key：
+
+```text
+dml_insert_values
+```
+
+实际生成的不是：
+
+```sql
+INSERT INTO table VALUES (...)
+```
+
+而是和 `dml_insert_select` 一样：
+
+```sql
+INSERT INTO table SELECT ... FROM table LIMIT 1
+ON CONFLICT DO NOTHING;
+```
+
+如果你要精确覆盖 `INSERT VALUES`，这里需要补充独立实现。
+
+---
+
+## 19.2 `caps` 探测了但没有真正用于跳过权限操作
+
+代码探测：
+
+```python
+is_superuser
+can_createdb
+can_createrole
+```
+
+但 `ddl_alter_system_set`、`ddl_checkpoint`、`ddl_create_role` 等操作仍然会直接生成并执行。
+
+所以普通用户运行时，这些 SQL 可能大量失败。
+
+---
+
+## 19.3 `VIRTUAL` generated column 可能不兼容部分 PostgreSQL 版本
+
+代码随机生成：
+
+```sql
+GENERATED ALWAYS AS (...) VIRTUAL
+```
+
+部分 PostgreSQL 版本不支持 `VIRTUAL` generated column，因此可能失败。
+
+---
+
+## 19.4 DDL 和 DML 同时并发可能产生大量预期错误
+
+例如：
+
+* DML 正在 SELECT，DDL DROP COLUMN
+* DDL 正在 DROP VIEW，另一个 DDL ALTER VIEW
+* DML 正在 UPDATE，DDL 修改列类型
+* DDL 创建 rule，DML 执行 MERGE
+* DDL DROP TABLE，另一个操作访问该表
+
+这些错误不一定代表数据库 bug，而是并发 fuzz 场景中的预期冲突。
+
+---
+
+## 19.5 `cleanup_non_base_objects()` 会删除很多 public 对象
+
+只要对象不符合 `base_table_prefix%`，就可能被删除：
+
+```sql
+DROP TABLE ... CASCADE
+DROP VIEW ... CASCADE
+DROP MATERIALIZED VIEW ... CASCADE
+```
+
+因此不要在生产库或重要测试库运行。
+
+---
+
+# 二十、最终结论
+
+这两段代码合起来实现的是一个 **PostgreSQL 多数据库、多表、多线程、长时间运行的 DDL/DML 并发模糊压测工具**。
+
+它覆盖的内容非常广，主要包括：
+
+1. **DDL 对象覆盖**
+
+   * table
+   * column
+   * index
+   * check constraint
+   * view
+   * materialized view
+   * trigger
+   * function
+   * procedure
+   * rule
+   * schema
+   * sequence
+   * domain
+   * enum type
+   * role
+   * system setting
+
+2. **DML / 查询覆盖**
+
+   * SELECT
+   * SELECT FOR UPDATE
+   * SELECT FOR SHARE
+   * INSERT SELECT
+   * UPDATE
+   * UPDATE FROM
+   * UPDATE CTE
+   * DELETE
+   * DELETE USING
+   * MERGE
+   * RETURNING
+   * EXISTS
+   * UNION
+   * VALUES
+   * WITH query
+
+3. **事务与会话覆盖**
+
+   * BEGIN / COMMIT
+   * BEGIN / ROLLBACK
+   * SAVEPOINT
+   * SET TRANSACTION
+   * LOCK TABLE
+   * PREPARE / EXECUTE
+   * CURSOR
+   * LISTEN / NOTIFY
+   * SET / RESET
+   * SHOW
+   * DISCARD TEMP
+
+4. **列类型覆盖**
+
+   * integer family
+   * float / numeric
+   * boolean
+   * text / varchar / char
+   * date / time / timestamp / timestamptz
+   * uuid
+   * json / jsonb
+
+5. **触发器覆盖**
+
+   * BEFORE trigger
+   * AFTER trigger
+   * INSTEAD OF trigger
+   * row-level trigger
+   * statement-level trigger
+   * constraint trigger
+   * deferrable trigger
+   * transition table trigger
+   * INSERT / UPDATE / DELETE / TRUNCATE trigger event
+
+整体看，它不是一个单纯 SQL 生成器，而是一个 **带元数据感知、覆盖轮转、并发执行、失败记录、可复现 artifact 输出的 PostgreSQL 压测框架**。

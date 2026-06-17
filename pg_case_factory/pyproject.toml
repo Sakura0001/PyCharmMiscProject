@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pg-case-factory"
+version = "0.1.0"
+description = "Generate SQL-first PostgreSQL 16.4 DDL test cases."
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [{ name = "yuyu" }]
+dependencies = ["PyYAML>=6.0.2"]
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]

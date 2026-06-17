@@ -1,0 +1,165 @@
+package dbradar;
+
+import com.beust.jcommander.JCommander;
+import dbradar.postgresql.PostgreSQLOptions;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+
+public final class PostgreSQLStressOptionsTest {
+
+    private PostgreSQLStressOptionsTest() {
+    }
+
+    public static void main(String[] args) throws Exception {
+        verifiesStressOracleParsing();
+        verifiesStressTopologyParsing();
+        verifiesStressThreadsPerDbParsing();
+        verifiesGlobalExecutionLoggingParsing();
+        verifiesEffectiveStressThreadsPerDbFallbacks();
+        verifiesEffectiveStressThreadsPerDbNormalization();
+        verifiesStressDatabaseNamesRemainStableAcrossRounds();
+    }
+
+    private static void verifiesStressOracleParsing() {
+        PostgreSQLOptions pgOptions = parseOptions("--oracle", "stress");
+        require("STRESS".equals(pgOptions.oracle.get(0).name()),
+                "Expected --oracle stress to select the STRESS oracle");
+    }
+
+    private static void verifiesStressTopologyParsing() throws Exception {
+        PostgreSQLOptions pgOptions = parseOptions("--oracle", "stress", "--stress-topology", "shared");
+        Field topologyField = PostgreSQLOptions.class.getDeclaredField("stressTopology");
+        topologyField.setAccessible(true);
+        Object topologyValue = topologyField.get(pgOptions);
+        require(topologyValue != null, "Expected stressTopology to be initialized");
+        require("SHARED".equals(topologyValue.toString()),
+                "Expected --stress-topology shared to select SHARED");
+    }
+
+    private static void verifiesStressThreadsPerDbParsing() {
+        PostgreSQLOptions pgOptions = parseOptions("--oracle", "stress", "--stress-threads-per-db", "4");
+        require(pgOptions.getStressThreadsPerDb() == 4,
+                "Expected --stress-threads-per-db 4 to be parsed");
+    }
+
+    private static void verifiesGlobalExecutionLoggingParsing() {
+        MainOptions options = parseMainOptions("--log-global-execution", "true");
+        require(options.logGlobalExecution(),
+                "Expected --log-global-execution true to enable global execution logging");
+    }
+
+    private static void verifiesEffectiveStressThreadsPerDbFallbacks() {
+        PostgreSQLOptions sharedOptions = parseOptions("--oracle", "stress", "--stress-topology", "shared");
+        require(sharedOptions.getEffectiveStressThreadsPerDb(8) == 8,
+                "Expected shared fallback to use all threads");
+
+        PostgreSQLOptions isolatedOptions = parseOptions("--oracle", "stress", "--stress-topology", "isolated");
+        require(isolatedOptions.getEffectiveStressThreadsPerDb(8) == 1,
+                "Expected isolated fallback to use one thread per database");
+    }
+
+    private static void verifiesEffectiveStressThreadsPerDbNormalization() {
+        PostgreSQLOptions groupedOptions = parseOptions("--oracle", "stress", "--stress-threads-per-db", "2");
+        require(groupedOptions.getEffectiveStressThreadsPerDb(4) == 2,
+                "Expected grouped value 2 to remain unchanged");
+
+        PostgreSQLOptions oversizedOptions = parseOptions("--oracle", "stress", "--stress-threads-per-db", "99");
+        require(oversizedOptions.getEffectiveStressThreadsPerDb(4) == 4,
+                "Expected oversized grouped value to clamp to numThreads");
+
+        PostgreSQLOptions invalidOptions = parseOptions("--oracle", "stress", "--stress-threads-per-db", "0");
+        require(invalidOptions.getEffectiveStressThreadsPerDb(4) == 1,
+                "Expected non-positive grouped value to normalize to one thread per database");
+    }
+
+    private static void verifiesStressDatabaseNamesRemainStableAcrossRounds() throws Exception {
+        String isolatedRound0 = invokeBuildIsolatedDatabaseName("stable_", 2, 0);
+        String isolatedRound5 = invokeBuildIsolatedDatabaseName("stable_", 2, 5);
+        require("stable_2".equals(isolatedRound0),
+                "Expected isolated stress database name to remain compatible with first-round naming");
+        require(isolatedRound0.equals(isolatedRound5),
+                "Expected isolated stress worker to keep the same database across rounds");
+
+        String sharedRound0 = invokeBuildGroupedDatabaseName("stable_", 0, 0, 1);
+        String sharedRound5 = invokeBuildGroupedDatabaseName("stable_", 5, 0, 1);
+        require("stable_0".equals(sharedRound0),
+                "Expected shared stress database name to remain compatible with first-round naming");
+        require(sharedRound0.equals(sharedRound5),
+                "Expected shared stress workers to keep the same database across rounds");
+
+        String groupedRound0 = invokeBuildGroupedDatabaseName("stable_", 0, 2, 3);
+        String groupedRound4 = invokeBuildGroupedDatabaseName("stable_", 4, 2, 3);
+        require("stable_0_g2".equals(groupedRound0),
+                "Expected grouped stress database name to remain compatible with first-round naming");
+        require(groupedRound0.equals(groupedRound4),
+                "Expected grouped stress workers to keep the same database across rounds");
+    }
+
+    private static PostgreSQLOptions parseOptions(String... postgresqlArgs) {
+        ParsedOptions parsed = parse(postgresqlArgs);
+        return parsed.postgreSQLOptions;
+    }
+
+    private static MainOptions parseMainOptions(String... postgresqlArgs) {
+        MainOptions options = new MainOptions();
+        DBMSExecutorFactory<?> executorFactory = new DBMSExecutorFactory<>(new dbradar.postgresql.PostgreSQLProvider(),
+                options);
+        JCommander.newBuilder()
+                .addObject(options)
+                .addCommand("postgresql", executorFactory.getCommand())
+                .build()
+                .parse(concat(postgresqlArgs, new String[]{"postgresql"}));
+        return options;
+    }
+
+    private static ParsedOptions parse(String... postgresqlArgs) {
+        MainOptions options = new MainOptions();
+        DBMSExecutorFactory<?> executorFactory = new DBMSExecutorFactory<>(new dbradar.postgresql.PostgreSQLProvider(),
+                options);
+        JCommander.newBuilder()
+                .addObject(options)
+                .addCommand("postgresql", executorFactory.getCommand())
+                .build()
+                .parse(concat(new String[]{"postgresql"}, postgresqlArgs));
+        return new ParsedOptions(options, (PostgreSQLOptions) executorFactory.getCommand());
+    }
+
+    private static String invokeBuildIsolatedDatabaseName(String databasePrefix, int workerIndex, int round)
+            throws Exception {
+        Method method = Main.class.getDeclaredMethod("buildIsolatedDatabaseName", String.class, int.class, int.class);
+        method.setAccessible(true);
+        return (String) method.invoke(null, databasePrefix, workerIndex, round);
+    }
+
+    private static String invokeBuildGroupedDatabaseName(String databasePrefix, int round, int groupIndex,
+                                                        int groupCount) throws Exception {
+        Method method = Main.class.getDeclaredMethod("buildGroupedDatabaseName", String.class, int.class, int.class,
+                int.class);
+        method.setAccessible(true);
+        return (String) method.invoke(null, databasePrefix, round, groupIndex, groupCount);
+    }
+
+    private static final class ParsedOptions {
+        private final MainOptions mainOptions;
+        private final PostgreSQLOptions postgreSQLOptions;
+
+        private ParsedOptions(MainOptions mainOptions, PostgreSQLOptions postgreSQLOptions) {
+            this.mainOptions = mainOptions;
+            this.postgreSQLOptions = postgreSQLOptions;
+        }
+    }
+
+    private static String[] concat(String[] left, String[] right) {
+        String[] result = new String[left.length + right.length];
+        System.arraycopy(left, 0, result, 0, left.length);
+        System.arraycopy(right, 0, result, left.length, right.length);
+        return result;
+    }
+
+    private static void require(boolean condition, String message) {
+        if (!condition) {
+            throw new AssertionError(message);
+        }
+    }
+}

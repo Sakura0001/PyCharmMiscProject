@@ -1,0 +1,165 @@
+# LargeSLB 场景链路导图说明
+
+阅读方式：每个场景按一条链路阅读：场景 -> 观测 -> 变化 -> 数据 -> 触发 -> 预期。
+
+## 支持场景
+
+- 场景：多批 redo/GFB 汇聚后 SLB 超过阈值
+  - 观测：large_mtr、large_mtr_size、split TLB 数、GFB required/completed TLB count
+    - 变化：触发前 large_mtr 不变；触发后 large_mtr 增加，large_mtr_size 大于阈值；split TLB 数从 1 变为大于 1；completed TLB 从 0 逐步追到 required TLB，追平后才允许推进
+      - 数据：同 bucket 热点更新，192 行 x 32KB 或 384 行 x 16KB，多批提交，总 payload 明显大于 2MB
+        - 触发：innodb_log_write_max_size=524288，使用 Profile A 验证真实 2MB；Profile B 快速触发 split
+          - 预期：多批 redo/GFB 在同一 slice flush session 汇聚，SLB 拆成多个 TLB，全部 flush 后推进
+- 场景：多 slice 同时触发 LargeSLB
+  - 观测：每个 slice 的 split TLB 数、flush completion 顺序、GFB 总 TLB 完成条件、CV-LSN
+    - 变化：多个 slice 的 split TLB 数分别增加；不同 slice completion 可先后完成；GFB completed 总数未追平 required 前，CV-LSN 保持不动；全部追平后 CV-LSN 一次推进到 safe boundary
+      - 数据：4 个 bucket，768 行 x 16KB，每个 bucket 更新 96 行，必要时多客户端并发
+        - 触发：让不同 bucket 映射到多个 slice，同时产生超过阈值的 slice log
+          - 预期：各 slice 独立拆分，GFB 总完成条件等所有 slice split TLB 完成后才满足
+- 场景：同 page-id COMPACT 记录拆 segment
+  - 观测：space_page_key.compSeg、space_page_value.sealed、page_map_t entry 数、segment 连续性
+    - 变化：未超过阈值时 compSeg 只有 0；超过阈值后 compSeg 从 0 递增为 1、2、3；head segment 的 sealed 从 0 变为当前活跃 segment 号；page_map_t entry 数随 segment 增加
+      - 数据：UT/debug 固定同 space/page 多条 COMPACT record；SQL 辅助用单行重复更新 96 次 x 32KB
+        - 触发：同 page-id 累计日志超过 TLB 上限，当前 segment seal 后创建新 compSeg
+          - 预期：compSeg 从 0 递增，sealed 语义正确，多个 segment 后续都能 mapping 和 flush
+- 场景：2MB 边界：2MB-1、2MB、2MB+1
+  - 观测：size 计算值、是否拆分、TLB 是否超限、off-by-one、padding 影响
+    - 变化：计算 size 为 2MB-1 或 2MB 时不应出现 split；计算 size 为 2MB+1 时必须出现 split；TLB 实际大小始终小于等于上限；如果 2MB 时拆分或 2MB+1 不拆分，说明边界判断错误
+      - 数据：UT/debug 精确构造含 record 元数据、SLB 元数据、Intel Disk padding 的三个边界；SQL 用 511/512/513 行 x 4KB 近似加压
+        - 触发：分别让计算后的 SLB size 低于、等于、刚超过 2MB
+          - 预期：<=2MB 不因边界误拆或超限，>2MB 必须拆分
+- 场景：TLB 空间不足时先 flush
+  - 观测：当前 TLB 剩余空间、flush 调用顺序、新 TLB 分配、TLB startLSN/endLSN
+    - 变化：当前 TLB 剩余空间不足时，先看到旧 TLB flush 日志，再看到新 TLB 分配日志；新 TLB startLSN 应大于等于旧 TLB endLSN；不应出现单个 TLB size 超上限
+      - 数据：先更新 10 行 x 4KB 预填当前 TLB，再更新 240 行 x 8KB 让后续 record 放不下
+        - 触发：fillSliceFragment 发现当前 TLB 非空且空间不足以容纳下一条 log record
+          - 预期：先 flush 当前 TLB，再继续填充新 TLB，不超限、不覆盖、不乱序
+- 场景：PMP 跨 TLB 后继续处理
+  - 观测：PMP 是否仍在 flush session list、consumed offset、remaining bytes、重复/遗漏复制
+    - 变化：第一次 TLB 满时 PMP 仍留在 session list；consumed offset 增加，remaining bytes 减少；下一轮继续后 remaining bytes 继续下降直到 0；总复制量应等于原始日志量
+      - 数据：单行重复更新 128 次 x 24KB，使一个 PMP 的记录跨多个 TLB
+        - 触发：TLB 满后 flush，但 PMP 仍有未消费日志，下一轮 fillSliceFragment 继续处理
+          - 预期：PMP 不被过早删除，从正确 offset 继续，无重复、无遗漏
+- 场景：redo buffer 延迟释放
+  - 观测：redo buffer 引用/释放时机、split TLB 复制进度、use-after-free 检查
+    - 变化：split TLB 复制未完成时 buffer 引用仍保持；每复制完成一个 TLB，复制进度增加但 buffer 不释放；最后一个 split TLB 复制完成后引用降为可释放；ASAN/日志不应出现 use-after-free
+      - 数据：320 行 x 24KB，更新 256 行，制造多个 split TLB
+        - 触发：在第一个 split TLB 复制完成后暂停，检查 buffer 是否仍持有
+          - 预期：所有 log 都复制到 split TLB 前不释放 redo buffer，全部复制完成后释放
+- 场景：unsafe LSN guard 阻止非安全边界推进
+  - 观测：m_lsnGuard add/check/remove、persistLSN、非尾部 TLB endLSN、尾部 safe boundary
+    - 变化：非尾部 TLB flush 完成后，其 endLSN 被加入 m_lsnGuard；此时 persistLSN 不应变到该 unsafe LSN；尾部 TLB 完成后 persistLSN 才推进到 safe boundary；随后 guard 中小于等于 safe LSN 的项被清理
+      - 数据：384 行 x 16KB，目标拆成至少 3 个 TLB
+        - 触发：先完成非尾部 split TLB，再尝试推进 persistLSN；最后完成尾部 TLB
+          - 预期：非尾部 endLSN 被 guard 拦截，尾部完成后推进 safe persistLSN 并清理 guard
+- 场景：全部 TLB 完成前不发送 SYNC_MSG_SLICE
+  - 观测：SyncMsgSliceManager、GFB_info、required/completed TLB count、SYNC_MSG_SLICE 时间点、CV-LSN
+    - 变化：required TLB 固定为该 GFB 所需总数；completed TLB 随 flush completion 增加；completed < required 时 SYNC_MSG_SLICE 数量不增加，CV-LSN 不变；completed = required 后才生成消息并推进 CV-LSN
+      - 数据：448 行 x 16KB，生成多个 split TLB
+        - 触发：延迟最后一个 split TLB async-flush completion
+          - 预期：延迟期间不发送该 GFB 的 SYNC_MSG_SLICE，不推进 SQL Replica CV-LSN；最后完成后才推进
+- 场景：只读实例读取 safe CV-LSN
+  - 观测：只读 CV-LSN、主只 row count/checksum、缺页/半事务可见、查询错误
+    - 变化：主库 flush 未完成时只读 CV-LSN 保持在上一个 safe boundary；只读 row count/checksum 不提前变化；全部 split 完成并收到 SYNC 后，CV-LSN 前进，checksum 与主库对齐
+      - 数据：主库 512 行 x 16KB，4 bucket 更新；只读侧周期性 count/checksum
+        - 触发：主库 LargeSLB flush 过程中延迟部分 split TLB completion，只读持续查询
+          - 预期：只读只看到 safe CV-LSN，不出现半个 MTR 可见；全部完成后追平且一致
+
+## 可靠性场景
+
+- 场景：failover 期间存在未完成 split TLB
+  - 观测：倒换选择 LSN、新主 CV-LSN、未完成 TLB 状态、主只 checksum
+    - 变化：failover 前存在 completed < required 的 GFB；倒换时选择的 LSN 不应超过 safe CV-LSN；新主启动后 CV-LSN 从 safe boundary 继续；checksum 不应出现半事务差异
+      - 数据：512 行 x 16KB，2 bucket 更新，制造 LargeSLB 并延迟部分 TLB
+        - 触发：LargeSLB flush 未完成时发起 failover
+          - 预期：新主不选择 unsafe LSN，拉起后数据一致，无半事务、无丢失
+- 场景：CR 恢复起点基于 safe CV-LSN
+  - 观测：CR 起始 LSN、CV-LSN、GFB 边界、恢复后 checksum
+    - 变化：触发 CR 时即使部分 split 已完成，CR 起始 LSN 仍应等于或早于 safe CV-LSN；恢复完成后 CV-LSN 向前推进到完整 GFB 边界；checksum 与源端一致
+      - 数据：512 行 x 16KB，2 bucket 更新；在不同 split 完成阶段触发 CR
+        - 触发：LargeSLB 部分完成时启动 CR 流程
+          - 预期：CR 起点位于 safe CV-LSN/GFB 边界，恢复成功且数据一致
+- 场景：Slice Store 按 split-SLB 粒度补洞
+  - 观测：served LSN、gap 检测、gossip 补洞请求、补洞后 checksum
+    - 变化：删除 split-SLB 后 gap 列表出现对应 LSN 范围；gossip 发起补洞请求；补洞完成后 gap 消失，served LSN 向前连续推进；checksum 恢复一致
+      - 数据：512 行 x 16KB，2 bucket 更新，生成多个 split-SLB
+        - 触发：人为屏蔽或删除一个非尾部/尾部 split-SLB，触发 gossip/补洞
+          - 预期：按 split-SLB 粒度识别空洞并填充，served LSN 连续，数据可读一致
+- 场景：flush 失败后重试
+  - 观测：flush 错误日志、TLB completion 状态、m_lsnGuard、SYNC_MSG_SLICE、CV-LSN
+    - 变化：注入失败后错误计数增加，对应 TLB completion 不增加；SYNC_MSG_SLICE 和 CV-LSN 不变；解除故障后 completion 增加，guard 清理，CV-LSN 推进
+      - 数据：512 行 x 16KB，生成多个 split TLB
+        - 触发：注入第 N 个 split TLB 首次 flush 失败，随后解除故障重试
+          - 预期：失败期间不推进 safe LSN，不发送 SYNC；重试成功后完整推进，无重复写错误
+- 场景：crash 后 replay LargeSLB
+  - 观测：redo replay 日志、slice flush 进度、crash 次数、恢复后 checksum
+    - 变化：重启后 replay 从 PWAL 读取 redo；如果 LargeSLB 未完整 flush，应回到 safe LSN 或重新完成 flush；crash 次数不应循环增加；恢复后 checksum 与提交事务一致
+      - 数据：512 行 x 16KB，生成 LargeSLB redo 已进 PWAL
+        - 触发：在 parsing 后、部分 flush 后、全部 flush 前、全部 flush 后分别 kill -9
+          - 预期：重启后不反复 crash，要么回到上一个 safe LSN，要么完成 LargeSLB，数据一致
+- 场景：磁盘满/空间不足
+  - 观测：磁盘满错误、TLB flush 状态、CV-LSN/persistLSN、恢复后 checksum
+    - 变化：磁盘满时 flush 失败日志增加，TLB completion 停止增长，CV-LSN/persistLSN 不前进；释放空间后 flush 重试成功，completion 增长，LSN 再推进
+      - 数据：512 行 x 16KB，持续写入触发 split TLB flush
+        - 触发：在 Slice Store 或 WAL 盘注入空间不足，再释放空间
+          - 预期：故障期间错误可诊断且不推进 unsafe LSN；释放后可继续或按预期恢复
+- 场景：网络抖动/断连影响 replica
+  - 观测：replica served LSN、网络错误、补洞日志、CV-LSN 推进、只读 checksum
+    - 变化：断连 replica 的 served LSN 停止或落后；健康 replica 继续推进；恢复网络后补洞日志出现，落后 replica 的 served LSN 追平；CV-LSN 不越过连续服务边界
+      - 数据：512 行 x 16KB，4 bucket 更新覆盖多 slice/replica
+        - 触发：对部分 Slice Store replica 注入延迟/断连，再恢复网络
+          - 预期：只在满足 replica 连续服务条件后推进；网络恢复后副本补洞追平
+- 场景：异常后版本替换正常拉起
+  - 观测：重启日志、redo replay、large_mtr、数据 checksum、是否反复 crash
+    - 变化：旧版本/旧配置异常后可能反复 crash；替换版本后重启应成功进入 recovery 并继续服务；large_mtr 能记录 LargeSLB 处理；checksum 与预期一致
+      - 数据：768 行 x 16KB，同 bucket 更新 512 行；旧版本或旧配置触发历史异常
+        - 触发：历史异常后替换到支持 LargeSLB 的版本并重启
+          - 预期：实例正常拉起，不再反复 crash，数据一致
+
+## 参数/性能/回归场景
+
+- 场景：普通小 SLB fast path 回归
+  - 观测：large_mtr、split 日志、QPS/TPS、P99 latency、GFB 是否单 TLB
+    - 变化：执行负载后 large_mtr 不增加，split 日志不出现；GFB 到目标 slice 仍为单 TLB；QPS/TPS 和 P99 与基线接近，退化不超过 3%
+      - 数据：1000 行 x 512B，更新 100 行 x 1KB；也可跑 sysbench 小事务
+        - 触发：开启 enable_large_slb，但使用真实 2MB 或默认阈值，不使用 Profile B
+          - 预期：不触发 LargeSLB，fast path 生效，性能退化不超过 3%
+- 场景：enable_large_slb 开关对比
+  - 观测：开关值、是否触发 split、crash 行为、large_mtr、数据 checksum
+    - 变化：enable_large_slb=0 时按旧路径表现，可能 crash 或不支持 LargeSLB；enable_large_slb=1 后 large_mtr 增长，split 日志出现，实例不 crash；checksum 保持一致
+      - 数据：640 行 x 16KB，同 bucket 更新 320 行
+        - 触发：同一负载分别在 enable_large_slb=0 和 1 下执行
+          - 预期：关闭时表现符合旧逻辑/对照预期；开启后 LargeSLB 正常处理并可恢复
+- 场景：参数合法性与边界
+  - 观测：SET GLOBAL/启动错误、变量实际值、split 数、TLB 是否超限
+    - 变化：合法参数设置后 SHOW VARIABLES 变为目标值；非法组合应立即报错或启动失败；阈值越小 split 数越多；任何情况下 TLB size 不应超过上限
+      - 数据：512 行，4KB/64KB/1MB 三档 payload 更新
+        - 触发：遍历 slice_tlb_size、slice_flush_size_threshold、slice_tlb_size_max 的合法和非法组合
+          - 预期：合法组合生效，非法组合被拒绝且错误清晰，不进入不可诊断状态
+- 场景：sal_tlb_max_size 矩阵
+  - 观测：每档 sal_tlb_max_size 的 split 数、TLB 大小、flush latency、large_mtr_size
+    - 变化：sal_tlb_max_size 从 64KB 增大到 2MB 时，split 数应逐步减少，单个 TLB 大小上限随之增大；large_mtr_size 与负载规模相近；flush latency 随 split 数变化可解释
+      - 数据：1100 行 x 4KB，按 64KB、128KB、512KB、1MB、2MB+ 阶梯更新
+        - 触发：分别设置 sal_tlb_max_size=64KB/128KB/512KB/1MB/2MB 后执行负载
+          - 预期：每档 TLB 不超过上限，split 数与阈值变化趋势一致，2MB 最大值可正确处理
+- 场景：长稳写入 LargeSLB
+  - 观测：crash、内存、连接数、QPS/TPS、large_mtr 趋势、LSN 卡住、周期性 checksum
+    - 变化：72 小时内 large_mtr 持续增长但内存不持续上升；QPS/TPS 无持续下降趋势；CV-LSN/persistLSN 持续推进不长时间卡住；周期性 checksum 稳定一致
+      - 数据：1024 行 x 8KB，两轮全量更新作为单轮负载，循环运行 72 小时
+        - 触发：持续读写混合并周期性触发 LargeSLB
+          - 预期：72 小时无 crash、无资源泄漏、无 LSN 卡死，数据一致
+- 场景：高并发大事务混合小事务
+  - 观测：大事务成功率、小事务 P99、锁等待、QPS/TPS、错误率
+    - 变化：混合负载开始后 large_mtr 增长；大事务成功率应接近 100%；小事务 P99 可有波动但不应异常放大；锁等待和错误率不应持续升高
+      - 数据：大事务：256 行 x 16KB；小事务：7 组 x 80 行 x 2KB；并发比例约 20%/80%
+        - 触发：多客户端并发运行 LargeSLB 负载和普通 OLTP 小事务
+          - 预期：大小事务都正确提交，小事务延迟无异常放大，无死锁/锁等待异常
+
+## 不支持场景
+
+- 场景：单条 redo record 自身超过 2MB
+  - 观测：crash 栈、最后 LSN、是否有部分写入、测试报告标记
+    - 变化：触发后实例应直接 crash；不会出现成功 split 并推进 CV-LSN 的日志；测试报告状态标记为“不支持场景符合预期”，不是正向失败
+      - 数据：优先 debug/UT 精确构造单条 redo record >2MB；SQL 仅尝试单行 2,200,000B payload
+        - 触发：在隔离可丢弃实例执行单 redo >2MB 场景
+          - 预期：实例直接 crash 属于预期；该场景不纳入 LargeSLB 正向支持，不在共享回归执行

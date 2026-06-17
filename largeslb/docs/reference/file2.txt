@@ -1,0 +1,463 @@
+# MySQL 8.0.41 EXPLAIN ANALYZE 改进特性测试设计示例
+
+> 本文档演示如何使用 mysql-feature-test-template.md 模板进行测试设计
+
+---
+
+## 文档头部信息
+
+| 属性 | 值 |
+|------|-----|
+| 特性名称 | EXPLAIN ANALYZE 输出格式改进 |
+| MySQL 版本 | 8.0.41 |
+| 特性类型 | 功能增强 |
+| 风险等级 | 中 |
+| 设计日期 | 2026-05-19 |
+| 设计人员 | 测试团队 |
+
+---
+
+## 1. 特性概述
+
+### 1.1 特性简介
+
+MySQL 8.0.41 对 EXPLAIN ANALYZE 命令的输出格式进行了改进，提供了更详细的执行计划分析信息，包括更精确的时间统计、改进的迭代器树可视化格式，以及新增的资源消耗指标。该改进帮助用户更好地理解查询执行过程，优化查询性能。
+
+### 1.2 相关文档
+
+- 官方文档链接：https://dev.mysql.com/doc/refman/8.0/en/explain.html
+- Release Notes：https://dev.mysql.com/doc/relnotes/mysql/8.0/en/news-8-0-41.html
+- Worklog：WL#xxxxx（待确认）
+- 其他参考：MySQL 源码 sql/explain_analyze.cc
+
+### 1.3 特性范围
+
+**包含：**
+- EXPLAIN ANALYZE 输出格式改进
+- 新增执行时间统计字段
+- 改进的迭代器树可视化
+- JSON 格式输出增强
+
+**不包含：**
+- EXPLAIN FORMAT=TRADITIONAL 的改动（不在本次测试范围）
+- EXPLAIN FORMAT=TREE 的改动（仅关注 ANALYZE）
+
+---
+
+## 2. 功能测试
+
+### 2.1 测试场景分类
+
+| 场景类型 | 覆盖情况 | 说明 |
+|---------|---------|------|
+| 正向场景 | ☑ | 基本功能流程、主要用例路径 |
+| 边界场景 | ☑ | 复杂查询、多表关联 |
+| 异常场景 | ☑ | 错误语法、权限不足 |
+| 组合场景 | ☑ | 与其他优化器特性配合 |
+
+### 2.2 测试用例列表
+
+#### TC-001: [正向场景-基本查询]
+
+| 字段 | 内容 |
+|------|------|
+| 优先级 | P0 |
+| 场景类型 | 正向 |
+| 前置条件 | - 数据库正常运行<br>- 测试表已创建并含数据 |
+| 测试步骤 | 1. 创建测试表并插入数据<br>2. 执行 EXPLAIN ANALYZE SELECT ...<br>3. 检查输出格式和内容 |
+| 预期结果 | 输出包含正确的迭代器树结构、时间统计信息、行数统计等 |
+| 测试SQL | ```sql<br>CREATE TABLE t1 (id INT PRIMARY KEY, name VARCHAR(100));<br>INSERT INTO t1 VALUES (1,'a'),(2,'b'),(3,'c');<br><br>EXPLAIN ANALYZE SELECT * FROM t1 WHERE id > 1;<br>``` |
+| 验证点 | - 输出格式正确<br>- 时间统计显示<br>- 实际行数 vs 预估行数<br>- 迭代器层级正确 |
+
+#### TC-002: [正向场景-复杂JOIN查询]
+
+| 字段 | 内容 |
+|------|------|
+| 优先级 | P0 |
+| 场景类型 | 正向 |
+| 前置条件 | - 多表已创建<br>- 各表含适当数据量 |
+| 测试步骤 | 1. 创建多个关联表<br>2. 执行多表 JOIN 查询<br>3. 分析输出 |
+| 预期结果 | JOIN 各阶段的执行信息完整， Nested loop 等迭代器信息正确 |
+| 测试SQL | ```sql<br>CREATE TABLE t1 (id INT PRIMARY KEY, a1 VARCHAR(100));<br>CREATE TABLE t2 (id INT PRIMARY KEY, t1_id INT, a2 VARCHAR(100), INDEX(t1_id));<br>CREATE TABLE t3 (id INT PRIMARY KEY, t2_id INT, a3 VARCHAR(100), INDEX(t2_id));<br><br>INSERT INTO t1 SELECT seq, CONCAT('a', seq) FROM seq_1_to_1000;<br>INSERT INTO t2 SELECT seq, seq % 100, CONCAT('b', seq) FROM seq_1_to_5000;<br>INSERT INTO t3 SELECT seq, seq % 1000, CONCAT('c', seq) FROM seq_1_to_10000;<br><br>EXPLAIN ANALYZE SELECT t1.a1, t2.a2, t3.a3 <br>FROM t1 JOIN t2 ON t1.id = t2.t1_id <br>JOIN t3 ON t2.id = t3.t2_id <br>WHERE t1.id < 50;<br>``` |
+| 验证点 | - JOIN 顺序正确<br>- 各迭代器时间统计<br>- 索引使用情况<br>- 实际扫描行数 |
+
+#### TC-003: [正向场景-JSON格式输出]
+
+| 字段 | 内容 |
+|------|------|
+| 优先级 | P1 |
+| 场景类型 | 正向 |
+| 前置条件 | |
+| 测试步骤 | 1. 执行 EXPLAIN ANALYZE FORMAT=JSON<br>2. 验证 JSON 结构 |
+| 预期结果 | JSON 输出包含所有新增字段，结构完整可解析 |
+| 测试SQL | ```sql<br>EXPLAIN ANALYZE FORMAT=JSON SELECT * FROM t1 WHERE id > 1;<br>``` |
+| 验证点 | - JSON 格式正确<br>- 新增字段存在<br>- 可被 JSON 解析器解析 |
+
+#### TC-004: [边界场景-子查询嵌套]
+
+| 字段 | 内容 |
+|------|------|
+| 优先级 | P1 |
+| 场景类型 | 边界 |
+| 前置条件 | |
+| 测试步骤 | 1. 创建多层嵌套子查询<br>2. 执行 EXPLAIN ANALYZE<br>3. 检查迭代器深度 |
+| 预期结果 | 深层嵌套的迭代器树完整展示，无截断 |
+| 测试SQL | ```sql<br>EXPLAIN ANALYZE SELECT * FROM t1 <br>WHERE id IN (SELECT t1_id FROM t2 <br>              WHERE id IN (SELECT t2_id FROM t3 WHERE a3 LIKE 'c%'));<br>``` |
+| 验证点 | - 迭代器层级完整<br>- 子查询执行信息<br>- 无格式异常 |
+
+#### TC-005: [边界场景-超大结果集]
+
+| 字段 | 内容 |
+|------|------|
+| 优先级 | P2 |
+| 场景类型 | 边界 |
+| 前置条件 | - 大数据量表存在 |
+| 测试步骤 | 1. 执行返回大量行的查询<br>2. 检查输出完整性 |
+| 预期结果 | 统计信息准确，输出不因数据量大而异常 |
+| 测试SQL | ```sql<br>EXPLAIN ANALYZE SELECT * FROM t_large;<br>``` |
+| 验证点 | - 时间统计正确<br>- 行数统计正确<br>- 无输出截断 |
+
+#### TC-006: [异常场景-错误语法]
+
+| 字段 | 内容 |
+|------|------|
+| 优先级 | P1 |
+| 场景类型 | 异常 |
+| 前置条件 | |
+| 测试步骤 | 1. 执行错误语法的 EXPLAIN ANALYZE<br>2. 检查错误信息 |
+| 预期结果 | 返回明确的错误信息，错误码正确 |
+| 测试SQL | ```sql<br>-- 缺少 SELECT<br>EXPLAIN ANALYZE FROM t1;<br><br>-- 不支持的格式<br>EXPLAIN ANALYZE FORMAT=TRADITIONAL SELECT * FROM t1;<br>``` |
+| 验证点 | - 错误信息准确<br>- 错误码正确<br>- 不影响后续操作 |
+
+#### TC-007: [异常场景-权限不足]
+
+| 字段 | 内容 |
+|------|------|
+| 优先级 | P2 |
+| 场景类型 | 异常 |
+| 前置条件 | - 创建无 SELECT 权限的用户 |
+| 测试步骤 | 1. 用低权限用户执行 EXPLAIN ANALYZE<br>2. 检查错误信息 |
+| 预期结果 | 权限不足时返回正确错误 |
+| 测试SQL | ```sql<br>-- 创建低权限用户<br>CREATE USER 'test_user'@'localhost' IDENTIFIED BY 'password';<br>GRANT USAGE ON *.* TO 'test_user'@'localhost';<br><br>-- 以 test_user 执行<br>EXPLAIN ANALYZE SELECT * FROM test_db.t1;<br>``` |
+| 验证点 | - 权限错误正确<br>- 错误信息包含表名 |
+
+#### TC-008: [组合场景-与Optimizer Hints]
+
+| 字段 | 内容 |
+|------|------|
+| 优先级 | P2 |
+| 场景类型 | 组合 |
+| 前置条件 | |
+| 测试步骤 | 1. 使用 Optimizer Hints 控制执行计划<br>2. 执行 EXPLAIN ANALYZE<br>3. 验证 hints 生效 |
+| 预期结果 | EXPLAIN ANALYZE 显示 hints 影响后的执行计划 |
+| 测试SQL | ```sql<br>EXPLAIN ANALYZE SELECT /*+ INDEX(t1 PRIMARY) */ * FROM t1 WHERE id > 1;<br>EXPLAIN ANALYZE SELECT /*+ NO_INDEX(t1) */ * FROM t1 WHERE id > 1;<br>``` |
+| 验证点 | - hints 生效<br>- 实际执行符合 hints<br>- 时间对比显示差异 |
+
+#### TC-009: [组合场景-与窗口函数]
+
+| 字段 | 内容 |
+|------|------|
+| 优先级 | P2 |
+| 场景类型 | 组合 |
+| 前置条件 | |
+| 测试步骤 | 1. 执行含窗口函数的查询<br>2. 分析 EXPLAIN ANALYZE 输出 |
+| 预期结果 | 窗口函数迭代器正确显示 |
+| 测试SQL | ```sql<br>EXPLAIN ANALYZE SELECT id, name, <br>       ROW_NUMBER() OVER (ORDER BY id) as rn,<br>       SUM(id) OVER (PARTITION BY name) as sum_id<br>FROM t1;<br>``` |
+| 验证点 | - 窗口函数迭代器<br>- 排序迭代器<br>- 分区处理 |
+
+### 2.3 功能测试维度清单
+
+#### SQL 语法维度
+
+- [x] 标准语法支持：EXPLAIN ANALYZE SELECT ...
+- [x] 语法变体：EXPLAIN ANALYZE FORMAT=JSON
+- [x] 语法错误提示准确性
+- [x] 关键字冲突处理（与 EXPLAIN FORMAT=TRADITIONAL 冲突）
+- [x] SQL_MODE 影响（无影响）
+
+#### 数据类型维度
+
+- [x] 整数类型查询
+- [x] 字符类型查询
+- [x] JSON 类型查询
+- [x] NULL 值处理（WHERE 条件含 NULL）
+- [x] 字符集影响（utf8mb4 表）
+
+#### 对象类型维度
+
+- [x] 普通表
+- [x] 临时表（TEMPORARY TABLE）
+- [x] 分区表（PARTITIONED TABLE）
+- [x] 视图（VIEW）
+- [x] 存储过程内的查询
+- [x] 外键关联表
+
+#### 事务与锁维度
+
+- [x] 普通查询（无事务影响）
+- [x] 事务内执行（BEGIN 后）
+- [x] 锁定读（SELECT ... FOR UPDATE）
+
+#### 权限控制维度
+
+- [x] 全局 SELECT 权限
+- [x] 表级 SELECT 权限
+- [x] 权限不足错误
+
+---
+
+## 3. 性能测试
+
+### 3.1 性能指标定义
+
+| 指标类型 | 指标名称 | 度量单位 | 基准参考 | 验收标准 |
+|---------|---------|---------|---------|---------|
+| 响应时间 | EXPLAIN ANALYZE 执行时间 | ms | 对比 8.0.40 | ≤ 基准值 |
+| 响应时间 | 复杂查询分析时间 | ms | 对比 8.0.40 | ≤ 基准值 × 1.2 |
+| 资源消耗 | 输出内存占用 | KB | 输出大小 | 无异常增长 |
+| 输出大小 | 输出字符数 | 字符 | 对比 8.0.40 | 合理增长 |
+
+### 3.2 性能测试场景
+
+#### PT-001: [简单查询分析性能]
+
+| 字段 | 内容 |
+|------|------|
+| 场景描述 | 单表简单查询的 EXPLAIN ANALYZE 性能 |
+| 数据规模 | 数据量：10万行<br>表数量：1 |
+| 并发配置 | 并发数：1 |
+| 持续时间 | 执行 100 次，取平均 |
+| 热身时间 | 不适用 |
+| 测试工具 | 自定义脚本 |
+| 测试SQL | ```sql<br>EXPLAIN ANALYZE SELECT * FROM t_100k WHERE id > 50000;<br>``` |
+| 验收标准 | 执行时间 < 50ms |
+
+#### PT-002: [复杂JOIN分析性能]
+
+| 字段 | 内容 |
+|------|------|
+| 场景描述 | 多表 JOIN 的 EXPLAIN ANALYZE 性能 |
+| 数据规模 | 数据量：各表 10万行<br>表数量：5 |
+| 并发配置 | 并发数：1 |
+| 持续时间 | 执行 50 次，取平均 |
+| 测试工具 | 自定义脚本 |
+| 测试SQL | ```sql<br>EXPLAIN ANALYZE SELECT * FROM t1 <br>JOIN t2 ON t1.id = t2.t1_id <br>JOIN t3 ON t2.id = t3.t2_id <br>JOIN t4 ON t3.id = t4.t3_id <br>JOIN t5 ON t4.id = t5.t4_id;<br>``` |
+| 验收标准 | 执行时间 < 200ms |
+
+#### PT-003: [版本对比测试]
+
+| 字段 | 内容 |
+|------|------|
+| 场景描述 | 与 MySQL 8.0.40 EXPLAIN ANALYZE 性能对比 |
+| 数据规模 | 相同数据规模 |
+| 并发配置 | 相同 |
+| 持续时间 | 各执行 100 次 |
+| 测试工具 | 自定义脚本 |
+| 测试SQL | ```sql<br>-- 相同测试 SQL 在两个版本执行<br>EXPLAIN ANALYZE SELECT ...<br>``` |
+| 验收标准 | 性能无退化 |
+
+### 3.3 性能测试维度清单
+
+#### 数据规模维度
+
+- [x] 小数据量（< 1万行）
+- [x] 中等数据量（10万-100万行）
+- [x] 大数据量（1000万行）
+- [ ] 超大数据量（> 1亿行）- 跳过，EXPLAIN ANALYZE 不适用
+
+#### 查询复杂度维度
+
+- [x] 单表查询
+- [x] 两表 JOIN
+- [x] 多表 JOIN（≥ 5 表）
+- [x] 子查询
+- [x] 窗口函数
+- [x] 聚合函数
+
+---
+
+## 4. 兼容性测试
+
+### 4.1 兼容性矩阵
+
+| 兼容维度 | 测试项 | 测试状态 | 预期结果 |
+|---------|-------|---------|---------|
+| 版本升级 | 从 8.0.40 升级到 8.0.41 | ☐ | EXPLAIN ANALYZE 功能正常 |
+| 版本降级 | 降级到 8.0.40 | ☐ | 使用旧版 EXPLAIN ANALYZE |
+| 语法兼容 | 旧版 EXPLAIN ANALYZE 语法 | ☑ | 在 8.0.41 中正常工作 |
+| 语法兼容 | JSON 格式 | ☑ | JSON 输出兼容 |
+| 工具兼容 | MySQL Shell | ☐ | 功能正常 |
+| 应用兼容 | JDBC | ☐ | 通过 JDBC 执行正常 |
+
+### 4.2 兼容性测试用例
+
+#### CT-001: [版本升级兼容]
+
+| 字段 | 内容 |
+|------|------|
+| 兼容类型 | 版本升级 |
+| 测试环境 | 源版本：MySQL 8.0.40<br>目标版本：MySQL 8.0.41 |
+| 测试步骤 | 1. 在 8.0.40 执行 EXPLAIN ANALYZE 并保存输出<br>2. 升级到 8.0.41<br>3. 执行相同 EXPLAIN ANALYZE<br>4. 对比输出 |
+| 验证点 | - 功能可用<br>- 输出格式改进<br>- 无破坏性变更 |
+| 回滚方案 | 降级到 8.0.40 |
+
+#### CT-002: [JSON 格式兼容]
+
+| 字段 | 内容 |
+|------|------|
+| 兼容类型 | 语法兼容 |
+| 测试环境 | |
+| 测试步骤 | 1. 在 8.0.40 执行 EXPLAIN ANALYZE FORMAT=JSON<br>2. 在 8.0.41 执行相同命令<br>3. 使用 JSON 解析器解析两个输出 |
+| 验证点 | - JSON 结构兼容<br>- 新增字段不影响旧解析逻辑 |
+| 回滚方案 | 不适用 |
+
+### 4.3 兼容性测试维度清单
+
+#### 升级迁移维度
+
+- [x] 从 8.0.40 升级
+- [ ] 从更早版本升级 - 跳过（EXPLAIN ANALYZE 从 8.0.18 引入）
+
+#### 生态工具维度
+
+- [x] MySQL Shell（\sql EXPLAIN ANALYZE ...）
+- [x] JDBC 驱动
+- [ ] ORM 框架 - 跳过（不常用 EXPLAIN）
+
+---
+
+## 5. 稳定性测试
+
+### 5.1 稳定性测试场景
+
+#### ST-001: [高频执行稳定性]
+
+| 字段 | 内容 |
+|------|------|
+| 场景描述 | 连续执行 EXPLAIN ANALYZE 稳定性 |
+| 持续时间 | 1 小时 |
+| 负载模式 | 每 100ms 执行一次 |
+| 故障注入 | 无 |
+| 监控指标 | - 连接数<br>- 内存使用<br>- 错误率 |
+| 验收标准 | 无崩溃<br>无内存泄漏<br>错误率 < 0.01% |
+
+#### ST-002: [并发执行测试]
+
+| 字段 | 内容 |
+|------|------|
+| 场景描述 | 多会话同时执行 EXPLAIN ANALYZE |
+| 持续时间 | 30 分钟 |
+| 负载模式 | 50 个并发会话同时执行 |
+| 故障注入 | 无 |
+| 监控指标 | |
+| 验收标准 | 无锁等待<br>无死锁<br>结果一致 |
+
+---
+
+## 6. 测试环境
+
+### 6.1 硬件配置
+
+| 组件 | 规格 |
+|------|------|
+| CPU | Intel Xeon 8核 |
+| 内存 | 32 GB |
+| 磁盘 | SSD 500GB |
+| 网络 | 本地测试 |
+
+### 6.2 软件配置
+
+| 组件 | 版本 |
+|------|------|
+| 操作系统 | CentOS 7.9 / Ubuntu 22.04 |
+| MySQL | 8.0.41 / 8.0.40（对比测试） |
+| 测试工具 | 自定义 Python 脚本 |
+
+### 6.3 MySQL 关键配置
+
+```ini
+[mysqld]
+innodb_buffer_pool_size = 8G
+max_connections = 500
+optimizer_switch = 'default'
+```
+
+---
+
+## 7. 测试数据准备
+
+### 7.1 数据规模规划
+
+| 表名 | 数据量 | 数据特征 | 用途 |
+|------|-------|---------|------|
+| t_small | 1000行 | 均匀分布 | 功能测试 |
+| t_100k | 10万行 | 带索引 | 性能测试 |
+| t_1m | 100万行 | 多索引 | 边界测试 |
+
+### 7.2 数据生成脚本
+
+```sql
+-- 创建测试表
+CREATE TABLE t_100k (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100),
+    value INT,
+    created_at DATETIME,
+    INDEX idx_name (name),
+    INDEX idx_value (value)
+);
+
+-- 使用存储过程插入数据
+DELIMITER //
+CREATE PROCEDURE populate_t_100k()
+BEGIN
+    DECLARE i INT DEFAULT 0;
+    WHILE i < 100000 DO
+        INSERT INTO t_100k (name, value, created_at)
+        VALUES (CONCAT('name_', i), i % 1000, NOW() - INTERVAL FLOOR(RAND()*365) DAY);
+        SET i = i + 1;
+        IF i % 10000 = 0 THEN
+            COMMIT;
+        END IF;
+    END WHILE;
+END //
+DELIMITER ;
+
+CALL populate_t_100k();
+```
+
+---
+
+## 8. 风险评估
+
+| 风险项 | 风险等级 | 影响范围 | 缓解措施 |
+|-------|---------|---------|---------|
+| 输出格式变更影响解析工具 | 中 | 监控/分析工具 | 测试常用解析工具兼容性 |
+| 复杂查询输出过大 | 低 | 客户端显示 | 设置阈值，测试截断处理 |
+| 版本对比数据偏差 | 低 | 性能对比 | 多次测试取平均，保证环境一致 |
+
+---
+
+## 9. 测试输出物
+
+- [x] 测试设计文档（本文档）
+- [ ] 测试用例详细列表
+- [ ] 测试数据准备脚本
+- [ ] 测试执行结果报告
+- [ ] 性能对比报告
+- [ ] 缺陷清单
+
+---
+
+## 10. 测试执行进度
+
+| 阶段 | 状态 | 开始日期 | 完成日期 | 备注 |
+|------|------|---------|---------|------|
+| 测试设计 | ☑ | 2026-05-19 | 2026-05-19 | 完成 |
+| 环境准备 | ☐ | | | |
+| 数据准备 | ☐ | | | |
+| 功能测试执行 | ☐ | | | |
+| 性能测试执行 | ☐ | | | |
+| 兼容性测试执行 | ☐ | | | |
+| 稳定性测试执行 | ☐ | | | |
+| 报告编写 | ☐ | | | |

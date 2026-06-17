@@ -1,0 +1,1231 @@
+# MySQL ICP Cost-Based Optimization 测试场景设计
+
+- MySQL ICP Cost-Based Optimization 测试设计
+  - 0. 统一测试前提
+    - 特性开关
+      - `optimizer_switch='icp_cost_based=on,index_condition_pushdown=on'`
+      - 正向场景默认开启该组合
+      - 关闭 `icp_cost_based=off` 作为社区版兼容性对照
+    - 优化器前提
+      - 使用 Classic Optimizer
+      - Hypergraph Optimizer 作为负向兼容场景
+    - 存储引擎前提
+      - 使用 InnoDB 作为主验证引擎
+      - 其他支持 `HA_DO_INDEX_COND_PUSHDOWN` 的引擎可作为补充
+      - 不支持 ICP 的引擎作为负向验证
+    - 观察手段
+      - `EXPLAIN`
+      - `EXPLAIN ANALYZE`
+      - `optimizer_trace`
+      - Handler read 计数
+      - 返回结果集
+      - UPDATE/DELETE 影响行数
+      - 触发器审计表
+    - 总体预期
+      - 有资格且有收益时才调整代价
+      - 无收益时回退原计划选择
+      - 不合法场景不进入 cost-based ICP
+      - 开启特性不改变 SQL 语义
+
+  - 1. ref 候选索引选择场景
+    - 1.1 多个索引共享相同起始键，尾列可 ICP
+      - 使用表
+        - 普通 InnoDB 大表 `t_ref`
+      - 使用索引
+        - `idx_a(a)`
+        - `idx_ab(a,b)`
+        - `idx_abc(a,b,c)`
+      - 数据特征
+        - `a=4` 命中较多行
+        - `c=6` 选择性高
+        - `idx_a`、`idx_ab`、`idx_abc` 在 `a=4` 上 fanout 接近
+      - 触发 SQL
+        - `SELECT * FROM t_ref WHERE a = 4 AND c = 6`
+      - 触发情况
+        - `find_best_ref()` 中多个 ref 候选竞争
+        - 社区版倾向选择更窄的 `idx_a`
+        - 新逻辑应预估 `idx_abc` 的 ICP 收益
+      - 预期结果
+        - 选择 `idx_abc`
+        - EXPLAIN 出现 `index condition`
+        - `optimizer_trace` 中 `icp_enabled=true`
+        - 回表行数下降
+        - 结果集与关闭开关一致
+
+    - 1.2 ref 候选中宽索引没有 ICP 收益
+      - 使用表
+        - 普通 InnoDB 表 `t_ref`
+      - 使用索引
+        - `idx_a(a)`
+        - `idx_ab(a,b)`
+        - `idx_abc(a,b,c)`
+      - 数据特征
+        - `a=4` 命中较多行
+        - 没有尾列过滤条件
+      - 触发 SQL
+        - `SELECT * FROM t_ref WHERE a = 4`
+      - 触发情况
+        - 多个 ref 候选可用
+        - 但不存在可用于 ICP 的剩余索引条件
+      - 预期结果
+        - 不应因为开启 `icp_cost_based` 而选择更宽索引
+        - 可继续选择 `idx_a`
+        - `icp_enabled` 不应为 true
+
+    - 1.3 ref 候选尾列过滤选择性很弱
+      - 使用表
+        - 普通 InnoDB 表 `t_ref`
+      - 使用索引
+        - `idx_a(a)`
+        - `idx_abc(a,b,c)`
+      - 数据特征
+        - `a=4` 命中较多行
+        - `c IS NOT NULL` 几乎命中全部行
+      - 触发 SQL
+        - `SELECT * FROM t_ref WHERE a = 4 AND c IS NOT NULL`
+      - 触发情况
+        - `idx_abc` 理论上可做 ICP
+        - 但 ICP filter effect 接近 1
+      - 预期结果
+        - ICP 收益不足
+        - 不应强行选择 `idx_abc`
+        - 计划应与关闭开关基本一致
+
+    - 1.4 ref JOIN 场景中内表索引选择受 ICP 收益影响
+      - 使用表
+        - 外表 `t1`
+        - 内表 `t2`
+      - 使用索引
+        - `t2.idx_a(a)`
+        - `t2.idx_abc(a,b,c)`
+      - 数据特征
+        - `t1.a = t2.a`
+        - `t2.c=6` 选择性高
+      - 触发 SQL
+        - `SELECT * FROM t1 JOIN t2 ON t2.a = t1.a WHERE t2.c = 6`
+      - 触发情况
+        - `t2` 作为 ref 访问内表
+        - 多个 ref 候选共享 `a`
+        - `idx_abc` 可通过 ICP 过滤 `c=6`
+      - 预期结果
+        - `t2` 优先选择 `idx_abc`
+        - JOIN 结果正确
+        - 不应因为 ICP 奖励异常改变 join order
+
+    - 1.5 多个等值前缀场景
+      - 使用表
+        - 普通 InnoDB 表 `t_ref_multi_prefix`
+      - 使用索引
+        - `idx_ab(a,b)`
+        - `idx_abc(a,b,c)`
+      - 数据特征
+        - `a=4 AND b=5` 已能使用多个 keypart
+        - `c=6` 选择性高
+      - 触发 SQL
+        - `SELECT * FROM t_ref_multi_prefix WHERE a = 4 AND b = 5 AND c = 6`
+      - 触发情况
+        - ref 访问已使用较长等值前缀
+        - 需要验证剩余条件是否仍可形成 ICP 收益
+      - 预期结果
+        - 若 `c=6` 仍是剩余索引条件，可合理评估 ICP 收益
+        - 不应重复计算已被 key access 消耗的条件
+        - 执行结果正确
+
+  - 2. range 候选选择场景
+    - 2.1 起始列 range，尾列等值过滤
+      - 使用表
+        - 普通 InnoDB 大表 `t_range`
+      - 使用索引
+        - `idx_a(a)`
+        - `idx_abc(a,b,c)`
+      - 数据特征
+        - `a BETWEEN 2 AND 4` 命中较多行
+        - `c=50` 选择性高
+      - 触发 SQL
+        - `SELECT * FROM t_range WHERE a BETWEEN 2 AND 4 AND c = 50`
+      - 触发情况
+        - `get_key_scans_params()` 比较 range 候选和 table scan
+        - `idx_abc` 可对 `c=50` 做 ICP
+      - 预期结果
+        - 选择 `idx_abc` range scan
+        - EXPLAIN 出现 `index condition`
+        - 不再选择 table scan
+        - 回表行数明显下降
+
+    - 2.2 大范围扫描，尾列强过滤
+      - 使用表
+        - 百万级 InnoDB 表 `t_range_big`
+      - 使用索引
+        - `idx_abc(a,b,c)`
+      - 数据特征
+        - `a BETWEEN 1 AND 100000` 范围较大
+        - `c=1` 命中极少
+      - 触发 SQL
+        - `SELECT * FROM t_range_big WHERE a BETWEEN 1 AND 100000 AND c = 1`
+      - 触发情况
+        - 原始 range cost 可能高于 table scan
+        - ICP 能显著减少回表
+      - 预期结果
+        - 开启后 range path 可胜出
+        - `icp_cost` 小于原始 range cost
+        - ICP 奖励不超过 50% 封顶
+
+    - 2.3 range 很窄，ICP 收益不明显
+      - 使用表
+        - 普通 InnoDB 表 `t_range`
+      - 使用索引
+        - `idx_abc(a,b,c)`
+      - 数据特征
+        - `a BETWEEN 2 AND 3` 命中很少
+        - `c IS NOT NULL` 过滤弱
+      - 触发 SQL
+        - `SELECT * FROM t_range WHERE a BETWEEN 2 AND 3 AND c IS NOT NULL`
+      - 触发情况
+        - 存在 range path
+        - 但 ICP 减少回表收益有限
+      - 预期结果
+        - 不应出现过度奖励
+        - 最终计划可以保持原选择
+        - `icp_enabled` 不应错误为 true
+
+    - 2.4 `IN` 多范围条件
+      - 使用表
+        - 普通 InnoDB 表 `t_range_in`
+      - 使用索引
+        - `idx_abc(a,b,c)`
+      - 数据特征
+        - `a IN (...)` 形成多个 range
+        - `c=9` 有过滤性
+      - 触发 SQL
+        - `SELECT * FROM t_range_in WHERE a IN (1,2,3,4) AND c = 9`
+      - 触发情况
+        - 多 range 候选参与 cost 比较
+        - 尾列 `c` 可用于 ICP
+      - 预期结果
+        - 多 range 下 ICP filter effect 估算合理
+        - 可选择 `idx_abc`
+        - 结果集正确
+
+    - 2.5 字符串前缀 range，尾列可过滤
+      - 使用表
+        - 字符串业务表 `t_range_like`
+      - 使用索引
+        - `idx_name_c(name,c)`
+      - 数据特征
+        - `name LIKE 'abc%'` 命中较多行
+        - `c=9` 选择性高
+      - 触发 SQL
+        - `SELECT * FROM t_range_like WHERE name LIKE 'abc%' AND c = 9`
+      - 触发情况
+        - `name LIKE 'abc%'` 形成索引范围
+        - `c=9` 可作为剩余索引条件进行 ICP
+      - 预期结果
+        - 可评估 ICP 收益
+        - 若收益足够，选择对应 range path
+        - 结果正确
+
+  - 3. scan 与 range 最终路径选择场景
+    - 3.1 range 原始代价略高于 table scan，ICP 后胜出
+      - 使用表
+        - 大表 `t_scan_range`
+      - 使用索引
+        - `idx_abc(a,b,c)`
+      - 数据特征
+        - range 命中行数较多
+        - 尾列过滤强
+      - 触发 SQL
+        - `SELECT * FROM t_scan_range WHERE a BETWEEN 10 AND 50000 AND c = 7`
+      - 触发情况
+        - `best_access_path()` 比较 table scan 和 range
+        - `preview_scan_or_range()` 对 range 做 ICP 奖励
+      - 预期结果
+        - 最终选择 range scan
+        - POSITION/JOIN_TAB 记录调整后 cost
+        - `optimizer_trace` 可看到 ICP cost
+
+    - 3.2 ICP 奖励后仍高于 table scan
+      - 使用表
+        - 普通表 `t_scan_range`
+      - 使用索引
+        - `idx_abc(a,b,c)`
+      - 数据特征
+        - range 覆盖大部分表
+        - 尾列过滤弱
+      - 触发 SQL
+        - `SELECT * FROM t_scan_range WHERE a BETWEEN 1 AND 999999 AND c IS NOT NULL`
+      - 触发情况
+        - range 可用
+        - ICP 收益不足以超过 table scan
+      - 预期结果
+        - 保持 table scan
+        - 不应为了 ICP 强制选 range
+
+    - 3.3 无可用 key
+      - 使用表
+        - 普通 InnoDB 表 `t_no_key`
+      - 使用索引
+        - 无相关索引
+      - 数据特征
+        - 条件列没有索引
+      - 触发 SQL
+        - `SELECT * FROM t_no_key WHERE non_index_col = 1`
+      - 触发情况
+        - `keyno == MAX_KEY`
+      - 预期结果
+        - 不进入 ICP cost 预演
+        - 保持 table scan
+        - 不输出 `icp_enabled=true`
+
+  - 4. 索引资格排除场景
+    - 4.1 聚簇主键不参与 ICP cost
+      - 使用表
+        - InnoDB 表 `t_pk`
+      - 使用索引
+        - `PRIMARY KEY(id)`
+        - `idx_c(c)`
+      - 触发 SQL
+        - `SELECT * FROM t_pk WHERE id BETWEEN 1 AND 1000 AND c = 6`
+      - 触发情况
+        - 主键 range 可用
+        - 但聚簇主键不应参与 ICP cost 奖励
+      - 预期结果
+        - 主键路径不应被 ICP cost 奖励
+        - `icp_enabled` 不应为 true
+
+    - 4.2 覆盖索引不参与 ICP cost
+      - 使用表
+        - InnoDB 表 `t_cover`
+      - 使用索引
+        - `idx_abc(a,b,c)`
+      - 触发 SQL
+        - `SELECT a,b,c FROM t_cover WHERE a = 4 AND c = 6`
+      - 触发情况
+        - 查询列全部包含在索引中
+        - 无需回表
+      - 预期结果
+        - 不应给予 ICP 回表收益奖励
+        - 可使用 covering index
+        - 但不应标记 cost-based ICP 收益
+
+    - 4.3 虚拟生成列索引排除
+      - 使用表
+        - 含 virtual generated column 的表 `t_virtual`
+      - 使用索引
+        - `idx_v(a, v_col)`
+      - 触发 SQL
+        - `SELECT * FROM t_virtual WHERE a = 1 AND v_col = 10`
+      - 触发情况
+        - 索引包含虚拟生成列
+      - 预期结果
+        - 不进入 ICP cost 预演
+        - 计划和结果正确
+
+    - 4.4 FULLTEXT 索引排除
+      - 使用表
+        - 文本表 `t_fulltext`
+      - 使用索引
+        - `FULLTEXT KEY ft_content(content)`
+      - 触发 SQL
+        - `SELECT * FROM t_fulltext WHERE MATCH(content) AGAINST('abc')`
+      - 触发情况
+        - FULLTEXT 访问路径
+      - 预期结果
+        - 不参与 ICP cost
+        - 不输出 `icp_enabled=true`
+
+    - 4.5 SPATIAL 索引排除
+      - 使用表
+        - 空间数据表 `t_spatial`
+      - 使用索引
+        - `SPATIAL KEY sp_g(g)`
+      - 触发 SQL
+        - `SELECT * FROM t_spatial WHERE MBRContains(g, ST_GeomFromText('POINT(1 1)'))`
+      - 触发情况
+        - 使用空间索引访问路径
+      - 预期结果
+        - 不参与 ICP cost
+        - 不影响空间查询结果
+
+    - 4.6 不支持 ICP 的存储引擎排除
+      - 使用表
+        - 不支持 `HA_DO_INDEX_COND_PUSHDOWN` 的引擎表 `t_engine`
+      - 使用索引
+        - 普通二级索引
+      - 触发 SQL
+        - `SELECT * FROM t_engine WHERE a = 1 AND c = 2`
+      - 触发情况
+        - 引擎能力不满足
+      - 预期结果
+        - 不进入 cost-based ICP
+        - 不改变原访问路径
+
+  - 5. 表类型覆盖场景
+    - 5.1 普通 InnoDB 大表
+      - 使用表
+        - `t_big`
+      - 使用索引
+        - `idx_a(a)`
+        - `idx_abc(a,b,c)`
+      - 触发 SQL
+        - `SELECT * FROM t_big WHERE a = 4 AND c = 6`
+      - 触发情况
+        - 大量回表成本明显
+      - 预期结果
+        - ICP 收益明显
+        - 更可能选择 `idx_abc`
+
+    - 5.2 小表
+      - 使用表
+        - `t_small`
+      - 使用索引
+        - `idx_a(a)`
+        - `idx_abc(a,b,c)`
+      - 触发 SQL
+        - `SELECT * FROM t_small WHERE a = 4 AND c = 6`
+      - 触发情况
+        - 表数据量很小
+      - 预期结果
+        - 不应因为 ICP cost 导致异常计划
+        - 执行结果正确
+
+    - 5.3 空表
+      - 使用表
+        - `t_empty`
+      - 使用索引
+        - `idx_abc(a,b,c)`
+      - 触发 SQL
+        - `SELECT * FROM t_empty WHERE a = 4 AND c = 6`
+      - 触发情况
+        - rowcount 为 0
+      - 预期结果
+        - 不崩溃
+        - 不产生负 cost
+        - 不产生 NaN cost
+        - trace 输出合理
+
+    - 5.4 宽表
+      - 使用表
+        - `t_wide`
+        - 包含大字段 `pad VARCHAR(2000)` 或 `TEXT`
+      - 使用索引
+        - `idx_a(a)`
+        - `idx_abc(a,b,c)`
+      - 触发 SQL
+        - `SELECT * FROM t_wide WHERE a = 4 AND c = 6`
+      - 触发情况
+        - 回表代价较高
+      - 预期结果
+        - ICP 减少回表收益更明显
+        - 优先选择可 ICP 的组合索引
+
+    - 5.5 分区表
+      - 使用表
+        - `t_part`
+        - RANGE 分区
+        - HASH 分区
+        - LIST 分区
+      - 使用索引
+        - `idx_abc(a,b,c)`
+      - 触发 SQL
+        - `SELECT * FROM t_part WHERE a BETWEEN 10 AND 20 AND c = 1`
+      - 触发情况
+        - 分区裁剪与 range path 同时存在
+      - 预期结果
+        - 分区裁剪正确
+        - ICP cost 不影响分区选择正确性
+        - 结果集正确
+
+    - 5.6 临时表
+      - 使用表
+        - 临时表 `tmp_icp`
+      - 使用索引
+        - `idx_abc(a,b,c)`
+      - 触发 SQL
+        - `SELECT * FROM tmp_icp WHERE a = 1 AND c = 2`
+      - 触发情况
+        - 临时表引擎可能不同
+      - 预期结果
+        - 支持 ICP 时按资格判断
+        - 不支持 ICP 时正确跳过
+        - 不影响查询结果
+
+  - 6. 索引类型覆盖场景
+    - 6.1 二级非唯一组合索引
+      - 使用表
+        - `t_idx_normal`
+      - 使用索引
+        - `idx_a(a)`
+        - `idx_abc(a,b,c)`
+      - 触发 SQL
+        - `SELECT * FROM t_idx_normal WHERE a = 1 AND c = 2`
+      - 触发情况
+        - 最典型 ICP cost 场景
+      - 预期结果
+        - `idx_abc` 因 ICP 收益胜出
+
+    - 6.2 唯一二级索引
+      - 使用表
+        - `t_idx_unique`
+      - 使用索引
+        - `UNIQUE KEY uk_a(a)`
+        - `KEY idx_abc(a,b,c)`
+      - 触发 SQL
+        - `SELECT * FROM t_idx_unique WHERE a = 1 AND c = 2`
+      - 触发情况
+        - `a` 唯一时 fanout 极小
+      - 预期结果
+        - ICP 收益很小
+        - 不应错误偏向宽索引
+
+    - 6.3 不可见索引
+      - 使用表
+        - `t_idx_invisible`
+      - 使用索引
+        - `idx_abc(a,b,c) INVISIBLE`
+      - 触发 SQL
+        - `SELECT * FROM t_idx_invisible WHERE a = 1 AND c = 2`
+      - 触发情况
+        - 默认不可见索引不参与候选
+      - 预期结果
+        - 默认不使用该索引
+        - 开启 `use_invisible_indexes=on` 后才可参与比较
+
+    - 6.4 前缀索引
+      - 使用表
+        - `t_idx_prefix`
+      - 使用索引
+        - `idx_name_c(name(10), c)`
+      - 触发 SQL
+        - `SELECT * FROM t_idx_prefix WHERE name LIKE 'abc%' AND c = 9`
+      - 触发情况
+        - 字符串前缀 range
+        - 尾列可过滤
+      - 预期结果
+        - 可形成 range 时评估 ICP 收益
+        - 结果正确
+
+    - 6.5 降序索引
+      - 使用表
+        - `t_idx_desc`
+      - 使用索引
+        - `idx_a_c_desc(a DESC, c)`
+      - 触发 SQL
+        - `SELECT * FROM t_idx_desc WHERE a BETWEEN 10 AND 20 AND c = 3`
+      - 触发情况
+        - range 方向为降序
+      - 预期结果
+        - 索引方向不影响 ICP 资格判断
+        - cost 估算正确
+
+    - 6.6 stored generated column 索引
+      - 使用表
+        - 含 stored generated column 的表 `t_idx_stored`
+      - 使用索引
+        - `idx_a_scol(a, s_col)`
+      - 触发 SQL
+        - `SELECT * FROM t_idx_stored WHERE a = 1 AND s_col = 10`
+      - 触发情况
+        - generated column 为 stored
+      - 预期结果
+        - 若实现按普通物化列处理，可参与正常索引路径选择
+        - 结果正确
+
+    - 6.7 virtual generated column 索引
+      - 使用表
+        - 含 virtual generated column 的表 `t_idx_virtual`
+      - 使用索引
+        - `idx_a_vcol(a, v_col)`
+      - 触发 SQL
+        - `SELECT * FROM t_idx_virtual WHERE a = 1 AND v_col = 10`
+      - 触发情况
+        - generated column 为 virtual
+      - 预期结果
+        - 不参与 ICP cost
+        - 不输出 `icp_enabled=true`
+
+  - 7. 谓词类型覆盖场景
+    - 7.1 等值谓词
+      - 使用表
+        - `t_pred_eq`
+      - 使用索引
+        - `idx_abc(a,b,c)`
+      - 触发 SQL
+        - `SELECT * FROM t_pred_eq WHERE a = 1 AND c = 2`
+      - 触发情况
+        - ref 访问加尾列等值
+      - 预期结果
+        - ICP 过滤 `c=2`
+        - 索引选择受益
+
+    - 7.2 范围谓词
+      - 使用表
+        - `t_pred_range`
+      - 使用索引
+        - `idx_abc(a,b,c)`
+      - 触发 SQL
+        - `SELECT * FROM t_pred_range WHERE a BETWEEN 1 AND 100 AND c = 2`
+      - 触发情况
+        - range 访问加尾列等值
+      - 预期结果
+        - range path 代价被 ICP 调整
+
+    - 7.3 NULL 谓词
+      - 使用表
+        - `t_pred_null`
+      - 使用索引
+        - `idx_abc(a,b,c)`
+      - 触发 SQL
+        - `SELECT * FROM t_pred_null WHERE a = 1 AND c IS NULL`
+      - 触发情况
+        - 尾列 NULL 条件可过滤
+      - 预期结果
+        - 根据 NULL 分布决定是否有收益
+        - 结果正确
+
+    - 7.4 LIKE 前缀谓词
+      - 使用表
+        - `t_pred_like`
+      - 使用索引
+        - `idx_name_c(name,c)`
+      - 触发 SQL
+        - `SELECT * FROM t_pred_like WHERE name LIKE 'abc%' AND c = 1`
+      - 触发情况
+        - `name LIKE 'abc%'` 可形成 range
+        - `c=1` 可作为 ICP 条件
+      - 预期结果
+        - 可评估 ICP 收益
+        - 选择合理索引
+
+    - 7.5 LIKE 非前缀谓词
+      - 使用表
+        - `t_pred_like`
+      - 使用索引
+        - `idx_name_c(name,c)`
+      - 触发 SQL
+        - `SELECT * FROM t_pred_like WHERE name LIKE '%abc' AND c = 1`
+      - 触发情况
+        - `LIKE '%abc'` 通常不能利用索引前缀
+      - 预期结果
+        - 不应错误计算 ICP 收益
+        - 保持合理访问路径
+
+    - 7.6 函数表达式谓词
+      - 使用表
+        - `t_pred_func`
+      - 使用索引
+        - `idx_abc(a,b,c)`
+      - 触发 SQL
+        - `SELECT * FROM t_pred_func WHERE a = 1 AND DATE(c) = '2026-01-01'`
+      - 触发情况
+        - 尾列存在函数表达式
+      - 预期结果
+        - 不可下推时不应奖励
+        - 结果正确
+
+    - 7.7 隐式类型转换谓词
+      - 使用表
+        - `t_pred_cast`
+      - 使用索引
+        - `idx_abc(a,b,c)`
+      - 触发 SQL
+        - `SELECT * FROM t_pred_cast WHERE a = '1' AND c = '2'`
+      - 触发情况
+        - 查询条件发生隐式类型转换
+      - 预期结果
+        - 结果与关闭开关一致
+        - 不应因错误估算改变语义
+
+    - 7.8 OR 组合谓词
+      - 使用表
+        - `t_pred_or`
+      - 使用索引
+        - `idx_abc(a,b,c)`
+        - `idx_adc(a,d,c)`
+      - 触发 SQL
+        - `SELECT * FROM t_pred_or WHERE (a = 1 AND c = 2) OR (d = 3 AND c = 4)`
+      - 触发情况
+        - OR 条件可能产生 index merge 或多个 range
+      - 预期结果
+        - 只对合法可下推部分评估 ICP
+        - 不应错误奖励不可下推条件
+
+  - 8. DML 与触发器场景
+    - 8.1 单表 UPDATE 加 BEFORE UPDATE 触发器
+      - 使用表
+        - 主表 `t_update`
+        - 审计表 `t_audit`
+      - 使用索引
+        - `t_update.idx_abc(a,b,c)`
+      - 使用触发器
+        - `BEFORE UPDATE`
+      - 触发 SQL
+        - `UPDATE t_update SET d = d + 1 WHERE a BETWEEN 1 AND 100 AND c = 6`
+      - 触发情况
+        - UPDATE 条件可使用 range 加 ICP
+      - 预期结果
+        - 可选择 ICP range path
+        - UPDATE 影响行数与关闭开关一致
+        - 触发器执行次数一致
+        - 审计表记录一致
+
+    - 8.2 单表 UPDATE 加 AFTER UPDATE 触发器
+      - 使用表
+        - 主表 `t_update_after`
+        - 审计表 `t_audit`
+      - 使用索引
+        - `t_update_after.idx_abc(a,b,c)`
+      - 使用触发器
+        - `AFTER UPDATE`
+      - 触发 SQL
+        - `UPDATE t_update_after SET d = d + 1 WHERE a = 4 AND c = 6`
+      - 触发情况
+        - UPDATE 条件可使用 ref 加 ICP
+      - 预期结果
+        - 影响行数一致
+        - AFTER UPDATE 审计记录一致
+        - 更新后数据一致
+
+    - 8.3 单表 DELETE 加 BEFORE DELETE 触发器
+      - 使用表
+        - 主表 `t_delete_before`
+        - 审计表 `t_audit`
+      - 使用索引
+        - `t_delete_before.idx_abc(a,b,c)`
+      - 使用触发器
+        - `BEFORE DELETE`
+      - 触发 SQL
+        - `DELETE FROM t_delete_before WHERE a BETWEEN 1 AND 100 AND c = 6`
+      - 触发情况
+        - DELETE 条件可使用 range 加 ICP
+      - 预期结果
+        - DELETE 影响行数一致
+        - BEFORE DELETE 审计记录一致
+        - 删除结果正确
+
+    - 8.4 单表 DELETE 加 AFTER DELETE 触发器
+      - 使用表
+        - 主表 `t_delete`
+        - 审计表 `t_audit`
+      - 使用索引
+        - `t_delete.idx_abc(a,b,c)`
+      - 使用触发器
+        - `AFTER DELETE`
+      - 触发 SQL
+        - `DELETE FROM t_delete WHERE a = 4 AND c = 6`
+      - 触发情况
+        - DELETE 条件可使用 ref 加 ICP
+      - 预期结果
+        - DELETE 影响行数一致
+        - 触发器审计记录一致
+        - binlog 语义一致
+
+    - 8.5 多表 UPDATE 排除
+      - 使用表
+        - `t1`
+        - `t2`
+      - 使用索引
+        - `t2.idx_abc(a,b,c)`
+      - 触发 SQL
+        - `UPDATE t1 JOIN t2 ON t1.a = t2.a SET t1.d = 1 WHERE t2.c = 6`
+      - 触发情况
+        - multi-table UPDATE
+      - 预期结果
+        - 不进入 cost-based ICP 预演
+        - 不改变语义
+        - 不输出 `icp_enabled=true`
+
+    - 8.6 多表 DELETE 排除
+      - 使用表
+        - `t1`
+        - `t2`
+      - 使用索引
+        - `t2.idx_abc(a,b,c)`
+      - 触发 SQL
+        - `DELETE t1 FROM t1 JOIN t2 ON t1.a = t2.a WHERE t2.c = 6`
+      - 触发情况
+        - multi-table DELETE
+      - 预期结果
+        - 不参与 ICP cost
+        - 删除结果正确
+
+    - 8.7 外键级联 DELETE
+      - 使用表
+        - 父表 `t_parent`
+        - 子表 `t_child`
+      - 使用索引
+        - `t_parent.idx_abc(a,b,c)`
+        - `t_child.idx_parent_id(parent_id)`
+      - 触发 SQL
+        - `DELETE FROM t_parent WHERE a BETWEEN 1 AND 100 AND c = 6`
+      - 触发情况
+        - 父表 DELETE 条件可用 ICP
+        - 子表存在级联删除
+      - 预期结果
+        - 父表删除行数一致
+        - 子表级联结果一致
+        - 触发器和外键语义不变
+
+  - 9. 子查询与 semi-join 场景
+    - 9.1 普通子查询可用索引路径
+      - 使用表
+        - 外表 `t_outer`
+        - 子查询表 `t_sub`
+      - 使用索引
+        - `t_sub.idx_abc(a,b,c)`
+      - 触发 SQL
+        - `SELECT * FROM t_outer WHERE EXISTS (SELECT 1 FROM t_sub WHERE t_sub.a = t_outer.a AND t_sub.c = 6)`
+      - 触发情况
+        - 子查询内表存在 ref 访问候选
+      - 预期结果
+        - 若不是 guarded condition，可按资格参与
+        - 结果正确
+
+    - 9.2 guarded-condition 子查询排除
+      - 使用表
+        - `t_outer`
+        - `t_sub`
+      - 使用索引
+        - `t_sub.idx_abc(a,b,c)`
+      - 触发 SQL
+        - 相关子查询或被优化器标记为 guarded condition 的 SQL
+      - 触发情况
+        - 命中 guarded condition 限制
+      - 预期结果
+        - 不进入 cost-based ICP
+        - 不输出 `icp_enabled=true`
+
+    - 9.3 非 ref semi-join 物化路径排除
+      - 使用表
+        - `t_outer`
+        - `t_sub`
+      - 使用索引
+        - `t_sub.idx_abc(a,b,c)`
+      - 触发 SQL
+        - `SELECT * FROM t_outer WHERE a IN (SELECT a FROM t_sub WHERE c = 6)`
+      - 触发情况
+        - semi-join materialization
+        - 非 ref 路径
+      - 预期结果
+        - 不使用新 ICP cost 逻辑
+        - 结果正确
+
+    - 9.4 derived table 场景
+      - 使用表
+        - 基表 `t_derived_base`
+      - 使用索引
+        - `idx_abc(a,b,c)`
+      - 触发 SQL
+        - `SELECT * FROM (SELECT * FROM t_derived_base WHERE a BETWEEN 1 AND 100) dt WHERE c = 6`
+      - 触发情况
+        - derived table 可能 merge 或 materialize
+      - 预期结果
+        - merge 后若形成合法索引条件，可正常评估
+        - materialize 后不满足引擎 ICP 条件时不奖励
+        - 结果正确
+
+    - 9.5 view 场景
+      - 使用表
+        - 基表 `t_view_base`
+        - 视图 `v_icp`
+      - 使用索引
+        - `t_view_base.idx_abc(a,b,c)`
+      - 触发 SQL
+        - `SELECT * FROM v_icp WHERE a BETWEEN 1 AND 100 AND c = 6`
+      - 触发情况
+        - view merge 或 temptable
+      - 预期结果
+        - merge view 下可按普通查询判断
+        - temptable view 下不应错误使用基表 ICP cost
+        - 结果一致
+
+  - 10. 代价模型边界场景
+    - 10.1 ICP filter effect 接近 0
+      - 使用表
+        - `t_cost_high`
+      - 使用索引
+        - `idx_abc(a,b,c)`
+      - 数据特征
+        - 尾列过滤极强
+      - 触发 SQL
+        - `SELECT * FROM t_cost_high WHERE a BETWEEN 1 AND 100000 AND c = 999`
+      - 触发情况
+        - ICP 可过滤绝大多数回表
+      - 预期结果
+        - `icp_enabled=true`
+        - `icp_cost` 明显下降
+        - 下降比例不超过 50%
+
+    - 10.2 ICP filter effect 接近 1
+      - 使用表
+        - `t_cost_low`
+      - 使用索引
+        - `idx_abc(a,b,c)`
+      - 数据特征
+        - 尾列几乎不过滤
+      - 触发 SQL
+        - `SELECT * FROM t_cost_low WHERE a BETWEEN 1 AND 100000 AND c IS NOT NULL`
+      - 触发情况
+        - ICP 评估成本存在
+        - 减少回表收益很低
+      - 预期结果
+        - 不启用 ICP cost 奖励
+        - 或启用后不影响最终计划
+
+    - 10.3 50% 硬封顶
+      - 使用表
+        - `t_cost_cap`
+      - 使用索引
+        - `idx_abc(a,b,c)`
+      - 数据特征
+        - 尾列过滤极强
+        - 理论收益超过 50%
+      - 触发 SQL
+        - `SELECT * FROM t_cost_cap WHERE a BETWEEN 1 AND 1000000 AND c = 1`
+      - 触发情况
+        - 代价模型估算 ICP 收益极大
+      - 预期结果
+        - 最终奖励最多为 base cost 的 50%
+        - 不允许 ICP 收益无限放大
+        - join order 不被异常成本误导
+
+    - 10.4 rowcount 边界
+      - 使用表
+        - `t_cost_empty`
+        - `t_cost_one`
+      - 使用索引
+        - `idx_abc(a,b,c)`
+      - 触发 SQL
+        - `SELECT * FROM t_cost_empty WHERE a = 1 AND c = 1`
+        - `SELECT * FROM t_cost_one WHERE a = 1 AND c = 1`
+      - 触发情况
+        - rowcount 为 0 或 1
+      - 预期结果
+        - 不出现负 cost
+        - 不出现 NaN
+        - 不出现异常 plan
+
+    - 10.5 base cost 边界
+      - 使用表
+        - `t_cost_base`
+      - 使用索引
+        - `idx_abc(a,b,c)`
+      - 数据特征
+        - 构造极小 base cost 和极大 base cost 两组数据
+      - 触发 SQL
+        - `SELECT * FROM t_cost_base WHERE a = 1 AND c = 1`
+        - `SELECT * FROM t_cost_base WHERE a BETWEEN 1 AND 1000000 AND c = 1`
+      - 触发情况
+        - 代价模型输入接近边界
+      - 预期结果
+        - cost 非负
+        - cost 单调合理
+        - 不产生异常计划
+
+  - 11. optimizer_trace 场景
+    - 11.1 ref 正向 trace
+      - 使用表
+        - `t_ref`
+      - 使用索引
+        - `idx_a(a)`
+        - `idx_abc(a,b,c)`
+      - 触发 SQL
+        - `SELECT * FROM t_ref WHERE a = 4 AND c = 6`
+      - 触发情况
+        - ref 候选 ICP 预演生效
+      - 预期结果
+        - trace 输出 `icp_filter_effect`
+        - trace 输出 `icp_enabled=true`
+        - trace 输出 `icp_cost`
+        - trace 与 EXPLAIN 选择一致
+
+    - 11.2 range 正向 trace
+      - 使用表
+        - `t_range`
+      - 使用索引
+        - `idx_abc(a,b,c)`
+      - 触发 SQL
+        - `SELECT * FROM t_range WHERE a BETWEEN 2 AND 4 AND c = 50`
+      - 触发情况
+        - range 候选 ICP 预演生效
+      - 预期结果
+        - trace 中出现 ICP cost 信息
+        - `icp_filter_effect` 在 0 到 1 之间
+        - `icp_cost` 为调整后代价
+
+    - 11.3 scan_or_range 正向 trace
+      - 使用表
+        - `t_scan_range`
+      - 使用索引
+        - `idx_abc(a,b,c)`
+      - 触发 SQL
+        - `SELECT * FROM t_scan_range WHERE a BETWEEN 10 AND 50000 AND c = 7`
+      - 触发情况
+        - 最终路径选择阶段评估 ICP 收益
+      - 预期结果
+        - trace 能体现最终路径 cost 调整
+        - trace 与最终执行计划一致
+
+    - 11.4 负向 trace
+      - 使用表
+        - `t_cover`
+        - `t_pk`
+        - `t_virtual`
+      - 使用索引
+        - 覆盖索引
+        - 主键
+        - 虚拟生成列索引
+      - 触发 SQL
+        - 覆盖索引查询
+        - 主键 range 查询
+        - 虚拟生成列查询
+      - 触发情况
+        - ICP cost 资格不满足
+      - 预期结果
+        - 不应输出误导性的 `icp_enabled=true`
+        - 不应输出错误 `icp_cost`
+
+  - 12. 兼容性与稳定性场景
+    - 12.1 默认关闭兼容性
+      - 使用表
+        - `t_compat_off`
+      - 使用索引
+        - `idx_a(a)`
+        - `idx_abc(a,b,c)`
+      - 触发 SQL
+        - `SELECT * FROM t_compat_off WHERE a = 4 AND c = 6`
+      - 触发情况
+        - `icp_cost_based=off`
+      - 预期结果
+        - 执行计划与社区版一致
+        - 不输出 cost-based ICP trace 字段
+        - 结果一致
+
+    - 12.2 `index_condition_pushdown=off`
+      - 使用表
+        - `t_compat_icp_off`
+      - 使用索引
+        - `idx_abc(a,b,c)`
+      - 触发 SQL
+        - `SELECT * FROM t_compat_icp_off WHERE a = 4 AND c = 6`
+      - 触发情况
+        - `icp_cost_based=on`
+        - `index_condition_pushdown=off`
+      - 预期结果
+        - 不做 ICP 奖励
+        - 不输出 `icp_enabled=true`
+
+    - 12.3 `NO_ICP` hint
+      - 使用表
+        - `t_hint`
+      - 使用索引
+        - `idx_a(a)`
+        - `idx_abc(a,b,c)`
+      - 触发 SQL
+        - `SELECT /*+ NO_ICP(t_hint) */ * FROM t_hint WHERE a = 4 AND c = 6`
+      - 触发情况
+        - hint 显式禁止 ICP
+      - 预期结果
+        - cost-based ICP 不生效
+        - 不输出 `icp_enabled=true`
+
+    - 12.4 Index Hint
+      - 使用表
+        - `t_index_hint`
+      - 使用索引
+        - `idx_a(a)`
+        - `idx_abc(a,b,c)`
+      - 触发 SQL
+        - `SELECT * FROM t_index_hint FORCE INDEX(idx_a) WHERE a = 4 AND c = 6`
+        - `SELECT * FROM t_index_hint IGNORE INDEX(idx_abc) WHERE a = 4 AND c = 6`
+      - 触发情况
+        - 用户限制索引候选集合
+      - 预期结果
+        - ICP cost 只在剩余合法候选中生效
+        - 不违反用户指定 hint
+
+    - 12.5 Plan Cache / Prepared Statement
+      - 使用表
+        - `t_ps`
+      - 使用索引
+        - `idx_abc(a,b,c)`
+      - 触发 SQL
+        - `PREPARE stmt FROM 'SELECT * FROM t_ps WHERE a BETWEEN ? AND ? AND c = ?'`
+        - 使用不同参数多次 `EXECUTE`
+      - 触发情况
+        - 不同参数选择性不同
+      - 预期结果
+        - 计划选择合理
+        - 结果正确
+        - 不复用错误 ICP cost
+
+    - 12.6 binlog 兼容
+      - 使用表
+        - `t_dml`
+      - 使用索引
+        - `idx_abc(a,b,c)`
+      - 触发 SQL
+        - `UPDATE t_dml SET d = d + 1 WHERE a = 4 AND c = 6`
+        - `DELETE FROM t_dml WHERE a = 4 AND c = 6`
+      - 触发情况
+        - ROW binlog 格式
+        - STATEMENT binlog 格式
+        - MIXED binlog 格式
+      - 预期结果
+        - 主备数据一致
+        - binlog 语义一致
+        - 不影响复制
+
+    - 12.7 事务隔离级别
+      - 使用表
+        - `t_txn`
+      - 使用索引
+        - `idx_abc(a,b,c)`
+      - 触发 SQL
+        - SELECT 场景
+        - UPDATE 场景
+        - DELETE 场景
+      - 触发情况
+        - READ COMMITTED
+        - REPEATABLE READ
+        - SERIALIZABLE
+      - 预期结果
+        - 隔离级别语义不变
+        - 锁行为不异常
+        - 结果一致
+
+    - 12.8 PQ 并行查询
+      - 使用表
+        - 大表 `t_pq`
+      - 使用索引
+        - `idx_abc(a,b,c)`
+      - 触发 SQL
+        - `SELECT * FROM t_pq WHERE a BETWEEN 1 AND 100000 AND c = 6`
+      - 触发情况
+        - PQ 开启
+        - PQ 关闭
+      - 预期结果
+        - 并行查询与 ICP cost 不冲突
+        - 结果一致
+        - 性能不异常退化
+
+    - 12.9 Hypergraph Optimizer 负向
+      - 使用表
+        - `t_hypergraph`
+      - 使用索引
+        - `idx_abc(a,b,c)`
+      - 触发 SQL
+        - `SELECT * FROM t_hypergraph WHERE a = 4 AND c = 6`
+      - 触发情况
+        - 开启 Hypergraph Optimizer
+      - 预期结果
+        - 不进入本特性新增的 Classic Optimizer 预演路径
+        - 不输出 `icp_enabled=true`
+        - 结果正确
+
+  - 13. P0 核心验收场景
+    - 13.1 ref 选错修复验收
+      - 使用表
+        - `t_ref_case`
+      - 使用索引
+        - `idx_a(a)`
+        - `idx_abc(a,b,c)`
+      - 数据特征
+        - `a=4` 命中大量行
+        - `c=6` 高选择性
+      - 触发 SQL
+        - `SELECT * FROM t_ref_case WHERE a = 4 AND c = 6`
+      - 预期结果
+        - 从 `idx_a + server filter` 切换为 `idx_abc + index condition`
+        - 回表减少
+        - 结果一致
+
+    - 13.2 range 被 table scan 压制修复验收
+      - 使用表
+        - `t_range_case`
+      - 使用索引
+        - `idx_abc(a,b,c)`
+      - 数据特征
+        - `a BETWEEN 2 AND 4` 命中较多
+        - `c=50` 高选择性
+      - 触发 SQL
+        - `SELECT * FROM t_range_case WHERE a BETWEEN 2 AND 4 AND c = 50`
+      - 预期结果
+        - 从 table scan 切换为 index range scan
+        - 出现 index condition
+        - 扫描行数下降
+
+    - 13.3 50% cap 验收
+      - 使用表
+        - `t_cap_case`
+      - 使用索引
+        - `idx_abc(a,b,c)`
+      - 数据特征
+        - 尾列过滤极强
+      - 触发 SQL
+        - `SELECT * FROM t_cap_case WHERE a BETWEEN 1 AND 1000000 AND c = 1`
+      - 预期结果
+        - ICP cost 有收益
+        - 收益最多封顶 50%
+        - 不影响 join order 稳定性
+
+    - 13.4 不支持场景不生效验收
+      - 使用表
+        - `t_pk_case`
+        - `t_cover_case`
+        - `t_virtual_case`
+      - 使用索引
+        - 主键
+        - 覆盖索引
+        - 虚拟生成列索引
+      - 触发 SQL
+        - 分别构造可访问索引的查询
+      - 预期结果
+        - 不进入 ICP cost
+        - 不输出 `icp_enabled=true`
+        - 结果正确
+
+    - 13.5 optimizer_trace 验收
+      - 使用表
+        - `t_trace_case`
+      - 使用索引
+        - `idx_a(a)`
+        - `idx_abc(a,b,c)`
+      - 触发 SQL
+        - `SELECT * FROM t_trace_case WHERE a = 4 AND c = 6`
+      - 预期结果
+        - 输出 `icp_filter_effect`
+        - 合法有收益时输出 `icp_enabled=true`
+        - 合法有收益时输出 `icp_cost`
+        - trace 与 EXPLAIN 结果一致
+
+  - 14. 用例编写模板
+    - 用例名称
+      - 描述大场景和小场景
+    - 测试目标
+      - 验证哪个入口或哪个限制条件
+    - 前置条件
+      - optimizer_switch 设置
+      - optimizer 模式
+      - 存储引擎
+      - 表结构
+      - 索引结构
+      - 数据分布
+    - 执行 SQL
+      - 对照 SQL
+      - 开启特性 SQL
+    - 观察点
+      - EXPLAIN
+      - EXPLAIN ANALYZE
+      - optimizer_trace
+      - Handler read 计数
+      - 结果集
+      - 影响行数
+      - 触发器审计表
+    - 预期结果
+      - 是否进入 ICP cost
+      - 是否选择目标索引
+      - 是否出现 index condition
+      - cost 是否符合预期
+      - 是否命中 50% cap
+      - 结果是否一致
+      - 性能是否改善或不退化

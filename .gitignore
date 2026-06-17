@@ -1,0 +1,68 @@
+# OS and editor metadata
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.python-version
+.venv/
+venv/
+env/
+ENV/
+pip-wheel-metadata/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
+
+# Node / frontend
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.next/
+.nuxt/
+.svelte-kit/
+coverage/
+
+# Java / JVM / IDE output
+.gradle/
+target/
+out/
+dist/
+build/
+
+# Logs, databases, and runtime artifacts
+*.log
+*.sqlite
+*.sqlite3
+*.db
+*.pid
+tmp/
+temp/
+
+# Large generated artifacts
+artifacts/
+outputs/
+downloads/

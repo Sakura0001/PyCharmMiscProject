@@ -1,0 +1,160 @@
+一个或多个GFB汇聚成某个SLB可能超过2M，不满足原子性。在组织slice flush session过程中，将会检查将组装的SLB是否超过2M，若是直接crash不写入slice。但是这时redo 可能已经写入到pwal了（因为写入PWAL与解析并行发生），crash重新拉起之后又会重放这些日志，造成反复crash。后续只能通过备份恢复执行恢复实例，恢复时间长，存在数据丢失的问题。
+
+故需要支持Large SLB(超过2M)的原子性，由SALSQL模块支持。(DFV无法支持，因为需要经过Xnet网络，其超过2M会将PlogClient直接卡住)。
+
+目前的方案只针对redo组装成SLB后 > 2M的场景，如果单个redo就超过2M，需要进一步设计适配。
+针对redo组装成SLB后 > 2M的场景，如果单个redo就超过2M，需要进一步设计适配
+
+## 方案
+1. 在大GFB解析过程中，当构建page_map_t时，检查并处理超过2MB的COMPACT记录，将其拆分为单独的COMPACT记录。属于同一页面ID的每个单独COMPACT记录，都具有不同的记录segment number。
+2. 在创建每个切片的page_ref_map_t时，应按日志记录的递增记录-LSN顺序，对映射中的日志记录进行排序。
+3. 计算大GFB所需的TLB总数，并用其设置SyncMsgSliceManager中的TLB完成跟踪SyncMsgSliceManager（以便正确生成SYNC_MSG_SLICE消息并推进CV-LSN））
+4. 将大SLB中的每个拆分SLB填充到SLB中，并将其刷到Slice Store。重复此操作，直到所有拆分SLB都已flush。
+5. 重做日志缓冲区只有在所有SLB（包括拆分SLB）都已复制到TLB之后，才能释放回SQL层。
+6. Slice-flush completion handler或LSN-Watcher线程仅在安全边界处推进切片的持久化LSN（即拆分SLB的尾部endLSN）。
+7. 只有在所有TLB（包括拆分SLB的TLB）成功刷新到Slice Store之后，才能生成/发送SYNC_MSG_SLICE消息并推进CV-LSN。
+
+## 关键设计问题
+拆分SLB会导致1个问题，相关LSN处于unsafeLsn——unsafe指LSN可以前进到一个非MTR边界（即非尾部split-SLB）的值。
+主要体现在以下2个方面：
+1. Slice Store中存在页面不在GFB边界上
+2. SAL-SQL Slice Manager不在GFB边界上
+
+- unsafeLsn
+  切片管理器中持久化的LSN切片仅在安全的MTR边界处才会推进。因此，在每个 Slice flush session中都添加了一个不安全的页面保护机制（SliceFlushSession::m_lsnGuard）。
+  其会跟踪所有来自非尾部拆分TLB的大SLB中的unsafe LSN。在此类TLB成功刷到slice之前，其endLSN会被添加到保护机制中。
+  在 Slice Manager 中更新 persistLSN 之前，必须检查m_lsnGuard，以确保该LSN不存在于其中。一旦新的safe persist LSN 在 Slice Manager 中更新完成，所有不安全的 LSN（小于等于该持久化 LSN 的）都会被删除。这一操作在slice flush completion handler 和 LSN-Watcher 中都会执行。
+
+## 模块交互场景
+- 只读实例
+  通过控制SYNC_MSG_SLICE的发送时机，即可确保获取到safe的CV-LSN
+- 各种lsn推进
+  recycle lsn 和release lsn依赖于CV-LSN，因此safe
+- failover
+  倒换过程中可以需要确保lsn正常
+- CR
+  恢复的起始点LSN是基于CV-LSNs计算的，而CV-LSNs始终位于GFB的边界上。现有的逻辑已经处理了所有这些情况，因此不需要进行任何更改。
+- 补洞
+  Slice Store 会根据served LSN计算出空洞，空洞可以按 split-SLB 级别进行填充。
+## 历史已知问题：
+- watchPersistLsn问题
+
+## 数据结构
+- GroupFlushLogHarvester
+  - 维护GFB 对应的TLB个数； 之前是1个GFB拆分归属于1个Slice的只有1个TLB；
+
+- space_page_key
+  - 新增成员 compSeg, 表示拆分的编号，从0开始；
+
+- space_page_value
+  - 新增成员sealed，0表示没有满，其它值表示已经满了；
+  - Head Segment的 sealed值，还表示当前活跃的segment编号；
+
+- class SliceUnsafeLsns
+  - std::unordered_set<sal_lsn_t> m_unsafeLSNs;
+ 
+
+## 流程
+1. GFB Parsing
+  sal_scan_redo_log_buffer
+  1）确定日志记录的大小，包括每条记录的元数据（RECORD_LSN_SIZE + SLICE_LOG_RECORD_FOOTER_SIZE）和每 SLB 的元数据（PACK_HEADER_SIZE + SLB_HEADER_SIZE + SLB_FOOTER_SIZE）以及为“Intel Disk”优化预留的填充空间。每一条重做日志记录（包括所有元数据）都必须能够放入最大 2MB 的大小中。
+  2）在构建log record map 条目时，对于具有相同 page-ID 的日志记录，如果它们的大小（包括所有元数据的大小）不超过 2 MB 的限制（如现有逻辑中的处理方式），则将它们分组到map的同一条目中（key=space_page_key, value=space_page_value））。然而，如果将下一个日志记录打包会导致超过最大大小限制，则应seal当前map条目，并创建一个新的条目（在 key 中使用新的段编号，更多细节见下文））用于该日志记录。
+
+   为了支持在同一GFB中拆分COMPACT日志记录，主日志记录映射中的键对象space_page_key被修改为包含一个名为compSeg的字段，该字段表示COMPACT日志记录的段号。拆分的COMPACT日志类型在记录映射中具有多个条目，每个条目具有不同的段号。段号从0开始（称为head segment），每当当前活动段被seal时，段号就递增1，并且创建一个新的段。
+   对log record map的值对象space_page_value也进行了更改，新增一个名为sealed的新字段。该字段用于指示COMPACT日志记录的space_page_value对象是否已密封。"Sealed"表示该对象已满（基于最大TLB大小为2MB）），无法在其中再容纳更多的重做日志记录。在这种情况下，需要创建一个新的COMPACT日志记录，该记录包含一个新的段（即一个更大的space_page_key::compSeg值））。
+   大型COMPACT日志记录的第一个段也被称为头段（head segment）。对于头段而言，sealed=0表示该段尚未密封（可以容纳更多的日志记录）），而一个非零值则表示该头段已被密封，且该实际值表示当前应该用于容纳重做日志记录的最新（活跃）段号（这样逻辑代码就可以始终从该头段中获取当前活跃的段号））。对于非头段而言，sealed=0同样表示该段尚未密封（可以容纳更多的日志记录）），而一个非零值则表示该段已被密封，且该实际值必须与其自身的段号相匹配。
+
+2. Mapping page log records to Slice
+   mapPagesToSlices
+
+   1）对GFB解析阶段输出的log record map进行处理。对于map中的每个条目，都会从page-id中查找目标slice的id，并将其放入对应slice的page_ref_map_t中。在该特性实现之前，该map是无序的；而通过该特性，该map按照LSN的递增顺序进行排序。这样可以确保从大SLB中拆分出来的SLB不会存在重叠的LSN范围。
+
+   2）此外，对于map中的每条日志，都会计算到目前为止累积的日志是否能够放入TLB中。如果超过了最大TLB大小，GroupFlushLogHarvester会设置一个标志，以指示存在SLB拆分的情况。如果未设置该标志，则允许GFB收集器在计算GFB的总TLB数量时，执行“快速路径”处理。这将最大限度地减少在没有发生任何拆分的情况下对性能的影响。
+
+3. SLB/TLB 生成
+   fillSliceFragment
+   1）在fillSliceFragment中，首先检查剩余的总 SLB 大小是否能够放入单个 TLB（大小为slice_tlb_size，最大2MB）中。它考虑了所有每条记录和每 SLB 的元数据大小，以及“Intel 磁盘”填充大小。如果 SLB 不能放入 TLB，并且当前 TLB 中包含来自之前 SLB 的数据，则首先会刷TLB。之后，会从堆中动态分配一个临时的TLB。
+   2）类似于之前的逻辑，我们循环遍历锚定在slice的PMP上的log record，并将其复制到TLB。复制记录后，它将从map中删除。在复制log record之前，我们会确定当前的TLB是否有足够的空间来保存它。如果没有足够的空间，则flush当前的TLB，但PMP不会从切片刷新会话的PMP列表中删除，因为它仍然有待处理的日志记录。PMP中记录了已经被消耗（即复制）的日志量，以便在稍后再次fillSliceFragment时，可以继续处理。此外，对于具有split-TLB的大型SLB，在所有日志被消费并复制到split-TLB之前，redo log buffer 不能返回到SQL层。
+
+4. 备机通信
+  生成/发送 SYNC_MSG_SLICE 的机制，以及 CV-LSN 的推进，均依赖于 GFB 所属所有 TLB 的 async-flush completion完成。此外，至少一个 slice store replica 可以一直服务到 GFB 的结束 LSN，而没有任何间隙。
+  在该特性出现之前，由于每个 MTR 必须能够放入单个 TLB 中，并且 GFB 针对每个目标 slice 而言，最多只能拥有一个 TLB，因此 GFB 所属所有 TLB 的总数，就简单地等于 GFB 所触及的目标 slice 的数量。
+  然而，随着对LargeSLB 的支持，我们需要考虑目标 slice 中的 split-SLBs，并且采用不同的方法，计算出 GFB 所需的 TLB 的总数，以防止过早地生成/发送 SYNC_MSG_SLICE，过早地推进 SQL Replica 的 CV-LSN。
+  对于一个大型GFB而言，每个拆分的TLB都会根据该TLB的endLSN，在SyncMsgSliceManager中添加到同一个GFB下。
+  从实现的角度来看，在SYNC_MSG_SLICE生成/发送机制（SyncMsgSliceManager和GFB_info））或CV-LSN推进机制中，不需要进行任何代码更改。这是因为SyncMsgSliceManager和CLP会以完全相同的方式处理拆分的TLB。检查GFB
+所依赖的TLB是否完成处理的触发点也没有改变。
+ 
+## 观测手段
+* 内核提供日志和perfcounter指标，可明确观测到large slb已通过的手段；
+
+large_mtr   触发large_mtr的次数
+large_mtr_size  large_mtr的大小 
+enable_large_slb
+ 支持超过2MB的SLB写入	 否	 否	0,1
+sal_tlb_max_size	 单个tlb的大小上限	 否	 否	64KB-2MB
+
+## 自测试设计
+### 端到端测试
+模拟“大MTR”场景
+1. 可以将innodb_log_write_max_size、innodb_log_write_min_time_interval、innodb_log_write_min_size设置为大值。
+2. 可以将slice_tlb_size, slice_flush_size_threshold, slice_tlb_size_max设置为小值
+slice_tlb_size <= slice_tlb_size_max, slice_flush_size_threshold<= slice_tlb_size_max
+ 
+slice_tlb_size                               4KB-2MB
+slice_flush_size_threshold           4KB-2MB
+slice_tlb_size_max                       64KB-2MB
+ 
+只读节点
+1. 观察查询正确性
+2. 观察lsn推进情况
+ 
+### UT
+构造LargeSLB，覆盖拆分SLB场景；行覆盖率95%，分支覆盖率85%以上。
+
+- SQL 主从副本回归/可靠性测试，确保 CV-LSN 的推进以及从 GFB 边界读取页面的功能仍然正常 
+- 切片存储（Slice Store）的gossip测试：模拟缺失的“split-SLB”（属于大型GFB/MTR的一部分），以确认切片存储/dfv gossip协议能够正确填充这些缺失的split-SLB。
+ 
+序号
+
+No
+
+用例场景
+
+Test cases
+
+前置条件
+
+Preconditions
+
+测试步骤
+
+Test steps
+
+预期结果
+
+Test expected results
+
+1	异常后进行版本替换能正常拉起	
+sysbench标准模型表，导入数据
+
+sysbench支持执行写操作，taurus内核运行正常
+
+1. 配置innodb_log_write_max_size、innodb_log_write_min_time_interval、innodb_log_write_min_size设置为大值
+2. 触发异常后，进行版本替换
+1. 版本替换后正常拉起
+2	enable_large_slb开启前后对比	
+sysbench标准模型表，导入数据
+
+sysbench支持执行写操作，taurus内核运行正常
+1. enable_large_slb = 0，
+sal_tlb_max_size设置为小值
+2. 异常后设置enable_large_slb = 1
+2. enable_large_slb = 1后正常拉起
+3	 长稳测试	
+ 
+
+sysbench标准模型表，导入数据
+
+sysbench支持执行写操作，taurus内核运行正常
+ 持续读写操作
+ 正常执行，不会crash，结果符合预期

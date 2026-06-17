@@ -1,0 +1,4 @@
+interface:
+  display_name: "Regress Output Script Style"
+  short_description: "Normalize SQL regress cases"
+  default_prompt: "Use $regress-output-script-style to normalize SQL regress file names and object names."

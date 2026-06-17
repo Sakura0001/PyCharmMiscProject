@@ -1,0 +1,1522 @@
+# [CREATE TABLE](https://www.postgresql.org/docs/current/sql-createtable.html)
+create_table:
+    CREATE TABLE if_not_exist? _new_table_name (wide_new_columns table_constraint*) table_option*
+    | CREATE temporary? TABLE if_not_exist? _new_table_name (wide_new_columns table_constraint*) table_option*
+    @disable-oracle write_guard, transaction_verifier
+    | CREATE UNLOGGED? TABLE if_not_exist? _new_table_name (wide_new_columns table_constraint*) table_option*
+    | create_partitioned_table_variant
+    | create_table_partition_variant
+    | create_table_like_variant
+    | create_table_as_variant
+    | create_table_with_variant
+    | create_temp_table_on_commit_variant
+
+create_ppp:
+    create_partitioned_table_variant
+
+create_partitioned_table_variant:
+    CREATE TABLE if_not_exist? _new_table_name (partition_key1_column partition_payload_column*) PARTITION BY RANGE (partition_key1)
+    | CREATE TABLE if_not_exist? _new_table_name (partition_key1_column partition_key2_column partition_payload_column*) PARTITION BY RANGE (partition_key1, partition_key2)
+    | CREATE TABLE if_not_exist? _new_table_name (partition_key1_column partition_key2_column partition_payload_column*) PARTITION BY RANGE ((partition_key1 + partition_key2))
+    | CREATE TABLE if_not_exist? _new_table_name (partition_key1_column partition_payload_column*) PARTITION BY LIST (partition_key1)
+    | CREATE TABLE if_not_exist? _new_table_name (partition_key1_column partition_payload_column*) PARTITION BY HASH (partition_key1)
+    | CREATE TABLE if_not_exist? _new_table_name (partition_key1_column partition_key2_column partition_payload_column*) PARTITION BY HASH (partition_key1, partition_key2)
+
+partition_key1_column:
+    partition_key1 INT NOT NULL
+
+partition_key2_column:
+    , partition_key2 INT NOT NULL
+
+partition_payload_column:
+    , _new_column_name type_name
+
+create_table_partition:
+    create_table_partition_variant
+
+create_table_partition_variant:
+    CREATE TABLE if_not_exist? _new_table_name PARTITION OF _partitioned_table_for_new_partition _new_partition_bound
+
+create_table_like:
+    create_table_like_variant
+
+create_table_like_variant:
+    CREATE TABLE if_not_exist? _new_table_name (LIKE _table INCLUDING ALL)
+    | CREATE TABLE if_not_exist? _new_table_name (LIKE _table INCLUDING DEFAULTS INCLUDING CONSTRAINTS)
+    | CREATE TABLE if_not_exist? _new_table_name (LIKE _table EXCLUDING DEFAULTS EXCLUDING INDEXES)
+
+create_table_as:
+    create_table_as_variant
+
+create_table_as_variant:
+    CREATE TABLE if_not_exist? _new_table_name AS SELECT * FROM _table LIMIT 3
+
+create_table_with:
+    create_table_with_variant
+
+create_table_with_variant:
+    CREATE TABLE if_not_exist? _new_table_name (wide_new_columns table_constraint*) WITH (fillfactor = 70)
+    | CREATE TABLE if_not_exist? _new_table_name (wide_new_columns table_constraint*) WITH (autovacuum_enabled = true)
+
+create_temp_table_on_commit:
+    create_temp_table_on_commit_variant
+
+create_temp_table_on_commit_variant:
+    CREATE TEMP TABLE if_not_exist? _new_table_name (wide_new_columns table_constraint*) ON COMMIT PRESERVE ROWS
+    | CREATE TEMP TABLE if_not_exist? _new_table_name (wide_new_columns table_constraint*) ON COMMIT DELETE ROWS
+
+temporary:
+    TEMP
+    | TEMPORARY
+
+if_not_exist:
+    IF NOT EXISTS
+
+first_new_column:
+    new_column
+
+wide_new_columns:
+    new_column
+    more_new_column
+    more_new_column
+    more_new_column
+    more_new_column
+    more_new_column
+    more_new_column
+    more_new_column
+    more_new_column?
+    more_new_column?
+    more_new_column?
+    more_new_column?
+    more_new_column?
+    more_new_column?
+    more_new_column?
+
+new_column_more:
+    , new_column
+
+new_column:
+    _new_column_name type_name column_constraint? column_constraint?
+
+more_new_column:
+    , new_column
+
+type_name:
+    INT
+    | INTEGER
+    | SMALLINT
+    | BIGINT
+    | SERIAL
+    | BIGSERIAL
+    | SMALLSERIAL
+    | BOOLEAN
+    | TEXT
+    | _varchar_type
+    | _char_type
+    | DECIMAL
+    | _decimal_type
+    | NUMERIC
+    | _numeric_type
+    | FLOAT
+    | REAL
+    | int4range
+    | MONEY
+    | BIT
+    | _bit_type
+    | _varbit_type
+    | INET
+    | CIDR
+    | MACADDR
+    | MACADDR8
+    | BYTEA
+    | DATE
+    | TIME
+    | TIMETZ
+    | TIMESTAMP
+    | TIMESTAMPTZ
+    | INTERVAL
+    | UUID
+    | JSON
+    | JSONB
+    | XML
+    | _array_type
+
+column_constraint:
+    PRIMARY KEY
+    @disable-query {PRIMARY KEY.*PRIMARY KEY}                   # Cannot add two primary keys for a table
+    | NOT NULL
+    @disable-query {NULL NOT NULL}                              # Cannot add not null and null constraint for a column
+    | NULL
+    @disable-query {NOT NULL NULL}                              # Cannot add not null and null constraint for a column
+    | UNIQUE
+    | check_expr
+    | default_expr?
+    | generated_constraint          @disable-query{c\d+\s}
+
+check_expr:
+    CHECK(TRUE)
+
+default_expr:
+    DEFAULT (numerical_expr)
+
+generated_constraint:
+    GENERATED ALWAYS AS (numerical_expr) STORED
+    | GENERATED ALWAYS AS IDENTITY
+    | GENERATED BY DEFAULT AS IDENTITY
+
+table_constraint:
+    , table_constraint_content
+
+table_constraint_content:
+    primary_key_table_constraint
+    @disable-query {PRIMARY KEY.*PRIMARY KEY}               # Cannot add two primary keys for a table
+    | UNIQUE (_distinct_column more_distinct_column? more_distinct_column?)
+    | FOREIGN KEY (_column) foreign_key_clause
+
+primary_key_table_constraint:
+    PRIMARY KEY (_distinct_column more_distinct_column? more_distinct_column?)
+
+more_distinct_column:
+    , _distinct_column
+
+foreign_key_clause:
+    REFERENCES _reference_table match_action? reference_action?
+
+match_action:
+    MATCH FULL
+    | MATCH PARTIAL
+    | MATCH SIMPLE
+
+reference_action:
+    ON DELETE reference_control_type
+    | ON UPDATE reference_control_type
+
+reference_control_type:
+    RESTRICT
+    | CASCADE
+    | SET NULL
+    | NO ACTION
+    | SET DEFAULT
+
+table_option:
+    INHERITS ( _table_without_temp )
+    # | PARTITION BY partition_option ( _column )
+    | using_access_method
+
+partition_option:
+    RANGE
+    | LIST
+    | HASH
+
+using_access_method:
+    USING _access_method    @disable-query {PARTITION BY} # does not allow specifying USING clause for partitioned tables
+
+expr:
+    _column
+    @disable-symbol alter_table
+    | bool_expr
+    | numerical_expr
+    | bit_expr
+    | varchar_expr
+    | date_expr
+    | column_expr
+
+exprs:
+    , expr
+
+column_expr:
+    _column binary_arithmetic_op _column
+    | arithmetic_prefix _column
+    | _column binary_logical_op _column
+
+bool_expr:
+    (expr) {print("::")} BOOLEAN
+    | in_expr
+    | between
+    | (bool_expr) binary_logical_op (bool_expr)
+    | TRUE
+    | FALSE
+    | NOT(bool_expr)
+    | ((expr) IS NULL)
+    | ((expr) IS NOT NULL)
+    | (numerical_expr) binary_comparison_op (numerical_expr)
+    | (varchar_expr) NOT? LIKE (varchar_expr)
+    | (varchar_expr) regex_match_op regex_literal
+    | jsonb_literal json_containment_op jsonb_literal
+    | jsonb_literal json_existence_op json_key_literal
+    | jsonb_literal json_multi_existence_op json_text_array_literal
+    | range_literal range_comparison_op range_literal
+    | (range_literal range_set_op range_literal) IS NOT NULL
+    | isempty(range_literal)
+    | lower_inc(range_literal)
+    | upper_inc(range_literal)
+    | isfinite(date_expr)
+
+in_expr:
+    ((expr) NOT? IN (expr exprs*))
+
+between:
+    (numerical_expr NOT? BETWEEN numerical_expr AND numerical_expr)
+
+binary_logical_op:
+    AND
+    | OR
+    | binary_equal_op
+
+binary_comparison_op:
+    <
+    | <=
+    | >
+    | {print("=")}
+    | NOT? SIMILAR TO
+
+binary_equal_op:
+    !=
+
+regex_match_op:
+    {print("~")}
+    | {print("~*")}
+    | {print("!~")}
+    | {print("!~*")}
+
+regex_literal:
+    {print("'^[[:alnum:]_ -]*$'")}
+
+json_literal:
+    {print("'{}'::json")}
+
+jsonb_literal:
+    {print("'{}'::jsonb")}
+
+json_array_literal:
+    {print("'[1,2,3]'::json")}
+
+jsonb_array_literal:
+    {print("'[1,2,3]'::jsonb")}
+
+json_key_literal:
+    {print("'value'")}
+
+json_path_literal:
+    {print("'{value}'")}
+
+json_text_array_literal:
+    {print("ARRAY['value','missing']")}
+
+json_containment_op:
+    {print("@>")}
+    | {print("<@")}
+
+json_existence_op:
+    {print("?")}
+
+json_multi_existence_op:
+    {print("?|")}
+    | {print("?&")}
+
+range_literal:
+    {print("'[1,10)'::int4range")}
+    | {print("'empty'::int4range")}
+
+range_comparison_op:
+    {print("@>")}
+    | {print("<@")}
+    | {print("&&")}
+    | {print("<<")}
+    | {print(">>")}
+    | {print("&<")}
+    | {print(">&")}
+    | {print("-|-")}
+
+range_set_op:
+    {print("+")}
+    | {print("*")}
+    | {print("-")}
+
+numerical_expr:
+    int_expr
+    | float_expr
+    | double_expr
+    | _digit
+    | (numerical_expr) binary_arithmetic_op (numerical_expr)
+    | (arithmetic_prefix(numerical_expr))
+    | numerical_funcs
+
+numerical_exprs:
+    , numerical_expr
+
+int_expr:
+    _int8
+    | _int8_unsigned
+    | (expr) {print("::")} int_type
+
+int_type:
+    INT
+    | BIGINT
+    | INTEGER
+    | SMALLINT
+    | INT2
+    | INT4
+    | INT8
+
+binary_arithmetic_op:
+    {print("+")}
+    | {print("-")}
+    | {print("*")}
+    | {print("/")}
+    | {print("%")}
+    | {print("^")}
+
+float_expr:
+    (expr) {print("::")} FLOAT
+    | _float
+    | _float_unsigned
+
+double_expr:
+    _double
+    | _double_unsigned
+
+arithmetic_prefix:
+    {print("+")}
+    | {print("-")}
+
+numerical_bitwise_expr:
+    (numerical_expr) binary_bitwise_op (numerical_expr)
+    | {print("~")} (numerical_expr)
+
+binary_bitwise_op:
+    {print("|")}
+    | {print("&")}
+    | {print("<<")}
+    | {print(">>")}
+
+bit_expr:
+    (expr) {print("::")} BIT
+    | bit_string
+    | (bit_string) binary_bitwise_op (int_expr)
+    | {print("~")} (bit_string)
+
+bit_string:
+    {print("'")}bit_value+{print("' :: BIT")}
+
+bit_strings:
+    , bit_string
+
+bit_value:
+    1
+    | 0
+
+bitstring:
+    b'00101'
+    | b'00001'
+    | b'0'
+    | b'1'
+
+numerical_funcs:
+    abs(numerical_expr)
+    | bit_length(bit_string)
+    | bit_count(bit_string)
+    | position({print("'1'::")} BIT,bit_string)
+    | get_bit(bit_string,0)
+    | length(bit_string)
+    | octet_length(bit_string)
+    | acos(numerical_expr)
+    | asin(numerical_expr)
+    | atan(numerical_expr)
+    | atan2(numerical_expr, numerical_expr)
+    | bit_count(numerical_expr)
+    | cbrt(numerical_expr)
+    | ceil(numerical_expr)
+    | ceiling(numerical_expr)
+    | cos(numerical_expr)
+    | cot(numerical_expr)
+    | degrees(numerical_expr)
+    | even(numerical_expr)
+    | exp(numerical_expr)
+    | factorial(numerical_expr)
+    | floor(numerical_expr)
+    | gamma(numerical_expr)
+    | gcd(numerical_expr, numerical_expr)
+    | greatest(numerical_expr numerical_exprs*)
+    | isinf(numerical_expr)
+    | isnan(numerical_expr)
+    | lcm(numerical_expr, numerical_expr)
+    | least_common_multiple(numerical_expr, numerical_expr)
+    | least(numerical_expr numerical_exprs*)
+    | lgamma(numerical_expr)
+    | ln(numerical_expr)
+    | log(numerical_expr)
+    | log2(numerical_expr)
+    | log10(numerical_expr)
+    | nextafter(numerical_expr, numerical_expr)
+    | pi()
+    | pow(numerical_expr, numerical_expr)
+    | power(numerical_expr, numerical_expr)
+    | radians(numerical_expr)
+    | random()    @disable-oracle equation
+    | round(numerical_expr, int_expr)
+    | setseed(numerical_expr)
+    | sin(numerical_expr)
+    | sign(numerical_expr)
+    | signbit(numerical_expr)
+    | sqrt(numerical_expr)
+    | xor(numerical_expr)
+    | tan(numerical_expr)
+    | @(numerical_expr)
+    | date_part(date_element,date_expr)
+    | acosd(0.5)
+    | asind(0.5)
+    | atand(0.5)
+    | atan2d(1, 1)
+    | cosd(45)
+    | cotd(45)
+    | sind(45)
+    | tand(45)
+    | sinh(1)
+    | cosh(1)
+    | tanh(1)
+    | asinh(1)
+    | acosh(2)
+    | atanh(0.5)
+    | ascii('a')
+    | strpos(varchar_expr, 'a')
+    | masklen(inet_literal)
+    | family(inet_literal)
+    | get_byte(convert_to('abc', 'UTF8'), 0)
+    | inet_same_family(inet_literal, inet_literal)
+    | pg_backend_pid()
+    | pg_trigger_depth()
+    | inet_client_port()
+    | pg_is_other_temp_schema(0)
+    | pg_jit_available()
+    | pg_notification_queue_usage()
+    | json_array_length(json_array_literal)
+    | jsonb_array_length(jsonb_array_literal)
+    | array_length(int_array_literal, 1)
+    | cardinality(int_array_literal)
+    | lower(range_literal)
+    | upper(range_literal)
+    | lower_inf(range_literal)
+    | upper_inf(range_literal)
+
+varchar_expr:
+    (expr) {print("::")} VARCHAR
+    | _text
+    | _char
+    | collate
+    | varchar_funcs
+
+collate:
+    varchar_expr collation
+
+collation:
+    COLLATE C
+    | COLLATE POSIX
+
+varchar_funcs:
+    lower(varchar_expr)
+    | upper(varchar_expr)
+    | initcap(varchar_expr)
+    | btrim(varchar_expr)
+    | rtrim(varchar_expr)
+    | chr(65)
+    | left(varchar_expr, 3)
+    | right(varchar_expr, 3)
+    | lpad(varchar_expr, 5, 'x')
+    | rpad(varchar_expr, 5, 'x')
+    | substr(varchar_expr, 1, 3)
+    | split_part(varchar_expr, 'a', 1)
+    | to_hex(255)
+    | md5(varchar_expr)
+    | quote_literal(varchar_expr)
+    | quote_ident('identifier')
+    | to_ascii('abc', 'LATIN1')
+    | translate(varchar_expr, 'abc', 'xyz')
+    | to_char(CURRENT_TIMESTAMP, 'YYYY-MM-DD')
+    | convert_from(convert_to(varchar_expr, 'UTF8'), 'UTF8')
+    | replace(varchar_expr, 'a', 'b')
+    | regexp_replace(varchar_expr, regex_literal, 'x')
+    | reverse(varchar_expr)
+    | current_database()
+    | current_schema()
+    | version()
+    | abbrev(inet_literal)
+    | broadcast(inet_literal) {print("::text")}
+    | host(inet_literal)
+    | hostmask(inet_literal) {print("::text")}
+    | netmask(inet_literal) {print("::text")}
+    | set_masklen(inet_literal, 24) {print("::text")}
+    | text(inet_literal)
+    | json_typeof(json_literal)
+    | jsonb_typeof(jsonb_literal)
+    | jsonb_pretty(jsonb_literal)
+    | jsonb_strip_nulls(jsonb_literal) {print("::text")}
+    | (jsonb_literal {print("->")} json_key_literal) {print("::text")}
+    | (jsonb_literal {print("->>")} json_key_literal)
+    | (jsonb_literal {print("#>")} json_path_literal) {print("::text")}
+    | (jsonb_literal {print("#>>")} json_path_literal)
+    | range_merge(range_literal, range_literal) {print("::text")}
+    | int_array_literal {print("::text")}
+    | array_append(int_array_literal, 4) {print("::text")}
+    | array_cat(int_array_literal, int_array_literal) {print("::text")}
+    | array_position(int_array_literal, 2) {print("::text")}
+    | array_positions(int_array_literal, 2) {print("::text")}
+    | int_array_literal {print("[1]::text")}
+
+inet_literal:
+    {print("'10.0.0.1'::inet")}
+
+int_array_literal:
+    ARRAY[1,2,3]
+    | ARRAY[[1,2],[3,4]]
+
+date_expr:
+    _date
+    | _time
+    | _datetime
+    | _timestamp
+    | (expr) {print("::")} DATE
+    | CURRENT_TIME              @disable-symbol generated_constraint, create_index
+                                @disable-oracle equation
+    | CURRENT_DATE              @disable-symbol generated_constraint, create_index
+                                @disable-oracle equation
+    | CURRENT_TIMESTAMP         @disable-symbol generated_constraint, create_index
+                                @disable-oracle equation
+    | date_funcs
+    | date_expr {print("+")} int_expr
+    | date_expr {print("-")} date_expr
+
+date_funcs:
+     current_date    @disable-oracle equation
+    | date_trunc(date_element, date_expr)
+    | datetrunc(date_element, date_expr)
+    | extract(date_element FROM DATE date_expr)
+    | greatest(date_expr, date_expr)
+    | last_day(date_expr)
+    | least(date_expr, date_expr)
+    | make_date(_year {print("::")} BIGINT, _month {print("::")} BIGINT, _day {print("::")} BIGINT)
+
+date_element:
+    {print("'year'")}
+    | {print("'month'")}
+    | {print("'day'")}
+    | {print("'century'")}
+    | {print("'hour'")}
+
+# https://www.postgresql.org/docs/current/functions-conditional.html
+case:
+    CASE expr? WHEN expr THEN expr ELSE expr END
+
+# https://www.postgresql.org/docs/current/sql-expressions.html#SQL-SYNTAX-TYPE-CASTS
+casting:
+    CAST (expr AS type_name)
+    | expr {print("::")} type_name
+
+# https://www.postgresql.org/docs/16/sql-createindex.html
+# CREATE INDEX
+create_index:
+    CREATE UNIQUE? INDEX _new_index_name ON ONLY? _table index_type? (index_table_column) include? where_clause?
+
+create_expression_index:
+    CREATE INDEX _new_index_name ON _table (((_column) {print("::")} TEXT))
+    | CREATE INDEX _new_index_name ON _text_index_table (lower((_text_index_column) {print("::")} TEXT))
+
+create_brin_index:
+    CREATE INDEX _new_index_name ON _brin_index_table USING BRIN (_brin_index_column)
+
+create_spgist_index:
+    CREATE INDEX _new_index_name ON _spgist_index_table USING SPGIST (_spgist_index_column)
+
+create_opclass_index:
+    CREATE INDEX _new_index_name ON _text_index_table (_text_index_column text_pattern_ops)
+
+create_unique_nulls_index:
+    CREATE UNIQUE INDEX _new_index_name ON _table_with_primary_key (_primary_key_column) NULLS NOT DISTINCT
+
+index_type:
+    USING BTREE
+    | USING HASH
+    @disable-query {UNIQUE.*USING HASH}     # access method "hash" does not support unique indexes
+    | USING GIST
+    @disable-query {UNIQUE.*USING GIST}     # access method "giST" does not support unique indexes
+    | USING GIN
+    @disable-query {UNIQUE.*USING GIN}      # access method "gin" does not support unique indexes
+
+index_table_column:
+    indexed_column
+    | indexed_column
+    | indexed_column indexed_column_more*
+    @disable-query{USING HASH.*,}           # access method "hash" does not support multicolumn
+
+indexed_column:
+    _distinct_column order_option?
+
+order_option:
+    ASC
+    @disable-query{USING HASH.*ASC}         # access method "hash" does not support ASC/DESC options
+    | DESC
+    @disable-query{USING HASH.*DESC}        # access method "hash" does not support ASC/DESC options
+    | NULLS FIRST
+    @disable-query{USING HASH.*NULLS FIRST} # access method "hash" does not support NULLS FIRST/LAST options
+    | NULLS LAST
+    @disable-query{USING HASH.*NULLS LAST}  # access method "hash" does not support NULLS FIRST/LAST options
+
+indexed_column_more:
+    , indexed_column
+
+include:
+    INCLUDE(_distinct_column more_distinct_column? more_distinct_column?)
+    @disable-query {HASH.*INCLUDE}          # access method "hash" does not support included columns
+    @disable-query {GIN.*INCLUDE}           # access method "gin" does not support included columns
+    @disable-query {SPGIST.*INCLUDE}        # access method "SP-GiST" does not support included columns
+    @disable-query {BRIN.*INCLUDE}          # access method "BRIN" does not support included columns
+
+where_clause:
+    WHERE bool_expr
+
+
+# https://www.postgresql.org/docs/current/sql-reindex.html
+# REINDEX
+reindex:
+    REINDEX reindex_option? INDEX _index            @disable-oracle equation
+    | REINDEX reindex_option? TABLE _table
+    | REINDEX reindex_option? DATABASE _database    @disable-oracle equation
+
+reindex_option:
+    (CONCURRENTLY)
+    | (VERBOSE)
+
+# https://www.postgresql.org/docs/16/sql-createview.html
+# CREATE VIEW
+create_view:
+    CREATE view_type? VIEW _new_view_name AS (simple_select) check_option?
+    @disable-oracle write_guard, transaction_verifier
+    | CREATE MATERIALIZED? VIEW _new_view_name AS (simple_select_without_temp) check_option?
+    @disable-oracle write_guard, transaction_verifier
+
+view_type:
+    OR REPLACE
+    | TEMP
+    | TEMPORARY
+    | RECURSIVE
+
+check_option:
+    WITH CASCADED CHECK OPTION
+    @disable-query {MATERIALIZED.*WITH CASCADED CHECK OPTION}
+    @disable-query {RECURSIVE.*WITH CASCADED CHECK OPTION}
+    | WITH LOCAL CHECK OPTION
+    @disable-query {MATERIALIZED.*WITH LOCAL CHECK OPTION}
+    @disable-query {RECURSIVE.*WITH LOCAL CHECK OPTION}
+
+# SHOW TABLES
+show_tables:
+    SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'
+
+# TRUNCATE TABLE
+truncate:
+    TRUNCATE TABLE _distinct_table more_table* identity? cascade_or_restrict?
+
+more_table:
+    , _distinct_table
+
+identity:
+    RESTART IDENTITY
+    | CONTINUE IDENTITY
+
+cascade_or_restrict:
+    CASCADE
+    | RESTRICT
+
+# DROP TABLE
+drop_table:
+    DROP TABLE if_exists? _table cascade_or_restrict?
+
+if_exists:
+    IF EXISTS
+
+# DROP INDEX
+drop_index:
+    DROP INDEX CONCURRENTLY? if_exists? _index RESTRICT?    # DROP INDEX CONCURRENTLY does not support CASCADE
+    | DROP INDEX if_exists? _index cascade_or_restrict?
+    | DROP INDEX if_exists? _index
+
+# DROP VIEW
+drop_view:
+    DROP VIEW if_exists? _view cascade_or_restrict?
+
+# REFRESH/DROP MATERIALIZED VIEW
+refresh_materialized_view:
+    REFRESH MATERIALIZED VIEW _materialized_view
+
+drop_materialized_view:
+    DROP MATERIALIZED VIEW if_exists? _materialized_view cascade_or_restrict?
+
+# ALTER TABLE
+alter_table:
+    ALTER TABLE ONLY? _table action action_more*
+
+alter_table_add_column:
+    ALTER TABLE ONLY? _table alter_table_add_column_action
+
+alter_table_drop_column:
+    ALTER TABLE ONLY? _table alter_table_drop_column_action
+
+alter_table_alter_column_type:
+    ALTER TABLE ONLY? _table alter_table_alter_column_type_action
+
+alter_table_alter_column_drop_default:
+    ALTER TABLE ONLY? _table alter_table_alter_column_drop_default_action
+
+alter_table_alter_column_set_default:
+    ALTER TABLE ONLY? _table alter_table_alter_column_set_default_action
+
+alter_table_alter_column_set_not_null:
+    ALTER TABLE ONLY? _table alter_table_alter_column_set_not_null_action
+
+alter_table_alter_column_drop_not_null:
+    ALTER TABLE ONLY? _table alter_table_alter_column_drop_not_null_action
+
+alter_table_set_column:
+    ALTER TABLE ONLY? _table alter_table_set_column_action
+
+alter_table_reset_column:
+    ALTER TABLE ONLY? _table alter_table_reset_column_action
+
+alter_table_alter_column_set_storage:
+    ALTER TABLE ONLY? _table alter_table_alter_column_set_storage_action
+
+alter_table_validate_constraint:
+    ALTER TABLE ONLY? _table_with_validatable_constraint VALIDATE CONSTRAINT _selected_table_validatable_constraint
+
+alter_table_rename_constraint:
+    ALTER TABLE ONLY? _table_with_constraint RENAME CONSTRAINT _selected_table_constraint TO _new_constraint_name
+
+alter_table_add_identity:
+    ALTER TABLE ONLY? _identity_column_table ALTER _identity_column ADD GENERATED BY DEFAULT AS IDENTITY
+
+alter_table_drop_identity:
+    ALTER TABLE ONLY? _table ALTER _column DROP IDENTITY IF EXISTS
+
+alter_table_add_unique_key:
+    ALTER TABLE ONLY? _table alter_table_add_unique_key_action
+
+alter_table_add_primary_key:
+    ALTER TABLE ONLY? _table alter_table_add_primary_key_action
+
+alter_table_add_foreign_key:
+    ALTER TABLE ONLY? _table alter_table_add_foreign_key_action
+
+alter_table_option:
+    ALTER TABLE ONLY? _table alter_table_option_action
+
+alter_table_rename_table:
+    ALTER TABLE _table RENAME TO _new_table_name
+
+alter_table_rename_column:
+    ALTER TABLE ONLY? _table RENAME COLUMN _column TO _new_column_name
+
+alter_table_change_column:
+    ALTER TABLE ONLY? _table RENAME COLUMN _column TO _new_column_name
+
+alter_table_modify_column:
+    ALTER TABLE ONLY? _table alter_table_alter_column_type_action
+
+alter_table_add_index:
+    CREATE INDEX _new_index_name ON _table (_distinct_column)
+
+alter_table_drop_index:
+    DROP INDEX _index
+
+alter_table_rename_index:
+    ALTER INDEX _index RENAME TO _new_index_name
+
+alter_table_drop_primary_key:
+    ALTER TABLE ONLY? _table_with_primary_key DROP CONSTRAINT _selected_table_primary_key_constraint
+
+alter_table_add_check:
+    ALTER TABLE ONLY? _table ADD CHECK (TRUE)
+
+alter_table_attach_partition:
+    ALTER TABLE _partitioned_table_without_default ATTACH PARTITION _detached_partition_candidate DEFAULT
+
+alter_table_attach_partition_for_values:
+    ALTER TABLE _partitioned_table_for_new_partition ATTACH PARTITION _detached_partition_candidate _new_partition_bound
+
+alter_table_detach_partition:
+    ALTER TABLE _partitioned_table_with_partitions DETACH PARTITION _partition_of_selected_table
+
+action:
+    alter_table_add_column_action
+    | alter_table_drop_column_action
+    | alter_table_alter_column_type_action
+    | alter_table_alter_column_drop_default_action
+    | alter_table_alter_column_set_default_action
+    | alter_table_alter_column_set_not_null_action
+    | alter_table_alter_column_drop_not_null_action
+    | alter_table_set_column_action
+    | alter_table_reset_column_action
+    | alter_table_alter_column_set_storage_action
+    | alter_table_validate_constraint_action
+    | alter_table_rename_constraint_action
+    | alter_table_add_identity_action
+    | alter_table_drop_identity_action
+    | alter_table_add_unique_key_action
+    | alter_table_add_primary_key_action
+    | alter_table_add_foreign_key_action
+    | alter_table_option_action
+    # | VALIDATE CONSTRAINT asdf    # constraint name
+
+alter_table_add_column_action:
+    ADD COLUMN? if_not_exists? _new_column_name INT
+
+alter_table_drop_column_action:
+    DROP if_exists? _drop_column cascade_or_restrict?
+
+alter_table_alter_column_type_action:
+    ALTER _column set_data? TYPE TEXT USING (_column) {print("::")} TEXT
+
+alter_table_alter_column_drop_default_action:
+    ALTER _column DROP DEFAULT
+
+alter_table_alter_column_set_default_action:
+    ALTER _column SET DEFAULT 0
+
+alter_table_alter_column_set_not_null_action:
+    ALTER _column SET NOT NULL
+
+alter_table_alter_column_drop_not_null_action:
+    ALTER _not_pk_column DROP NOT NULL
+
+alter_table_set_column_action:
+    ALTER _column SET STATISTICS _int8_unsigned
+    | ALTER _column SET(n_distinct_inherited = value)
+    | ALTER _column SET(n_distinct = value)
+    | ALTER _column SET(n_distinct_inherited = value, n_distinct = value)
+
+alter_table_reset_column_action:
+    ALTER _column RESET(n_distinct_inherited)
+    | ALTER _column RESET(n_distinct)
+    | ALTER _column RESET(n_distinct_inherited, n_distinct)
+
+alter_table_alter_column_set_storage_action:
+    ALTER _storage_column SET STORAGE storage
+
+alter_table_validate_constraint_action:
+    VALIDATE CONSTRAINT _selected_table_validatable_constraint
+
+alter_table_rename_constraint_action:
+    RENAME CONSTRAINT _selected_table_constraint TO _new_constraint_name
+
+alter_table_add_identity_action:
+    ALTER _identity_column ADD GENERATED BY DEFAULT AS IDENTITY
+
+alter_table_drop_identity_action:
+    ALTER _column DROP IDENTITY IF EXISTS
+
+alter_table_add_unique_key_action:
+    ADD CONSTRAINT _new_constraint_name UNIQUE USING INDEX _selected_table_unique_index
+
+alter_table_add_primary_key_action:
+    ADD CONSTRAINT _new_constraint_name PRIMARY KEY USING INDEX _selected_table_unique_not_null_index
+
+alter_table_add_foreign_key_action:
+    ADD FOREIGN KEY (_column) foreign_key_clause
+
+alter_table_option_action:
+    DISABLE ROW LEVEL SECURITY
+    | ENABLE ROW LEVEL SECURITY
+    | FORCE ROW LEVEL SECURITY
+    | NO FORCE ROW LEVEL SECURITY
+    | CLUSTER ON _selected_table_index
+    | SET WITHOUT CLUSTER
+    | SET LOGGED
+    | SET UNLOGGED
+    | OWNER TO CURRENT_USER
+    | OWNER TO SESSION_USER
+    | REPLICA IDENTITY DEFAULT
+    | REPLICA IDENTITY FULL
+    | REPLICA IDENTITY NOTHING
+    | REPLICA IDENTITY USING INDEX _selected_table_unique_not_null_index
+
+set_data:
+    SET DATA
+
+value:
+    { value = math.random(); print(value) }
+    | { value = -math.random(); print(value) }
+
+storage:
+    PLAIN
+    | EXTERNAL
+    | EXTENDED
+    | MAIN
+
+not_valid:
+    NOT VALID
+    @disable-query {PRIMARY KEY(?!.*, ADD CONSTRAINT.*NOT VALID).*NOT VALID}    # PRIMARY KEY constraints cannot be marked NOT VALID
+    @disable-query {UNIQUE(?!.*, ADD CONSTRAINT.*NOT VALID).*NOT VALID}         # UNIQUE constraints cannot be marked NOT VALID
+
+action_more:
+    , action
+
+# ALTER INDEX
+alter_index:
+    ALTER INDEX if_exists? _index alter_index_action
+
+alter_index_action:
+    RENAME TO _new_index_name
+    | SET (fillfactor = fillfactor_value)
+    | RESET (fillfactor)
+
+fillfactor_value:
+    { value = math.random(10, 100); print(value) }
+
+# ALTER VIEW
+alter_view:
+    ALTER VIEW if_exists? _view alter_view_action
+
+alter_view_action:
+    OWNER TO CURRENT_USER
+    | OWNER TO SESSION_USER
+    | RENAME TO _new_view_name
+    | SET (security_barrier = TRUE)
+    | RESET (security_barrier)
+
+# CREATE/ALTER SEQUENCE
+create_sequence:
+    CREATE SEQUENCE if_not_exists? _new_sequence_name
+
+if_not_exists:
+    IF NOT EXISTS
+
+alter_sequence:
+    ALTER SEQUENCE if_exists? _sequence alter_sequence_action
+
+alter_sequence_action:
+    RESTART WITH 1
+    | INCREMENT BY 1
+    | MINVALUE 1
+    | NO MINVALUE
+    | MAXVALUE 1000000
+    | NO MAXVALUE
+    | CACHE 1
+    | CYCLE
+    | NO CYCLE
+    | OWNED BY NONE
+
+drop_sequence:
+    DROP SEQUENCE if_exists? _sequence cascade_or_restrict?
+
+# COMMENT
+comment_on_table:
+    COMMENT ON TABLE _table IS stress_comment
+
+comment_on_column:
+    COMMENT ON COLUMN _table . _column IS stress_comment
+
+stress_comment:
+    'dbradar stress comment'
+    | NULL
+
+# GRANT/REVOKE
+grant_table:
+    GRANT SELECT, UPDATE ON TABLE? _table TO PUBLIC
+
+revoke_table:
+    REVOKE SELECT ON TABLE? _table FROM PUBLIC
+
+grant_schema:
+    GRANT USAGE, CREATE ON SCHEMA public TO PUBLIC
+
+revoke_schema:
+    REVOKE CREATE ON SCHEMA public FROM PUBLIC
+
+grant_sequence:
+    GRANT USAGE, SELECT ON SEQUENCE _sequence TO PUBLIC
+
+revoke_sequence:
+    REVOKE SELECT ON SEQUENCE _sequence FROM PUBLIC
+
+grant_function:
+    GRANT EXECUTE ON FUNCTION _function_signature TO PUBLIC
+
+revoke_function:
+    REVOKE EXECUTE ON FUNCTION _function_signature FROM PUBLIC
+
+grant_procedure:
+    GRANT EXECUTE ON PROCEDURE _procedure_signature TO PUBLIC
+
+revoke_procedure:
+    REVOKE EXECUTE ON PROCEDURE _procedure_signature FROM PUBLIC
+
+# FUNCTION/PROCEDURE/RULE/TRIGGER
+create_function:
+    CREATE OR REPLACE FUNCTION _new_function_name ( x int ) RETURNS int LANGUAGE SQL AS 'SELECT x'
+
+alter_function:
+    CREATE OR REPLACE FUNCTION _new_function_name ( x int ) RETURNS int LANGUAGE SQL AS 'SELECT x' ; ALTER FUNCTION _selected_function_name ( int ) OWNER TO CURRENT_USER
+
+drop_function:
+    CREATE OR REPLACE FUNCTION _new_function_name ( x int ) RETURNS int LANGUAGE SQL AS 'SELECT x' ; DROP FUNCTION _selected_function_name ( int )
+
+create_procedure:
+    CREATE OR REPLACE PROCEDURE _new_procedure_name ( IN x int ) LANGUAGE plpgsql AS 'BEGIN PERFORM x; END'
+
+alter_procedure:
+    CREATE OR REPLACE PROCEDURE _new_procedure_name ( IN x int ) LANGUAGE plpgsql AS 'BEGIN PERFORM x; END' ; ALTER PROCEDURE _selected_procedure_name ( int ) OWNER TO CURRENT_USER
+
+drop_procedure:
+    CREATE OR REPLACE PROCEDURE _new_procedure_name ( IN x int ) LANGUAGE plpgsql AS 'BEGIN PERFORM x; END' ; DROP PROCEDURE _selected_procedure_name ( int )
+
+create_rule:
+    CREATE OR REPLACE RULE _new_rule_name AS ON UPDATE TO _table DO ALSO NOTHING
+
+drop_rule:
+    CREATE OR REPLACE RULE _new_rule_name AS ON UPDATE TO _table DO ALSO NOTHING ; DROP RULE _selected_rule_name ON _selected_table
+
+create_trigger:
+    CREATE OR REPLACE FUNCTION public.dbradar_trigger_func ( ) RETURNS trigger LANGUAGE plpgsql AS 'BEGIN RETURN NEW; END' ; DROP TRIGGER IF EXISTS _new_stress_trigger_name ON _table ; CREATE TRIGGER _selected_trigger_name BEFORE INSERT OR UPDATE ON _selected_table FOR EACH ROW EXECUTE FUNCTION public.dbradar_trigger_func ( )
+
+drop_trigger:
+    CREATE OR REPLACE FUNCTION public.dbradar_trigger_func ( ) RETURNS trigger LANGUAGE plpgsql AS 'BEGIN RETURN NEW; END' ; DROP TRIGGER IF EXISTS _new_stress_trigger_name ON _table ; CREATE TRIGGER _selected_trigger_name BEFORE INSERT ON _selected_table FOR EACH ROW EXECUTE FUNCTION public.dbradar_trigger_func ( ) ; DROP TRIGGER _selected_trigger_name ON _selected_table
+
+# TYPE/STATISTICS
+create_type:
+    CREATE TYPE _new_type_name AS ENUM ('red', 'green', 'blue')
+    | CREATE TYPE _new_type_name AS (x INT, y TEXT)
+
+drop_type:
+    DROP TYPE IF EXISTS _new_type_name
+
+create_statistics:
+    CREATE STATISTICS _new_statistics_name ON _statistics_columns FROM _statistics_table
+
+alter_statistics:
+    ALTER STATISTICS _statistics SET STATISTICS 100
+
+drop_statistics:
+    DROP STATISTICS _statistics
+
+create_domain:
+    CREATE DOMAIN _new_domain_name AS INT CHECK (VALUE IS NOT NULL)
+    | CREATE DOMAIN _new_domain_name AS TEXT DEFAULT 'domain-value'
+
+drop_domain:
+    DROP DOMAIN IF EXISTS _domain CASCADE
+
+create_tablespace:
+    CREATE TABLESPACE _new_tablespace_name LOCATION _tablespace_location
+
+drop_tablespace:
+    DROP TABLESPACE IF EXISTS _tablespace
+
+# INSERT
+insert:
+    INSERT INTO _insert_target_table (_insert_columns) overriding_value? VALUES _insert_rows
+    | INSERT INTO _insert_target_table (_insert_columns) VALUES _insert_rows
+
+insert_select:
+    INSERT INTO _insert_target_table_without_rules (_insert_columns) SELECT _insert_values ON CONFLICT DO NOTHING
+
+insert_on_conflict:
+    INSERT INTO _insert_target_table_without_rules (_insert_columns) VALUES _insert_rows ON CONFLICT DO NOTHING
+
+insert_returning:
+    INSERT INTO _insert_target_table_without_rules (_insert_columns) VALUES _insert_rows ON CONFLICT DO NOTHING RETURNING _column
+
+overriding_value:
+    OVERRIDING SYSTEM VALUE
+    | OVERRIDING USER VALUE
+
+# UPDATE
+update:
+    UPDATE ONLY? _updatable_table SET assignment assignment_more* where_clause?
+
+update_multi_row:
+    UPDATE ONLY? _updatable_table SET assignment assignment_more* WHERE TRUE
+
+update_from:
+    UPDATE ONLY? _updatable_table SET update_non_pk_assignment FROM (SELECT 1 AS marker) AS s WHERE TRUE
+
+update_cte:
+    WITH c AS (SELECT 1 AS marker) UPDATE ONLY? _updatable_table SET update_non_pk_assignment WHERE TRUE
+
+update_returning:
+    UPDATE ONLY? _updatable_table SET update_non_pk_assignment WHERE TRUE RETURNING _column
+
+assignment:
+    _distinct_column = _value
+
+update_non_pk_assignment:
+    _not_pk_column = _value
+
+assignment_more:
+   , assignment
+
+# DELETE
+delete:
+    DELETE FROM ONLY? _table where_clause?
+
+delete_multi_row:
+    DELETE FROM ONLY? _table WHERE TRUE
+
+delete_using:
+    DELETE FROM ONLY? _table USING (SELECT 1 AS marker) AS s WHERE FALSE
+
+delete_returning:
+    DELETE FROM ONLY? _table WHERE FALSE RETURNING _column
+
+# MERGE
+merge:
+    MERGE INTO _updatable_table_without_rules AS t USING (SELECT 1 AS marker) AS s ON TRUE WHEN MATCHED THEN DO NOTHING
+
+# Utility/session operations
+lock_table:
+    BEGIN ; LOCK TABLE _table IN SHARE ROW EXCLUSIVE MODE ; COMMIT
+
+prepare_execute:
+    DEALLOCATE ALL ; PREPARE p_dbradar ( int ) AS SELECT 1 WHERE $1 = 1 ; EXECUTE p_dbradar ( 1 ) ; DEALLOCATE p_dbradar
+
+savepoint_release:
+    BEGIN ; SAVEPOINT s_dbradar ; RELEASE SAVEPOINT s_dbradar ; COMMIT
+
+declare_fetch_close:
+    BEGIN ; DECLARE c_dbradar CURSOR FOR SELECT 1 ; FETCH 1 FROM c_dbradar ; CLOSE c_dbradar ; COMMIT
+
+copy_to_stdout:
+    COPY (SELECT 1) TO STDOUT
+
+# ANALYZE
+analyze_table:
+    ANALYZE analyze_table_op? table_and_columns?
+
+analyze_table_op:
+    ( VERBOSE )
+    | ( SKIP_LOCKED )
+
+table_and_columns:
+       _table
+       | _table (_insert_columns)
+
+# VACUUM
+vacuum:
+    VACUUM vacuum_option? _table
+
+vacuum_option:
+    ( ANALYZE )
+    | ( VERBOSE )
+    | ( ANALYZE, VERBOSE )
+
+
+# SET
+set_variable:
+    SET session_or_local? set_option
+
+session_or_local:
+    SESSION
+    | LOCAL
+
+set_option:
+    {print("enable_async_append")} = zero_or_one
+    | {print("enable_bitmapscan")} = zero_or_one
+    | {print("enable_gathermerge")} = zero_or_one
+    | {print("enable_hashjoin")} = zero_or_one
+    | {print("enable_indexscan")} = zero_or_one
+    | {print("enable_indexonlyscan")} = zero_or_one
+    | {print("enable_material")} = zero_or_one
+    | {print("enable_mergejoin")} = zero_or_one
+    | {print("enable_nestloop")} = zero_or_one
+    | {print("enable_parallel_append")} = zero_or_one
+    | {print("enable_parallel_hash")} = zero_or_one
+    | {print("enable_partition_pruning")} = zero_or_one
+    | {print("enable_partitionwise_join")} = zero_or_one
+    | {print("enable_partitionwise_aggregate")} = zero_or_one
+    | {print("enable_seqscan")} = zero_or_one
+    | {print("enable_sort")} = zero_or_one
+    | {print("enable_tidscan")} = zero_or_one
+    | {print("seq_page_cost")} = random_option
+    | {print("random_page_cost")} = random_option
+    | {print("cpu_tuple_cost")} = random_option
+    | {print("cpu_index_tuple_cost")} = random_option
+    | {print("cpu_operator_cost")} = random_option
+    | {print("parallel_setup_cost")} = _int32_unsigned
+    | {print("parallel_tuple_cost")} = _int32_unsigned
+    | {print("min_parallel_table_scan_size")} = _int_0_715827882
+    | {print("min_parallel_index_scan_size")} = _int_0_715827882
+    | {print("effective_cache_size")} = _int_1_2147483647
+    | {print("jit_above_cost")} = _int32_unsigned
+    | {print("jit_inline_above_cost")} = _int32_unsigned
+    | {print("jit_optimize_above_cost")} = _int32_unsigned
+    | {print("geqo")} = zero_or_one
+    | {print("geqo_threshold")} = _int_1_2147483647
+    | {print("geqo_effort")} = _int_1_10
+    | {print("geqo_pool_size")} = _int_1_2147483647
+    | {print("geqo_generations")} = _int_1_2147483647
+    | {print("geqo_selection_bias")} = bias_option
+    | {print("geqo_seed")} = speed_option
+    | {print("default_statistics_target")} = _int16_unsigned
+    | {print("constraint_exclusion")} = constraint_exclusion_option
+    | {print("cursor_tuple_fraction")} = cursor_tuple_fraction_option
+    | {print("from_collapse_limit")} = _int16_unsigned
+    | {print("jit")} = zero_or_one
+    | {print("join_collapse_limit")} = _int16_unsigned
+    | {print("parallel_leader_participation")} = zero_or_one
+    | {print("plan_cache_mode")} = plan_cache_mode_option
+
+zero_or_one:
+    0
+    | 1
+
+random_option:
+    0
+    | 0.00001
+    | 0.05
+    | 0.1
+    | 1
+    | 10
+    | 10000
+
+bias_option:
+    1.5
+    | 1.8
+    | 2.0
+
+speed_option:
+    0
+    | 0.5
+    | 1
+
+constraint_exclusion_option:
+    on
+    | off
+    | partition
+
+cursor_tuple_fraction_option:
+    0.0
+    | 0.1
+    | 0.00001
+    | 1
+    | 0.5
+    | 0.9999999
+
+plan_cache_mode_option:
+    auto
+    | force_generic_plan
+    | force_custom_plan
+
+# REST
+reset:
+    RESET ALL
+    | RESET configuration_parameter
+
+configuration_parameter:
+    {print("enable_async_append")}
+    | {print("enable_bitmapscan")}
+    | {print("enable_gathermerge")}
+    | {print("enable_hashjoin")}
+    | {print("enable_indexscan")}
+    | {print("enable_indexonlyscan")}
+    | {print("enable_material")}
+    | {print("enable_mergejoin")}
+    | {print("enable_nestloop")}
+    | {print("enable_parallel_append")}
+    | {print("enable_parallel_hash")}
+    | {print("enable_partition_pruning")}
+    | {print("enable_partitionwise_join")}
+    | {print("enable_partitionwise_aggregate")}
+    | {print("enable_seqscan")}
+    | {print("enable_sort")}
+    | {print("enable_tidscan")}
+    | {print("seq_page_cost")}
+    | {print("random_page_cost")}
+    | {print("cpu_tuple_cost")}
+    | {print("cpu_index_tuple_cost")}
+    | {print("cpu_operator_cost")}
+    | {print("parallel_setup_cost")}
+    | {print("parallel_tuple_cost")}
+    | {print("min_parallel_table_scan_size")}
+    | {print("min_parallel_index_scan_size")}
+    | {print("effective_cache_size")}
+    | {print("jit_above_cost")}
+    | {print("jit_inline_above_cost")}
+    | {print("jit_optimize_above_cost")}
+    | {print("geqo")}
+    | {print("geqo_threshold")}
+    | {print("geqo_effort")}
+    | {print("geqo_pool_size")}
+    | {print("geqo_generations")}
+    | {print("geqo_selection_bias")}
+    | {print("geqo_seed")}
+    | {print("default_statistics_target")}
+    | {print("constraint_exclusion")}
+    | {print("cursor_tuple_fraction")}
+    | {print("from_collapse_limit")}
+    | {print("jit")}
+    | {print("join_collapse_limit")}
+    | {print("parallel_leader_participation")}
+    | {print("plan_cache_mode")}
+
+# SELECT
+select:
+    single_select
+    | single_select
+    | single_select
+    | _context single_select _end compound_op _context single_select _end
+    @disable-oracle transaction_verifier
+
+# union type
+compound_op:
+    UNION all_or_distinct?
+    | INTERSECT all_or_distinct?
+    | EXCEPT all_or_distinct?
+
+# Special SELECT for JOIN
+single_select:
+    SELECT all_or_distinct? field_list FROM join_clause
+    @disable-oracle transaction_verifier
+    | simple_select
+    | SELECT field_list FROM join_clause
+    @disable-oracle transaction_verifier
+    | SELECT field_list FROM join_clause
+    @disable-oracle transaction_verifier
+
+
+all_or_distinct:
+    ALL
+    | DISTINCT
+
+# Aliases assignment:
+# JOIN ON: (1, x, 3), (x, 2, x) on_clause
+# NATURAL JOIN: (x, 2, x), (1, x, 3)
+join_clause:
+    join_table join_type join_table on_or_use_clause    # For the INNER and OUTER join types, a join condition must be specified
+
+join_type:
+    INNER JOIN
+    | LEFT OUTER JOIN
+    | RIGHT OUTER JOIN
+    | FULL OUTER JOIN
+
+on_or_use_clause:
+    ON bool_expr
+    | USING (_using_column) @disable-oracle write_guard, transaction_verifier
+    | ON TRUE
+    | ON TRUE
+    | ON TRUE
+
+join_table:
+    _context (simple_select) _return AS _table_alias
+    | table_source
+
+simple_select:
+    SELECT all_or_distinct? field_list FROM table_source where_clause? group_by_option? order_by_option? limit_option?
+    | SELECT field_list FROM table_source where_clause?
+    | SELECT field_list FROM table_source where_clause?
+    | SELECT field_list FROM table_source
+    | SELECT field_list FROM table_source
+    | SELECT field_list FROM table_source
+    | SELECT field_list FROM table_source
+    | SELECT all_or_distinct? field_list FROM table_source group_by_option? order_by_option? limit_option?
+    | WITH RECURSIVE q(n) AS (SELECT 1 UNION ALL SELECT n + 1 FROM q WHERE n < 3) SELECT n AS ca1 FROM q ORDER BY ca1 LIMIT 3
+
+simple_one_select:
+    SELECT _column AS _column_alias FROM table_source where_clause?
+    | SELECT _column AS _column_alias FROM table_source
+    | SELECT _column AS _column_alias FROM table_source
+
+field_list:
+    _column AS _column_alias,
+    _column AS _column_alias,
+    _column AS _column_alias
+
+table_source:
+    _table
+    | _context (base_table) _return AS _table_alias
+    @disable-oracle transaction_verifier
+
+# Special select to make sure the SELECT columns are valid
+base_table:
+    SELECT
+    _column AS _column_alias,
+    _column AS _column_alias,
+    _column AS _column_alias
+    FROM _table
+
+group_by_option:
+    GROUP BY all_or_distinct?  group_by_expr having_option?       @disable-oracle tlp_group_by, tlp_having
+    | GROUP BY all_or_distinct? group_by_expr                    @enable-oracle tlp_group_by
+    | GROUP BY all_or_distinct? group_by_expr having_option      @enable-oracle tlp_having
+
+group_by_expr:
+    _column, _column, _column
+
+# HAVING expr can refer alias in select clause
+# For example, SELECT c1 AS a1 FROM t1 GROUP BY c1 HAVING a1 > 10
+having_option:
+    HAVING bool_expr
+
+order_by_option:
+    ORDER BY _column order_option?     @disable-symbol compound_op
+
+limit_option:
+    @disable-query {\bLIMIT\b.*\b(?:IN|ALL|ANY|SOME)\b}
+    LIMIT _int32_unsigned offset?
+
+simple_select_without_temp:
+    SELECT all_or_distinct? field_list FROM table_source_without_temp where_clause? group_by_option? order_by_option? limit_option?
+    | SELECT field_list FROM table_source_without_temp where_clause?
+    | SELECT field_list FROM table_source_without_temp where_clause?
+    | SELECT field_list FROM table_source_without_temp
+    | SELECT field_list FROM table_source_without_temp
+    | SELECT field_list FROM table_source_without_temp
+    | SELECT field_list FROM table_source_without_temp
+    | SELECT all_or_distinct? field_list FROM table_source_without_temp group_by_option? order_by_option? limit_option?
+
+table_source_without_temp:
+    _table_without_temp
+    | _context (base_table_without_temp) _return AS _table_alias
+    @disable-oracle transaction_verifier
+
+base_table_without_temp:
+    SELECT
+    _column AS _column_alias,
+    _column AS _column_alias,
+    _column AS _column_alias
+    FROM _table_without_temp
+
+# BEGIN TRANSACTION
+begin:
+    BEGIN
+    | BEGIN transaction_characteristic
+    @disable-oracle transaction_verifier
+    | START TRANSACTION
+    | START TRANSACTION transaction_characteristic
+    @disable-oracle write_guard, transaction_verifier
+
+transaction_characteristic:
+    ISOLATION LEVEL isolation_level
+    | READ WRITE
+    | READ ONLY
+    | NOT? DEFERRABLE @disable-oracle equation
+
+isolation_level:
+    SERIALIZABLE
+    | REPEATABLE READ
+    | READ COMMITTED
+
+# ROLLBACK
+rollback:
+    ROLLBACK work_or_transaction? and_no_chain? @disable-oracle equation, write_guard, transaction_verifier
+    | ROLLBACK
+
+work_or_transaction:
+    WORK
+    | TRANSACTION
+
+and_no_chain:
+    AND NO? CHAIN
+
+# COMMIT
+commit:
+    COMMIT
+    | COMMIT work_or_transaction? and_no_chain? @disable-oracle equation, write_guard, transaction_verifier
