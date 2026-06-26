@@ -289,6 +289,35 @@ class FactorCatalogMappingAuditTest(unittest.TestCase):
         self.assertIn("FAIL factor catalog mapping audit", output)
         self.assertNotIn("Traceback", output)
 
+    def test_main_non_mapping_catalog_yaml_prints_error_without_traceback(self) -> None:
+        audit = load_audit_module()
+        with TemporaryDirectory() as raw_dir:
+            root = Path(raw_dir)
+            catalog_path = root / "pg16_factor_catalog.md"
+            catalog_path.write_text(
+                textwrap.dedent(
+                    """
+                    # Invalid Catalog
+
+                    ```yaml
+                    - not_a_mapping
+                    ```
+                    """
+                ).strip()
+                + "\n",
+                encoding="utf-8",
+            )
+            stdout = io.StringIO()
+
+            with redirect_stdout(stdout):
+                exit_code = audit.main(["--root", raw_dir, "--catalog", str(catalog_path)])
+
+        output = stdout.getvalue()
+        self.assertEqual(exit_code, 1)
+        self.assertIn("ERROR:", output)
+        self.assertIn("structured yaml must be a mapping", output)
+        self.assertNotIn("Traceback", output)
+
 
 if __name__ == "__main__":
     unittest.main()

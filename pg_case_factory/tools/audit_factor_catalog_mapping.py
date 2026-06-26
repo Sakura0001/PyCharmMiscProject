@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import re
 import sys
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Iterable
@@ -43,8 +44,19 @@ def _load_structured_config(path: Path) -> dict:
     if not match:
         raise ValueError(f"{path}: no fenced yaml block found")
 
-    parsed = yaml.safe_load(match.group(1)) or {}
-    config = dict(parsed.get("structured_config") or parsed)
+    parsed = yaml.safe_load(match.group(1))
+    if parsed is None:
+        parsed = {}
+    if not isinstance(parsed, Mapping):
+        raise ValueError(f"{path}: structured yaml must be a mapping")
+
+    if "structured_config" in parsed:
+        structured_config = parsed["structured_config"]
+        if not isinstance(structured_config, Mapping):
+            raise ValueError(f"{path}: structured_config must be a mapping")
+        config = dict(structured_config)
+    else:
+        config = dict(parsed)
     if not config:
         raise ValueError(f"{path}: empty structured config")
     return config
