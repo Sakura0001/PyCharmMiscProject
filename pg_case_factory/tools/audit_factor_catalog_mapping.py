@@ -12,6 +12,15 @@ import yaml
 
 
 YAML_BLOCK_PATTERN = re.compile(r"```yaml\s*(.*?)```", re.DOTALL)
+EXPECTED_SOURCE_CATALOG = "references/common/pg16_factor_catalog.md"
+REQUIRED_MAPPING_ENTRY_FIELDS = (
+    "catalog_factor",
+    "local_factor",
+    "target_tier",
+    "coverage_role",
+    "value_policy",
+    "reason",
+)
 ALLOWED_COVERAGE_ROLES = {
     "main_axis",
     "representative_or_main",
@@ -139,6 +148,16 @@ def _mapping_entries(mapping: dict) -> Iterable[tuple[str, dict]]:
         yield "promoted_factors", dict(item or {})
 
 
+def _text_field(data: dict, field_name: str) -> str:
+    return str(data.get(field_name) or "").strip()
+
+
+def _validate_required_mapping_fields(result: AuditResult, prefix: str, entry: dict) -> None:
+    for field_name in REQUIRED_MAPPING_ENTRY_FIELDS:
+        if not _text_field(entry, field_name):
+            result.errors.append(f"{prefix}: {field_name} is required")
+
+
 def _validate_mapping_entry(
     result: AuditResult,
     statement_path: Path,
@@ -151,17 +170,19 @@ def _validate_mapping_entry(
     main_axes: set[str],
     non_main: set[str],
 ) -> None:
-    catalog_factor = str(entry.get("catalog_factor") or "")
-    local_factor = str(entry.get("local_factor") or "")
-    target_tier = str(entry.get("target_tier") or "")
-    coverage_role = str(entry.get("coverage_role") or "representative")
-    value_policy = str(entry.get("value_policy") or "reuse_catalog_values")
+    catalog_factor = _text_field(entry, "catalog_factor")
+    local_factor = _text_field(entry, "local_factor")
+    target_tier = _text_field(entry, "target_tier")
+    coverage_role = _text_field(entry, "coverage_role")
+    value_policy = _text_field(entry, "value_policy")
     prefix = f"{statement_path}: {section}: {catalog_factor or '<missing catalog_factor>'}"
 
-    if catalog_factor not in catalog_paths:
+    _validate_required_mapping_fields(result, prefix, entry)
+
+    if catalog_factor and catalog_factor not in catalog_paths:
         result.errors.append(f"{prefix}: catalog factor is not defined")
     if not local_factor:
-        result.errors.append(f"{prefix}: local_factor is required")
+        result.mapped_count += 1
         return
     if local_factor not in factor_names:
         result.errors.append(f"{prefix}: local factor is not defined: {local_factor}")
@@ -172,9 +193,9 @@ def _validate_mapping_entry(
     if target_tier and local_factor in factor_names and local_factor not in factor_tiers:
         result.errors.append(f"{prefix}: local factor {local_factor} is not listed in factor_layers")
 
-    if coverage_role not in ALLOWED_COVERAGE_ROLES:
+    if coverage_role and coverage_role not in ALLOWED_COVERAGE_ROLES:
         result.errors.append(f"{prefix}: unsupported coverage_role {coverage_role}")
-    if value_policy not in ALLOWED_VALUE_POLICIES:
+    if value_policy and value_policy not in ALLOWED_VALUE_POLICIES:
         result.errors.append(f"{prefix}: unsupported value_policy {value_policy}")
 
     if coverage_role == "main_axis" and local_factor not in main_axes:
@@ -194,10 +215,6 @@ def _validate_mapping_entry(
         if unknown_values:
             result.errors.append(f"{prefix}: selected_values not found in catalog: {', '.join(unknown_values)}")
 
-    reason = str(entry.get("reason") or "").strip()
-    if not reason:
-        result.errors.append(f"{prefix}: reason is required")
-
     result.mapped_count += 1
 
 
@@ -212,6 +229,14 @@ def _validate_statement_mapping(
     mapping = dict(statement_config.get("factor_catalog_mapping") or {})
     if not mapping:
         return
+
+    source_catalog = _text_field(mapping, "source_catalog")
+    if not source_catalog:
+        result.errors.append(f"{statement_path}: factor_catalog_mapping.source_catalog is required")
+    elif source_catalog != EXPECTED_SOURCE_CATALOG:
+        result.errors.append(
+            f"{statement_path}: factor_catalog_mapping.source_catalog must be {EXPECTED_SOURCE_CATALOG}: {source_catalog}"
+        )
 
     object_domain = str(mapping.get("object_domain") or "")
     if object_domain not in catalog_domains:

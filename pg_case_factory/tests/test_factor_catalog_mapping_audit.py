@@ -245,6 +245,123 @@ class FactorCatalogMappingAuditTest(unittest.TestCase):
             self.assertFalse(result.passed)
             self.assertIn("local factor is not defined", "\n".join(result.errors))
 
+    def test_missing_target_tier_fails(self) -> None:
+        audit = load_audit_module()
+        with TemporaryDirectory() as raw_dir:
+            root = Path(raw_dir)
+            catalog_path = root / "pg16_factor_catalog.md"
+            statement_path = root / "create_database.md"
+            write_catalog(catalog_path)
+            write_statement(
+                statement_path,
+                textwrap.dedent(
+                    """
+                    factor_catalog_mapping:
+                      source_catalog: references/common/pg16_factor_catalog.md
+                      object_domain: database
+                      imported_factors:
+                        - catalog_factor: database.naming.name_shape
+                          local_factor: database_name_shape
+                          coverage_role: rotate_attach
+                          value_policy: reuse_catalog_values
+                          reason: target_tier is required by the mapping contract.
+                    """
+                ).strip(),
+            )
+
+            result = audit.audit_paths(catalog_path, [statement_path])
+
+            self.assertFalse(result.passed)
+            self.assertIn("target_tier is required", "\n".join(result.errors))
+
+    def test_missing_coverage_role_fails(self) -> None:
+        audit = load_audit_module()
+        with TemporaryDirectory() as raw_dir:
+            root = Path(raw_dir)
+            catalog_path = root / "pg16_factor_catalog.md"
+            statement_path = root / "create_database.md"
+            write_catalog(catalog_path)
+            write_statement(
+                statement_path,
+                textwrap.dedent(
+                    """
+                    factor_catalog_mapping:
+                      source_catalog: references/common/pg16_factor_catalog.md
+                      object_domain: database
+                      imported_factors:
+                        - catalog_factor: database.naming.name_shape
+                          local_factor: database_name_shape
+                          target_tier: T3
+                          value_policy: reuse_catalog_values
+                          reason: coverage_role is required by the mapping contract.
+                    """
+                ).strip(),
+            )
+
+            result = audit.audit_paths(catalog_path, [statement_path])
+
+            self.assertFalse(result.passed)
+            self.assertIn("coverage_role is required", "\n".join(result.errors))
+
+    def test_missing_value_policy_fails(self) -> None:
+        audit = load_audit_module()
+        with TemporaryDirectory() as raw_dir:
+            root = Path(raw_dir)
+            catalog_path = root / "pg16_factor_catalog.md"
+            statement_path = root / "create_database.md"
+            write_catalog(catalog_path)
+            write_statement(
+                statement_path,
+                textwrap.dedent(
+                    """
+                    factor_catalog_mapping:
+                      source_catalog: references/common/pg16_factor_catalog.md
+                      object_domain: database
+                      imported_factors:
+                        - catalog_factor: database.naming.name_shape
+                          local_factor: database_name_shape
+                          target_tier: T3
+                          coverage_role: rotate_attach
+                          reason: value_policy is required by the mapping contract.
+                    """
+                ).strip(),
+            )
+
+            result = audit.audit_paths(catalog_path, [statement_path])
+
+            self.assertFalse(result.passed)
+            self.assertIn("value_policy is required", "\n".join(result.errors))
+
+    def test_incorrect_source_catalog_fails(self) -> None:
+        audit = load_audit_module()
+        with TemporaryDirectory() as raw_dir:
+            root = Path(raw_dir)
+            catalog_path = root / "pg16_factor_catalog.md"
+            statement_path = root / "create_database.md"
+            write_catalog(catalog_path)
+            write_statement(
+                statement_path,
+                textwrap.dedent(
+                    """
+                    factor_catalog_mapping:
+                      source_catalog: references/common/stale_factor_catalog.md
+                      object_domain: database
+                      imported_factors:
+                        - catalog_factor: database.naming.name_shape
+                          local_factor: database_name_shape
+                          target_tier: T3
+                          coverage_role: rotate_attach
+                          value_policy: reuse_catalog_values
+                          reason: source_catalog must point at the contract catalog.
+                    """
+                ).strip(),
+            )
+
+            result = audit.audit_paths(catalog_path, [statement_path])
+
+            self.assertFalse(result.passed)
+            self.assertIn("source_catalog", "\n".join(result.errors))
+
     def test_rotate_attach_must_be_non_main_factor(self) -> None:
         audit = load_audit_module()
         with TemporaryDirectory() as raw_dir:
