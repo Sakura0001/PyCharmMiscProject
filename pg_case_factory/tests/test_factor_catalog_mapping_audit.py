@@ -82,6 +82,7 @@ def write_catalog(path: Path) -> None:
 
 
 def write_statement(path: Path, mapping_block: str) -> None:
+    indented_mapping_block = textwrap.indent(mapping_block, "              ")
     path.write_text(
         textwrap.dedent(
             f"""
@@ -154,7 +155,7 @@ def write_statement(path: Path, mapping_block: str) -> None:
                   - owner_clause
                   - database_name_shape
                   - duplicate_database_name
-              {mapping_block}
+{indented_mapping_block}
               rendering:
                 statement_template: CREATE DATABASE {{database_name}}
                 verification_query_template: ""
