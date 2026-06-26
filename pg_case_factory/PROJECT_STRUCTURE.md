@@ -111,6 +111,10 @@ statement reference。
 
 statement reference 不应写死完整生命周期。
 
+### 顶层 `tools/`
+
+因子目录映射审计脚本位于 `tools/audit_factor_catalog_mapping.py`。它只做静态一致性检查，不参与 SQL 渲染主路径。
+
 ## 4. `src/pg_case_factory/`
 
 ```text
@@ -122,8 +126,6 @@ src/pg_case_factory/
 ├─ renderer.py
 └─ skill_loader.py
 ```
-
-因子目录映射审计脚本位于 `tools/audit_factor_catalog_mapping.py`。它只做静态一致性检查，不参与 SQL 渲染主路径。
 
 这是当前项目的最小常驻引擎。
 
