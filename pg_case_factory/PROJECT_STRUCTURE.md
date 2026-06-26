@@ -80,6 +80,7 @@ skills/
 
 - `output_script_style.md`：SQL 文件头、前置清理、对象准备、目标语句、验证、结束清理
 - `factor_policy.md`：重要因子笛卡尔积，非重要因子轮转挂靠
+- `pg16_factor_catalog.md`：PG16 全局对象域因子目录，供 statement reference 通过 `factor_catalog_mapping` 引用
 - `lifecycle_policy.md`：生命周期 TSV 的动作口径
 - `validation_policy.md`：成功/失败验证与幂等清理
 - `naming_rules.md`：对象命名规则
@@ -91,6 +92,7 @@ skills/
 职责：
 
 - `references/templates/statement_reference_template.md`：新增或补齐 statement reference 的标准骨架
+- `references/templates/factor_catalog_mapping_template.md`：statement reference 引用全局因子目录的映射模板
 - `assets/templates/lifecycle_plan_template.tsv`：生命周期计划 TSV 表头和示例行
 - `assets/objects/tables/normal_table/*.sql`：随 skill 发布的基础对象 SQL 模板
 
@@ -120,6 +122,8 @@ src/pg_case_factory/
 ├─ renderer.py
 └─ skill_loader.py
 ```
+
+因子目录映射审计脚本位于 `tools/audit_factor_catalog_mapping.py`。它只做静态一致性检查，不参与 SQL 渲染主路径。
 
 这是当前项目的最小常驻引擎。
 
