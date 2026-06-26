@@ -411,6 +411,146 @@ structured_config:
     python_expand_threshold: 200
     preserve_axes_first:
     - statement_branch
+  factor_catalog_mapping:
+    source_catalog: references/common/pg16_factor_catalog.md
+    object_domain: database
+    imported_factors:
+    - catalog_factor: database.naming.name_shape
+      local_factor: database_name_shape
+      target_tier: T3
+      coverage_role: rotate_attach
+      value_policy: statement_specific_subset
+      selected_values:
+      - valid_unquoted_lower
+      - valid_quoted_upper
+      - quoted_reserved_keyword
+      - invalid_special_char_unquoted
+      - max_length_63_bytes
+      - over_length_64_bytes
+      reason: CREATE DATABASE 需要覆盖数据库名的合法形态、引号语义、特殊字符和长度边界。
+    - catalog_factor: database.options.owner
+      local_factor: owner_clause
+      target_tier: T2
+      coverage_role: representative_or_main
+      value_policy: statement_specific_subset
+      selected_values:
+      - omitted
+      - valid_current_user
+      - valid_other_role
+      - nonexistent_user
+      - no_set_role_privilege
+      reason: OWNER 子句影响目标 owner、角色存在性和 SET ROLE 权限边界。
+    - catalog_factor: database.options.template
+      local_factor: template_clause
+      target_tier: T2
+      coverage_role: representative_or_main
+      value_policy: statement_specific_subset
+      selected_values:
+      - omitted_default_template1
+      - template0
+      - custom_template
+      - nonexistent_template
+      - template_has_connections
+      reason: TEMPLATE 子句影响复制来源、连接状态和编码 locale 兼容性。
+    - catalog_factor: database.options.encoding
+      local_factor: encoding_clause
+      target_tier: T2
+      coverage_role: representative_or_main
+      value_policy: statement_specific_subset
+      selected_values:
+      - omitted_client_default
+      - utf8
+      - latin1
+      - sql_ascii
+      - invalid_encoding
+      reason: ENCODING 是 CREATE DATABASE 的关键选项，需要覆盖有效编码、无效编码和兼容性边界。
+    - catalog_factor: database.options.locale
+      local_factor: locale_clause
+      target_tier: T2
+      coverage_role: representative_or_main
+      value_policy: statement_specific_subset
+      selected_values:
+      - omitted
+      - c_locale
+      - posix_locale
+      - valid_system_locale
+      - nonexistent_locale
+      - encoding_locale_mismatch
+      reason: LOCALE、LC_COLLATE 和 LC_CTYPE 影响数据库排序和编码兼容性。
+    - catalog_factor: database.options.strategy
+      local_factor: strategy_clause
+      target_tier: T2
+      coverage_role: representative_or_main
+      value_policy: reuse_catalog_values
+      reason: STRATEGY 决定数据库复制策略，覆盖 WAL_LOG、FILE_COPY 和非法策略。
+    - catalog_factor: database.environment.privilege_level
+      local_factor: privilege_level
+      target_tier: T2
+      coverage_role: representative_or_main
+      value_policy: statement_specific_subset
+      selected_values:
+      - superuser
+      - createdb_role
+      - non_owner
+      reason: CREATE DATABASE 需要 superuser 或 CREATEDB 权限。
+    - catalog_factor: database.environment.template_existence
+      local_factor: template_existence
+      target_tier: T4
+      coverage_role: rotate_attach
+      value_policy: reuse_catalog_values
+      reason: 模板数据库存在性和连接状态影响 CREATE DATABASE 成功路径。
+    - catalog_factor: database.environment.encoding_locale_compatibility
+      local_factor: encoding_locale_compatibility
+      target_tier: T4
+      coverage_role: rotate_attach
+      value_policy: reuse_catalog_values
+      reason: 编码、locale 和模板兼容性属于环境约束。
+    - catalog_factor: database.environment.role_set_role_ability
+      local_factor: role_set_role_ability
+      target_tier: T4
+      coverage_role: rotate_attach
+      value_policy: reuse_catalog_values
+      reason: 指定其他 owner 时需要验证 SET ROLE 能力。
+    - catalog_factor: database.environment.tablespace_existence
+      local_factor: tablespace_existence
+      target_tier: T4
+      coverage_role: rotate_attach
+      value_policy: reuse_catalog_values
+      reason: TABLESPACE 子句需要验证目标表空间存在性。
+    - catalog_factor: database.boundary.duplicate_name
+      local_factor: duplicate_database_name
+      target_tier: T5
+      coverage_role: rotate_attach
+      value_policy: reuse_catalog_values
+      reason: 数据库名在集群内必须唯一，重名是关键失败路径。
+    - catalog_factor: database.boundary.privilege_denied
+      local_factor: privilege_denied
+      target_tier: T5
+      coverage_role: rotate_attach
+      value_policy: reuse_catalog_values
+      reason: 权限不足路径需要与成功路径明确区分。
+    - catalog_factor: database.boundary.inside_transaction
+      local_factor: inside_transaction_block
+      target_tier: T5
+      coverage_role: rotate_attach
+      value_policy: reuse_catalog_values
+      reason: CREATE DATABASE 不能在事务块内执行。
+    - catalog_factor: database.validation.catalog_check
+      local_factor: verification_mode
+      target_tier: T6
+      coverage_role: rotate_attach
+      value_policy: statement_specific_subset
+      selected_values:
+      - pg_database_presence
+      - error_assertion
+      reason: CREATE DATABASE 的成功和失败路径需要通过 pg_database 查询或错误断言验证。
+    excluded_factors:
+    - catalog_factor: database.operation.if_exists
+      reason: CREATE DATABASE 官方语法没有 IF EXISTS。
+    - catalog_factor: database.operation.force
+      reason: CREATE DATABASE 官方语法没有 WITH FORCE。
+    coverage_notes:
+    - database.naming.name_shape 只做轮转挂靠，不进入主笛卡尔积。
   rendering:
     statement_template: "CREATE DATABASE {database_name} {with_clause_options}"
     verification_query_template: "SELECT datname FROM pg_database WHERE datname =\

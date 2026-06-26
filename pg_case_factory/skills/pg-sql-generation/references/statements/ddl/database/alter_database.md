@@ -483,6 +483,141 @@ structured_config:
     python_expand_threshold: 200
     preserve_axes_first:
     - statement_branch
+  factor_catalog_mapping:
+    source_catalog: references/common/pg16_factor_catalog.md
+    object_domain: database
+    imported_factors:
+    - catalog_factor: database.naming.name_shape
+      local_factor: database_name_shape
+      target_tier: T3
+      coverage_role: rotate_attach
+      value_policy: statement_specific_subset
+      selected_values:
+      - valid_unquoted_lower
+      - valid_quoted_upper
+      - quoted_reserved_keyword
+      reason: ALTER DATABASE 需要覆盖目标 database 名称输入形态。
+    - catalog_factor: database.naming.name_shape
+      local_factor: new_name_shape
+      target_tier: T3
+      coverage_role: rotate_attach
+      value_policy: statement_specific_subset
+      selected_values:
+      - valid_unquoted_lower
+      - valid_quoted_upper
+      - quoted_reserved_keyword
+      reason: RENAME TO 分支需要覆盖新名称形态。
+    - catalog_factor: database.options.allow_connections
+      local_factor: with_option_type
+      target_tier: T2
+      coverage_role: representative_or_main
+      value_policy: statement_specific_subset
+      selected_values:
+      - "true"
+      - "false"
+      reason: ALTER DATABASE WITH 选项可修改 ALLOW_CONNECTIONS。
+    - catalog_factor: database.options.connection_limit
+      local_factor: with_option_type
+      target_tier: T2
+      coverage_role: representative_or_main
+      value_policy: reuse_catalog_values
+      reason: ALTER DATABASE WITH 选项可修改 CONNECTION LIMIT。
+    - catalog_factor: database.options.is_template
+      local_factor: with_option_type
+      target_tier: T2
+      coverage_role: representative_or_main
+      value_policy: reuse_catalog_values
+      reason: ALTER DATABASE WITH 选项可修改 IS_TEMPLATE。
+    - catalog_factor: database.options.owner
+      local_factor: new_owner_target
+      target_tier: T2
+      coverage_role: representative_or_main
+      value_policy: statement_specific_subset
+      selected_values:
+      - valid_other_role
+      - nonexistent_user
+      - no_set_role_privilege
+      reason: OWNER TO 分支需要覆盖新 owner 和权限边界。
+    - catalog_factor: database.options.tablespace
+      local_factor: new_tablespace_shape
+      target_tier: T3
+      coverage_role: rotate_attach
+      value_policy: statement_specific_subset
+      selected_values:
+      - valid_tablespace
+      - nonexistent_tablespace
+      reason: SET TABLESPACE 分支需要覆盖新表空间名称形态。
+    - catalog_factor: database.options.config_parameter
+      local_factor: config_parameter_type
+      target_tier: T2
+      coverage_role: representative_or_main
+      value_policy: reuse_catalog_values
+      reason: ALTER DATABASE SET/RESET 分支需要覆盖普通参数和 superuser-only 参数。
+    - catalog_factor: database.environment.tablespace_existence
+      local_factor: tablespace_existence
+      target_tier: T4
+      coverage_role: rotate_attach
+      value_policy: reuse_catalog_values
+      reason: SET TABLESPACE 需要验证表空间存在性。
+    - catalog_factor: database.environment.connection_state
+      local_factor: target_database_connection_state
+      target_tier: T4
+      coverage_role: rotate_attach
+      value_policy: reuse_catalog_values
+      reason: RENAME 和 SET TABLESPACE 受目标数据库连接状态影响。
+    - catalog_factor: database.environment.role_set_role_ability
+      local_factor: role_set_role_ability
+      target_tier: T4
+      coverage_role: rotate_attach
+      value_policy: reuse_catalog_values
+      reason: OWNER TO 需要验证 SET ROLE 能力。
+    - catalog_factor: database.environment.privilege_level
+      local_factor: role_createdb_privilege
+      target_tier: T4
+      coverage_role: rotate_attach
+      value_policy: statement_specific_subset
+      selected_values:
+      - createdb_role
+      - non_owner
+      reason: SET TABLESPACE 和部分 ALTER DATABASE 操作依赖 CREATEDB 或 owner 权限。
+    - catalog_factor: database.boundary.duplicate_name
+      local_factor: rename_target_conflict
+      target_tier: T5
+      coverage_role: rotate_attach
+      value_policy: reuse_catalog_values
+      reason: RENAME TO 分支需要覆盖目标名称冲突。
+    - catalog_factor: database.boundary.privilege_denied
+      local_factor: privilege_denied
+      target_tier: T5
+      coverage_role: rotate_attach
+      value_policy: reuse_catalog_values
+      reason: 非 owner 或权限不足路径需要单独覆盖。
+    - catalog_factor: database.boundary.inside_transaction
+      local_factor: set_tablespace_in_transaction
+      target_tier: T5
+      coverage_role: rotate_attach
+      value_policy: reuse_catalog_values
+      reason: SET TABLESPACE 不能在事务块内执行。
+    - catalog_factor: database.validation.catalog_check
+      local_factor: verification_mode
+      target_tier: T6
+      coverage_role: rotate_attach
+      value_policy: statement_specific_subset
+      selected_values:
+      - pg_database_presence
+      - error_assertion
+      reason: ALTER DATABASE 需要通过 pg_database、pg_db_role_setting 或错误断言验证。
+    excluded_factors:
+    - catalog_factor: database.options.template
+      reason: ALTER DATABASE 官方语法不修改 TEMPLATE。
+    - catalog_factor: database.options.encoding
+      reason: ALTER DATABASE 官方语法不修改 ENCODING。
+    - catalog_factor: database.operation.if_exists
+      reason: ALTER DATABASE 官方语法没有 IF EXISTS。
+    - catalog_factor: database.operation.force
+      reason: ALTER DATABASE 官方语法没有 WITH FORCE。
+    coverage_notes:
+    - 多个全局 database.options 因子映射到 with_option_type，因为现有 reference 已把 WITH 选项收敛为一个局部因子。
   rendering:
     statement_template: "ALTER DATABASE {database_name} {alter_action}"
     verification_query_template: "SELECT datname, datallowconn, datconnlimit, datistemplate\

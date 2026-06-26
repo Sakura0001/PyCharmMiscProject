@@ -322,6 +322,94 @@ structured_config:
     python_expand_threshold: 100
     preserve_axes_first:
     - statement_branch
+  factor_catalog_mapping:
+    source_catalog: references/common/pg16_factor_catalog.md
+    object_domain: database
+    imported_factors:
+    - catalog_factor: database.naming.name_shape
+      local_factor: database_name_shape
+      target_tier: T3
+      coverage_role: rotate_attach
+      value_policy: statement_specific_subset
+      selected_values:
+      - valid_unquoted_lower
+      - valid_quoted_upper
+      - quoted_reserved_keyword
+      reason: DROP DATABASE 需要覆盖目标 database 名称输入形态。
+    - catalog_factor: database.operation.if_exists
+      local_factor: if_exists_clause
+      target_tier: T2
+      coverage_role: representative_or_main
+      value_policy: reuse_catalog_values
+      reason: IF EXISTS 改变不存在对象时的行为。
+    - catalog_factor: database.operation.force
+      local_factor: force_option
+      target_tier: T2
+      coverage_role: representative_or_main
+      value_policy: reuse_catalog_values
+      reason: WITH FORCE 改变有连接时的删除行为。
+    - catalog_factor: database.environment.privilege_level
+      local_factor: privilege_level
+      target_tier: T2
+      coverage_role: representative_or_main
+      value_policy: statement_specific_subset
+      selected_values:
+      - superuser
+      - database_owner
+      - non_owner
+      reason: DROP DATABASE 需要 owner 或 superuser 权限。
+    - catalog_factor: database.environment.connection_state
+      local_factor: connection_state
+      target_tier: T2
+      coverage_role: rotate_attach
+      value_policy: reuse_catalog_values
+      reason: DROP DATABASE 受目标数据库连接状态影响。
+    - catalog_factor: database.boundary.active_connections
+      local_factor: active_connections
+      target_tier: T4
+      coverage_role: rotate_attach
+      value_policy: reuse_catalog_values
+      reason: WITH FORCE 和普通 DROP 的核心差异是活动连接处理。
+    - catalog_factor: database.boundary.privilege_denied
+      local_factor: privilege_denied
+      target_tier: T5
+      coverage_role: rotate_attach
+      value_policy: reuse_catalog_values
+      reason: 非 owner 删除数据库属于关键失败路径。
+    - catalog_factor: database.boundary.inside_transaction
+      local_factor: inside_transaction_block
+      target_tier: T5
+      coverage_role: rotate_attach
+      value_policy: reuse_catalog_values
+      reason: DROP DATABASE 不能在事务块内执行。
+    - catalog_factor: database.validation.catalog_check
+      local_factor: verification_mode
+      target_tier: T6
+      coverage_role: rotate_attach
+      value_policy: statement_specific_subset
+      selected_values:
+      - pg_database_absence
+      - error_assertion
+      reason: DROP DATABASE 需要验证 pg_database 中对象不存在或断言错误路径。
+    excluded_factors:
+    - catalog_factor: database.options.owner
+      reason: DROP DATABASE 不设置 OWNER。
+    - catalog_factor: database.options.template
+      reason: DROP DATABASE 不使用 TEMPLATE。
+    - catalog_factor: database.options.encoding
+      reason: DROP DATABASE 不使用 ENCODING。
+    - catalog_factor: database.options.locale
+      reason: DROP DATABASE 不使用 LOCALE。
+    - catalog_factor: database.options.strategy
+      reason: DROP DATABASE 不使用 STRATEGY。
+    - catalog_factor: database.options.allow_connections
+      reason: DROP DATABASE 不修改 ALLOW_CONNECTIONS。
+    - catalog_factor: database.options.connection_limit
+      reason: DROP DATABASE 不修改 CONNECTION LIMIT。
+    - catalog_factor: database.options.is_template
+      reason: DROP DATABASE 不修改 IS_TEMPLATE。
+    coverage_notes:
+    - DROP DATABASE 的核心新增覆盖来自 operation.if_exists、operation.force 和 connection_state。
   rendering:
     statement_template: "DROP DATABASE {if_exists} {database_name} {force_clause}"
     verification_query_template: "SELECT count(*) FROM pg_database WHERE datname\
