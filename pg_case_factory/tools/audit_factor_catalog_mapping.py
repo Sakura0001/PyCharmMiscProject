@@ -288,7 +288,12 @@ def main(argv: list[str] | None = None) -> int:
     root = args.root.resolve()
     catalog_path = args.catalog or root / "skills" / "pg-sql-generation" / "references" / "common" / "pg16_factor_catalog.md"
     statement_paths = args.statements or _default_statement_paths(root)
-    result = audit_paths(catalog_path, [path.resolve() for path in statement_paths])
+    try:
+        result = audit_paths(catalog_path, [path.resolve() for path in statement_paths])
+    except (OSError, ValueError, yaml.YAMLError) as exc:
+        print(f"ERROR: {exc}")
+        print("FAIL factor catalog mapping audit: mapped=0 excluded=0 errors=1")
+        return 1
 
     for warning in result.warnings:
         print(f"WARNING: {warning}")

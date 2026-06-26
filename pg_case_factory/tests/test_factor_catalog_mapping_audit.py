@@ -1,7 +1,9 @@
+import io
 import importlib.util
 import sys
 import textwrap
 import unittest
+from contextlib import redirect_stdout
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -272,6 +274,20 @@ class FactorCatalogMappingAuditTest(unittest.TestCase):
 
             self.assertFalse(result.passed)
             self.assertIn("rotate_attach factor must be listed in non_main_factors", "\n".join(result.errors))
+
+    def test_main_missing_catalog_prints_error_without_traceback(self) -> None:
+        audit = load_audit_module()
+        with TemporaryDirectory() as raw_dir:
+            stdout = io.StringIO()
+
+            with redirect_stdout(stdout):
+                exit_code = audit.main(["--root", raw_dir])
+
+        output = stdout.getvalue()
+        self.assertEqual(exit_code, 1)
+        self.assertIn("ERROR:", output)
+        self.assertIn("FAIL factor catalog mapping audit", output)
+        self.assertNotIn("Traceback", output)
 
 
 if __name__ == "__main__":
