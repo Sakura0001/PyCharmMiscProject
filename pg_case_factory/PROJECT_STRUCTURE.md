@@ -111,11 +111,11 @@ statement reference。
 
 statement reference 不应写死完整生命周期。
 
-### 顶层 `tools/`
+## 4. `tools/`
 
 因子目录映射审计脚本位于 `tools/audit_factor_catalog_mapping.py`。它只做静态一致性检查，不参与 SQL 渲染主路径。
 
-## 4. `src/pg_case_factory/`
+## 5. `src/pg_case_factory/`
 
 ```text
 src/pg_case_factory/
@@ -159,7 +159,7 @@ src/pg_case_factory/
 
 对外暴露统一 API，供动态生成脚本复用。
 
-## 5. 动态脚本位置
+## 6. 动态脚本位置
 
 真正批量生成 SQL 的 Python 脚本不应常驻在 `src/`，而应动态写到：
 
@@ -167,7 +167,7 @@ src/pg_case_factory/
 
 这些脚本再调用 `pg_case_factory` 引擎完成批量生成。
 
-## 6. 已移除的常驻 Python
+## 7. 已移除的常驻 Python
 
 以下 demo 专用 Python 已经移除：
 
