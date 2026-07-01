@@ -1,0 +1,54 @@
+schema_version: 1
+kind: statement_combination_matrix_schema
+required_top_level_keys:
+  - schema_version
+  - kind
+  - statement
+  - execution_contract
+  - coverage_scope
+  - factor_contract
+  - dynamic_inputs
+  - combination_groups
+  - audit_rules
+execution_contract_required_keys:
+  - required_matrix_is_baseline
+  - no_inference_before_required_coverage_passes
+  - runner_must_complete_required_matrix_first
+  - allow_post_coverage_extension_inference
+  - extension_combinations_must_be_marked
+  - extension_combinations_must_record_derivation
+  - extension_combinations_must_not_replace_required_coverage
+  - success_and_failure_both_allowed
+  - all_success_and_failure_reasons_must_be_declared
+coverage_scope_required_keys:
+  - target_object_coverage
+  - target_relation_coverage
+  - table_coverage
+  - column_type_coverage
+combination_group_required_keys:
+  - id
+  - title
+  - lifecycle_role
+  - expected_status_policy
+  - factors
+  - expansion
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+allowed_expected_status_policies:
+  - fixed
+  - per_object_kind
+  - per_relation_kind
+  - per_table_kind
+  - per_column_type
+  - per_method
+  - per_method_and_column_type
+  - per_factor_binding
+  - per_lifecycle_context
+allowed_coverage_modes:
+  - not_applicable
+  - explicit
+  - exhaustive
+  - representative
+  - conditional

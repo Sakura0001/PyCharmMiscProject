@@ -1,0 +1,37 @@
+schema_version: 1
+kind: coverage_inventory
+relation_kinds:
+  indexable_relation_kinds:
+    - regular_table
+    - unlogged_table
+    - temporary_table
+    - partitioned_table_parent
+    - partitioned_table_leaf
+    - inherited_parent_table
+    - inherited_child_table
+    - materialized_view
+  non_indexable_relation_kinds:
+    - plain_view
+    - foreign_table
+    - sequence
+table_kinds:
+  table_backed_statement_table_kinds:
+    - regular_table
+    - unlogged_table
+    - temporary_table
+    - partitioned_table_parent
+    - partitioned_table_leaf
+    - inherited_parent_table
+    - inherited_child_table
+column_type_sets:
+  all_pg16_column_types:
+    source: references/common/pg16_type_catalog.md
+object_coverage_modes:
+  not_applicable:
+    description: Statement does not operate on this object class.
+  explicit:
+    description: Statement must list exact object kinds.
+  exhaustive:
+    description: Statement must cover every object kind in the referenced inventory set.
+  representative:
+    description: Statement covers representative objects and records why exhaustive coverage is not required.
