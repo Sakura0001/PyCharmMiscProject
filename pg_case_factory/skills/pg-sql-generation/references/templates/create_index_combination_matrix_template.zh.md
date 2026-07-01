@@ -5,9 +5,13 @@
 本文件是 `create_index_combination_matrix_template.yaml` 的中文审阅版，用来说明
 `CREATE INDEX` 组合矩阵应该如何填写和审计。
 
-目标不是让 AI 根据自然语言重新理解 `CREATE INDEX` 因子，而是把每个可执行组合、
-预期成功组合、预期失败组合、对象覆盖范围、列类型覆盖范围和失败原因提前写入文件。
-后续 runner 只能读取组合矩阵并机械展开，不允许在矩阵外自行推导 SQL。
+目标不是让 AI 根据自然语言重新理解 `CREATE INDEX` 常规覆盖因子，而是把每个必需的
+可执行组合、预期成功组合、预期失败组合、对象覆盖范围、列类型覆盖范围和失败原因
+提前写入文件。
+
+后续 runner 必须先读取组合矩阵并完成常规覆盖；在常规覆盖审计通过之后，AI 或
+runner 可以在矩阵外生成扩展组合，但扩展组合必须单独标记、记录推导来源和原因，
+并且不能替代常规覆盖矩阵。
 
 ## 文件位置
 
@@ -29,8 +33,9 @@ skills/pg-sql-generation/references/combinations/ddl/index/create_index.yaml
 2. `create_index.yaml` 负责定义哪些因子组合可以生成 SQL。
 3. 成功组合和失败组合都必须显式写出。
 4. 失败组合必须写明稳定失败原因，不能只写 `invalid`。
-5. AI 不允许根据规范临时理解并发明新组合。
-6. runner 不允许生成矩阵文件中没有声明的 SQL shape。
+5. 常规覆盖完成前，AI 不允许根据规范临时理解并发明新组合。
+6. 常规覆盖完成后，AI 或 runner 可以生成扩展组合，但必须写入扩展组合产物。
+7. 扩展组合不能计入 required factor、relation kind 或 column type 覆盖。
 
 ## 覆盖范围
 
@@ -209,6 +214,51 @@ cleanup: 清理方式
 - 没有 btree 能力的类型也要生成失败 SQL。
 - 两者都不能跳过。
 
+## 矩阵外扩展规则
+
+矩阵外推导不是完全禁止，而是分阶段允许：
+
+```text
+常规覆盖矩阵未通过审计：禁止矩阵外推导。
+常规覆盖矩阵通过审计：允许生成扩展组合。
+```
+
+扩展组合建议写入：
+
+```text
+artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+```
+
+每个扩展组合必须包含：
+
+```yaml
+id: <extension_id>
+derived_from_combination_group: <baseline_group_id>
+derivation_reason: <why this extra combination is useful>
+factors: {}
+expected_status_policy: <fixed|per_column_type|per_factor_binding>
+compatibility: {}
+sql_shape: {}
+verification: {}
+cleanup: {}
+```
+
+扩展组合可以用于：
+
+- 压力组合
+- 边界组合
+- 性能相关组合
+- 多个低优先级因子的交叉组合
+- AI 发现的额外风险点
+
+但扩展组合不允许：
+
+- 替代 `factor_contract.required_values` 的必需覆盖
+- 替代所有 relation kind 覆盖
+- 替代所有 PG16 column type 覆盖
+- 使用 statement reference 中不存在的因子或因子值
+- 生成没有成功/失败归因的 SQL
+
 ## 必须包含的 CREATE INDEX 组合族
 
 第一版 `CREATE INDEX` 正式矩阵至少应该包含：
@@ -236,7 +286,9 @@ ONLY 在分区和非分区 relation 上的行为
 
 模板最后的 `audit_rules` 是后续审计工具应该执行的最低规则：
 
-- 不允许 AI 或 runner 在矩阵外推导组合。
+- 常规覆盖审计通过前，不允许 AI 或 runner 在矩阵外推导组合。
+- 常规覆盖审计通过后，允许扩展推导，但必须单独标记和记录推导原因。
+- 扩展组合不能替代必需覆盖。
 - 所有矩阵因子必须存在于 `create_index.md`。
 - 所有矩阵因子值必须存在于 `create_index.md`。
 - 所有 required factor value 必须被覆盖。

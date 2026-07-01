@@ -10,12 +10,39 @@ statement:
   official_source: https://www.postgresql.org/docs/16/sql-createindex.html
 
 execution_contract:
-  no_implicit_ai_inference: true
-  matrix_is_source_of_truth: true
-  runner_must_not_invent_combinations: true
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
   success_and_failure_both_allowed: true
   all_success_and_failure_reasons_must_be_declared: true
-  sql_templates_must_come_from_combination_groups: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+    - id
+    - title
+    - derived_from_combination_group
+    - derivation_reason
+    - factors
+    - expected_status_policy
+    - compatibility
+    - sql_shape
+    - verification
+    - cleanup
+  guardrails:
+    - Required matrix coverage must pass before any derived extension is emitted.
+    - Derived extensions may add stress, boundary, performance, or cross-factor combinations.
+    - Derived extensions must not be counted as satisfying required factor or column-type coverage.
+    - Derived extensions must use declared factors, declared factor values, and declared manifests.
+    - Derived extensions must preserve success or failure attribution.
 
 coverage_scope:
   target_relation_coverage:
@@ -987,9 +1014,15 @@ combination_groups:
         - sql: DROP INDEX IF EXISTS {index_name};
 
 audit_rules:
-  - id: no_implicit_ai_inference
+  - id: no_precoverage_inference
     severity: error
-    description: Runner and AI must not infer CREATE INDEX combinations outside this matrix.
+    description: Runner and AI must not infer CREATE INDEX combinations outside this matrix before required coverage passes.
+  - id: post_coverage_extensions_are_allowed_but_marked
+    severity: error
+    description: After required coverage passes, derived combinations are allowed only when recorded as marked extension artifacts with derivation reasons.
+  - id: extensions_do_not_replace_required_coverage
+    severity: error
+    description: Derived extension combinations must not be counted as satisfying required matrix, factor, relation, or column-type coverage.
   - id: all_matrix_factors_exist
     severity: error
     description: Every combination_groups[*].factors key must exist in create_index.md.
