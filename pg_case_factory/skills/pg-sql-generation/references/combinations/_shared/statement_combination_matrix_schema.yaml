@@ -5,11 +5,42 @@ required_top_level_keys:
   - kind
   - statement
   - execution_contract
+  - post_coverage_extension_policy
   - coverage_scope
   - factor_contract
   - dynamic_inputs
   - combination_groups
   - audit_rules
+top_level_key_types:
+  schema_version: integer
+  kind: string
+  statement: mapping
+  execution_contract: mapping
+  post_coverage_extension_policy: mapping
+  coverage_scope: mapping
+  factor_contract: mapping
+  dynamic_inputs: mapping
+  combination_groups: sequence
+  audit_rules: mapping
+additional_top_level_keys_allowed: false
+statement_required_keys:
+  - key
+  - name
+  - category
+  - domain
+  - source_reference
+statement_optional_keys:
+  - aliases
+  - official_source
+statement_key_types:
+  key: string
+  name: string
+  category: string
+  domain: string
+  source_reference: string
+  aliases: sequence
+  official_source: string
+statement_additional_keys_allowed: false
 execution_contract_required_keys:
   - required_matrix_is_baseline
   - no_inference_before_required_coverage_passes
@@ -20,11 +51,113 @@ execution_contract_required_keys:
   - extension_combinations_must_not_replace_required_coverage
   - success_and_failure_both_allowed
   - all_success_and_failure_reasons_must_be_declared
+  - required_coverage_sql_templates_must_come_from_combination_groups
+  - extension_sql_templates_must_be_recorded_in_artifacts
+execution_contract_boolean_keys:
+  - required_matrix_is_baseline
+  - no_inference_before_required_coverage_passes
+  - runner_must_complete_required_matrix_first
+  - allow_post_coverage_extension_inference
+  - extension_combinations_must_be_marked
+  - extension_combinations_must_record_derivation
+  - extension_combinations_must_not_replace_required_coverage
+  - success_and_failure_both_allowed
+  - all_success_and_failure_reasons_must_be_declared
+  - required_coverage_sql_templates_must_come_from_combination_groups
+  - extension_sql_templates_must_be_recorded_in_artifacts
+post_coverage_extension_policy_required_keys:
+  - enabled
+  - allowed_after_audit_verdict
+  - output_location
+  - required_fields
+  - guardrails
+post_coverage_extension_policy_key_types:
+  enabled: boolean
+  allowed_after_audit_verdict: string
+  output_location: string
+  required_fields: sequence
+  guardrails: sequence
+post_coverage_extension_policy_additional_keys_allowed: false
+post_coverage_extension_policy_required_values:
+  allowed_after_audit_verdict:
+    - required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+derived_extension_required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
 coverage_scope_required_keys:
   - target_object_coverage
   - target_relation_coverage
   - table_coverage
   - column_type_coverage
+coverage_scope_item_required_keys:
+  - required
+  - coverage_mode
+  - decision_reason
+coverage_scope_item_optional_keys:
+  - inventory_source
+  - required_object_kinds
+  - required_relation_kinds
+  - negative_relation_kinds
+  - required_table_kinds
+  - required_type_set
+  - expansion_mode
+  - require_each_type_success_or_failure
+coverage_scope_item_key_types:
+  required: boolean
+  coverage_mode: string
+  decision_reason: string
+  inventory_source: string
+  required_object_kinds: sequence
+  required_relation_kinds: sequence
+  negative_relation_kinds: sequence
+  required_table_kinds: sequence
+  required_type_set: string
+  expansion_mode: string
+  require_each_type_success_or_failure: boolean
+coverage_scope_item_additional_keys_allowed: false
+factor_contract_required_keys:
+  - source_reference_must_define_all_factors
+  - matrix_must_cover_required_factor_values
+  - factors
+factor_contract_key_types:
+  source_reference_must_define_all_factors: boolean
+  matrix_must_cover_required_factor_values: boolean
+  factors: mapping
+factor_contract_additional_keys_allowed: false
+factor_entry_required_keys:
+  - tier
+  - coverage_role
+  - required_values
+  - coverage_requirement
+factor_entry_key_types:
+  tier: string
+  coverage_role: string
+  required_values: sequence
+  coverage_requirement: string
+factor_entry_additional_keys_allowed: false
+dynamic_input_required_keys:
+  - required
+  - required_fields
+dynamic_input_optional_keys:
+  - path
+  - path_pattern
+  - source
+dynamic_input_key_types:
+  required: boolean
+  required_fields: sequence
+  path: string
+  path_pattern: string
+  source: string
+dynamic_input_additional_keys_allowed: false
 combination_group_required_keys:
   - id
   - title
@@ -36,6 +169,79 @@ combination_group_required_keys:
   - sql_shape
   - verification
   - cleanup
+combination_group_optional_keys:
+  - default_expected_status
+  - expected_failure_reasons
+combination_group_key_types:
+  id: string
+  title: string
+  lifecycle_role: string
+  expected_status_policy: string
+  default_expected_status: string
+  expected_failure_reasons: sequence
+  factors: mapping
+  expansion: mapping
+  compatibility: mapping
+  sql_shape: mapping
+  verification: mapping
+  cleanup: mapping
+combination_group_additional_keys_allowed: false
+expansion_axis_required_keys:
+  - mode
+expansion_axis_optional_keys:
+  - source
+  - values
+expansion_axis_key_types:
+  mode: string
+  source: string
+  values: sequence
+expansion_axis_additional_keys_allowed: false
+compatibility_required_keys:
+  - resolver
+  - success_when
+  - failure_when
+  - default_failure_reason
+compatibility_key_types:
+  resolver: string
+  success_when: sequence
+  failure_when: sequence
+  default_failure_reason: string
+compatibility_additional_keys_allowed: false
+failure_when_item_required_keys:
+  - condition
+  - reason
+failure_when_item_key_types:
+  condition: string
+  reason: string
+failure_when_item_additional_keys_allowed: false
+sql_shape_required_keys:
+  - template
+sql_shape_key_types:
+  template: string
+sql_shape_additional_keys_allowed: false
+verification_required_keys:
+  - required
+verification_optional_keys:
+  - mode
+  - sql
+verification_key_types:
+  required: boolean
+  mode: string
+  sql: string_or_null
+verification_additional_keys_allowed: false
+cleanup_required_keys:
+  - required
+cleanup_optional_keys:
+  - steps
+cleanup_key_types:
+  required: boolean
+  steps: sequence
+cleanup_additional_keys_allowed: false
+cleanup_step_required_keys:
+  - sql
+cleanup_step_key_types:
+  sql: string
+cleanup_step_additional_keys_allowed: false
 allowed_expected_status_policies:
   - fixed
   - per_object_kind
@@ -46,9 +252,46 @@ allowed_expected_status_policies:
   - per_method_and_column_type
   - per_factor_binding
   - per_lifecycle_context
+  - per_expression
+  - per_existing_relation
+  - per_method_and_storage_parameter
+  - per_tablespace_binding
+  - per_opclass_binding
 allowed_coverage_modes:
   - not_applicable
   - explicit
   - exhaustive
   - representative
   - conditional
+allowed_expansion_modes:
+  - explicit
+  - exhaustive
+  - representative
+  - conditional
+allowed_lifecycle_roles:
+  - setup
+  - target_statement
+  - verification
+  - cleanup
+  - negative_control
+allowed_audit_verdicts:
+  - required_coverage_passed
+  - required_coverage_failed
+  - schema_invalid
+audit_rules_required_keys:
+  - require_all_required_top_level_keys
+  - require_declared_coverage_scope
+  - require_declared_factor_values
+  - require_expected_failure_reasons
+  - require_post_coverage_extension_policy
+  - forbid_extension_before_required_coverage_passes
+  - forbid_extension_counting_toward_required_coverage
+audit_rules_key_types:
+  require_all_required_top_level_keys: boolean
+  require_declared_coverage_scope: boolean
+  require_declared_factor_values: boolean
+  require_expected_failure_reasons: boolean
+  require_post_coverage_extension_policy: boolean
+  forbid_extension_before_required_coverage_passes: boolean
+  forbid_extension_counting_toward_required_coverage: boolean
+audit_rules_additional_keys_allowed: false

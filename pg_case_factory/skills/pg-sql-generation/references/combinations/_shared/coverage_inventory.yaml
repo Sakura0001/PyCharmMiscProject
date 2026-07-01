@@ -1,5 +1,101 @@
 schema_version: 1
 kind: coverage_inventory
+coverage_modes:
+  not_applicable:
+    description: Statement does not operate on this object class.
+  explicit:
+    description: Statement must list exact object kinds or values.
+  exhaustive:
+    description: Statement must cover every value in the referenced inventory set.
+  representative:
+    description: Statement covers representative values and records why exhaustive coverage is not required.
+  conditional:
+    description: Coverage depends on another declared factor, object kind, or lifecycle context.
+object_kinds:
+  database_cluster_objects:
+    - database
+    - tablespace
+    - role
+    - user
+    - group
+  schema_objects:
+    - schema
+    - extension
+    - collation
+    - conversion
+    - language
+    - access_method
+  relation_objects:
+    - regular_table
+    - unlogged_table
+    - temporary_table
+    - partitioned_table_parent
+    - partitioned_table_leaf
+    - inherited_parent_table
+    - inherited_child_table
+    - foreign_table
+    - plain_view
+    - materialized_view
+    - sequence
+    - index
+    - partitioned_index
+    - statistics_object
+  routine_objects:
+    - function
+    - procedure
+    - aggregate
+    - routine
+    - operator
+    - transform
+  type_system_objects:
+    - type
+    - enum_type
+    - composite_type
+    - domain
+    - cast
+    - operator_class
+    - operator_family
+  text_search_objects:
+    - text_search_configuration
+    - text_search_dictionary
+    - text_search_parser
+    - text_search_template
+  foreign_server_objects:
+    - foreign_data_wrapper
+    - server
+    - user_mapping
+    - foreign_table
+  security_objects:
+    - privilege
+    - default_privileges
+    - policy
+    - rule
+    - trigger
+    - event_trigger
+    - security_label
+  replication_objects:
+    - publication
+    - subscription
+  runtime_objects:
+    - runtime_parameter
+    - prepared_statement
+    - cursor
+    - notification_channel
+    - session_authorization
+    - role_setting
+  transaction_objects:
+    - transaction
+    - savepoint
+    - two_phase_transaction
+  utility_objects:
+    - copy_stream
+    - anonymous_code_block
+    - checkpoint
+    - loadable_library
+    - lock_target
+    - maintenance_target
+    - execution_plan
+    - large_object
 relation_kinds:
   indexable_relation_kinds:
     - regular_table
@@ -26,12 +122,7 @@ table_kinds:
 column_type_sets:
   all_pg16_column_types:
     source: references/common/pg16_type_catalog.md
-object_coverage_modes:
-  not_applicable:
-    description: Statement does not operate on this object class.
-  explicit:
-    description: Statement must list exact object kinds.
-  exhaustive:
-    description: Statement must cover every object kind in the referenced inventory set.
-  representative:
-    description: Statement covers representative objects and records why exhaustive coverage is not required.
+matrix_artifacts:
+  derived_extension_combinations:
+    path_pattern: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+    counts_toward_required_coverage: false
