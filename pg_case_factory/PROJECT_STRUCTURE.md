@@ -81,6 +81,7 @@ skills/
 - `output_script_style.md`：SQL 文件头、前置清理、对象准备、目标语句、验证、结束清理
 - `factor_policy.md`：重要因子笛卡尔积，非重要因子轮转挂靠
 - `pg16_factor_catalog.md`：PG16 全局对象域因子目录，供 statement reference 通过 `factor_catalog_mapping` 引用
+- `pg16_type_catalog.md`：PG16 类型目录，供 statement reference 选择列类型、样例值、前置 setup 与索引能力
 - `lifecycle_policy.md`：生命周期 TSV 的动作口径
 - `validation_policy.md`：成功/失败验证与幂等清理
 - `naming_rules.md`：对象命名规则
