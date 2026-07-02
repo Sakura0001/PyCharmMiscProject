@@ -1,0 +1,272 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: drop_cast
+  name: DROP CAST
+  category: ddl
+  domain: cast
+  source_reference: references/statements/ddl/cast/drop_cast.md
+  official_source: https://www.postgresql.org/docs/16/sql-dropcast.html
+  aliases:
+  - DROP CAST
+  - drop cast
+  - drop_cast
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required baseline groups must pass audit before derived extension combinations are emitted.
+  - Extensions may add additional type pairs, reverse-direction fixtures, or privilege edges after audit passes.
+  - Extensions must not satisfy required factor, object, relation, table, or column-type coverage.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds:
+    - cast
+    - type
+    decision_reason: DROP CAST removes a cast object identified by source_type and target_type, and requires ownership or
+      privilege checks on those type objects.
+  target_relation_coverage:
+    required: false
+    coverage_mode: not_applicable
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    decision_reason: DROP CAST does not target pg_class relations; it removes a type-system cast object.
+  table_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: DROP CAST does not create, alter, scan, or validate table variants.
+  column_type_coverage:
+    required: false
+    coverage_mode: representative
+    inventory_source: references/common/pg16_type_catalog.md
+    decision_reason: Exhaustive table-column type coverage is not applicable because DROP CAST uses source_type and
+      target_type as cast identity keys, not table columns. Representative type-pair coverage is expressed by source_type,
+      target_type, and the cast_type_pair_manifest.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values: [branch_1]
+      coverage_requirement: all_declared_values
+    object_state:
+      tier: T1
+      coverage_role: object_state_axis
+      required_values: [not_exists, already_exists]
+      coverage_requirement: all_declared_values
+    expected_status:
+      tier: T1
+      coverage_role: status_axis
+      required_values: [success, failure]
+      coverage_requirement: all_declared_values
+    if_exists_clause:
+      tier: T2
+      coverage_role: existence_clause_axis
+      required_values: [absent, present]
+      coverage_requirement: all_declared_values
+    cascade_restrict:
+      tier: T2
+      coverage_role: dependency_action_axis
+      required_values: [RESTRICT_default, RESTRICT_explicit, CASCADE]
+      coverage_requirement: all_declared_values
+    source_type:
+      tier: T2
+      coverage_role: source_type_axis
+      required_values: [integer, bigint, text, numeric, boolean, date, custom_type]
+      coverage_requirement: representative_declared_values
+    target_type:
+      tier: T2
+      coverage_role: target_type_axis
+      required_values: [integer, bigint, text, numeric, float8, timestamp, custom_type]
+      coverage_requirement: representative_declared_values
+    source_type_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values: [plain_type, schema_qualified_type]
+      coverage_requirement: all_declared_values
+    target_type_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values: [plain_type, schema_qualified_type]
+      coverage_requirement: all_declared_values
+    privilege_level:
+      tier: T4
+      coverage_role: privilege_axis
+      required_values: [type_owner_source, type_owner_target, non_owner]
+      coverage_requirement: all_declared_values
+    type_ownership:
+      tier: T4
+      coverage_role: type_privilege_axis
+      required_values: [owns_source, owns_target, owns_neither]
+      coverage_requirement: all_declared_values
+    nonexistent_cast:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: [without_if_exists, with_if_exists]
+      coverage_requirement: all_declared_values
+    insufficient_privilege:
+      tier: T5
+      coverage_role: privilege_boundary_axis
+      required_values: [owns_no_type]
+      coverage_requirement: all_declared_values
+    reverse_direction_cast:
+      tier: T5
+      coverage_role: direction_boundary_axis
+      required_values: [reverse_still_exists]
+      coverage_requirement: all_declared_values
+    verification_mode:
+      tier: T6
+      coverage_role: verification_axis
+      required_values: [pg_cast_catalog_query, pg_cast_removed_assertion]
+      coverage_requirement: all_declared_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: cleanup_axis
+      required_values: [DROP_CAST_IF_EXISTS]
+      coverage_requirement: all_declared_values
+dynamic_inputs:
+  cast_type_pair_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/cast_type_pair_manifest.json
+    required_fields: [source_type, target_type, source_type_shape, target_type_shape, object_state, direction]
+  cast_privilege_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/cast_privilege_manifest.json
+    required_fields: [execution_role, privilege_level, type_ownership, owns_source_type, owns_target_type]
+  reverse_cast_manifest:
+    required: false
+    path_pattern: artifacts/intermediates/<task_slug>/reverse_cast_manifest.json
+    required_fields: [source_type, target_type, reverse_direction_exists, reverse_direction_expected_state]
+combination_groups:
+- id: drop_cast_required_factor_value_matrix
+  title: DROP CAST required factor value baseline
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  expected_failure_reasons:
+  - cast_does_not_exist
+  - insufficient_cast_privilege
+  factors:
+    statement_branch: branch_1
+    object_state: already_exists
+    expected_status: success
+    if_exists_clause: absent
+    cascade_restrict: RESTRICT_default
+    source_type: integer
+    target_type: bigint
+    source_type_shape: plain_type
+    target_type_shape: plain_type
+    privilege_level: type_owner_source
+    type_ownership: owns_source
+    nonexistent_cast: with_if_exists
+    insufficient_privilege: owns_no_type
+    reverse_direction_cast: reverse_still_exists
+    verification_mode: pg_cast_catalog_query
+    cleanup_mode: DROP_CAST_IF_EXISTS
+  expansion:
+    statement_branch:
+      mode: explicit
+      values: [branch_1]
+    object_state:
+      mode: explicit
+      values: [not_exists, already_exists]
+    expected_status:
+      mode: explicit
+      values: [success, failure]
+    if_exists_clause:
+      mode: explicit
+      values: [absent, present]
+    cascade_restrict:
+      mode: explicit
+      values: [RESTRICT_default, RESTRICT_explicit, CASCADE]
+    source_type:
+      mode: explicit
+      values: [integer, bigint, text, numeric, boolean, date, custom_type]
+    target_type:
+      mode: explicit
+      values: [integer, bigint, text, numeric, float8, timestamp, custom_type]
+    source_type_shape:
+      mode: explicit
+      values: [plain_type, schema_qualified_type]
+    target_type_shape:
+      mode: explicit
+      values: [plain_type, schema_qualified_type]
+    privilege_level:
+      mode: explicit
+      values: [type_owner_source, type_owner_target, non_owner]
+    type_ownership:
+      mode: explicit
+      values: [owns_source, owns_target, owns_neither]
+    nonexistent_cast:
+      mode: explicit
+      values: [without_if_exists, with_if_exists]
+    insufficient_privilege:
+      mode: explicit
+      values: [owns_no_type]
+    reverse_direction_cast:
+      mode: explicit
+      values: [reverse_still_exists]
+    verification_mode:
+      mode: explicit
+      values: [pg_cast_catalog_query, pg_cast_removed_assertion]
+    cleanup_mode:
+      mode: explicit
+      values: [DROP_CAST_IF_EXISTS]
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - object_state == already_exists and privilege_level in [type_owner_source, type_owner_target]
+    - object_state == not_exists and if_exists_clause == present
+    - cascade_restrict in [RESTRICT_default, RESTRICT_explicit, CASCADE]
+    failure_when:
+    - condition: object_state == not_exists and if_exists_clause == absent
+      reason: cast_does_not_exist
+    - condition: privilege_level == non_owner or type_ownership == owns_neither or insufficient_privilege == owns_no_type
+      reason: insufficient_cast_privilege
+    default_failure_reason: drop_cast_binding_invalid
+  sql_shape:
+    template: DROP CAST {if_exists} ({source_type} AS {target_type}) {cascade_restrict};
+  verification:
+    required: true
+    mode: catalog_or_removed_or_error_assertion
+    sql: SELECT count(*) FROM pg_cast WHERE castsource = '{source_type}'::regtype AND casttarget = '{target_type}'::regtype;
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP CAST IF EXISTS ({source_type} AS {target_type});
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

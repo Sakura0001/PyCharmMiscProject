@@ -1,0 +1,420 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: alter_procedure
+  name: ALTER PROCEDURE
+  category: ddl
+  domain: procedure
+  source_reference: references/statements/ddl/procedure/alter_procedure.md
+  official_source: https://www.postgresql.org/docs/16/sql-alterprocedure.html
+  aliases:
+  - ALTER PROCEDURE
+  - alter procedure
+  - alter_procedure
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required matrix coverage must pass before any derived extension is emitted.
+  - Derived extensions may add stress, boundary, dependency, environment, or cross-factor combinations after baseline audit
+    passes.
+  - Derived extensions must not be counted as satisfying required factor, object, routine-signature, relation, table, or column-type
+    coverage.
+  - Derived extensions must use declared factors and declared factor values.
+  - Derived extensions must preserve success or failure attribution.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds:
+    - procedure
+    decision_reason: ALTER_PROCEDURE directly targets a PostgreSQL procedure object. Baseline coverage is scoped to routine
+      lifecycle state, signature resolution, language/body attributes, privileges, and dependency behavior.
+  target_relation_coverage:
+    required: false
+    coverage_mode: not_applicable
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    decision_reason: ALTER_PROCEDURE does not target a pg_class table, index, view, sequence, or materialized-view relation;
+      routine catalog dependencies are represented as object and signature factors.
+  table_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: ALTER_PROCEDURE operates on routine catalog objects and signatures rather than table variants. Required
+      baseline coverage does not depend on regular, temporary, partitioned, inherited, or foreign table forms.
+  column_type_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: ALTER_PROCEDURE requires argument and return type coverage as routine signature/type coverage through
+      factor_contract and dynamic_inputs. Those types identify or define routine signatures; they are not table column definitions,
+      so shared table column_type_coverage is not applicable.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values: &id001
+      - branch_1
+      - branch_2
+      - branch_3
+      - branch_4
+      - branch_5
+      coverage_requirement: all_declared_values
+    object_state:
+      tier: T1
+      coverage_role: main_axis
+      required_values: &id002
+      - exists
+      - not_exists
+      - different_signature_exists
+      coverage_requirement: all_declared_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values: &id003
+      - success
+      - failure
+      coverage_requirement: all_declared_values
+    action_type:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values: &id004
+      - SECURITY_INVOKER
+      - SECURITY_DEFINER
+      - SET_parameter
+      - RESET_parameter
+      - RESET_ALL
+      coverage_requirement: all_declared_values
+    restrict_clause:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values: &id005
+      - present
+      - absent
+      coverage_requirement: all_declared_values
+    rename_target:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values: &id006
+      - simple
+      - quoted
+      - reserved_word
+      - duplicate_name
+      coverage_requirement: all_declared_values
+    owner_target:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values: &id007
+      - new_owner_role
+      - CURRENT_ROLE
+      - CURRENT_USER
+      - SESSION_USER
+      - nonexistent_role
+      coverage_requirement: all_declared_values
+    schema_target:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values: &id008
+      - schema_exists
+      - schema_not_exists
+      - pg_catalog_reserved
+      - information_schema_reserved
+      coverage_requirement: all_declared_values
+    extension_target:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values: &id009
+      - extension_exists
+      - extension_not_exists
+      - NO_DEPENDS
+      coverage_requirement: all_declared_values
+    argtype_specification:
+      tier: T2
+      coverage_role: routine_signature_type_axis
+      required_values: &id010
+      - with_full_signature
+      - with_partial_signature
+      - without_signature
+      coverage_requirement: all_declared_values
+    procedure_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values: &id011
+      - simple
+      - quoted
+      - reserved_word
+      - schema_qualified
+      coverage_requirement: all_declared_values
+    new_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values: &id012
+      - simple
+      - quoted
+      - reserved_word
+      coverage_requirement: all_declared_values
+    configuration_parameter_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values: &id013
+      - valid_parameter
+      - invalid_parameter
+      coverage_requirement: all_declared_values
+    privilege_level:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values: &id014
+      - superuser
+      - procedure_owner
+      - non_owner_with_alter
+      - non_owner_no_privilege
+      coverage_requirement: all_declared_values
+    schema_dependency:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values: &id015
+      - target_schema_exists
+      - target_schema_not_exists
+      - reserved_schema
+      coverage_requirement: all_declared_values
+    role_dependency:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values: &id016
+      - owner_role_exists
+      - owner_role_not_exists
+      coverage_requirement: all_declared_values
+    extension_dependency:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values: &id017
+      - extension_installed
+      - extension_not_installed
+      coverage_requirement: all_declared_values
+    target_procedure_not_exists:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: &id018
+      - procedure_name_not_found
+      - procedure_signature_not_found
+      coverage_requirement: all_declared_values
+    target_procedure_different_type:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: &id019
+      - same_name_is_function
+      coverage_requirement: all_declared_values
+    permission_insufficient:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: &id020
+      - no_alter_privilege
+      - not_owner_for_OWNER_TO
+      - not_owner_for_SET_SCHEMA
+      coverage_requirement: all_declared_values
+    conflicting_action:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: &id021
+      - conflicting_security_modes
+      coverage_requirement: all_declared_values
+    identifier_length_exceeded:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: &id022
+      - over_63_chars
+      coverage_requirement: all_declared_values
+    verification_mode:
+      tier: T6
+      coverage_role: verification_cleanup_axis
+      required_values: &id023
+      - pg_proc_catalog_query
+      - information_schema_routines
+      - pg_get_functiondef
+      coverage_requirement: all_declared_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: verification_cleanup_axis
+      required_values: &id024
+      - DROP_PROCEDURE
+      - DROP_PROCEDURE_IF_EXISTS
+      - DROP_PROCEDURE_CASCADE
+      coverage_requirement: all_declared_values
+dynamic_inputs:
+  routine_signature_resolution_manifest:
+    required: true
+    source: factor_contract.argtype_specification and combination_groups.expansion
+    required_fields:
+    - procedure_name
+    - argument_signature
+    - signature_resolution
+    - alter_action
+    - privilege_context
+    - expected_status
+combination_groups:
+- id: alter_procedure_required_baseline_factor_space
+  title: ALTER PROCEDURE required baseline factor space
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  expected_failure_reasons:
+  - expected_statement_failure
+  - routine_resolution_or_privilege_failure
+  - invalid_signature_or_type_binding
+  - dependency_or_environment_failure
+  factors:
+    statement_branch: branch_1
+    object_state: exists
+    expected_status: success
+    action_type: SECURITY_INVOKER
+    restrict_clause: present
+    rename_target: simple
+    owner_target: new_owner_role
+    schema_target: schema_exists
+    extension_target: extension_exists
+    argtype_specification: with_full_signature
+    procedure_name_shape: simple
+    new_name_shape: simple
+    configuration_parameter_shape: valid_parameter
+    privilege_level: superuser
+    schema_dependency: target_schema_exists
+    role_dependency: owner_role_exists
+    extension_dependency: extension_installed
+    target_procedure_not_exists: procedure_name_not_found
+    target_procedure_different_type: same_name_is_function
+    permission_insufficient: no_alter_privilege
+    conflicting_action: conflicting_security_modes
+    identifier_length_exceeded: over_63_chars
+    verification_mode: pg_proc_catalog_query
+    cleanup_mode: DROP_PROCEDURE
+  expansion:
+    statement_branch:
+      mode: exhaustive
+      values: *id001
+    object_state:
+      mode: exhaustive
+      values: *id002
+    expected_status:
+      mode: exhaustive
+      values: *id003
+    action_type:
+      mode: exhaustive
+      values: *id004
+    restrict_clause:
+      mode: exhaustive
+      values: *id005
+    rename_target:
+      mode: exhaustive
+      values: *id006
+    owner_target:
+      mode: exhaustive
+      values: *id007
+    schema_target:
+      mode: exhaustive
+      values: *id008
+    extension_target:
+      mode: exhaustive
+      values: *id009
+    argtype_specification:
+      mode: exhaustive
+      values: *id010
+    procedure_name_shape:
+      mode: representative
+      values: *id011
+    new_name_shape:
+      mode: representative
+      values: *id012
+    configuration_parameter_shape:
+      mode: representative
+      values: *id013
+    privilege_level:
+      mode: representative
+      values: *id014
+    schema_dependency:
+      mode: representative
+      values: *id015
+    role_dependency:
+      mode: representative
+      values: *id016
+    extension_dependency:
+      mode: representative
+      values: *id017
+    target_procedure_not_exists:
+      mode: representative
+      values: *id018
+    target_procedure_different_type:
+      mode: representative
+      values: *id019
+    permission_insufficient:
+      mode: representative
+      values: *id020
+    conflicting_action:
+      mode: representative
+      values: *id021
+    identifier_length_exceeded:
+      mode: representative
+      values: *id022
+    verification_mode:
+      mode: representative
+      values: *id023
+    cleanup_mode:
+      mode: representative
+      values: *id024
+  compatibility:
+    resolver: alter_procedure_factor_binding_resolver
+    success_when:
+    - expected_status=success and selected object, signature, privilege, and dependency bindings are valid
+    - statement branch and routine kind support the selected type, language, body, or aggregate option binding
+    failure_when:
+    - condition: expected_status=failure or a declared negative boundary factor is selected
+      reason: expected_statement_failure
+    - condition: target routine object, signature, owner, schema, language, extension, support function, or privilege is missing
+        or incompatible
+      reason: routine_resolution_or_privilege_failure
+    - condition: argument, return, aggregate signature, or support function type binding is invalid for the selected branch
+      reason: invalid_signature_or_type_binding
+    default_failure_reason: expected_statement_failure
+  sql_shape:
+    template: ALTER PROCEDURE {procedure_name}({argument_signature}) {alter_procedure_action};
+  verification:
+    required: true
+    mode: catalog_query
+    sql: SELECT oid FROM pg_proc WHERE proname = '{routine_name}'
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP PROCEDURE IF EXISTS {procedure_name}({argument_signature}) CASCADE
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

@@ -1,0 +1,327 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: create_cast
+  name: CREATE CAST
+  category: ddl
+  domain: cast
+  source_reference: references/statements/ddl/cast/create_cast.md
+  official_source: https://www.postgresql.org/docs/16/sql-createcast.html
+  aliases:
+  - CREATE CAST
+  - create cast
+  - create_cast
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required baseline groups must pass audit before derived extension combinations are emitted.
+  - Extensions may add additional source/target type pairs, cast-function signatures, or privilege edges after audit passes.
+  - Extensions must not satisfy required factor, object, relation, table, or column-type coverage.
+  - Extensions must preserve declared success and failure attribution.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds:
+    - cast
+    - type
+    - function
+    decision_reason: CREATE CAST defines a cast object identified by source_type and target_type, and WITH FUNCTION branches
+      bind a conversion routine with signature requirements.
+  target_relation_coverage:
+    required: false
+    coverage_mode: not_applicable
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    decision_reason: CREATE CAST does not target pg_class relations. Cast execution can later be used in expressions, but
+      relation-kind coverage is outside this cast-definition baseline.
+  table_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: CREATE CAST creates type-conversion metadata and does not create, alter, scan, or validate table variants.
+  column_type_coverage:
+    required: false
+    coverage_mode: representative
+    inventory_source: references/common/pg16_type_catalog.md
+    decision_reason: Exhaustive table-column type coverage is not applicable because CREATE CAST covers source_type and
+      target_type as cast identity keys, not table columns. Representative source_type and target_type values plus the
+      cast_type_pair_manifest cover the type-conversion surface.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values: [branch_with_function, branch_without_function, branch_with_inout]
+      coverage_requirement: all_declared_values
+    object_state:
+      tier: T1
+      coverage_role: object_state_axis
+      required_values: [not_exists, already_exists]
+      coverage_requirement: all_declared_values
+    expected_status:
+      tier: T1
+      coverage_role: status_axis
+      required_values: [success, failure]
+      coverage_requirement: all_declared_values
+    cast_implementation:
+      tier: T2
+      coverage_role: branch_binding_axis
+      required_values: [with_function, without_function, with_inout]
+      coverage_requirement: all_declared_values
+    implicit_context:
+      tier: T2
+      coverage_role: coercion_context_axis
+      required_values: [explicit_only_default, as_assignment, as_implicit]
+      coverage_requirement: all_declared_values
+    source_type:
+      tier: T2
+      coverage_role: source_type_axis
+      required_values: [integer, bigint, text, numeric, boolean, date, timestamp, custom_type]
+      coverage_requirement: representative_declared_values
+    target_type:
+      tier: T2
+      coverage_role: target_type_axis
+      required_values: [integer, bigint, text, numeric, float8, boolean, timestamp, custom_type]
+      coverage_requirement: representative_declared_values
+    source_type_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values: [plain_type, schema_qualified_type, quoted_type]
+      coverage_requirement: all_declared_values
+    target_type_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values: [plain_type, schema_qualified_type]
+      coverage_requirement: all_declared_values
+    function_name_shape:
+      tier: T3
+      coverage_role: routine_name_axis
+      required_values: [plain_identifier, schema_qualified]
+      coverage_requirement: all_declared_values
+    privilege_level:
+      tier: T4
+      coverage_role: privilege_axis
+      required_values: [superuser, type_owner_source, type_owner_target, non_owner]
+      coverage_requirement: all_declared_values
+    function_dependency:
+      tier: T4
+      coverage_role: routine_dependency_axis
+      required_values: [function_exists_correct_signature, function_exists_wrong_signature, function_not_exists]
+      coverage_requirement: all_declared_values
+    type_ownership:
+      tier: T4
+      coverage_role: type_privilege_axis
+      required_values: [owns_source_type, owns_target_type, owns_both, owns_neither]
+      coverage_requirement: all_declared_values
+    duplicate_cast:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: [same_source_target_direction, reverse_direction_exists]
+      coverage_requirement: all_declared_values
+    same_source_and_target:
+      tier: T5
+      coverage_role: type_pair_boundary_axis
+      required_values: [same_type_multiarg_function, same_type_no_function]
+      coverage_requirement: all_declared_values
+    binary_coercible_non_superuser:
+      tier: T5
+      coverage_role: privilege_boundary_axis
+      required_values: [non_superuser_without_function]
+      coverage_requirement: all_declared_values
+    function_signature_mismatch:
+      tier: T5
+      coverage_role: routine_signature_boundary_axis
+      required_values: [wrong_first_arg_type, wrong_return_type]
+      coverage_requirement: all_declared_values
+    insufficient_privilege:
+      tier: T5
+      coverage_role: privilege_boundary_axis
+      required_values: [owns_no_type, no_usage_on_other_type]
+      coverage_requirement: all_declared_values
+    verification_mode:
+      tier: T6
+      coverage_role: verification_axis
+      required_values: [pg_cast_catalog_query, actual_cast_execution]
+      coverage_requirement: all_declared_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: cleanup_axis
+      required_values: [DROP_CAST, DROP_CAST_IF_EXISTS]
+      coverage_requirement: all_declared_values
+dynamic_inputs:
+  cast_type_pair_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/cast_type_pair_manifest.json
+    required_fields: [source_type, target_type, source_type_shape, target_type_shape, type_ownership, direction]
+  cast_function_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/cast_function_manifest.json
+    required_fields: [function_name, argument_types, return_type, function_dependency, function_name_shape]
+  cast_privilege_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/cast_privilege_manifest.json
+    required_fields: [execution_role, privilege_level, owns_source_type, owns_target_type, has_usage_on_other_type]
+combination_groups:
+- id: create_cast_required_factor_value_matrix
+  title: CREATE CAST required factor value baseline
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  expected_failure_reasons:
+  - duplicate_cast
+  - missing_cast_function
+  - wrong_cast_function_signature
+  - binary_cast_requires_superuser
+  - same_type_cast_requires_multiarg_function
+  - insufficient_cast_privilege
+  - invalid_cast_type_pair
+  factors:
+    statement_branch: branch_with_function
+    object_state: not_exists
+    expected_status: success
+    cast_implementation: with_function
+    implicit_context: explicit_only_default
+    source_type: integer
+    target_type: bigint
+    source_type_shape: plain_type
+    target_type_shape: plain_type
+    function_name_shape: plain_identifier
+    privilege_level: type_owner_source
+    function_dependency: function_exists_correct_signature
+    type_ownership: owns_source_type
+    duplicate_cast: reverse_direction_exists
+    same_source_and_target: same_type_multiarg_function
+    binary_coercible_non_superuser: non_superuser_without_function
+    function_signature_mismatch: wrong_first_arg_type
+    insufficient_privilege: owns_no_type
+    verification_mode: pg_cast_catalog_query
+    cleanup_mode: DROP_CAST
+  expansion:
+    statement_branch:
+      mode: explicit
+      values: [branch_with_function, branch_without_function, branch_with_inout]
+    object_state:
+      mode: explicit
+      values: [not_exists, already_exists]
+    expected_status:
+      mode: explicit
+      values: [success, failure]
+    cast_implementation:
+      mode: explicit
+      values: [with_function, without_function, with_inout]
+    implicit_context:
+      mode: explicit
+      values: [explicit_only_default, as_assignment, as_implicit]
+    source_type:
+      mode: explicit
+      values: [integer, bigint, text, numeric, boolean, date, timestamp, custom_type]
+    target_type:
+      mode: explicit
+      values: [integer, bigint, text, numeric, float8, boolean, timestamp, custom_type]
+    source_type_shape:
+      mode: explicit
+      values: [plain_type, schema_qualified_type, quoted_type]
+    target_type_shape:
+      mode: explicit
+      values: [plain_type, schema_qualified_type]
+    function_name_shape:
+      mode: explicit
+      values: [plain_identifier, schema_qualified]
+    privilege_level:
+      mode: explicit
+      values: [superuser, type_owner_source, type_owner_target, non_owner]
+    function_dependency:
+      mode: explicit
+      values: [function_exists_correct_signature, function_exists_wrong_signature, function_not_exists]
+    type_ownership:
+      mode: explicit
+      values: [owns_source_type, owns_target_type, owns_both, owns_neither]
+    duplicate_cast:
+      mode: explicit
+      values: [same_source_target_direction, reverse_direction_exists]
+    same_source_and_target:
+      mode: explicit
+      values: [same_type_multiarg_function, same_type_no_function]
+    binary_coercible_non_superuser:
+      mode: explicit
+      values: [non_superuser_without_function]
+    function_signature_mismatch:
+      mode: explicit
+      values: [wrong_first_arg_type, wrong_return_type]
+    insufficient_privilege:
+      mode: explicit
+      values: [owns_no_type, no_usage_on_other_type]
+    verification_mode:
+      mode: explicit
+      values: [pg_cast_catalog_query, actual_cast_execution]
+    cleanup_mode:
+      mode: explicit
+      values: [DROP_CAST, DROP_CAST_IF_EXISTS]
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - object_state == not_exists and cast_implementation in [with_function, with_inout] and privilege_level in [superuser,
+      type_owner_source, type_owner_target] and function_dependency == function_exists_correct_signature
+    - cast_implementation == without_function and privilege_level == superuser
+    - duplicate_cast == reverse_direction_exists
+    failure_when:
+    - condition: object_state == already_exists or duplicate_cast == same_source_target_direction
+      reason: duplicate_cast
+    - condition: function_dependency == function_not_exists
+      reason: missing_cast_function
+    - condition: function_dependency == function_exists_wrong_signature or function_signature_mismatch in [wrong_first_arg_type,
+        wrong_return_type]
+      reason: wrong_cast_function_signature
+    - condition: cast_implementation == without_function and privilege_level != superuser
+      reason: binary_cast_requires_superuser
+    - condition: same_source_and_target == same_type_no_function
+      reason: same_type_cast_requires_multiarg_function
+    - condition: privilege_level == non_owner or type_ownership == owns_neither or insufficient_privilege in [owns_no_type,
+        no_usage_on_other_type]
+      reason: insufficient_cast_privilege
+    default_failure_reason: create_cast_binding_invalid
+  sql_shape:
+    template: CREATE CAST ({source_type} AS {target_type}) {cast_implementation_clause} {implicit_clause};
+  verification:
+    required: true
+    mode: catalog_or_execution_or_error_assertion
+    sql: SELECT oid FROM pg_cast WHERE castsource = '{source_type}'::regtype AND casttarget = '{target_type}'::regtype;
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP CAST IF EXISTS ({source_type} AS {target_type});
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

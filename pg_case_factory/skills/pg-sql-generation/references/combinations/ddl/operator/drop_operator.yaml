@@ -1,0 +1,277 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: drop_operator
+  name: DROP OPERATOR
+  category: ddl
+  domain: operator
+  source_reference: references/statements/ddl/operator/drop_operator.md
+  official_source: https://www.postgresql.org/docs/16/sql-dropoperator.html
+  aliases:
+  - drop operator
+  - DROP OPERATOR
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required baseline groups must pass audit before derived extension combinations are emitted.
+  - Extensions may add multi-drop, dependency, privilege, or signature permutations after the baseline audit passes.
+  - Extensions must not satisfy required factor, object, relation, table, or column-type coverage.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds:
+    - operator
+    - type
+    decision_reason: DROP OPERATOR targets operator objects by operator name and operand type signature. Dependent-object
+      behavior is covered by dependency_state and cascade_behavior rather than relation or table inventories.
+  target_relation_coverage:
+    required: false
+    coverage_mode: not_applicable
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    decision_reason: DROP OPERATOR removes operator catalog entries and does not directly target pg_class relation kinds.
+  table_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: DROP OPERATOR does not create, alter, scan, or validate table variants.
+  column_type_coverage:
+    required: false
+    coverage_mode: representative
+    inventory_source: references/common/pg16_type_catalog.md
+    decision_reason: Exhaustive table-column type coverage is not applicable because DROP OPERATOR uses operand data types
+      only as object identity keys. Representative operand_data_type values and the type_binding_manifest cover the needed
+      signature coverage.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values: [branch_1]
+      coverage_requirement: all_declared_values
+    target_object_state:
+      tier: T1
+      coverage_role: object_state_axis
+      required_values: [exists, missing, exists_with_dependents]
+      coverage_requirement: all_declared_values
+    operand_type_shape:
+      tier: T1
+      coverage_role: signature_axis
+      required_values: [binary_operator, prefix_operator]
+      coverage_requirement: all_declared_values
+    expected_status:
+      tier: T1
+      coverage_role: status_axis
+      required_values: [success, failure]
+      coverage_requirement: all_declared_values
+    if_exists_clause:
+      tier: T2
+      coverage_role: existence_clause_axis
+      required_values: [absent, present]
+      coverage_requirement: all_declared_values
+    cascade_clause:
+      tier: T2
+      coverage_role: dependency_action_axis
+      required_values: [restrict_default, restrict_explicit, cascade]
+      coverage_requirement: all_declared_values
+    multi_drop:
+      tier: T2
+      coverage_role: list_axis
+      required_values: [single, multiple]
+      coverage_requirement: all_declared_values
+    privilege_context:
+      tier: T2
+      coverage_role: privilege_axis
+      required_values: [superuser, owner, non_owner, insufficient_privilege]
+      coverage_requirement: all_declared_values
+    name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values: [plain_identifier, schema_qualified, quoted_identifier]
+      coverage_requirement: all_declared_values
+    operand_data_type:
+      tier: T3
+      coverage_role: type_binding_axis
+      required_values: [integer, text, boolean, custom_type]
+      coverage_requirement: representative_declared_values
+    dependency_state:
+      tier: T4
+      coverage_role: dependency_axis
+      required_values: [no_dependents, has_dependents]
+      coverage_requirement: all_declared_values
+    cascade_behavior:
+      tier: T4
+      coverage_role: dependency_result_axis
+      required_values: [restrict_blocks, cascade_succeeds]
+      coverage_requirement: all_declared_values
+    invalid_combination:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: [none, syntax_valid_semantic_error]
+      coverage_requirement: all_declared_values
+    ownership_boundary:
+      tier: T5
+      coverage_role: ownership_axis
+      required_values: [superuser, owner, non_owner]
+      coverage_requirement: all_declared_values
+    verification_mode:
+      tier: T6
+      coverage_role: verification_axis
+      required_values: [catalog_query, effect_query, error_assertion]
+      coverage_requirement: all_declared_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: cleanup_axis
+      required_values: [drop_objects, reset_state]
+      coverage_requirement: all_declared_values
+dynamic_inputs:
+  operator_signature_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/operator_signature_manifest.json
+    required_fields: [operator_name, schema_name, operand_type_shape, left_type, right_type, target_object_state]
+  type_binding_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/type_binding_manifest.json
+    required_fields: [type_name, type_kind, operand_role, operand_data_type, declaration_sql]
+  operator_dependency_manifest:
+    required: false
+    path_pattern: artifacts/intermediates/<task_slug>/operator_dependency_manifest.json
+    required_fields: [dependent_object_name, dependent_object_kind, dependency_state, cascade_behavior]
+combination_groups:
+- id: drop_operator_required_factor_value_matrix
+  title: DROP OPERATOR required factor value baseline
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  expected_failure_reasons:
+  - operator_does_not_exist
+  - dependent_objects_block_drop_operator
+  - invalid_drop_operator_combination
+  - insufficient_operator_privilege
+  factors:
+    statement_branch: branch_1
+    target_object_state: exists
+    operand_type_shape: binary_operator
+    expected_status: success
+    if_exists_clause: absent
+    cascade_clause: restrict_default
+    multi_drop: single
+    privilege_context: owner
+    name_shape: plain_identifier
+    operand_data_type: integer
+    dependency_state: no_dependents
+    cascade_behavior: cascade_succeeds
+    invalid_combination: none
+    ownership_boundary: owner
+    verification_mode: catalog_query
+    cleanup_mode: drop_objects
+  expansion:
+    statement_branch:
+      mode: explicit
+      values: [branch_1]
+    target_object_state:
+      mode: explicit
+      values: [exists, missing, exists_with_dependents]
+    operand_type_shape:
+      mode: explicit
+      values: [binary_operator, prefix_operator]
+    expected_status:
+      mode: explicit
+      values: [success, failure]
+    if_exists_clause:
+      mode: explicit
+      values: [absent, present]
+    cascade_clause:
+      mode: explicit
+      values: [restrict_default, restrict_explicit, cascade]
+    multi_drop:
+      mode: explicit
+      values: [single, multiple]
+    privilege_context:
+      mode: explicit
+      values: [superuser, owner, non_owner, insufficient_privilege]
+    name_shape:
+      mode: explicit
+      values: [plain_identifier, schema_qualified, quoted_identifier]
+    operand_data_type:
+      mode: explicit
+      values: [integer, text, boolean, custom_type]
+    dependency_state:
+      mode: explicit
+      values: [no_dependents, has_dependents]
+    cascade_behavior:
+      mode: explicit
+      values: [restrict_blocks, cascade_succeeds]
+    invalid_combination:
+      mode: explicit
+      values: [none, syntax_valid_semantic_error]
+    ownership_boundary:
+      mode: explicit
+      values: [superuser, owner, non_owner]
+    verification_mode:
+      mode: explicit
+      values: [catalog_query, effect_query, error_assertion]
+    cleanup_mode:
+      mode: explicit
+      values: [drop_objects, reset_state]
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - target_object_state == exists and dependency_state == no_dependents and privilege_context in [superuser, owner]
+    - target_object_state == missing and if_exists_clause == present
+    - target_object_state == exists_with_dependents and cascade_clause == cascade
+    failure_when:
+    - condition: target_object_state == missing and if_exists_clause == absent
+      reason: operator_does_not_exist
+    - condition: target_object_state == exists_with_dependents and cascade_clause in [restrict_default, restrict_explicit]
+      reason: dependent_objects_block_drop_operator
+    - condition: invalid_combination != none
+      reason: invalid_drop_operator_combination
+    - condition: privilege_context in [non_owner, insufficient_privilege] or ownership_boundary == non_owner
+      reason: insufficient_operator_privilege
+    default_failure_reason: drop_operator_binding_invalid
+  sql_shape:
+    template: DROP OPERATOR {if_exists} {operator_name} ({left_type}, {right_type}) {cascade_clause};
+  verification:
+    required: true
+    mode: catalog_or_error_assertion
+    sql: SELECT count(*) FROM pg_operator WHERE oprname = '{operator_name}' AND oprleft = '{left_type}'::regtype AND oprright = '{right_type}'::regtype;
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP OPERATOR IF EXISTS {operator_name} ({left_type}, {right_type}) CASCADE;
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

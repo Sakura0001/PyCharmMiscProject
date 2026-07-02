@@ -1,0 +1,385 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: create_transform
+  name: CREATE TRANSFORM
+  category: ddl
+  domain: transform
+  source_reference: references/statements/ddl/transform/create_transform.md
+  official_source: https://www.postgresql.org/docs/16/sql-createtransform.html
+  aliases:
+  - create_transform
+  - CREATE TRANSFORM
+  - CREATE OR REPLACE TRANSFORM
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required baseline groups must pass audit before derived extension combinations are emitted.
+  - Extensions may add additional language, type, direction, or function-signature permutations after audit passes.
+  - Extensions must not satisfy required factor, object, relation, table, or column-type coverage.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds:
+    - transform
+    - type
+    - language
+    - function
+    decision_reason: CREATE TRANSFORM defines a transform object keyed by type and language, and binds FROM SQL / TO SQL
+      transform functions with privilege and signature requirements.
+  target_relation_coverage:
+    required: false
+    coverage_mode: not_applicable
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    decision_reason: CREATE TRANSFORM does not target pg_class relations; its identity is type plus language and its
+      dependencies are type, language, and function objects.
+  table_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: CREATE TRANSFORM does not create, alter, scan, or validate table variants.
+  column_type_coverage:
+    required: false
+    coverage_mode: representative
+    inventory_source: references/common/pg16_type_catalog.md
+    decision_reason: Exhaustive table-column type coverage is not applicable because CREATE TRANSFORM targets one transform
+      type binding for a procedural language, not table column storage. Type coverage is represented by type_existence,
+      type_dependency, and the transform_type_language_manifest.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values: [branch_create_transform, branch_create_or_replace_transform]
+      coverage_requirement: all_declared_values
+    object_state:
+      tier: T1
+      coverage_role: object_state_axis
+      required_values: [not_exists, exists]
+      coverage_requirement: all_declared_values
+    expected_status:
+      tier: T1
+      coverage_role: status_axis
+      required_values: [success, failure]
+      coverage_requirement: all_declared_values
+    or_replace_clause:
+      tier: T2
+      coverage_role: replacement_axis
+      required_values: [omitted, present]
+      coverage_requirement: all_declared_values
+    transform_direction:
+      tier: T2
+      coverage_role: direction_axis
+      required_values: [both_from_and_to_sql, only_from_sql, only_to_sql]
+      coverage_requirement: all_declared_values
+    function_existence:
+      tier: T2
+      coverage_role: routine_dependency_axis
+      required_values: [all_functions_exist, some_functions_missing]
+      coverage_requirement: all_declared_values
+    type_existence:
+      tier: T2
+      coverage_role: type_dependency_axis
+      required_values: [type_exists, type_not_exists]
+      coverage_requirement: all_declared_values
+    language_existence:
+      tier: T2
+      coverage_role: language_dependency_axis
+      required_values: [language_exists, language_not_exists]
+      coverage_requirement: all_declared_values
+    type_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values: [simple_id, schema_qualified_id, quoted_id, nonexistent_name]
+      coverage_requirement: all_declared_values
+    language_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values: [simple_id, nonexistent_name]
+      coverage_requirement: all_declared_values
+    function_name_shape:
+      tier: T3
+      coverage_role: routine_name_axis
+      required_values: [simple_id, schema_qualified_id, nonexistent_name]
+      coverage_requirement: all_declared_values
+    privilege_on_type:
+      tier: T4
+      coverage_role: type_privilege_axis
+      required_values: [owner_with_usage, non_owner_with_usage, no_usage_privilege]
+      coverage_requirement: all_declared_values
+    privilege_on_language:
+      tier: T4
+      coverage_role: language_privilege_axis
+      required_values: [has_usage, no_usage]
+      coverage_requirement: all_declared_values
+    privilege_on_function:
+      tier: T4
+      coverage_role: routine_privilege_axis
+      required_values: [owner_with_execute, no_execute_privilege]
+      coverage_requirement: all_declared_values
+    type_dependency:
+      tier: T4
+      coverage_role: type_dependency_axis
+      required_values: [type_exists_and_valid, type_missing]
+      coverage_requirement: all_declared_values
+    language_dependency:
+      tier: T4
+      coverage_role: language_dependency_axis
+      required_values: [language_exists_and_valid, language_missing]
+      coverage_requirement: all_declared_values
+    duplicate_transform:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: [no_conflict, existing_transform_without_or_replace]
+      coverage_requirement: all_declared_values
+    nonexistent_type:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: [type_exists, type_missing]
+      coverage_requirement: all_declared_values
+    nonexistent_language:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: [language_exists, language_missing]
+      coverage_requirement: all_declared_values
+    nonexistent_function:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: [function_exists, function_missing]
+      coverage_requirement: all_declared_values
+    insufficient_type_privilege:
+      tier: T5
+      coverage_role: privilege_boundary_axis
+      required_values: [has_privilege, lacks_privilege]
+      coverage_requirement: all_declared_values
+    insufficient_language_privilege:
+      tier: T5
+      coverage_role: privilege_boundary_axis
+      required_values: [has_privilege, lacks_privilege]
+      coverage_requirement: all_declared_values
+    insufficient_function_privilege:
+      tier: T5
+      coverage_role: privilege_boundary_axis
+      required_values: [has_privilege, lacks_privilege]
+      coverage_requirement: all_declared_values
+    function_signature_mismatch:
+      tier: T5
+      coverage_role: routine_signature_boundary_axis
+      required_values: [signature_matches, signature_mismatch]
+      coverage_requirement: all_declared_values
+    verification_mode:
+      tier: T6
+      coverage_role: verification_axis
+      required_values: [catalog_query_pg_transform, error_assertion]
+      coverage_requirement: all_declared_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: cleanup_axis
+      required_values: [drop_transform, drop_type, drop_function]
+      coverage_requirement: all_declared_values
+dynamic_inputs:
+  transform_type_language_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/transform_type_language_manifest.json
+    required_fields: [type_name, type_oid, language_name, language_oid, object_state, or_replace_clause]
+  transform_function_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/transform_function_manifest.json
+    required_fields: [function_name, direction, argument_types, return_type, function_existence, signature_state]
+  transform_privilege_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/transform_privilege_manifest.json
+    required_fields: [execution_role, privilege_on_type, privilege_on_language, privilege_on_function]
+combination_groups:
+- id: create_transform_required_factor_value_matrix
+  title: CREATE TRANSFORM required factor value baseline
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  expected_failure_reasons:
+  - duplicate_transform_without_replace
+  - transform_type_missing
+  - transform_language_missing
+  - transform_function_missing
+  - insufficient_transform_type_privilege
+  - insufficient_transform_language_privilege
+  - insufficient_transform_function_privilege
+  - transform_function_signature_mismatch
+  factors:
+    statement_branch: branch_create_transform
+    object_state: not_exists
+    expected_status: success
+    or_replace_clause: omitted
+    transform_direction: both_from_and_to_sql
+    function_existence: all_functions_exist
+    type_existence: type_exists
+    language_existence: language_exists
+    type_name_shape: simple_id
+    language_name_shape: simple_id
+    function_name_shape: simple_id
+    privilege_on_type: owner_with_usage
+    privilege_on_language: has_usage
+    privilege_on_function: owner_with_execute
+    type_dependency: type_exists_and_valid
+    language_dependency: language_exists_and_valid
+    duplicate_transform: no_conflict
+    nonexistent_type: type_exists
+    nonexistent_language: language_exists
+    nonexistent_function: function_exists
+    insufficient_type_privilege: has_privilege
+    insufficient_language_privilege: has_privilege
+    insufficient_function_privilege: has_privilege
+    function_signature_mismatch: signature_matches
+    verification_mode: catalog_query_pg_transform
+    cleanup_mode: drop_transform
+  expansion:
+    statement_branch:
+      mode: explicit
+      values: [branch_create_transform, branch_create_or_replace_transform]
+    object_state:
+      mode: explicit
+      values: [not_exists, exists]
+    expected_status:
+      mode: explicit
+      values: [success, failure]
+    or_replace_clause:
+      mode: explicit
+      values: [omitted, present]
+    transform_direction:
+      mode: explicit
+      values: [both_from_and_to_sql, only_from_sql, only_to_sql]
+    function_existence:
+      mode: explicit
+      values: [all_functions_exist, some_functions_missing]
+    type_existence:
+      mode: explicit
+      values: [type_exists, type_not_exists]
+    language_existence:
+      mode: explicit
+      values: [language_exists, language_not_exists]
+    type_name_shape:
+      mode: explicit
+      values: [simple_id, schema_qualified_id, quoted_id, nonexistent_name]
+    language_name_shape:
+      mode: explicit
+      values: [simple_id, nonexistent_name]
+    function_name_shape:
+      mode: explicit
+      values: [simple_id, schema_qualified_id, nonexistent_name]
+    privilege_on_type:
+      mode: explicit
+      values: [owner_with_usage, non_owner_with_usage, no_usage_privilege]
+    privilege_on_language:
+      mode: explicit
+      values: [has_usage, no_usage]
+    privilege_on_function:
+      mode: explicit
+      values: [owner_with_execute, no_execute_privilege]
+    type_dependency:
+      mode: explicit
+      values: [type_exists_and_valid, type_missing]
+    language_dependency:
+      mode: explicit
+      values: [language_exists_and_valid, language_missing]
+    duplicate_transform:
+      mode: explicit
+      values: [no_conflict, existing_transform_without_or_replace]
+    nonexistent_type:
+      mode: explicit
+      values: [type_exists, type_missing]
+    nonexistent_language:
+      mode: explicit
+      values: [language_exists, language_missing]
+    nonexistent_function:
+      mode: explicit
+      values: [function_exists, function_missing]
+    insufficient_type_privilege:
+      mode: explicit
+      values: [has_privilege, lacks_privilege]
+    insufficient_language_privilege:
+      mode: explicit
+      values: [has_privilege, lacks_privilege]
+    insufficient_function_privilege:
+      mode: explicit
+      values: [has_privilege, lacks_privilege]
+    function_signature_mismatch:
+      mode: explicit
+      values: [signature_matches, signature_mismatch]
+    verification_mode:
+      mode: explicit
+      values: [catalog_query_pg_transform, error_assertion]
+    cleanup_mode:
+      mode: explicit
+      values: [drop_transform, drop_type, drop_function]
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - type_existence == type_exists and language_existence == language_exists and function_existence == all_functions_exist
+      and privilege_on_type != no_usage_privilege and privilege_on_language == has_usage and privilege_on_function ==
+      owner_with_execute
+    - object_state == exists and or_replace_clause == present
+    failure_when:
+    - condition: object_state == exists and or_replace_clause == omitted
+      reason: duplicate_transform_without_replace
+    - condition: type_existence == type_not_exists or type_dependency == type_missing or nonexistent_type == type_missing
+      reason: transform_type_missing
+    - condition: language_existence == language_not_exists or language_dependency == language_missing or nonexistent_language ==
+        language_missing
+      reason: transform_language_missing
+    - condition: function_existence == some_functions_missing or nonexistent_function == function_missing
+      reason: transform_function_missing
+    - condition: privilege_on_type == no_usage_privilege or insufficient_type_privilege == lacks_privilege
+      reason: insufficient_transform_type_privilege
+    - condition: privilege_on_language == no_usage or insufficient_language_privilege == lacks_privilege
+      reason: insufficient_transform_language_privilege
+    - condition: privilege_on_function == no_execute_privilege or insufficient_function_privilege == lacks_privilege
+      reason: insufficient_transform_function_privilege
+    - condition: function_signature_mismatch == signature_mismatch
+      reason: transform_function_signature_mismatch
+    default_failure_reason: create_transform_binding_invalid
+  sql_shape:
+    template: CREATE {or_replace} TRANSFORM FOR {type_name} LANGUAGE {language_name} ({transform_clause});
+  verification:
+    required: true
+    mode: pg_transform_catalog_or_error_assertion
+    sql: SELECT trftype, trflang FROM pg_transform WHERE trftype = '{type_name}'::regtype AND trflang = (SELECT oid FROM pg_language WHERE lanname = '{language_name}');
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP TRANSFORM IF EXISTS FOR {type_name} LANGUAGE {language_name} CASCADE;
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true
