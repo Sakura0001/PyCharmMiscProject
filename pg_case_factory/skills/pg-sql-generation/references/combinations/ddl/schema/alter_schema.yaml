@@ -1,0 +1,685 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: alter_schema
+  name: ALTER SCHEMA
+  category: ddl
+  domain: schema
+  source_reference: references/statements/ddl/schema/alter_schema.md
+  official_source: https://www.postgresql.org/docs/16/sql-alterschema.html
+  aliases:
+  - ALTER SCHEMA
+  - alter schema
+  - alter_schema
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required matrix coverage must pass before any derived extension is emitted.
+  - Derived extensions may add stress, boundary, environment, or cross-factor combinations after the baseline audit passes.
+  - Derived extensions must not be counted as satisfying required factor, object, relation, table, or column-type coverage.
+  - Derived extensions must use declared factors and declared factor values.
+  - Derived extensions must preserve success, failure, or no-op attribution.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds:
+    - schema
+    decision_reason: ALTER_SCHEMA targets schema namespace objects. Required coverage is the schema object state, naming,
+      owner, dependency, and cascade/restrict behavior declared by the statement reference.
+  target_relation_coverage:
+    required: false
+    coverage_mode: not_applicable
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    decision_reason: ALTER_SCHEMA names a schema namespace, not a pg_class relation. Contained tables, views, or functions
+      are dependency/boundary fixtures only and are represented by declared schema dependency factors.
+  table_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: ALTER_SCHEMA operates on the schema namespace object. Any table-like schema elements or contained tables
+      are setup/dependency fixtures for namespace behavior, not direct table targets requiring table-kind coverage.
+  column_type_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: ALTER_SCHEMA has no required SQL-validity or verification dependency on column data types. Namespace
+      creation, alteration, and removal are governed by schema names, owners, permissions, and dependency boundaries.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - branch_rename
+      - branch_owner
+      coverage_requirement: all_values
+    object_state:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - exists
+      - not_exists
+      coverage_requirement: all_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - success
+      - failure
+      coverage_requirement: all_values
+    rename_clause:
+      tier: T2
+      coverage_role: branch_local_axis
+      required_values:
+      - new_simple_name
+      - new_pg_prefix_name
+      - new_existing_name
+      coverage_requirement: all_values
+    owner_clause:
+      tier: T2
+      coverage_role: branch_local_axis
+      required_values:
+      - new_owner_role
+      - CURRENT_ROLE
+      - CURRENT_USER
+      - SESSION_USER
+      coverage_requirement: all_values
+    new_name_constraint:
+      tier: T2
+      coverage_role: branch_local_axis
+      required_values:
+      - not_pg_prefix
+      - pg_prefix_illegal
+      coverage_requirement: all_values
+    schema_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - simple
+      - quoted
+      - reserved_word
+      - schema_qualified
+      coverage_requirement: all_values
+    new_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - simple
+      - quoted
+      - reserved_word
+      - pg_prefix_reserved
+      coverage_requirement: all_values
+    new_owner_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - existing_role
+      - non_existing_role
+      - CURRENT_ROLE
+      - CURRENT_USER
+      - SESSION_USER
+      coverage_requirement: all_values
+    privilege_level:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - superuser
+      - schema_owner
+      - non_owner
+      coverage_requirement: all_values
+    rename_privilege:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - owner_with_CREATE_on_db
+      - owner_no_CREATE_on_db
+      coverage_requirement: all_values
+    owner_change_privilege:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - can_SET_ROLE_to_new_owner
+      - cannot_SET_ROLE_to_new_owner
+      coverage_requirement: all_values
+    new_owner_db_privilege:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - has_CREATE_privilege
+      - no_CREATE_privilege
+      coverage_requirement: all_values
+    contained_objects_state:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - empty_schema
+      - schema_with_tables
+      - schema_with_views
+      coverage_requirement: all_values
+    non_existent_schema:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - target_not_exists
+      coverage_requirement: all_values
+    pg_prefix_new_name:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - pg_prefix_illegal
+      coverage_requirement: all_values
+    insufficient_privilege:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - non_owner_attempt
+      - owner_no_CREATE_on_db
+      - cannot_SET_ROLE
+      coverage_requirement: all_values
+    new_name_conflict:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - new_name_already_exists
+      coverage_requirement: all_values
+    new_owner_not_exists:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - specified_role_not_exists
+      coverage_requirement: all_values
+    verification_mode:
+      tier: T6
+      coverage_role: verification_axis
+      required_values:
+      - pg_namespace_catalog_query
+      - information_schema_schemata
+      - current_schema_query
+      coverage_requirement: all_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: cleanup_axis
+      required_values:
+      - DROP_SCHEMA
+      - DROP_SCHEMA_IF_EXISTS
+      - DROP_SCHEMA_CASCADE
+      coverage_requirement: all_values
+dynamic_inputs:
+  schema_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/schema_manifest.json
+    required_fields:
+    - schema_name
+    - object_state
+    - owner
+    - exists_before_statement
+  role_manifest:
+    required: false
+    path_pattern: artifacts/intermediates/<task_slug>/role_manifest.json
+    required_fields:
+    - role_name
+    - privilege_context
+    - can_set_role
+  schema_dependency_manifest:
+    required: false
+    path_pattern: artifacts/intermediates/<task_slug>/schema_dependency_manifest.json
+    required_fields:
+    - contained_objects_state
+    - cross_schema_dependency
+    - schema_element_dependency
+combination_groups:
+- id: alter_schema_required_factor_value_matrix
+  title: ALTER SCHEMA required factor value baseline
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  expected_failure_reasons:
+  - non_existent_schema
+  - pg_prefix_new_name
+  - insufficient_privilege
+  - new_name_conflict
+  - new_owner_not_exists
+  factors:
+    statement_branch: branch_rename
+    object_state: exists
+    expected_status: success
+    rename_clause: new_simple_name
+    owner_clause: new_owner_role
+    new_name_constraint: not_pg_prefix
+    schema_name_shape: simple
+    new_name_shape: simple
+    new_owner_shape: existing_role
+    privilege_level: superuser
+    rename_privilege: owner_with_CREATE_on_db
+    owner_change_privilege: can_SET_ROLE_to_new_owner
+    new_owner_db_privilege: has_CREATE_privilege
+    contained_objects_state: empty_schema
+    non_existent_schema: target_not_exists
+    pg_prefix_new_name: pg_prefix_illegal
+    insufficient_privilege: non_owner_attempt
+    new_name_conflict: new_name_already_exists
+    new_owner_not_exists: specified_role_not_exists
+    verification_mode: pg_namespace_catalog_query
+    cleanup_mode: DROP_SCHEMA
+  expansion:
+    statement_branch:
+      mode: explicit
+      values:
+      - branch_rename
+      - branch_owner
+    object_state:
+      mode: explicit
+      values:
+      - exists
+      - not_exists
+    expected_status:
+      mode: explicit
+      values:
+      - success
+      - failure
+    rename_clause:
+      mode: explicit
+      values:
+      - new_simple_name
+      - new_pg_prefix_name
+      - new_existing_name
+    owner_clause:
+      mode: explicit
+      values:
+      - new_owner_role
+      - CURRENT_ROLE
+      - CURRENT_USER
+      - SESSION_USER
+    new_name_constraint:
+      mode: explicit
+      values:
+      - not_pg_prefix
+      - pg_prefix_illegal
+    schema_name_shape:
+      mode: explicit
+      values:
+      - simple
+      - quoted
+      - reserved_word
+      - schema_qualified
+    new_name_shape:
+      mode: explicit
+      values:
+      - simple
+      - quoted
+      - reserved_word
+      - pg_prefix_reserved
+    new_owner_shape:
+      mode: explicit
+      values:
+      - existing_role
+      - non_existing_role
+      - CURRENT_ROLE
+      - CURRENT_USER
+      - SESSION_USER
+    privilege_level:
+      mode: explicit
+      values:
+      - superuser
+      - schema_owner
+      - non_owner
+    rename_privilege:
+      mode: explicit
+      values:
+      - owner_with_CREATE_on_db
+      - owner_no_CREATE_on_db
+    owner_change_privilege:
+      mode: explicit
+      values:
+      - can_SET_ROLE_to_new_owner
+      - cannot_SET_ROLE_to_new_owner
+    new_owner_db_privilege:
+      mode: explicit
+      values:
+      - has_CREATE_privilege
+      - no_CREATE_privilege
+    contained_objects_state:
+      mode: explicit
+      values:
+      - empty_schema
+      - schema_with_tables
+      - schema_with_views
+    non_existent_schema:
+      mode: explicit
+      values:
+      - target_not_exists
+    pg_prefix_new_name:
+      mode: explicit
+      values:
+      - pg_prefix_illegal
+    insufficient_privilege:
+      mode: explicit
+      values:
+      - non_owner_attempt
+      - owner_no_CREATE_on_db
+      - cannot_SET_ROLE
+    new_name_conflict:
+      mode: explicit
+      values:
+      - new_name_already_exists
+    new_owner_not_exists:
+      mode: explicit
+      values:
+      - specified_role_not_exists
+    verification_mode:
+      mode: explicit
+      values:
+      - pg_namespace_catalog_query
+      - information_schema_schemata
+      - current_schema_query
+    cleanup_mode:
+      mode: explicit
+      values:
+      - DROP_SCHEMA
+      - DROP_SCHEMA_IF_EXISTS
+      - DROP_SCHEMA_CASCADE
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - expected_status == success and object_state not in [not_exists, absent, already_exists, reserved_name_conflict]
+    - statement-specific dependencies, privileges, names, and environment factors are compatible with the selected branch
+    failure_when:
+    - condition: expected_status == failure
+      reason: statement_specific_failure
+    - condition: object_state in [not_exists, absent] without IF EXISTS-style tolerance
+      reason: target_object_missing
+    - condition: privilege or role ability factor selects an insufficient-permission value
+      reason: privilege_denied
+    default_failure_reason: statement_specific_failure
+  sql_shape:
+    template: ALTER SCHEMA {schema_name} {alter_clause};
+  verification:
+    required: true
+    mode: catalog_or_error_assertion
+    sql: SELECT nspname FROM pg_namespace WHERE nspname = '{schema_name}';
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP SCHEMA IF EXISTS {schema_name} CASCADE;
+- id: alter_schema_branch_01_branch_rename
+  title: 'ALTER SCHEMA branch baseline: branch_rename'
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  expected_failure_reasons:
+  - non_existent_schema
+  - pg_prefix_new_name
+  - insufficient_privilege
+  - new_name_conflict
+  - new_owner_not_exists
+  factors:
+    statement_branch: branch_rename
+    object_state: exists
+    expected_status: success
+    rename_clause: new_simple_name
+    owner_clause: new_owner_role
+    new_name_constraint: not_pg_prefix
+    schema_name_shape: simple
+    new_name_shape: simple
+    new_owner_shape: existing_role
+    privilege_level: superuser
+    rename_privilege: owner_with_CREATE_on_db
+    owner_change_privilege: can_SET_ROLE_to_new_owner
+    new_owner_db_privilege: has_CREATE_privilege
+    contained_objects_state: empty_schema
+    non_existent_schema: target_not_exists
+    pg_prefix_new_name: pg_prefix_illegal
+    insufficient_privilege: non_owner_attempt
+    new_name_conflict: new_name_already_exists
+    new_owner_not_exists: specified_role_not_exists
+    verification_mode: pg_namespace_catalog_query
+    cleanup_mode: DROP_SCHEMA
+  expansion:
+    statement_branch:
+      mode: explicit
+      values:
+      - branch_rename
+    object_state:
+      mode: explicit
+      values:
+      - exists
+      - not_exists
+    expected_status:
+      mode: explicit
+      values:
+      - success
+      - failure
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - statement_branch == branch_rename and expected_status == success
+    - all branch-local prerequisites select compatible values
+    failure_when:
+    - condition: statement_branch == branch_rename and expected_status == failure
+      reason: statement_specific_failure
+    default_failure_reason: statement_specific_failure
+  sql_shape:
+    template: ALTER SCHEMA {schema_name} {alter_clause};
+  verification:
+    required: true
+    mode: catalog_or_error_assertion
+    sql: SELECT nspname FROM pg_namespace WHERE nspname = '{schema_name}';
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP SCHEMA IF EXISTS {schema_name} CASCADE;
+- id: alter_schema_branch_02_branch_owner
+  title: 'ALTER SCHEMA branch baseline: branch_owner'
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  expected_failure_reasons:
+  - non_existent_schema
+  - pg_prefix_new_name
+  - insufficient_privilege
+  - new_name_conflict
+  - new_owner_not_exists
+  factors:
+    statement_branch: branch_owner
+    object_state: exists
+    expected_status: success
+    rename_clause: new_simple_name
+    owner_clause: new_owner_role
+    new_name_constraint: not_pg_prefix
+    schema_name_shape: simple
+    new_name_shape: simple
+    new_owner_shape: existing_role
+    privilege_level: superuser
+    rename_privilege: owner_with_CREATE_on_db
+    owner_change_privilege: can_SET_ROLE_to_new_owner
+    new_owner_db_privilege: has_CREATE_privilege
+    contained_objects_state: empty_schema
+    non_existent_schema: target_not_exists
+    pg_prefix_new_name: pg_prefix_illegal
+    insufficient_privilege: non_owner_attempt
+    new_name_conflict: new_name_already_exists
+    new_owner_not_exists: specified_role_not_exists
+    verification_mode: pg_namespace_catalog_query
+    cleanup_mode: DROP_SCHEMA
+  expansion:
+    statement_branch:
+      mode: explicit
+      values:
+      - branch_owner
+    object_state:
+      mode: explicit
+      values:
+      - exists
+      - not_exists
+    expected_status:
+      mode: explicit
+      values:
+      - success
+      - failure
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - statement_branch == branch_owner and expected_status == success
+    - all branch-local prerequisites select compatible values
+    failure_when:
+    - condition: statement_branch == branch_owner and expected_status == failure
+      reason: statement_specific_failure
+    default_failure_reason: statement_specific_failure
+  sql_shape:
+    template: ALTER SCHEMA {schema_name} {alter_clause};
+  verification:
+    required: true
+    mode: catalog_or_error_assertion
+    sql: SELECT nspname FROM pg_namespace WHERE nspname = '{schema_name}';
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP SCHEMA IF EXISTS {schema_name} CASCADE;
+- id: alter_schema_representative_failure_boundaries
+  title: ALTER SCHEMA representative failure boundaries
+  lifecycle_role: negative_control
+  expected_status_policy: per_factor_binding
+  default_expected_status: failure
+  expected_failure_reasons:
+  - non_existent_schema
+  - pg_prefix_new_name
+  - insufficient_privilege
+  - new_name_conflict
+  - new_owner_not_exists
+  factors:
+    statement_branch: branch_rename
+    object_state: not_exists
+    expected_status: failure
+    rename_clause: new_simple_name
+    owner_clause: new_owner_role
+    new_name_constraint: not_pg_prefix
+    schema_name_shape: simple
+    new_name_shape: simple
+    new_owner_shape: existing_role
+    privilege_level: superuser
+    rename_privilege: owner_with_CREATE_on_db
+    owner_change_privilege: can_SET_ROLE_to_new_owner
+    new_owner_db_privilege: has_CREATE_privilege
+    contained_objects_state: empty_schema
+    non_existent_schema: target_not_exists
+    pg_prefix_new_name: pg_prefix_illegal
+    insufficient_privilege: non_owner_attempt
+    new_name_conflict: new_name_already_exists
+    new_owner_not_exists: specified_role_not_exists
+    verification_mode: pg_namespace_catalog_query
+    cleanup_mode: DROP_SCHEMA
+  expansion:
+    object_state:
+      mode: explicit
+      values:
+      - exists
+      - not_exists
+    expected_status:
+      mode: explicit
+      values:
+      - success
+      - failure
+    privilege_level:
+      mode: explicit
+      values:
+      - superuser
+      - schema_owner
+      - non_owner
+    rename_privilege:
+      mode: explicit
+      values:
+      - owner_with_CREATE_on_db
+      - owner_no_CREATE_on_db
+    owner_change_privilege:
+      mode: explicit
+      values:
+      - can_SET_ROLE_to_new_owner
+      - cannot_SET_ROLE_to_new_owner
+    new_owner_db_privilege:
+      mode: explicit
+      values:
+      - has_CREATE_privilege
+      - no_CREATE_privilege
+    contained_objects_state:
+      mode: explicit
+      values:
+      - empty_schema
+      - schema_with_tables
+      - schema_with_views
+    non_existent_schema:
+      mode: explicit
+      values:
+      - target_not_exists
+    pg_prefix_new_name:
+      mode: explicit
+      values:
+      - pg_prefix_illegal
+    insufficient_privilege:
+      mode: explicit
+      values:
+      - non_owner_attempt
+      - owner_no_CREATE_on_db
+      - cannot_SET_ROLE
+    new_name_conflict:
+      mode: explicit
+      values:
+      - new_name_already_exists
+    new_owner_not_exists:
+      mode: explicit
+      values:
+      - specified_role_not_exists
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - failure boundary values are disabled and expected_status == success
+    failure_when:
+    - condition: expected_status == failure
+      reason: statement_specific_failure
+    - condition: target object, role, privilege, dependency, or environment boundary is invalid
+      reason: statement_specific_failure
+    default_failure_reason: statement_specific_failure
+  sql_shape:
+    template: ALTER SCHEMA {schema_name} {alter_clause};
+  verification:
+    required: true
+    mode: error_assertion
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP SCHEMA IF EXISTS {schema_name} CASCADE;
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

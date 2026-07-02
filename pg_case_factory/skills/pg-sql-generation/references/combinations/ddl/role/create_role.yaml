@@ -1,0 +1,648 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: create_role
+  name: CREATE ROLE
+  category: ddl
+  domain: role
+  source_reference: references/statements/ddl/role/create_role.md
+  aliases:
+  - create_role
+  - CREATE ROLE
+  - create_user
+  - CREATE USER
+  official_source: https://www.postgresql.org/docs/16/sql-createrole.html
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required baseline groups must pass audit before any extension is emitted.
+  - Extensions may add stress, boundary, dependency, privilege, or cross-factor combinations.
+  - Extensions must not satisfy required role/user/group factor coverage.
+  - Extensions must use declared statement factors and declared factor values.
+  - Extensions must preserve success or failure attribution.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds:
+    - role
+    decision_reason: CREATE ROLE defines role catalog objects; role DDL operates on database roles stored in PostgreSQL role
+      catalogs, so the baseline explicitly covers the role object kind rather than relation or table objects.
+  target_relation_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: CREATE ROLE targets PostgreSQL role catalog entries and role membership/settings, not pg_class relations.
+      Relation dependencies, when relevant to failure behavior, are modeled as dependency factors rather than required relation-kind
+      coverage.
+  table_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: CREATE ROLE does not directly create, alter, read, or drop table definitions. Any owned-object or membership
+      dependency is a role lifecycle precondition and does not require expansion across table kinds.
+  column_type_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: CREATE ROLE does not declare table columns or validate expressions whose SQL validity depends on column
+      data types; role/user/group DDL is independent of PG16 column-type coverage.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - branch_1
+      coverage_requirement: all_declared_values
+    role_identity:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - not_exists
+      - exists
+      - reserved_word_name
+      - quoted_duplicate
+      coverage_requirement: all_declared_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - success
+      - failure
+      coverage_requirement: all_declared_values
+    role_attribute:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values:
+      - default_all_nosuperuser_nocreatedb_nocreaterole_inherit_nologin_noreplication_nobypassrls
+      - superuser
+      - nosuperuser
+      - createdb
+      - nocreatedb
+      - createrole
+      - nocreaterole
+      - inherit
+      - noinherit
+      - login
+      - nologin
+      - replication
+      - noreplication
+      - bypassrls
+      - nobypassrls
+      coverage_requirement: all_declared_values
+    password_clause:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values:
+      - omitted
+      - encrypted_password
+      - unencrypted_password
+      - password_null
+      coverage_requirement: all_declared_values
+    connection_limit_clause:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values:
+      - omitted
+      - positive_limit
+      - zero_limit
+      - negative_one_unlimited
+      coverage_requirement: all_declared_values
+    valid_until_clause:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values:
+      - omitted
+      - future_timestamp
+      - past_timestamp
+      - current_timestamp
+      - infinity
+      coverage_requirement: all_declared_values
+    membership_clause:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values:
+      - omitted
+      - in_role
+      - in_group
+      - role_clause
+      - admin_clause
+      - user_clause
+      coverage_requirement: all_declared_values
+    with_keyword:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values:
+      - present
+      - absent
+      coverage_requirement: all_declared_values
+    role_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - simple_id
+      - quoted_id
+      - reserved_word_id
+      - unicode_id
+      - mixed_case_id
+      - missing_name
+      coverage_requirement: all_declared_values
+    password_value_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - valid_string
+      - null_value
+      - empty_string
+      - encrypted_md5_format
+      - encrypted_scram_format
+      - special_characters
+      coverage_requirement: all_declared_values
+    connlimit_value_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - positive_integer
+      - zero
+      - negative_one
+      - large_number
+      - invalid_type
+      coverage_requirement: all_declared_values
+    timestamp_value_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - valid_iso_timestamp
+      - valid_date_only
+      - far_future
+      - past_date
+      - infinity_literal
+      - invalid_format
+      coverage_requirement: all_declared_values
+    executor_privilege:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - superuser
+      - createrole_privilege
+      - normal_user_no_createrole
+      - role_member_with_set_role
+      coverage_requirement: all_declared_values
+    referenced_role_dependency:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - existing_role
+      - nonexistent_role
+      - self_reference
+      - multiple_roles
+      coverage_requirement: all_declared_values
+    duplicate_role_name:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - none
+      - same_name_exists
+      - case_insensitive_duplicate
+      coverage_requirement: all_declared_values
+    privilege_insufficient:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - none
+      - non_superuser_creating_superuser
+      - non_superuser_creating_replication
+      - non_superuser_creating_bypassrls
+      - no_createrole_privilege
+      coverage_requirement: all_declared_values
+    nonexistent_referenced_role:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - none
+      - in_role_references_nonexistent
+      - role_clause_references_nonexistent
+      - admin_clause_references_nonexistent
+      coverage_requirement: all_declared_values
+    invalid_parameter_value:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - none
+      - invalid_connlimit_type
+      - invalid_timestamp_format
+      - empty_password_string
+      coverage_requirement: all_declared_values
+    conflicting_attribute_pair:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - none
+      - superuser_and_nosuperuser
+      - login_and_nologin
+      - multiple_conflicting_pairs
+      coverage_requirement: all_declared_values
+    verification_mode:
+      tier: T6
+      coverage_role: verification_cleanup_axis
+      required_values:
+      - pg_roles_catalog_query
+      - attribute_check_query
+      - membership_check_query
+      - error_assertion
+      coverage_requirement: all_declared_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: verification_cleanup_axis
+      required_values:
+      - drop_role
+      - revoke_membership_then_drop
+      - cascade_drop
+      coverage_requirement: all_declared_values
+dynamic_inputs:
+  role_role_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/role_role_manifest.json
+    required_fields:
+    - target_role_name
+    - object_state
+    - executor_role
+    - setup_sql
+    - cleanup_sql
+  privilege_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/privilege_manifest.json
+    required_fields:
+    - executor_role
+    - createrole_available
+    - superuser_available
+    - expected_privilege_path
+  referenced_role_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/referenced_role_manifest.json
+    required_fields:
+    - referenced_role_name
+    - referenced_role_exists
+    - membership_setup_sql
+combination_groups:
+- id: create_role_core_syntax_and_state_baseline
+  title: CREATE ROLE core syntax, target state, and primary option coverage
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  factors:
+    statement_branch: branch_1
+    role_identity: not_exists
+    expected_status: success
+    role_attribute: default_all_nosuperuser_nocreatedb_nocreaterole_inherit_nologin_noreplication_nobypassrls
+    password_clause: omitted
+    connection_limit_clause: omitted
+    valid_until_clause: omitted
+    membership_clause: omitted
+    with_keyword: present
+    role_name_shape: simple_id
+    password_value_shape: valid_string
+    connlimit_value_shape: positive_integer
+    timestamp_value_shape: valid_iso_timestamp
+    executor_privilege: superuser
+    referenced_role_dependency: existing_role
+    duplicate_role_name: none
+    privilege_insufficient: none
+    nonexistent_referenced_role: none
+    invalid_parameter_value: none
+    conflicting_attribute_pair: none
+    verification_mode: pg_roles_catalog_query
+    cleanup_mode: drop_role
+  expansion:
+    statement_branch:
+      mode: explicit
+      values:
+      - branch_1
+    role_identity:
+      mode: explicit
+      values:
+      - not_exists
+      - exists
+      - reserved_word_name
+      - quoted_duplicate
+    expected_status:
+      mode: explicit
+      values:
+      - success
+      - failure
+    role_attribute:
+      mode: explicit
+      values:
+      - default_all_nosuperuser_nocreatedb_nocreaterole_inherit_nologin_noreplication_nobypassrls
+      - superuser
+      - nosuperuser
+      - createdb
+      - nocreatedb
+      - createrole
+      - nocreaterole
+      - inherit
+      - noinherit
+      - login
+      - nologin
+      - replication
+      - noreplication
+      - bypassrls
+      - nobypassrls
+    password_clause:
+      mode: explicit
+      values:
+      - omitted
+      - encrypted_password
+      - unencrypted_password
+      - password_null
+    connection_limit_clause:
+      mode: explicit
+      values:
+      - omitted
+      - positive_limit
+      - zero_limit
+      - negative_one_unlimited
+    valid_until_clause:
+      mode: explicit
+      values:
+      - omitted
+      - future_timestamp
+      - past_timestamp
+      - current_timestamp
+      - infinity
+    membership_clause:
+      mode: explicit
+      values:
+      - omitted
+      - in_role
+      - in_group
+      - role_clause
+      - admin_clause
+      - user_clause
+    with_keyword:
+      mode: explicit
+      values:
+      - present
+      - absent
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - selected binding represents a documented success path for the role catalog object
+    - executor privilege and referenced role prerequisites are satisfied
+    failure_when:
+    - condition: expected_status == failure
+      reason: duplicate_object_name
+    - condition: privilege or dependency factor selects an invalid prerequisite
+      reason: declared_role_ddl_prerequisite_failure
+    default_failure_reason: duplicate_object_name
+  sql_shape:
+    template: CREATE ROLE {role_name} [ [ WITH ] {options} ]
+  verification:
+    required: true
+    mode: pg_roles_catalog_query
+    sql: SELECT rolname FROM pg_roles WHERE rolname = '{role_name}';
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP ROLE IF EXISTS {target_role_name};
+- id: create_role_name_privilege_dependency_baseline
+  title: CREATE ROLE identifier, privilege, and dependency coverage
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: failure
+  expected_failure_reasons:
+  - duplicate_object_name
+  - insufficient_privilege
+  - missing_referenced_role
+  - invalid_parameter_value
+  factors:
+    statement_branch: branch_1
+    role_identity: not_exists
+    expected_status: failure
+    role_attribute: default_all_nosuperuser_nocreatedb_nocreaterole_inherit_nologin_noreplication_nobypassrls
+    password_clause: omitted
+    connection_limit_clause: omitted
+    valid_until_clause: omitted
+    membership_clause: omitted
+    with_keyword: present
+    role_name_shape: simple_id
+    password_value_shape: valid_string
+    connlimit_value_shape: positive_integer
+    timestamp_value_shape: valid_iso_timestamp
+    executor_privilege: superuser
+    referenced_role_dependency: existing_role
+    duplicate_role_name: none
+    privilege_insufficient: none
+    nonexistent_referenced_role: none
+    invalid_parameter_value: none
+    conflicting_attribute_pair: none
+    verification_mode: pg_roles_catalog_query
+    cleanup_mode: drop_role
+  expansion:
+    role_name_shape:
+      mode: explicit
+      values:
+      - simple_id
+      - quoted_id
+      - reserved_word_id
+      - unicode_id
+      - mixed_case_id
+      - missing_name
+    password_value_shape:
+      mode: explicit
+      values:
+      - valid_string
+      - null_value
+      - empty_string
+      - encrypted_md5_format
+      - encrypted_scram_format
+      - special_characters
+    connlimit_value_shape:
+      mode: explicit
+      values:
+      - positive_integer
+      - zero
+      - negative_one
+      - large_number
+      - invalid_type
+    timestamp_value_shape:
+      mode: explicit
+      values:
+      - valid_iso_timestamp
+      - valid_date_only
+      - far_future
+      - past_date
+      - infinity_literal
+      - invalid_format
+    executor_privilege:
+      mode: explicit
+      values:
+      - superuser
+      - createrole_privilege
+      - normal_user_no_createrole
+      - role_member_with_set_role
+    referenced_role_dependency:
+      mode: explicit
+      values:
+      - existing_role
+      - nonexistent_role
+      - self_reference
+      - multiple_roles
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - selected binding represents a documented success path for the role catalog object
+    - executor privilege and referenced role prerequisites are satisfied
+    failure_when:
+    - condition: expected_status == failure
+      reason: duplicate_object_name
+    - condition: privilege or dependency factor selects an invalid prerequisite
+      reason: declared_role_ddl_prerequisite_failure
+    default_failure_reason: duplicate_object_name
+  sql_shape:
+    template: CREATE ROLE {role_name} [ [ WITH ] {options} ]
+  verification:
+    required: true
+    mode: attribute_check_query
+    sql: SELECT rolname FROM pg_roles WHERE rolname = '{role_name}';
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP ROLE IF EXISTS {target_role_name};
+- id: create_role_negative_verification_cleanup_baseline
+  title: CREATE ROLE negative boundaries, verification modes, and cleanup coverage
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: failure
+  expected_failure_reasons:
+  - duplicate_object_name
+  - insufficient_privilege
+  - missing_referenced_role
+  - invalid_parameter_value
+  factors:
+    statement_branch: branch_1
+    role_identity: not_exists
+    expected_status: failure
+    role_attribute: default_all_nosuperuser_nocreatedb_nocreaterole_inherit_nologin_noreplication_nobypassrls
+    password_clause: omitted
+    connection_limit_clause: omitted
+    valid_until_clause: omitted
+    membership_clause: omitted
+    with_keyword: present
+    role_name_shape: simple_id
+    password_value_shape: valid_string
+    connlimit_value_shape: positive_integer
+    timestamp_value_shape: valid_iso_timestamp
+    executor_privilege: superuser
+    referenced_role_dependency: existing_role
+    duplicate_role_name: none
+    privilege_insufficient: none
+    nonexistent_referenced_role: none
+    invalid_parameter_value: none
+    conflicting_attribute_pair: none
+    verification_mode: pg_roles_catalog_query
+    cleanup_mode: drop_role
+  expansion:
+    duplicate_role_name:
+      mode: explicit
+      values:
+      - none
+      - same_name_exists
+      - case_insensitive_duplicate
+    privilege_insufficient:
+      mode: explicit
+      values:
+      - none
+      - non_superuser_creating_superuser
+      - non_superuser_creating_replication
+      - non_superuser_creating_bypassrls
+      - no_createrole_privilege
+    nonexistent_referenced_role:
+      mode: explicit
+      values:
+      - none
+      - in_role_references_nonexistent
+      - role_clause_references_nonexistent
+      - admin_clause_references_nonexistent
+    invalid_parameter_value:
+      mode: explicit
+      values:
+      - none
+      - invalid_connlimit_type
+      - invalid_timestamp_format
+      - empty_password_string
+    conflicting_attribute_pair:
+      mode: explicit
+      values:
+      - none
+      - superuser_and_nosuperuser
+      - login_and_nologin
+      - multiple_conflicting_pairs
+    verification_mode:
+      mode: explicit
+      values:
+      - pg_roles_catalog_query
+      - attribute_check_query
+      - membership_check_query
+      - error_assertion
+    cleanup_mode:
+      mode: explicit
+      values:
+      - drop_role
+      - revoke_membership_then_drop
+      - cascade_drop
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - selected binding represents a documented success path for the role catalog object
+    - executor privilege and referenced role prerequisites are satisfied
+    failure_when:
+    - condition: expected_status == failure
+      reason: duplicate_object_name
+    - condition: privilege or dependency factor selects an invalid prerequisite
+      reason: declared_role_ddl_prerequisite_failure
+    default_failure_reason: duplicate_object_name
+  sql_shape:
+    template: CREATE ROLE {role_name} [ [ WITH ] {options} ]
+  verification:
+    required: true
+    mode: error_assertion
+    sql: SELECT rolname FROM pg_roles WHERE rolname = '{role_name}';
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP ROLE IF EXISTS {target_role_name};
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

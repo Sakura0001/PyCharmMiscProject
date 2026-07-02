@@ -1,0 +1,546 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: drop_role
+  name: DROP ROLE
+  category: ddl
+  domain: role
+  source_reference: references/statements/ddl/role/drop_role.md
+  aliases:
+  - drop_role
+  - DROP ROLE
+  - droprole
+  official_source: https://www.postgresql.org/docs/16/sql-droprole.html
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required baseline groups must pass audit before any extension is emitted.
+  - Extensions may add stress, boundary, dependency, privilege, or cross-factor combinations.
+  - Extensions must not satisfy required role/user/group factor coverage.
+  - Extensions must use declared statement factors and declared factor values.
+  - Extensions must preserve success or failure attribution.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds:
+    - role
+    decision_reason: DROP ROLE removes role catalog objects; role DDL operates on database roles stored in PostgreSQL role
+      catalogs, so the baseline explicitly covers the role object kind rather than relation or table objects.
+  target_relation_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: DROP ROLE targets PostgreSQL role catalog entries and role membership/settings, not pg_class relations.
+      Relation dependencies, when relevant to failure behavior, are modeled as dependency factors rather than required relation-kind
+      coverage.
+  table_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: DROP ROLE does not directly create, alter, read, or drop table definitions. Any owned-object or membership
+      dependency is a role lifecycle precondition and does not require expansion across table kinds.
+  column_type_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: DROP ROLE does not declare table columns or validate expressions whose SQL validity depends on column
+      data types; role/user/group DDL is independent of PG16 column-type coverage.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - branch_drop_role
+      - branch_drop_role_if_exists
+      coverage_requirement: all_declared_values
+    role_existence:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - role_exists
+      - role_not_exists
+      - role_exists_as_superuser
+      - role_exists_as_nonsuperuser
+      coverage_requirement: all_declared_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - success
+      - failure
+      coverage_requirement: all_declared_values
+    if_exists_clause:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values:
+      - without_if_exists
+      - with_if_exists
+      coverage_requirement: all_declared_values
+    privilege_context:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values:
+      - superuser
+      - createrole_with_admin
+      - createrole_without_admin
+      - no_privilege
+      coverage_requirement: all_declared_values
+    multi_target:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values:
+      - single_target
+      - multi_target_all_exist
+      - multi_target_some_not_exist
+      coverage_requirement: all_declared_values
+    role_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - simple_name
+      - quoted_name
+      - reserved_word_name
+      - case_sensitive_name
+      - non_existing_name
+      - invalid_name
+      coverage_requirement: all_declared_values
+    owned_objects:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - no_owned_objects
+      - owns_tables
+      - owns_sequences
+      - owns_views
+      - owns_functions
+      - owns_multiple_objects
+      coverage_requirement: all_declared_values
+    membership_state:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - no_memberships
+      - member_of_other_role
+      - other_roles_member_of_this
+      - both_directions
+      coverage_requirement: all_declared_values
+    active_session:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - no_active_session
+      - has_active_session
+      coverage_requirement: all_declared_values
+    dependency_conflict:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - no_conflict
+      - owns_objects_conflict
+      - referenced_in_database
+      - privilege_grants_conflict
+      coverage_requirement: all_declared_values
+    privilege_insufficient:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - sufficient_privilege
+      - nonsuperuser_dropping_superuser
+      - no_createrole_dropping_role
+      - createrole_without_admin
+      coverage_requirement: all_declared_values
+    boundary_case:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - none
+      - drop_self
+      - drop_current_session_role
+      - drop_builtin_role
+      - empty_name_list
+      coverage_requirement: all_declared_values
+    verification_mode:
+      tier: T6
+      coverage_role: verification_cleanup_axis
+      required_values:
+      - catalog_query_pg_roles
+      - catalog_query_pg_authid
+      - effect_query
+      - error_assertion
+      coverage_requirement: all_declared_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: verification_cleanup_axis
+      required_values:
+      - drop_owned_then_drop_role
+      - reassign_owned_then_drop_role
+      - revoke_privileges_then_drop_role
+      - cascade_cleanup
+      coverage_requirement: all_declared_values
+dynamic_inputs:
+  role_role_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/role_role_manifest.json
+    required_fields:
+    - target_role_name
+    - object_state
+    - executor_role
+    - setup_sql
+    - cleanup_sql
+  privilege_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/privilege_manifest.json
+    required_fields:
+    - executor_role
+    - createrole_available
+    - superuser_available
+    - expected_privilege_path
+  membership_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/membership_manifest.json
+    required_fields:
+    - member_role_name
+    - group_role_name
+    - membership_exists_before_statement
+    - admin_option_available
+  dependency_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/role_dependency_manifest.json
+    required_fields:
+    - owned_objects_present
+    - active_session_present
+    - dependency_cleanup_sql
+combination_groups:
+- id: drop_role_core_syntax_and_state_baseline
+  title: DROP ROLE core syntax, target state, and primary option coverage
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  factors:
+    statement_branch: branch_drop_role
+    role_existence: role_exists
+    expected_status: success
+    if_exists_clause: without_if_exists
+    privilege_context: superuser
+    multi_target: single_target
+    role_name_shape: simple_name
+    owned_objects: no_owned_objects
+    membership_state: no_memberships
+    active_session: no_active_session
+    dependency_conflict: no_conflict
+    privilege_insufficient: sufficient_privilege
+    boundary_case: none
+    verification_mode: catalog_query_pg_roles
+    cleanup_mode: drop_owned_then_drop_role
+  expansion:
+    statement_branch:
+      mode: explicit
+      values:
+      - branch_drop_role
+      - branch_drop_role_if_exists
+    role_existence:
+      mode: explicit
+      values:
+      - role_exists
+      - role_not_exists
+      - role_exists_as_superuser
+      - role_exists_as_nonsuperuser
+    expected_status:
+      mode: explicit
+      values:
+      - success
+      - failure
+    if_exists_clause:
+      mode: explicit
+      values:
+      - without_if_exists
+      - with_if_exists
+    privilege_context:
+      mode: explicit
+      values:
+      - superuser
+      - createrole_with_admin
+      - createrole_without_admin
+      - no_privilege
+    multi_target:
+      mode: explicit
+      values:
+      - single_target
+      - multi_target_all_exist
+      - multi_target_some_not_exist
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - selected binding represents a documented success path for the role catalog object
+    - executor privilege and referenced role prerequisites are satisfied
+    failure_when:
+    - condition: expected_status == failure
+      reason: target_role_missing
+    - condition: privilege or dependency factor selects an invalid prerequisite
+      reason: declared_role_ddl_prerequisite_failure
+    default_failure_reason: target_role_missing
+  sql_shape:
+    template: DROP ROLE [ IF EXISTS ] name [, ...]
+  verification:
+    required: true
+    mode: catalog_query_pg_roles
+    sql: SELECT rolname FROM pg_roles WHERE rolname = '{role_name}';
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP ROLE IF EXISTS {target_role_name};
+- id: drop_role_name_privilege_dependency_baseline
+  title: DROP ROLE identifier, privilege, and dependency coverage
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: failure
+  expected_failure_reasons:
+  - target_role_missing
+  - insufficient_privilege
+  - dependent_objects_or_memberships
+  - active_session_or_builtin_role_boundary
+  factors:
+    statement_branch: branch_drop_role
+    role_existence: role_exists
+    expected_status: failure
+    if_exists_clause: without_if_exists
+    privilege_context: superuser
+    multi_target: single_target
+    role_name_shape: simple_name
+    owned_objects: no_owned_objects
+    membership_state: no_memberships
+    active_session: no_active_session
+    dependency_conflict: no_conflict
+    privilege_insufficient: sufficient_privilege
+    boundary_case: none
+    verification_mode: catalog_query_pg_roles
+    cleanup_mode: drop_owned_then_drop_role
+  expansion:
+    role_name_shape:
+      mode: explicit
+      values:
+      - simple_name
+      - quoted_name
+      - reserved_word_name
+      - case_sensitive_name
+      - non_existing_name
+      - invalid_name
+    owned_objects:
+      mode: explicit
+      values:
+      - no_owned_objects
+      - owns_tables
+      - owns_sequences
+      - owns_views
+      - owns_functions
+      - owns_multiple_objects
+    membership_state:
+      mode: explicit
+      values:
+      - no_memberships
+      - member_of_other_role
+      - other_roles_member_of_this
+      - both_directions
+    active_session:
+      mode: explicit
+      values:
+      - no_active_session
+      - has_active_session
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - selected binding represents a documented success path for the role catalog object
+    - executor privilege and referenced role prerequisites are satisfied
+    failure_when:
+    - condition: expected_status == failure
+      reason: target_role_missing
+    - condition: privilege or dependency factor selects an invalid prerequisite
+      reason: declared_role_ddl_prerequisite_failure
+    default_failure_reason: target_role_missing
+  sql_shape:
+    template: DROP ROLE [ IF EXISTS ] name [, ...]
+  verification:
+    required: true
+    mode: catalog_query_pg_authid
+    sql: SELECT rolname FROM pg_roles WHERE rolname = '{role_name}';
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP ROLE IF EXISTS {target_role_name};
+- id: drop_role_negative_verification_cleanup_baseline
+  title: DROP ROLE negative boundaries, verification modes, and cleanup coverage
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: failure
+  expected_failure_reasons:
+  - target_role_missing
+  - insufficient_privilege
+  - dependent_objects_or_memberships
+  - active_session_or_builtin_role_boundary
+  factors:
+    statement_branch: branch_drop_role
+    role_existence: role_exists
+    expected_status: failure
+    if_exists_clause: without_if_exists
+    privilege_context: superuser
+    multi_target: single_target
+    role_name_shape: simple_name
+    owned_objects: no_owned_objects
+    membership_state: no_memberships
+    active_session: no_active_session
+    dependency_conflict: no_conflict
+    privilege_insufficient: sufficient_privilege
+    boundary_case: none
+    verification_mode: catalog_query_pg_roles
+    cleanup_mode: drop_owned_then_drop_role
+  expansion:
+    dependency_conflict:
+      mode: explicit
+      values:
+      - no_conflict
+      - owns_objects_conflict
+      - referenced_in_database
+      - privilege_grants_conflict
+    privilege_insufficient:
+      mode: explicit
+      values:
+      - sufficient_privilege
+      - nonsuperuser_dropping_superuser
+      - no_createrole_dropping_role
+      - createrole_without_admin
+    boundary_case:
+      mode: explicit
+      values:
+      - none
+      - drop_self
+      - drop_current_session_role
+      - drop_builtin_role
+      - empty_name_list
+    verification_mode:
+      mode: explicit
+      values:
+      - catalog_query_pg_roles
+      - catalog_query_pg_authid
+      - effect_query
+      - error_assertion
+    cleanup_mode:
+      mode: explicit
+      values:
+      - drop_owned_then_drop_role
+      - reassign_owned_then_drop_role
+      - revoke_privileges_then_drop_role
+      - cascade_cleanup
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - selected binding represents a documented success path for the role catalog object
+    - executor privilege and referenced role prerequisites are satisfied
+    failure_when:
+    - condition: expected_status == failure
+      reason: target_role_missing
+    - condition: privilege or dependency factor selects an invalid prerequisite
+      reason: declared_role_ddl_prerequisite_failure
+    default_failure_reason: target_role_missing
+  sql_shape:
+    template: DROP ROLE [ IF EXISTS ] name [, ...]
+  verification:
+    required: true
+    mode: error_assertion
+    sql: SELECT rolname FROM pg_roles WHERE rolname = '{role_name}';
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP ROLE IF EXISTS {target_role_name};
+- id: drop_role_if_exists_noop_baseline
+  title: DROP ROLE IF EXISTS no-op and notice behavior
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  factors:
+    statement_branch: branch_drop_role
+    role_existence: role_exists
+    expected_status: success
+    if_exists_clause: without_if_exists
+    privilege_context: superuser
+    multi_target: single_target
+    role_name_shape: simple_name
+    owned_objects: no_owned_objects
+    membership_state: no_memberships
+    active_session: no_active_session
+    dependency_conflict: no_conflict
+    privilege_insufficient: sufficient_privilege
+    boundary_case: none
+    verification_mode: catalog_query_pg_roles
+    cleanup_mode: drop_owned_then_drop_role
+  expansion:
+    statement_branch:
+      mode: explicit
+      values:
+      - branch_drop_role
+      - branch_drop_role_if_exists
+    expected_status:
+      mode: explicit
+      values:
+      - success
+      - failure
+    if_exists_clause:
+      mode: explicit
+      values:
+      - without_if_exists
+      - with_if_exists
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - selected binding represents a documented success path for the role catalog object
+    - executor privilege and referenced role prerequisites are satisfied
+    failure_when:
+    - condition: expected_status == failure
+      reason: target_role_missing
+    - condition: privilege or dependency factor selects an invalid prerequisite
+      reason: declared_role_ddl_prerequisite_failure
+    default_failure_reason: target_role_missing
+  sql_shape:
+    template: DROP ROLE [ IF EXISTS ] name [, ...]
+  verification:
+    required: true
+    mode: error_assertion
+    sql: SELECT rolname FROM pg_roles WHERE rolname = '{role_name}';
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP ROLE IF EXISTS {target_role_name};
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

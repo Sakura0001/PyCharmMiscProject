@@ -1,0 +1,663 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: alter_role
+  name: ALTER ROLE
+  category: ddl
+  domain: role
+  source_reference: references/statements/ddl/role/alter_role.md
+  aliases:
+  - alter_role
+  - ALTER ROLE
+  official_source: https://www.postgresql.org/docs/16/sql-alterrole.html
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required baseline groups must pass audit before any extension is emitted.
+  - Extensions may add stress, boundary, dependency, privilege, or cross-factor combinations.
+  - Extensions must not satisfy required role/user/group factor coverage.
+  - Extensions must use declared statement factors and declared factor values.
+  - Extensions must preserve success or failure attribution.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds:
+    - role
+    decision_reason: ALTER ROLE changes role catalog objects; role DDL operates on database roles stored in PostgreSQL role
+      catalogs, so the baseline explicitly covers the role object kind rather than relation or table objects.
+  target_relation_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: ALTER ROLE targets PostgreSQL role catalog entries and role membership/settings, not pg_class relations.
+      Relation dependencies, when relevant to failure behavior, are modeled as dependency factors rather than required relation-kind
+      coverage.
+  table_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: ALTER ROLE does not directly create, alter, read, or drop table definitions. Any owned-object or membership
+      dependency is a role lifecycle precondition and does not require expansion across table kinds.
+  column_type_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: ALTER ROLE does not declare table columns or validate expressions whose SQL validity depends on column
+      data types; role/user/group DDL is independent of PG16 column-type coverage.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - branch_1_with_option
+      - branch_2_rename
+      - branch_3_set_value
+      - branch_4_set_from_current
+      - branch_5_reset_parameter
+      - branch_6_reset_all
+      coverage_requirement: all_declared_values
+    role_state:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - exists
+      - non_existent
+      - reserved_word_name
+      - quoted_name
+      - current_session_user
+      coverage_requirement: all_declared_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - success
+      - failure
+      coverage_requirement: all_declared_values
+    attribute_option:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values:
+      - superuser
+      - nosuperuser
+      - createdb
+      - nocreatedb
+      - createrole
+      - nocreaterole
+      - inherit
+      - noinherit
+      - login
+      - nologin
+      - replication
+      - noreplication
+      - bypassrls
+      - nobypassrls
+      - connection_limit
+      - encrypted_password
+      - password_null
+      - valid_until
+      coverage_requirement: all_declared_values
+    rename_behavior:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values:
+      - rename_to_new_name
+      - rename_reserved_word
+      - rename_current_user_blocked
+      coverage_requirement: all_declared_values
+    config_parameter_behavior:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values:
+      - set_value
+      - set_default
+      - set_from_current
+      - reset_parameter
+      - reset_all
+      - all_roles
+      - in_database_specific
+      coverage_requirement: all_declared_values
+    privilege_level:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values:
+      - superuser
+      - createrole_with_admin_option
+      - createrole_without_admin_option
+      - ordinary_role_self
+      - ordinary_role_other
+      coverage_requirement: all_declared_values
+    role_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - simple_name
+      - quoted_name
+      - current_role_keyword
+      - current_user_keyword
+      - session_user_keyword
+      - all_keyword
+      - non_existent_name
+      - reserved_word_name
+      coverage_requirement: all_declared_values
+    new_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - simple_name
+      - quoted_name
+      - existing_name_conflict
+      - reserved_word_name
+      - non_existent_name
+      coverage_requirement: all_declared_values
+    config_parameter_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - valid_parameter
+      - superuser_only_parameter
+      - invalid_parameter
+      coverage_requirement: all_declared_values
+    database_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - existing_database
+      - non_existent_database
+      - omitted_no_database_clause
+      coverage_requirement: all_declared_values
+    table_column_index_involvement:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - not_involved
+      coverage_requirement: all_declared_values
+    privilege_requirement:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - superuser_required
+      - createrole_with_admin_option_required
+      - self_password_only
+      - all_roles_requires_superuser
+      coverage_requirement: all_declared_values
+    config_parameter_dependency:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - settable_by_any_role
+      - settable_only_by_superuser
+      - cannot_be_set_at_role_level
+      coverage_requirement: all_declared_values
+    role_membership_dependency:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - admin_option_granted
+      - admin_option_not_granted
+      - role_is_member_of_another
+      coverage_requirement: all_declared_values
+    nonexistent_role:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - role_does_not_exist
+      coverage_requirement: all_declared_values
+    privilege_insufficient:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - ordinary_role_altering_other_role_attributes
+      - createrole_altering_superuser
+      - createrole_without_admin_option
+      - ordinary_role_altering_other_role_config
+      coverage_requirement: all_declared_values
+    invalid_config_parameter:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - superuser_only_parameter_by_non_superuser
+      - parameter_cannot_be_set_at_role_level
+      - invalid_parameter_name
+      coverage_requirement: all_declared_values
+    rename_current_session_user:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - session_user_rename_blocked
+      coverage_requirement: all_declared_values
+    rename_clears_password:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - md5_password_cleared_on_rename
+      - scram_password_preserved_on_rename
+      coverage_requirement: all_declared_values
+    password_security:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - plaintext_password_in_sql
+      - password_null_removes_password
+      coverage_requirement: all_declared_values
+    verification_mode:
+      tier: T6
+      coverage_role: verification_cleanup_axis
+      required_values:
+      - pg_roles_catalog
+      - pg_settings_catalog
+      - pg_authid_catalog
+      - effect_query
+      - error_assertion
+      coverage_requirement: all_declared_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: verification_cleanup_axis
+      required_values:
+      - reset_config_parameter
+      - drop_role
+      - revert_attribute_change
+      coverage_requirement: all_declared_values
+dynamic_inputs:
+  role_role_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/role_role_manifest.json
+    required_fields:
+    - target_role_name
+    - object_state
+    - executor_role
+    - setup_sql
+    - cleanup_sql
+  privilege_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/privilege_manifest.json
+    required_fields:
+    - executor_role
+    - createrole_available
+    - superuser_available
+    - expected_privilege_path
+  referenced_role_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/referenced_role_manifest.json
+    required_fields:
+    - referenced_role_name
+    - referenced_role_exists
+    - membership_setup_sql
+  membership_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/membership_manifest.json
+    required_fields:
+    - member_role_name
+    - group_role_name
+    - membership_exists_before_statement
+    - admin_option_available
+combination_groups:
+- id: alter_role_core_syntax_and_state_baseline
+  title: ALTER ROLE core syntax, target state, and primary option coverage
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  factors:
+    statement_branch: branch_1_with_option
+    role_state: exists
+    expected_status: success
+    attribute_option: superuser
+    rename_behavior: rename_to_new_name
+    config_parameter_behavior: set_value
+    privilege_level: superuser
+    role_name_shape: simple_name
+    new_name_shape: simple_name
+    config_parameter_shape: valid_parameter
+    database_name_shape: existing_database
+    table_column_index_involvement: not_involved
+    privilege_requirement: superuser_required
+    config_parameter_dependency: settable_by_any_role
+    role_membership_dependency: admin_option_granted
+    nonexistent_role: role_does_not_exist
+    privilege_insufficient: ordinary_role_altering_other_role_attributes
+    invalid_config_parameter: superuser_only_parameter_by_non_superuser
+    rename_current_session_user: session_user_rename_blocked
+    rename_clears_password: md5_password_cleared_on_rename
+    password_security: plaintext_password_in_sql
+    verification_mode: pg_roles_catalog
+    cleanup_mode: reset_config_parameter
+  expansion:
+    statement_branch:
+      mode: explicit
+      values:
+      - branch_1_with_option
+      - branch_2_rename
+      - branch_3_set_value
+      - branch_4_set_from_current
+      - branch_5_reset_parameter
+      - branch_6_reset_all
+    role_state:
+      mode: explicit
+      values:
+      - exists
+      - non_existent
+      - reserved_word_name
+      - quoted_name
+      - current_session_user
+    expected_status:
+      mode: explicit
+      values:
+      - success
+      - failure
+    attribute_option:
+      mode: explicit
+      values:
+      - superuser
+      - nosuperuser
+      - createdb
+      - nocreatedb
+      - createrole
+      - nocreaterole
+      - inherit
+      - noinherit
+      - login
+      - nologin
+      - replication
+      - noreplication
+      - bypassrls
+      - nobypassrls
+      - connection_limit
+      - encrypted_password
+      - password_null
+      - valid_until
+    rename_behavior:
+      mode: explicit
+      values:
+      - rename_to_new_name
+      - rename_reserved_word
+      - rename_current_user_blocked
+    config_parameter_behavior:
+      mode: explicit
+      values:
+      - set_value
+      - set_default
+      - set_from_current
+      - reset_parameter
+      - reset_all
+      - all_roles
+      - in_database_specific
+    privilege_level:
+      mode: explicit
+      values:
+      - superuser
+      - createrole_with_admin_option
+      - createrole_without_admin_option
+      - ordinary_role_self
+      - ordinary_role_other
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - selected binding represents a documented success path for the role catalog object
+    - executor privilege and referenced role prerequisites are satisfied
+    failure_when:
+    - condition: expected_status == failure
+      reason: target_role_missing
+    - condition: privilege or dependency factor selects an invalid prerequisite
+      reason: declared_role_ddl_prerequisite_failure
+    default_failure_reason: target_role_missing
+  sql_shape:
+    template: ALTER ROLE role_specification [ WITH ] option [ ... ] | ALTER ROLE name RENAME TO new_name | ALTER ROLE { role_specification
+      | ALL } [ IN DATABASE database_name ] SET/RESET configuration_parameter
+  verification:
+    required: true
+    mode: pg_roles_catalog
+    sql: SELECT rolname FROM pg_roles WHERE rolname = '{role_name}';
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP ROLE IF EXISTS {target_role_name};
+    - sql: DROP ROLE IF EXISTS {new_role_name};
+- id: alter_role_name_privilege_dependency_baseline
+  title: ALTER ROLE identifier, privilege, and dependency coverage
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: failure
+  expected_failure_reasons:
+  - target_role_missing
+  - insufficient_privilege
+  - duplicate_new_name
+  - invalid_configuration_parameter
+  factors:
+    statement_branch: branch_1_with_option
+    role_state: exists
+    expected_status: failure
+    attribute_option: superuser
+    rename_behavior: rename_to_new_name
+    config_parameter_behavior: set_value
+    privilege_level: superuser
+    role_name_shape: simple_name
+    new_name_shape: simple_name
+    config_parameter_shape: valid_parameter
+    database_name_shape: existing_database
+    table_column_index_involvement: not_involved
+    privilege_requirement: superuser_required
+    config_parameter_dependency: settable_by_any_role
+    role_membership_dependency: admin_option_granted
+    nonexistent_role: role_does_not_exist
+    privilege_insufficient: ordinary_role_altering_other_role_attributes
+    invalid_config_parameter: superuser_only_parameter_by_non_superuser
+    rename_current_session_user: session_user_rename_blocked
+    rename_clears_password: md5_password_cleared_on_rename
+    password_security: plaintext_password_in_sql
+    verification_mode: pg_roles_catalog
+    cleanup_mode: reset_config_parameter
+  expansion:
+    role_name_shape:
+      mode: explicit
+      values:
+      - simple_name
+      - quoted_name
+      - current_role_keyword
+      - current_user_keyword
+      - session_user_keyword
+      - all_keyword
+      - non_existent_name
+      - reserved_word_name
+    new_name_shape:
+      mode: explicit
+      values:
+      - simple_name
+      - quoted_name
+      - existing_name_conflict
+      - reserved_word_name
+      - non_existent_name
+    config_parameter_shape:
+      mode: explicit
+      values:
+      - valid_parameter
+      - superuser_only_parameter
+      - invalid_parameter
+    database_name_shape:
+      mode: explicit
+      values:
+      - existing_database
+      - non_existent_database
+      - omitted_no_database_clause
+    table_column_index_involvement:
+      mode: explicit
+      values:
+      - not_involved
+    privilege_requirement:
+      mode: explicit
+      values:
+      - superuser_required
+      - createrole_with_admin_option_required
+      - self_password_only
+      - all_roles_requires_superuser
+    config_parameter_dependency:
+      mode: explicit
+      values:
+      - settable_by_any_role
+      - settable_only_by_superuser
+      - cannot_be_set_at_role_level
+    role_membership_dependency:
+      mode: explicit
+      values:
+      - admin_option_granted
+      - admin_option_not_granted
+      - role_is_member_of_another
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - selected binding represents a documented success path for the role catalog object
+    - executor privilege and referenced role prerequisites are satisfied
+    failure_when:
+    - condition: expected_status == failure
+      reason: target_role_missing
+    - condition: privilege or dependency factor selects an invalid prerequisite
+      reason: declared_role_ddl_prerequisite_failure
+    default_failure_reason: target_role_missing
+  sql_shape:
+    template: ALTER ROLE role_specification [ WITH ] option [ ... ] | ALTER ROLE name RENAME TO new_name | ALTER ROLE { role_specification
+      | ALL } [ IN DATABASE database_name ] SET/RESET configuration_parameter
+  verification:
+    required: true
+    mode: pg_settings_catalog
+    sql: SELECT rolname FROM pg_roles WHERE rolname = '{role_name}';
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP ROLE IF EXISTS {target_role_name};
+    - sql: DROP ROLE IF EXISTS {new_role_name};
+- id: alter_role_negative_verification_cleanup_baseline
+  title: ALTER ROLE negative boundaries, verification modes, and cleanup coverage
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: failure
+  expected_failure_reasons:
+  - target_role_missing
+  - insufficient_privilege
+  - duplicate_new_name
+  - invalid_configuration_parameter
+  factors:
+    statement_branch: branch_1_with_option
+    role_state: exists
+    expected_status: failure
+    attribute_option: superuser
+    rename_behavior: rename_to_new_name
+    config_parameter_behavior: set_value
+    privilege_level: superuser
+    role_name_shape: simple_name
+    new_name_shape: simple_name
+    config_parameter_shape: valid_parameter
+    database_name_shape: existing_database
+    table_column_index_involvement: not_involved
+    privilege_requirement: superuser_required
+    config_parameter_dependency: settable_by_any_role
+    role_membership_dependency: admin_option_granted
+    nonexistent_role: role_does_not_exist
+    privilege_insufficient: ordinary_role_altering_other_role_attributes
+    invalid_config_parameter: superuser_only_parameter_by_non_superuser
+    rename_current_session_user: session_user_rename_blocked
+    rename_clears_password: md5_password_cleared_on_rename
+    password_security: plaintext_password_in_sql
+    verification_mode: pg_roles_catalog
+    cleanup_mode: reset_config_parameter
+  expansion:
+    nonexistent_role:
+      mode: explicit
+      values:
+      - role_does_not_exist
+    privilege_insufficient:
+      mode: explicit
+      values:
+      - ordinary_role_altering_other_role_attributes
+      - createrole_altering_superuser
+      - createrole_without_admin_option
+      - ordinary_role_altering_other_role_config
+    invalid_config_parameter:
+      mode: explicit
+      values:
+      - superuser_only_parameter_by_non_superuser
+      - parameter_cannot_be_set_at_role_level
+      - invalid_parameter_name
+    rename_current_session_user:
+      mode: explicit
+      values:
+      - session_user_rename_blocked
+    rename_clears_password:
+      mode: explicit
+      values:
+      - md5_password_cleared_on_rename
+      - scram_password_preserved_on_rename
+    password_security:
+      mode: explicit
+      values:
+      - plaintext_password_in_sql
+      - password_null_removes_password
+    verification_mode:
+      mode: explicit
+      values:
+      - pg_roles_catalog
+      - pg_settings_catalog
+      - pg_authid_catalog
+      - effect_query
+      - error_assertion
+    cleanup_mode:
+      mode: explicit
+      values:
+      - reset_config_parameter
+      - drop_role
+      - revert_attribute_change
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - selected binding represents a documented success path for the role catalog object
+    - executor privilege and referenced role prerequisites are satisfied
+    failure_when:
+    - condition: expected_status == failure
+      reason: target_role_missing
+    - condition: privilege or dependency factor selects an invalid prerequisite
+      reason: declared_role_ddl_prerequisite_failure
+    default_failure_reason: target_role_missing
+  sql_shape:
+    template: ALTER ROLE role_specification [ WITH ] option [ ... ] | ALTER ROLE name RENAME TO new_name | ALTER ROLE { role_specification
+      | ALL } [ IN DATABASE database_name ] SET/RESET configuration_parameter
+  verification:
+    required: true
+    mode: error_assertion
+    sql: SELECT rolname FROM pg_roles WHERE rolname = '{role_name}';
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP ROLE IF EXISTS {target_role_name};
+    - sql: DROP ROLE IF EXISTS {new_role_name};
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

@@ -1,0 +1,586 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: alter_group
+  name: ALTER GROUP
+  category: ddl
+  domain: group
+  source_reference: references/statements/ddl/group/alter_group.md
+  aliases:
+  - ALTER GROUP
+  - alter group
+  - alter_group
+  - GRANT (modern equivalent for ADD USER)
+  - REVOKE (modern equivalent for DROP USER)
+  - ALTER ROLE RENAME (modern equivalent for RENAME TO)
+  official_source: https://www.postgresql.org/docs/16/sql-altergroup.html
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required baseline groups must pass audit before any extension is emitted.
+  - Extensions may add stress, boundary, dependency, privilege, or cross-factor combinations.
+  - Extensions must not satisfy required role/user/group factor coverage.
+  - Extensions must use declared statement factors and declared factor values.
+  - Extensions must preserve success or failure attribution.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds:
+    - group
+    - role
+    decision_reason: ALTER GROUP changes group catalog objects; group DDL is a deprecated role alias and operates on role
+      catalog entries or role membership, so the baseline explicitly covers the group and backing role object kinds rather
+      than relation or table objects.
+  target_relation_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: ALTER GROUP targets PostgreSQL role catalog entries and role membership/settings, not pg_class relations.
+      Relation dependencies, when relevant to failure behavior, are modeled as dependency factors rather than required relation-kind
+      coverage.
+  table_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: ALTER GROUP does not directly create, alter, read, or drop table definitions. Any owned-object or membership
+      dependency is a role lifecycle precondition and does not require expansion across table kinds.
+  column_type_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: ALTER GROUP does not declare table columns or validate expressions whose SQL validity depends on column
+      data types; role/user/group DDL is independent of PG16 column-type coverage.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - branch_add_user
+      - branch_drop_user
+      - branch_rename
+      coverage_requirement: all_declared_values
+    object_state:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - exists
+      - not_exists
+      coverage_requirement: all_declared_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - success
+      - failure
+      coverage_requirement: all_declared_values
+    alter_action:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values:
+      - add_user
+      - drop_user
+      - rename
+      coverage_requirement: all_declared_values
+    role_specification:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values:
+      - role_name
+      - current_role
+      - current_user
+      - session_user
+      coverage_requirement: all_declared_values
+    multi_user:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values:
+      - single_user
+      - multiple_users
+      coverage_requirement: all_declared_values
+    deprecated_equivalence:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values:
+      - add_user_equals_grant
+      - drop_user_equals_revoke
+      - rename_equals_alter_role
+      coverage_requirement: all_declared_values
+    group_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - simple_id
+      - quoted_id
+      - nonexistent_name
+      coverage_requirement: all_declared_values
+    user_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - simple_id
+      - quoted_id
+      - nonexistent_user
+      coverage_requirement: all_declared_values
+    new_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - simple_id
+      - quoted_id
+      - duplicate_name
+      coverage_requirement: all_declared_values
+    privilege_level:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - group_role_admin
+      - non_admin
+      - superuser
+      coverage_requirement: all_declared_values
+    user_existence:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - user_exists
+      - user_not_exists
+      coverage_requirement: all_declared_values
+    target_role_admin:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - has_admin
+      - lacks_admin
+      coverage_requirement: all_declared_values
+    nonexistent_group:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - group_exists
+      - group_missing
+      coverage_requirement: all_declared_values
+    nonexistent_user:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - user_exists
+      - user_missing
+      coverage_requirement: all_declared_values
+    insufficient_privilege:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - sufficient_privilege
+      - insufficient_privilege
+      coverage_requirement: all_declared_values
+    non_admin_attempt:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - admin_execution
+      - non_admin_execution
+      coverage_requirement: all_declared_values
+    duplicate_add_user:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - new_member
+      - existing_member
+      coverage_requirement: all_declared_values
+    drop_non_member_user:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - existing_member
+      - non_member
+      coverage_requirement: all_declared_values
+    rename_to_existing_name:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - no_conflict
+      - same_name_conflict
+      coverage_requirement: all_declared_values
+    deprecated_command_note:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - deprecated_no_warning
+      coverage_requirement: all_declared_values
+    verification_mode:
+      tier: T6
+      coverage_role: verification_cleanup_axis
+      required_values:
+      - pg_auth_members_catalog
+      - pg_authid_catalog
+      - error_assertion
+      coverage_requirement: all_declared_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: verification_cleanup_axis
+      required_values:
+      - revoke_membership
+      - grant_membership
+      - revert_rename
+      - drop_role
+      coverage_requirement: all_declared_values
+dynamic_inputs:
+  group_role_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/group_role_manifest.json
+    required_fields:
+    - target_role_name
+    - object_state
+    - executor_role
+    - setup_sql
+    - cleanup_sql
+  privilege_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/privilege_manifest.json
+    required_fields:
+    - executor_role
+    - createrole_available
+    - superuser_available
+    - expected_privilege_path
+  referenced_role_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/referenced_role_manifest.json
+    required_fields:
+    - referenced_role_name
+    - referenced_role_exists
+    - membership_setup_sql
+  membership_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/membership_manifest.json
+    required_fields:
+    - member_role_name
+    - group_role_name
+    - membership_exists_before_statement
+    - admin_option_available
+combination_groups:
+- id: alter_group_core_syntax_and_state_baseline
+  title: ALTER GROUP core syntax, target state, and primary option coverage
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  factors:
+    statement_branch: branch_add_user
+    object_state: exists
+    expected_status: success
+    alter_action: add_user
+    role_specification: role_name
+    multi_user: single_user
+    deprecated_equivalence: add_user_equals_grant
+    group_name_shape: simple_id
+    user_name_shape: simple_id
+    new_name_shape: simple_id
+    privilege_level: group_role_admin
+    user_existence: user_exists
+    target_role_admin: has_admin
+    nonexistent_group: group_exists
+    nonexistent_user: user_exists
+    insufficient_privilege: sufficient_privilege
+    non_admin_attempt: admin_execution
+    duplicate_add_user: new_member
+    drop_non_member_user: existing_member
+    rename_to_existing_name: no_conflict
+    deprecated_command_note: deprecated_no_warning
+    verification_mode: pg_auth_members_catalog
+    cleanup_mode: revoke_membership
+  expansion:
+    statement_branch:
+      mode: explicit
+      values:
+      - branch_add_user
+      - branch_drop_user
+      - branch_rename
+    object_state:
+      mode: explicit
+      values:
+      - exists
+      - not_exists
+    expected_status:
+      mode: explicit
+      values:
+      - success
+      - failure
+    alter_action:
+      mode: explicit
+      values:
+      - add_user
+      - drop_user
+      - rename
+    role_specification:
+      mode: explicit
+      values:
+      - role_name
+      - current_role
+      - current_user
+      - session_user
+    multi_user:
+      mode: explicit
+      values:
+      - single_user
+      - multiple_users
+    deprecated_equivalence:
+      mode: explicit
+      values:
+      - add_user_equals_grant
+      - drop_user_equals_revoke
+      - rename_equals_alter_role
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - selected binding represents a documented success path for the role catalog object
+    - executor privilege and referenced role prerequisites are satisfied
+    failure_when:
+    - condition: expected_status == failure
+      reason: target_role_missing
+    - condition: privilege or dependency factor selects an invalid prerequisite
+      reason: declared_role_ddl_prerequisite_failure
+    default_failure_reason: target_role_missing
+  sql_shape:
+    template: ALTER GROUP {group_name} {alter_clause}
+  verification:
+    required: true
+    mode: pg_auth_members_catalog
+    sql: SELECT rolname FROM pg_roles WHERE rolname = '{group_name}';
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP ROLE IF EXISTS {target_role_name};
+    - sql: DROP ROLE IF EXISTS {new_role_name};
+- id: alter_group_name_privilege_dependency_baseline
+  title: ALTER GROUP identifier, privilege, and dependency coverage
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: failure
+  expected_failure_reasons:
+  - target_role_missing
+  - insufficient_privilege
+  - duplicate_new_name
+  - invalid_configuration_parameter
+  factors:
+    statement_branch: branch_add_user
+    object_state: exists
+    expected_status: failure
+    alter_action: add_user
+    role_specification: role_name
+    multi_user: single_user
+    deprecated_equivalence: add_user_equals_grant
+    group_name_shape: simple_id
+    user_name_shape: simple_id
+    new_name_shape: simple_id
+    privilege_level: group_role_admin
+    user_existence: user_exists
+    target_role_admin: has_admin
+    nonexistent_group: group_exists
+    nonexistent_user: user_exists
+    insufficient_privilege: sufficient_privilege
+    non_admin_attempt: admin_execution
+    duplicate_add_user: new_member
+    drop_non_member_user: existing_member
+    rename_to_existing_name: no_conflict
+    deprecated_command_note: deprecated_no_warning
+    verification_mode: pg_auth_members_catalog
+    cleanup_mode: revoke_membership
+  expansion:
+    group_name_shape:
+      mode: explicit
+      values:
+      - simple_id
+      - quoted_id
+      - nonexistent_name
+    user_name_shape:
+      mode: explicit
+      values:
+      - simple_id
+      - quoted_id
+      - nonexistent_user
+    new_name_shape:
+      mode: explicit
+      values:
+      - simple_id
+      - quoted_id
+      - duplicate_name
+    privilege_level:
+      mode: explicit
+      values:
+      - group_role_admin
+      - non_admin
+      - superuser
+    user_existence:
+      mode: explicit
+      values:
+      - user_exists
+      - user_not_exists
+    target_role_admin:
+      mode: explicit
+      values:
+      - has_admin
+      - lacks_admin
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - selected binding represents a documented success path for the role catalog object
+    - executor privilege and referenced role prerequisites are satisfied
+    failure_when:
+    - condition: expected_status == failure
+      reason: target_role_missing
+    - condition: privilege or dependency factor selects an invalid prerequisite
+      reason: declared_role_ddl_prerequisite_failure
+    default_failure_reason: target_role_missing
+  sql_shape:
+    template: ALTER GROUP {group_name} {alter_clause}
+  verification:
+    required: true
+    mode: pg_authid_catalog
+    sql: SELECT rolname FROM pg_roles WHERE rolname = '{group_name}';
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP ROLE IF EXISTS {target_role_name};
+    - sql: DROP ROLE IF EXISTS {new_role_name};
+- id: alter_group_negative_verification_cleanup_baseline
+  title: ALTER GROUP negative boundaries, verification modes, and cleanup coverage
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: failure
+  expected_failure_reasons:
+  - target_role_missing
+  - insufficient_privilege
+  - duplicate_new_name
+  - invalid_configuration_parameter
+  factors:
+    statement_branch: branch_add_user
+    object_state: exists
+    expected_status: failure
+    alter_action: add_user
+    role_specification: role_name
+    multi_user: single_user
+    deprecated_equivalence: add_user_equals_grant
+    group_name_shape: simple_id
+    user_name_shape: simple_id
+    new_name_shape: simple_id
+    privilege_level: group_role_admin
+    user_existence: user_exists
+    target_role_admin: has_admin
+    nonexistent_group: group_exists
+    nonexistent_user: user_exists
+    insufficient_privilege: sufficient_privilege
+    non_admin_attempt: admin_execution
+    duplicate_add_user: new_member
+    drop_non_member_user: existing_member
+    rename_to_existing_name: no_conflict
+    deprecated_command_note: deprecated_no_warning
+    verification_mode: pg_auth_members_catalog
+    cleanup_mode: revoke_membership
+  expansion:
+    nonexistent_group:
+      mode: explicit
+      values:
+      - group_exists
+      - group_missing
+    nonexistent_user:
+      mode: explicit
+      values:
+      - user_exists
+      - user_missing
+    insufficient_privilege:
+      mode: explicit
+      values:
+      - sufficient_privilege
+      - insufficient_privilege
+    non_admin_attempt:
+      mode: explicit
+      values:
+      - admin_execution
+      - non_admin_execution
+    duplicate_add_user:
+      mode: explicit
+      values:
+      - new_member
+      - existing_member
+    drop_non_member_user:
+      mode: explicit
+      values:
+      - existing_member
+      - non_member
+    rename_to_existing_name:
+      mode: explicit
+      values:
+      - no_conflict
+      - same_name_conflict
+    deprecated_command_note:
+      mode: explicit
+      values:
+      - deprecated_no_warning
+    verification_mode:
+      mode: explicit
+      values:
+      - pg_auth_members_catalog
+      - pg_authid_catalog
+      - error_assertion
+    cleanup_mode:
+      mode: explicit
+      values:
+      - revoke_membership
+      - grant_membership
+      - revert_rename
+      - drop_role
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - selected binding represents a documented success path for the role catalog object
+    - executor privilege and referenced role prerequisites are satisfied
+    failure_when:
+    - condition: expected_status == failure
+      reason: target_role_missing
+    - condition: privilege or dependency factor selects an invalid prerequisite
+      reason: declared_role_ddl_prerequisite_failure
+    default_failure_reason: target_role_missing
+  sql_shape:
+    template: ALTER GROUP {group_name} {alter_clause}
+  verification:
+    required: true
+    mode: error_assertion
+    sql: SELECT rolname FROM pg_roles WHERE rolname = '{group_name}';
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP ROLE IF EXISTS {target_role_name};
+    - sql: DROP ROLE IF EXISTS {new_role_name};
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

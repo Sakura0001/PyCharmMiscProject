@@ -1,0 +1,709 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: create_tablespace
+  name: CREATE TABLESPACE
+  category: ddl
+  domain: tablespace
+  source_reference: references/statements/ddl/tablespace/create_tablespace.md
+  official_source: https://www.postgresql.org/docs/16/sql-createtablespace.html
+  aliases:
+  - create_tablespace
+  - CREATE TABLESPACE
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required matrix coverage must pass before any derived extension is emitted.
+  - Derived extensions may add stress, boundary, environment, or cross-factor combinations after the baseline audit passes.
+  - Derived extensions must not be counted as satisfying required factor, object, relation, table, or column-type coverage.
+  - Derived extensions must use declared factors and declared factor values.
+  - Derived extensions must preserve success, failure, or no-op attribution.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds:
+    - tablespace
+    decision_reason: CREATE_TABLESPACE targets tablespace storage objects. Required coverage is the tablespace object state,
+      ownership, filesystem/environment, occupancy, and option behavior declared by the statement reference.
+  target_relation_coverage:
+    required: false
+    coverage_mode: not_applicable
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    decision_reason: CREATE_TABLESPACE names a tablespace, not an individual relation. Occupied-object or temp-file behavior
+      is represented by tablespace occupancy/dependency factors rather than exhaustive relation-kind coverage.
+  table_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: CREATE_TABLESPACE operates on the tablespace object and environment constraints. Tables may occupy a
+      tablespace in boundary fixtures, but the statement does not directly depend on table kind or table definition semantics.
+  column_type_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: CREATE_TABLESPACE has no required SQL-validity or verification dependency on column data types. Tablespace
+      behavior is governed by ownership, filesystem or occupancy state, options, and transaction/environment boundaries.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - branch_1
+      coverage_requirement: all_values
+    object_state:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - not_exists
+      - exists
+      - reserved_name_conflict
+      coverage_requirement: all_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - success
+      - failure
+      coverage_requirement: all_values
+    owner_clause:
+      tier: T2
+      coverage_role: branch_local_axis
+      required_values:
+      - omitted
+      - specified_new_owner
+      - specified_current_role
+      - specified_current_user
+      - specified_session_user
+      coverage_requirement: all_values
+    with_clause:
+      tier: T2
+      coverage_role: branch_local_axis
+      required_values:
+      - omitted
+      - single_option_seq_page_cost
+      - single_option_random_page_cost
+      - single_option_effective_io_concurrency
+      - single_option_maintenance_io_concurrency
+      - multiple_options
+      coverage_requirement: all_values
+    directory_condition:
+      tier: T2
+      coverage_role: branch_local_axis
+      required_values:
+      - exists_valid
+      - not_exists
+      - permission_denied
+      - non_empty
+      coverage_requirement: all_values
+    tablespace_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - simple_id
+      - quoted_id
+      - pg_prefix_reserved
+      - duplicate_name
+      - invalid_name
+      coverage_requirement: all_values
+    owner_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - simple_id
+      - quoted_id
+      - nonexistent_role
+      coverage_requirement: all_values
+    directory_path_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - absolute_path
+      - relative_path
+      - empty_path
+      - special_path
+      coverage_requirement: all_values
+    privilege_level:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - superuser
+      - non_superuser
+      coverage_requirement: all_values
+    filesystem_dependency:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - directory_exists_owned_by_postgres
+      - directory_not_exists
+      - path_not_absolute
+      - directory_wrong_owner
+      coverage_requirement: all_values
+    transaction_context:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - outside_transaction
+      - inside_transaction_block
+      coverage_requirement: all_values
+    role_existence:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - role_exists
+      - role_not_exists
+      coverage_requirement: all_values
+    duplicate_tablespace_name:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - no_conflict
+      - same_name_conflict
+      coverage_requirement: all_values
+    pg_reserved_name:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - normal_name
+      - pg_prefix_name
+      coverage_requirement: all_values
+    nonexistent_directory:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - directory_exists
+      - directory_missing
+      coverage_requirement: all_values
+    non_absolute_path:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - absolute_path
+      - relative_path
+      coverage_requirement: all_values
+    invalid_option:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - valid_option
+      - invalid_option_name
+      coverage_requirement: all_values
+    directory_permission_denied:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - proper_permission
+      - wrong_owner
+      coverage_requirement: all_values
+    non_superuser_attempt:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - superuser_execution
+      - non_superuser_execution
+      coverage_requirement: all_values
+    inside_transaction_block:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - outside_transaction
+      - inside_transaction
+      coverage_requirement: all_values
+    nonexistent_owner_role:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - role_exists
+      - role_missing
+      coverage_requirement: all_values
+    verification_mode:
+      tier: T6
+      coverage_role: verification_axis
+      required_values:
+      - catalog_query_pg_tablespace
+      - error_assertion
+      coverage_requirement: all_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: cleanup_axis
+      required_values:
+      - drop_tablespace
+      - filesystem_cleanup
+      - role_cleanup
+      coverage_requirement: all_values
+dynamic_inputs:
+  tablespace_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/tablespace_manifest.json
+    required_fields:
+    - tablespace_name
+    - object_state
+    - owner
+    - exists_before_statement
+  role_manifest:
+    required: false
+    path_pattern: artifacts/intermediates/<task_slug>/role_manifest.json
+    required_fields:
+    - role_name
+    - privilege_context
+    - can_set_role
+  tablespace_environment_manifest:
+    required: false
+    path_pattern: artifacts/intermediates/<task_slug>/tablespace_environment_manifest.json
+    required_fields:
+    - filesystem_state
+    - transaction_context
+    - occupancy_state
+    - temp_tablespaces_state
+combination_groups:
+- id: create_tablespace_required_factor_value_matrix
+  title: CREATE TABLESPACE required factor value baseline
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  expected_failure_reasons:
+  - duplicate_tablespace_name
+  - pg_reserved_name
+  - nonexistent_directory
+  - non_absolute_path
+  - invalid_option
+  - directory_permission_denied
+  - non_superuser_attempt
+  - inside_transaction_block
+  - nonexistent_owner_role
+  factors:
+    statement_branch: branch_1
+    object_state: not_exists
+    expected_status: success
+    owner_clause: omitted
+    with_clause: omitted
+    directory_condition: exists_valid
+    tablespace_name_shape: simple_id
+    owner_name_shape: simple_id
+    directory_path_shape: absolute_path
+    privilege_level: superuser
+    filesystem_dependency: directory_exists_owned_by_postgres
+    transaction_context: outside_transaction
+    role_existence: role_exists
+    duplicate_tablespace_name: no_conflict
+    pg_reserved_name: normal_name
+    nonexistent_directory: directory_exists
+    non_absolute_path: absolute_path
+    invalid_option: valid_option
+    directory_permission_denied: proper_permission
+    non_superuser_attempt: superuser_execution
+    inside_transaction_block: outside_transaction
+    nonexistent_owner_role: role_exists
+    verification_mode: catalog_query_pg_tablespace
+    cleanup_mode: drop_tablespace
+  expansion:
+    statement_branch:
+      mode: explicit
+      values:
+      - branch_1
+    object_state:
+      mode: explicit
+      values:
+      - not_exists
+      - exists
+      - reserved_name_conflict
+    expected_status:
+      mode: explicit
+      values:
+      - success
+      - failure
+    owner_clause:
+      mode: explicit
+      values:
+      - omitted
+      - specified_new_owner
+      - specified_current_role
+      - specified_current_user
+      - specified_session_user
+    with_clause:
+      mode: explicit
+      values:
+      - omitted
+      - single_option_seq_page_cost
+      - single_option_random_page_cost
+      - single_option_effective_io_concurrency
+      - single_option_maintenance_io_concurrency
+      - multiple_options
+    directory_condition:
+      mode: explicit
+      values:
+      - exists_valid
+      - not_exists
+      - permission_denied
+      - non_empty
+    tablespace_name_shape:
+      mode: explicit
+      values:
+      - simple_id
+      - quoted_id
+      - pg_prefix_reserved
+      - duplicate_name
+      - invalid_name
+    owner_name_shape:
+      mode: explicit
+      values:
+      - simple_id
+      - quoted_id
+      - nonexistent_role
+    directory_path_shape:
+      mode: explicit
+      values:
+      - absolute_path
+      - relative_path
+      - empty_path
+      - special_path
+    privilege_level:
+      mode: explicit
+      values:
+      - superuser
+      - non_superuser
+    filesystem_dependency:
+      mode: explicit
+      values:
+      - directory_exists_owned_by_postgres
+      - directory_not_exists
+      - path_not_absolute
+      - directory_wrong_owner
+    transaction_context:
+      mode: explicit
+      values:
+      - outside_transaction
+      - inside_transaction_block
+    role_existence:
+      mode: explicit
+      values:
+      - role_exists
+      - role_not_exists
+    duplicate_tablespace_name:
+      mode: explicit
+      values:
+      - no_conflict
+      - same_name_conflict
+    pg_reserved_name:
+      mode: explicit
+      values:
+      - normal_name
+      - pg_prefix_name
+    nonexistent_directory:
+      mode: explicit
+      values:
+      - directory_exists
+      - directory_missing
+    non_absolute_path:
+      mode: explicit
+      values:
+      - absolute_path
+      - relative_path
+    invalid_option:
+      mode: explicit
+      values:
+      - valid_option
+      - invalid_option_name
+    directory_permission_denied:
+      mode: explicit
+      values:
+      - proper_permission
+      - wrong_owner
+    non_superuser_attempt:
+      mode: explicit
+      values:
+      - superuser_execution
+      - non_superuser_execution
+    inside_transaction_block:
+      mode: explicit
+      values:
+      - outside_transaction
+      - inside_transaction
+    nonexistent_owner_role:
+      mode: explicit
+      values:
+      - role_exists
+      - role_missing
+    verification_mode:
+      mode: explicit
+      values:
+      - catalog_query_pg_tablespace
+      - error_assertion
+    cleanup_mode:
+      mode: explicit
+      values:
+      - drop_tablespace
+      - filesystem_cleanup
+      - role_cleanup
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - expected_status == success and object_state not in [not_exists, absent, already_exists, reserved_name_conflict]
+    - statement-specific dependencies, privileges, names, and environment factors are compatible with the selected branch
+    failure_when:
+    - condition: expected_status == failure
+      reason: statement_specific_failure
+    - condition: object_state in [not_exists, absent] without IF EXISTS-style tolerance
+      reason: target_object_missing
+    - condition: privilege or role ability factor selects an insufficient-permission value
+      reason: privilege_denied
+    default_failure_reason: statement_specific_failure
+  sql_shape:
+    template: CREATE TABLESPACE {tablespace_name} {owner_clause} LOCATION '{directory}' {with_clause};
+  verification:
+    required: true
+    mode: catalog_or_error_assertion
+    sql: SELECT spcname FROM pg_tablespace WHERE spcname = '{tablespace_name}';
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP TABLESPACE IF EXISTS {tablespace_name};
+- id: create_tablespace_branch_01_branch_1
+  title: 'CREATE TABLESPACE branch baseline: branch_1'
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  expected_failure_reasons:
+  - duplicate_tablespace_name
+  - pg_reserved_name
+  - nonexistent_directory
+  - non_absolute_path
+  - invalid_option
+  - directory_permission_denied
+  - non_superuser_attempt
+  - inside_transaction_block
+  - nonexistent_owner_role
+  factors:
+    statement_branch: branch_1
+    object_state: not_exists
+    expected_status: success
+    owner_clause: omitted
+    with_clause: omitted
+    directory_condition: exists_valid
+    tablespace_name_shape: simple_id
+    owner_name_shape: simple_id
+    directory_path_shape: absolute_path
+    privilege_level: superuser
+    filesystem_dependency: directory_exists_owned_by_postgres
+    transaction_context: outside_transaction
+    role_existence: role_exists
+    duplicate_tablespace_name: no_conflict
+    pg_reserved_name: normal_name
+    nonexistent_directory: directory_exists
+    non_absolute_path: absolute_path
+    invalid_option: valid_option
+    directory_permission_denied: proper_permission
+    non_superuser_attempt: superuser_execution
+    inside_transaction_block: outside_transaction
+    nonexistent_owner_role: role_exists
+    verification_mode: catalog_query_pg_tablespace
+    cleanup_mode: drop_tablespace
+  expansion:
+    statement_branch:
+      mode: explicit
+      values:
+      - branch_1
+    object_state:
+      mode: explicit
+      values:
+      - not_exists
+      - exists
+      - reserved_name_conflict
+    expected_status:
+      mode: explicit
+      values:
+      - success
+      - failure
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - statement_branch == branch_1 and expected_status == success
+    - all branch-local prerequisites select compatible values
+    failure_when:
+    - condition: statement_branch == branch_1 and expected_status == failure
+      reason: statement_specific_failure
+    default_failure_reason: statement_specific_failure
+  sql_shape:
+    template: CREATE TABLESPACE {tablespace_name} {owner_clause} LOCATION '{directory}' {with_clause};
+  verification:
+    required: true
+    mode: catalog_or_error_assertion
+    sql: SELECT spcname FROM pg_tablespace WHERE spcname = '{tablespace_name}';
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP TABLESPACE IF EXISTS {tablespace_name};
+- id: create_tablespace_representative_failure_boundaries
+  title: CREATE TABLESPACE representative failure boundaries
+  lifecycle_role: negative_control
+  expected_status_policy: per_factor_binding
+  default_expected_status: failure
+  expected_failure_reasons:
+  - duplicate_tablespace_name
+  - pg_reserved_name
+  - nonexistent_directory
+  - non_absolute_path
+  - invalid_option
+  - directory_permission_denied
+  - non_superuser_attempt
+  - inside_transaction_block
+  - nonexistent_owner_role
+  factors:
+    statement_branch: branch_1
+    object_state: not_exists
+    expected_status: failure
+    owner_clause: omitted
+    with_clause: omitted
+    directory_condition: exists_valid
+    tablespace_name_shape: simple_id
+    owner_name_shape: simple_id
+    directory_path_shape: absolute_path
+    privilege_level: superuser
+    filesystem_dependency: directory_exists_owned_by_postgres
+    transaction_context: outside_transaction
+    role_existence: role_exists
+    duplicate_tablespace_name: same_name_conflict
+    pg_reserved_name: normal_name
+    nonexistent_directory: directory_exists
+    non_absolute_path: absolute_path
+    invalid_option: valid_option
+    directory_permission_denied: proper_permission
+    non_superuser_attempt: superuser_execution
+    inside_transaction_block: outside_transaction
+    nonexistent_owner_role: role_exists
+    verification_mode: catalog_query_pg_tablespace
+    cleanup_mode: drop_tablespace
+  expansion:
+    object_state:
+      mode: explicit
+      values:
+      - not_exists
+      - exists
+      - reserved_name_conflict
+    expected_status:
+      mode: explicit
+      values:
+      - success
+      - failure
+    privilege_level:
+      mode: explicit
+      values:
+      - superuser
+      - non_superuser
+    filesystem_dependency:
+      mode: explicit
+      values:
+      - directory_exists_owned_by_postgres
+      - directory_not_exists
+      - path_not_absolute
+      - directory_wrong_owner
+    transaction_context:
+      mode: explicit
+      values:
+      - outside_transaction
+      - inside_transaction_block
+    role_existence:
+      mode: explicit
+      values:
+      - role_exists
+      - role_not_exists
+    duplicate_tablespace_name:
+      mode: explicit
+      values:
+      - no_conflict
+      - same_name_conflict
+    pg_reserved_name:
+      mode: explicit
+      values:
+      - normal_name
+      - pg_prefix_name
+    nonexistent_directory:
+      mode: explicit
+      values:
+      - directory_exists
+      - directory_missing
+    non_absolute_path:
+      mode: explicit
+      values:
+      - absolute_path
+      - relative_path
+    invalid_option:
+      mode: explicit
+      values:
+      - valid_option
+      - invalid_option_name
+    directory_permission_denied:
+      mode: explicit
+      values:
+      - proper_permission
+      - wrong_owner
+    non_superuser_attempt:
+      mode: explicit
+      values:
+      - superuser_execution
+      - non_superuser_execution
+    inside_transaction_block:
+      mode: explicit
+      values:
+      - outside_transaction
+      - inside_transaction
+    nonexistent_owner_role:
+      mode: explicit
+      values:
+      - role_exists
+      - role_missing
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - failure boundary values are disabled and expected_status == success
+    failure_when:
+    - condition: expected_status == failure
+      reason: statement_specific_failure
+    - condition: target object, role, privilege, dependency, or environment boundary is invalid
+      reason: statement_specific_failure
+    default_failure_reason: statement_specific_failure
+  sql_shape:
+    template: CREATE TABLESPACE {tablespace_name} {owner_clause} LOCATION '{directory}' {with_clause};
+  verification:
+    required: true
+    mode: error_assertion
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP TABLESPACE IF EXISTS {tablespace_name};
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true
