@@ -1,0 +1,337 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: create_conversion
+  name: CREATE CONVERSION
+  category: ddl
+  domain: conversion
+  source_reference: references/statements/ddl/conversion/create_conversion.md
+  official_source: https://www.postgresql.org/docs/16/sql-createconversion.html
+  aliases:
+  - CREATE CONVERSION
+  - create_conversion
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required matrix coverage must pass before any derived extension is emitted.
+  - Derived extensions may add stress, environment, or cross-factor combinations after the baseline audit passes.
+  - Derived extensions must not satisfy required factor, object, relation, table, or column-type coverage.
+  - Derived extensions must use declared factors and preserve success or failure attribution.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds: [conversion, function]
+    decision_reason: >
+      CREATE CONVERSION defines a conversion object whose validity depends on source/destination encodings and a conversion
+      function dependency. Required object coverage is scoped to conversion state, function state, schema privileges, and
+      default-conversion conflicts.
+  target_relation_coverage:
+    required: false
+    coverage_mode: not_applicable
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    decision_reason: >
+      CREATE CONVERSION does not target pg_class relations. Encoding conversion is catalog metadata plus a function binding,
+      so relation-kind coverage is outside this statement boundary.
+  table_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: >
+      CREATE CONVERSION does not create, alter, scan, or depend on table definitions. Its behavior is governed by encodings,
+      conversion function signatures, schema privileges, and uniqueness rules.
+  column_type_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: >
+      CREATE CONVERSION does not depend on table column data types. Source and destination encodings are statement factors,
+      not PG16 table column-type coverage.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values: [branch_create_conversion, branch_create_default_conversion]
+      coverage_requirement: all_declared_values
+    source_encoding:
+      tier: T1
+      coverage_role: encoding_axis
+      required_values: [UTF8, LATIN1, EUC_JP, EUC_KR, WIN1252, ISO_8859_5, SQL_ASCII]
+      coverage_requirement: all_declared_values
+    dest_encoding:
+      tier: T1
+      coverage_role: encoding_axis
+      required_values: [UTF8, LATIN1, EUC_JP, WIN1252, ISO_8859_5, SQL_ASCII]
+      coverage_requirement: all_declared_values
+    object_state:
+      tier: T1
+      coverage_role: main_axis
+      required_values: [not_exists, exists, same_encoding_pair_default_exists]
+      coverage_requirement: all_declared_values
+    expected_status:
+      tier: T1
+      coverage_role: status_axis
+      required_values: [success, failure]
+      coverage_requirement: all_declared_values
+    default_flag:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values: [omitted, specified_default]
+      coverage_requirement: all_declared_values
+    conversion_function_state:
+      tier: T2
+      coverage_role: dependency_axis
+      required_values: [function_exists_valid_signature, function_not_exists, function_exists_invalid_signature]
+      coverage_requirement: all_declared_values
+    encoding_pair_direction:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values: [single_direction, reverse_direction_exists]
+      coverage_requirement: all_declared_values
+    conversion_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values: [simple_id, quoted_id, schema_qualified, reserved_word_as_name, duplicate_name]
+      coverage_requirement: all_declared_values
+    function_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values: [simple_id, schema_qualified, nonexistent_name]
+      coverage_requirement: all_declared_values
+    encoding_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values: [valid_encoding_name, nonexistent_encoding_name, sql_ascii_encoding_name]
+      coverage_requirement: all_declared_values
+    privilege_level:
+      tier: T4
+      coverage_role: privilege_axis
+      required_values: [superuser, schema_owner_with_create, non_owner_no_create]
+      coverage_requirement: all_declared_values
+    schema_existence:
+      tier: T4
+      coverage_role: dependency_axis
+      required_values: [schema_exists, schema_not_exists]
+      coverage_requirement: all_declared_values
+    function_privilege:
+      tier: T4
+      coverage_role: privilege_axis
+      required_values: [has_execute, no_execute]
+      coverage_requirement: all_declared_values
+    duplicate_conversion_name:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: [no_conflict, same_schema_conflict]
+      coverage_requirement: all_declared_values
+    duplicate_default_for_encoding_pair:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: [no_existing_default, default_already_exists]
+      coverage_requirement: all_declared_values
+    nonexistent_function:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: [function_exists, function_not_exists]
+      coverage_requirement: all_declared_values
+    function_signature_mismatch:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: [valid_conv_proc_signature, invalid_signature]
+      coverage_requirement: all_declared_values
+    sql_ascii_encoding:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: [neither_is_sql_ascii, source_is_sql_ascii, dest_is_sql_ascii]
+      coverage_requirement: all_declared_values
+    nonexistent_encoding:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: [encoding_exists, encoding_not_exists]
+      coverage_requirement: all_declared_values
+    nonexistent_schema:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: [schema_exists, schema_not_exists]
+      coverage_requirement: all_declared_values
+    verification_mode:
+      tier: T6
+      coverage_role: verification_axis
+      required_values: [catalog_query_pg_conversion, error_assertion]
+      coverage_requirement: all_declared_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: cleanup_axis
+      required_values: [drop_conversion, cascade_drop]
+      coverage_requirement: all_declared_values
+dynamic_inputs: {}
+combination_groups:
+- id: create_conversion_required_factor_value_matrix
+  title: CREATE CONVERSION required factor value baseline
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  expected_failure_reasons:
+  - duplicate_conversion_name
+  - duplicate_default_conversion
+  - missing_or_invalid_conversion_function
+  - invalid_encoding_name_or_sql_ascii
+  - missing_schema
+  - insufficient_conversion_privilege
+  factors:
+    statement_branch: branch_create_conversion
+    source_encoding: UTF8
+    dest_encoding: LATIN1
+    object_state: not_exists
+    expected_status: success
+    default_flag: omitted
+    conversion_function_state: function_exists_valid_signature
+    encoding_pair_direction: single_direction
+    conversion_name_shape: simple_id
+    function_name_shape: simple_id
+    encoding_name_shape: valid_encoding_name
+    privilege_level: superuser
+    schema_existence: schema_exists
+    function_privilege: has_execute
+    duplicate_conversion_name: no_conflict
+    duplicate_default_for_encoding_pair: no_existing_default
+    nonexistent_function: function_exists
+    function_signature_mismatch: valid_conv_proc_signature
+    sql_ascii_encoding: neither_is_sql_ascii
+    nonexistent_encoding: encoding_exists
+    nonexistent_schema: schema_exists
+    verification_mode: catalog_query_pg_conversion
+    cleanup_mode: drop_conversion
+  expansion:
+    statement_branch:
+      mode: explicit
+      values: [branch_create_conversion, branch_create_default_conversion]
+    source_encoding:
+      mode: explicit
+      values: [UTF8, LATIN1, EUC_JP, EUC_KR, WIN1252, ISO_8859_5, SQL_ASCII]
+    dest_encoding:
+      mode: explicit
+      values: [UTF8, LATIN1, EUC_JP, WIN1252, ISO_8859_5, SQL_ASCII]
+    object_state:
+      mode: explicit
+      values: [not_exists, exists, same_encoding_pair_default_exists]
+    expected_status:
+      mode: explicit
+      values: [success, failure]
+    default_flag:
+      mode: explicit
+      values: [omitted, specified_default]
+    conversion_function_state:
+      mode: explicit
+      values: [function_exists_valid_signature, function_not_exists, function_exists_invalid_signature]
+    encoding_pair_direction:
+      mode: explicit
+      values: [single_direction, reverse_direction_exists]
+    conversion_name_shape:
+      mode: explicit
+      values: [simple_id, quoted_id, schema_qualified, reserved_word_as_name, duplicate_name]
+    function_name_shape:
+      mode: explicit
+      values: [simple_id, schema_qualified, nonexistent_name]
+    encoding_name_shape:
+      mode: explicit
+      values: [valid_encoding_name, nonexistent_encoding_name, sql_ascii_encoding_name]
+    privilege_level:
+      mode: explicit
+      values: [superuser, schema_owner_with_create, non_owner_no_create]
+    schema_existence:
+      mode: explicit
+      values: [schema_exists, schema_not_exists]
+    function_privilege:
+      mode: explicit
+      values: [has_execute, no_execute]
+    duplicate_conversion_name:
+      mode: explicit
+      values: [no_conflict, same_schema_conflict]
+    duplicate_default_for_encoding_pair:
+      mode: explicit
+      values: [no_existing_default, default_already_exists]
+    nonexistent_function:
+      mode: explicit
+      values: [function_exists, function_not_exists]
+    function_signature_mismatch:
+      mode: explicit
+      values: [valid_conv_proc_signature, invalid_signature]
+    sql_ascii_encoding:
+      mode: explicit
+      values: [neither_is_sql_ascii, source_is_sql_ascii, dest_is_sql_ascii]
+    nonexistent_encoding:
+      mode: explicit
+      values: [encoding_exists, encoding_not_exists]
+    nonexistent_schema:
+      mode: explicit
+      values: [schema_exists, schema_not_exists]
+    verification_mode:
+      mode: explicit
+      values: [catalog_query_pg_conversion, error_assertion]
+    cleanup_mode:
+      mode: explicit
+      values: [drop_conversion, cascade_drop]
+  compatibility:
+    resolver: create_conversion_factor_binding
+    success_when:
+    - Conversion name and default encoding-pair constraints are unique, encodings are valid and not SQL_ASCII, and function dependency and privileges are valid.
+    - DEFAULT conversion succeeds when no existing default for the source/destination encoding pair exists.
+    failure_when:
+    - condition: object_state exists or duplicate_conversion_name same_schema_conflict
+      reason: duplicate_conversion_name
+    - condition: object_state same_encoding_pair_default_exists or duplicate_default_for_encoding_pair default_already_exists
+      reason: duplicate_default_conversion
+    - condition: conversion_function_state not valid or nonexistent_function function_not_exists or function_signature_mismatch invalid_signature
+      reason: missing_or_invalid_conversion_function
+    - condition: source_encoding SQL_ASCII or dest_encoding SQL_ASCII or nonexistent_encoding encoding_not_exists
+      reason: invalid_encoding_name_or_sql_ascii
+    - condition: schema_existence schema_not_exists or nonexistent_schema schema_not_exists
+      reason: missing_schema
+    - condition: privilege_level non_owner_no_create or function_privilege no_execute
+      reason: insufficient_conversion_privilege
+    default_failure_reason: create_conversion_invalid_definition
+  sql_shape:
+    template: "CREATE {default_flag} CONVERSION {conversion_name} FOR {source_encoding} TO {dest_encoding} FROM {function_name}"
+  verification:
+    required: true
+    mode: pg_conversion_catalog_check
+    sql: "SELECT conname, conforencoding, contoencoding, condefault FROM pg_conversion WHERE conname = '{conversion_name}'"
+  cleanup:
+    required: true
+    steps:
+    - sql: "DROP CONVERSION IF EXISTS {conversion_name} CASCADE"
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

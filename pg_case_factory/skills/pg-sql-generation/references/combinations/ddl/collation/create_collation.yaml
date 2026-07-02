@@ -1,0 +1,337 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: create_collation
+  name: CREATE COLLATION
+  category: ddl
+  domain: collation
+  source_reference: references/statements/ddl/collation/create_collation.md
+  official_source: https://www.postgresql.org/docs/16/sql-createcollation.html
+  aliases:
+  - CREATE COLLATION
+  - create collation
+  - create_collation
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required matrix coverage must pass before any derived extension is emitted.
+  - Derived extensions may add stress, environment, or cross-factor combinations after the baseline audit passes.
+  - Derived extensions must not satisfy required factor, object, relation, table, or column-type coverage.
+  - Derived extensions must use declared factors and preserve success, failure, notice, or no-op attribution.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds: [collation]
+    decision_reason: >
+      CREATE COLLATION directly defines a schema-level collation object in pg_collation. Required object coverage is scoped
+      to collation lifecycle state, source collation dependencies, provider, locale, privilege, and duplicate-name behavior.
+  target_relation_coverage:
+    required: false
+    coverage_mode: not_applicable
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    decision_reason: >
+      CREATE COLLATION creates a collation object, not a pg_class relation. Later tables or indexes may reference the
+      collation, but relation-kind coverage belongs to those dependent statements rather than this object definition.
+  table_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: >
+      CREATE COLLATION can affect how character columns are sorted or compared after they reference the collation, but this
+      DDL statement does not create, alter, or scan table definitions. Baseline table-kind coverage is therefore outside the
+      object-level boundary.
+  column_type_coverage:
+    required: false
+    coverage_mode: representative
+    inventory_source: references/common/pg16_type_catalog.md
+    decision_reason: >
+      Collations are relevant to character comparisons, but CREATE COLLATION validates provider, locale, determinism, and
+      source-collation inputs rather than every table column type. Character-column usage may be represented as a smoke
+      verification fixture, not an exhaustive PG16 column-type matrix.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values: [branch_define_with_params, branch_from_existing]
+      coverage_requirement: all_declared_values
+    object_state:
+      tier: T1
+      coverage_role: main_axis
+      required_values: [not_exists, already_exists]
+      coverage_requirement: all_declared_values
+    expected_status:
+      tier: T1
+      coverage_role: status_axis
+      required_values: [success, failure]
+      coverage_requirement: all_declared_values
+    if_not_exists_clause:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values: [absent, present_no_conflict, present_with_conflict]
+      coverage_requirement: all_declared_values
+    provider:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values: [libc_default, icu]
+      coverage_requirement: all_declared_values
+    deterministic_option:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values: [true_default, false_icu_only]
+      coverage_requirement: all_declared_values
+    collation_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values: [plain_identifier, quoted_identifier, schema_qualified]
+      coverage_requirement: all_declared_values
+    locale_setting:
+      tier: T3
+      coverage_role: locale_axis
+      required_values: [LOCALE_only, LC_COLLATE_LC_CTYPE_separate, LOCALE_with_provider]
+      coverage_requirement: all_declared_values
+    from_collation_shape:
+      tier: T3
+      coverage_role: dependency_shape_axis
+      required_values: [existing_builtin_collation, existing_user_collation, nonexistent_collation]
+      coverage_requirement: all_declared_values
+    rules_setting:
+      tier: T3
+      coverage_role: icu_rules_axis
+      required_values: [no_rules, with_rules]
+      coverage_requirement: all_declared_values
+    privilege_level:
+      tier: T4
+      coverage_role: privilege_axis
+      required_values: [schema_owner_with_create, non_schema_owner]
+      coverage_requirement: all_declared_values
+    icu_availability:
+      tier: T4
+      coverage_role: environment_axis
+      required_values: [icu_available, icu_not_available]
+      coverage_requirement: all_declared_values
+    locale_validity:
+      tier: T4
+      coverage_role: environment_axis
+      required_values: [valid_locale_for_encoding, invalid_locale_for_encoding]
+      coverage_requirement: all_declared_values
+    from_collation_dependency:
+      tier: T4
+      coverage_role: dependency_axis
+      required_values: [from_exists, from_not_exists]
+      coverage_requirement: all_declared_values
+    duplicate_collation:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: [same_schema_same_name_no_ifne, same_schema_same_name_with_ifne]
+      coverage_requirement: all_declared_values
+    invalid_locale_for_encoding:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: [wrong_encoding_locale]
+      coverage_requirement: all_declared_values
+    icu_not_available:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: [provider_icu_no_support]
+      coverage_requirement: all_declared_values
+    nondeterministic_non_icu:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: [deterministic_false_libc]
+      coverage_requirement: all_declared_values
+    rules_non_icu:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: [rules_with_libc]
+      coverage_requirement: all_declared_values
+    locale_and_lc_conflict:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: [locale_with_lc_collate, locale_with_lc_ctype]
+      coverage_requirement: all_declared_values
+    insufficient_privilege:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: [no_create_on_schema]
+      coverage_requirement: all_declared_values
+    verification_mode:
+      tier: T6
+      coverage_role: verification_axis
+      required_values: [pg_collation_catalog_query, actual_collation_usage]
+      coverage_requirement: all_declared_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: cleanup_axis
+      required_values: [DROP_COLLATION, DROP_COLLATION_IF_EXISTS, DROP_COLLATION_CASCADE]
+      coverage_requirement: all_declared_values
+dynamic_inputs: {}
+combination_groups:
+- id: create_collation_required_factor_value_matrix
+  title: CREATE COLLATION required factor value baseline
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  expected_failure_reasons:
+  - duplicate_collation_without_if_not_exists
+  - missing_source_collation
+  - invalid_locale_or_provider
+  - unsupported_icu_feature
+  - insufficient_schema_create_privilege
+  factors:
+    statement_branch: branch_define_with_params
+    object_state: not_exists
+    expected_status: success
+    if_not_exists_clause: absent
+    provider: libc_default
+    deterministic_option: true_default
+    collation_name_shape: plain_identifier
+    locale_setting: LOCALE_only
+    from_collation_shape: existing_builtin_collation
+    rules_setting: no_rules
+    privilege_level: schema_owner_with_create
+    icu_availability: icu_available
+    locale_validity: valid_locale_for_encoding
+    from_collation_dependency: from_exists
+    duplicate_collation: same_schema_same_name_no_ifne
+    invalid_locale_for_encoding: wrong_encoding_locale
+    icu_not_available: provider_icu_no_support
+    nondeterministic_non_icu: deterministic_false_libc
+    rules_non_icu: rules_with_libc
+    locale_and_lc_conflict: locale_with_lc_collate
+    insufficient_privilege: no_create_on_schema
+    verification_mode: pg_collation_catalog_query
+    cleanup_mode: DROP_COLLATION_IF_EXISTS
+  expansion:
+    statement_branch:
+      mode: explicit
+      values: [branch_define_with_params, branch_from_existing]
+    object_state:
+      mode: explicit
+      values: [not_exists, already_exists]
+    expected_status:
+      mode: explicit
+      values: [success, failure]
+    if_not_exists_clause:
+      mode: explicit
+      values: [absent, present_no_conflict, present_with_conflict]
+    provider:
+      mode: explicit
+      values: [libc_default, icu]
+    deterministic_option:
+      mode: explicit
+      values: [true_default, false_icu_only]
+    collation_name_shape:
+      mode: explicit
+      values: [plain_identifier, quoted_identifier, schema_qualified]
+    locale_setting:
+      mode: explicit
+      values: [LOCALE_only, LC_COLLATE_LC_CTYPE_separate, LOCALE_with_provider]
+    from_collation_shape:
+      mode: explicit
+      values: [existing_builtin_collation, existing_user_collation, nonexistent_collation]
+    rules_setting:
+      mode: explicit
+      values: [no_rules, with_rules]
+    privilege_level:
+      mode: explicit
+      values: [schema_owner_with_create, non_schema_owner]
+    icu_availability:
+      mode: explicit
+      values: [icu_available, icu_not_available]
+    locale_validity:
+      mode: explicit
+      values: [valid_locale_for_encoding, invalid_locale_for_encoding]
+    from_collation_dependency:
+      mode: explicit
+      values: [from_exists, from_not_exists]
+    duplicate_collation:
+      mode: explicit
+      values: [same_schema_same_name_no_ifne, same_schema_same_name_with_ifne]
+    invalid_locale_for_encoding:
+      mode: explicit
+      values: [wrong_encoding_locale]
+    icu_not_available:
+      mode: explicit
+      values: [provider_icu_no_support]
+    nondeterministic_non_icu:
+      mode: explicit
+      values: [deterministic_false_libc]
+    rules_non_icu:
+      mode: explicit
+      values: [rules_with_libc]
+    locale_and_lc_conflict:
+      mode: explicit
+      values: [locale_with_lc_collate, locale_with_lc_ctype]
+    insufficient_privilege:
+      mode: explicit
+      values: [no_create_on_schema]
+    verification_mode:
+      mode: explicit
+      values: [pg_collation_catalog_query, actual_collation_usage]
+    cleanup_mode:
+      mode: explicit
+      values: [DROP_COLLATION, DROP_COLLATION_IF_EXISTS, DROP_COLLATION_CASCADE]
+  compatibility:
+    resolver: create_collation_factor_binding
+    success_when:
+    - object_state is not_exists with valid provider, locale, privileges, and source collation dependencies.
+    - IF NOT EXISTS with an existing object is a notice/no-op success when present_with_conflict is selected.
+    failure_when:
+    - condition: object_state already_exists and if_not_exists_clause absent
+      reason: duplicate_collation_without_if_not_exists
+    - condition: from_collation_shape nonexistent_collation or from_collation_dependency from_not_exists
+      reason: missing_source_collation
+    - condition: locale_validity invalid_locale_for_encoding or locale_and_lc_conflict selected
+      reason: invalid_locale_or_provider
+    - condition: provider icu with icu_availability icu_not_available
+      reason: unsupported_icu_feature
+    - condition: privilege_level non_schema_owner
+      reason: insufficient_schema_create_privilege
+    default_failure_reason: create_collation_invalid_definition
+  sql_shape:
+    template: "CREATE COLLATION {if_not_exists} {collation_name} {definition_or_from_clause}"
+  verification:
+    required: true
+    mode: pg_collation_catalog_or_usage_check
+    sql: "SELECT count(*) FROM pg_collation WHERE collname = '{collation_name}'"
+  cleanup:
+    required: true
+    steps:
+    - sql: "DROP COLLATION IF EXISTS {collation_name} CASCADE"
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

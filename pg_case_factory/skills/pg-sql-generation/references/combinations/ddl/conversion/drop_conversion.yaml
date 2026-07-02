@@ -1,0 +1,255 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: drop_conversion
+  name: DROP CONVERSION
+  category: ddl
+  domain: conversion
+  source_reference: references/statements/ddl/conversion/drop_conversion.md
+  official_source: https://www.postgresql.org/docs/16/sql-dropconversion.html
+  aliases:
+  - DROP CONVERSION
+  - drop_conversion
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required matrix coverage must pass before any derived extension is emitted.
+  - Derived extensions may add stress, environment, or cross-factor combinations after the baseline audit passes.
+  - Derived extensions must not satisfy required factor, object, relation, table, or column-type coverage.
+  - Derived extensions must use declared factors and preserve success, failure, notice, or no-op attribution.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds: [conversion]
+    decision_reason: >
+      DROP CONVERSION directly removes a conversion object. Required coverage is scoped to conversion existence, IF EXISTS,
+      optional CASCADE/RESTRICT syntax, schema existence, and ownership/privilege behavior.
+  target_relation_coverage:
+    required: false
+    coverage_mode: not_applicable
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    decision_reason: >
+      DROP CONVERSION targets pg_conversion metadata and not pg_class relation kinds. CASCADE and RESTRICT are syntax-level
+      options without conversion-dependent relation effects in PostgreSQL.
+  table_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: >
+      DROP CONVERSION has no table-object dependency surface. Its success or failure is controlled by conversion existence,
+      IF EXISTS, and privileges.
+  column_type_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: >
+      DROP CONVERSION does not inspect or depend on table column data types. Encoding-conversion semantics are independent of
+      PG16 table column-type coverage.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values: [branch_drop_conversion]
+      coverage_requirement: all_declared_values
+    object_state:
+      tier: T1
+      coverage_role: main_axis
+      required_values: [exists, not_exists]
+      coverage_requirement: all_declared_values
+    expected_status:
+      tier: T1
+      coverage_role: status_axis
+      required_values: [success, failure]
+      coverage_requirement: all_declared_values
+    if_exists_clause:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values: [omitted, specified_if_exists]
+      coverage_requirement: all_declared_values
+    cascade_restrict:
+      tier: T2
+      coverage_role: syntax_axis
+      required_values: [omitted, cascade, restrict]
+      coverage_requirement: all_declared_values
+    privilege_level:
+      tier: T2
+      coverage_role: privilege_axis
+      required_values: [superuser, conversion_owner, non_owner]
+      coverage_requirement: all_declared_values
+    conversion_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values: [simple_id, quoted_id, schema_qualified, nonexistent_name]
+      coverage_requirement: all_declared_values
+    schema_existence:
+      tier: T4
+      coverage_role: dependency_axis
+      required_values: [schema_exists, schema_not_exists]
+      coverage_requirement: all_declared_values
+    conversion_ownership:
+      tier: T4
+      coverage_role: privilege_axis
+      required_values: [is_owner, is_not_owner]
+      coverage_requirement: all_declared_values
+    conversion_not_exist:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: [conversion_exists, conversion_not_exists]
+      coverage_requirement: all_declared_values
+    privilege_denied:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: [owner_success, non_owner_failure, superuser_success]
+      coverage_requirement: all_declared_values
+    nonexistent_name:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: [valid_name, nonexistent_conversion_name]
+      coverage_requirement: all_declared_values
+    cascade_semantics_null:
+      tier: T5
+      coverage_role: syntax_semantics_axis
+      required_values: [cascade_no_effect, restrict_no_effect]
+      coverage_requirement: all_declared_values
+    verification_mode:
+      tier: T6
+      coverage_role: verification_axis
+      required_values: [catalog_query_pg_conversion, error_assertion, notice_assertion_if_exists]
+      coverage_requirement: all_declared_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: cleanup_axis
+      required_values: [drop_conversion, drop_schema_cascade]
+      coverage_requirement: all_declared_values
+dynamic_inputs: {}
+combination_groups:
+- id: drop_conversion_required_factor_value_matrix
+  title: DROP CONVERSION required factor value baseline
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  expected_failure_reasons:
+  - missing_conversion_without_if_exists
+  - insufficient_conversion_privilege
+  - missing_schema
+  factors:
+    statement_branch: branch_drop_conversion
+    object_state: exists
+    expected_status: success
+    if_exists_clause: omitted
+    cascade_restrict: omitted
+    privilege_level: conversion_owner
+    conversion_name_shape: simple_id
+    schema_existence: schema_exists
+    conversion_ownership: is_owner
+    conversion_not_exist: conversion_exists
+    privilege_denied: owner_success
+    nonexistent_name: valid_name
+    cascade_semantics_null: restrict_no_effect
+    verification_mode: catalog_query_pg_conversion
+    cleanup_mode: drop_conversion
+  expansion:
+    statement_branch:
+      mode: explicit
+      values: [branch_drop_conversion]
+    object_state:
+      mode: explicit
+      values: [exists, not_exists]
+    expected_status:
+      mode: explicit
+      values: [success, failure]
+    if_exists_clause:
+      mode: explicit
+      values: [omitted, specified_if_exists]
+    cascade_restrict:
+      mode: explicit
+      values: [omitted, cascade, restrict]
+    privilege_level:
+      mode: explicit
+      values: [superuser, conversion_owner, non_owner]
+    conversion_name_shape:
+      mode: explicit
+      values: [simple_id, quoted_id, schema_qualified, nonexistent_name]
+    schema_existence:
+      mode: explicit
+      values: [schema_exists, schema_not_exists]
+    conversion_ownership:
+      mode: explicit
+      values: [is_owner, is_not_owner]
+    conversion_not_exist:
+      mode: explicit
+      values: [conversion_exists, conversion_not_exists]
+    privilege_denied:
+      mode: explicit
+      values: [owner_success, non_owner_failure, superuser_success]
+    nonexistent_name:
+      mode: explicit
+      values: [valid_name, nonexistent_conversion_name]
+    cascade_semantics_null:
+      mode: explicit
+      values: [cascade_no_effect, restrict_no_effect]
+    verification_mode:
+      mode: explicit
+      values: [catalog_query_pg_conversion, error_assertion, notice_assertion_if_exists]
+    cleanup_mode:
+      mode: explicit
+      values: [drop_conversion, drop_schema_cascade]
+  compatibility:
+    resolver: drop_conversion_factor_binding
+    success_when:
+    - Existing conversion can be dropped by owner or superuser regardless of omitted, CASCADE, or RESTRICT syntax.
+    - Missing conversion with IF EXISTS is a notice/no-op success.
+    failure_when:
+    - condition: object_state not_exists with if_exists_clause omitted
+      reason: missing_conversion_without_if_exists
+    - condition: privilege_level non_owner or conversion_ownership is_not_owner or privilege_denied non_owner_failure
+      reason: insufficient_conversion_privilege
+    - condition: schema_existence schema_not_exists
+      reason: missing_schema
+    default_failure_reason: drop_conversion_invalid_state
+  sql_shape:
+    template: "DROP CONVERSION {if_exists} {conversion_name} {cascade_restrict}"
+  verification:
+    required: true
+    mode: pg_conversion_removed_or_notice_check
+    sql: "SELECT count(*) FROM pg_conversion WHERE conname = '{conversion_name}'"
+  cleanup:
+    required: true
+    steps:
+    - sql: "DROP CONVERSION IF EXISTS {conversion_name} CASCADE"
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

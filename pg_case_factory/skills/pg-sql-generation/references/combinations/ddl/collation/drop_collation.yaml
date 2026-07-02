@@ -1,0 +1,241 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: drop_collation
+  name: DROP COLLATION
+  category: ddl
+  domain: collation
+  source_reference: references/statements/ddl/collation/drop_collation.md
+  official_source: https://www.postgresql.org/docs/16/sql-dropcollation.html
+  aliases:
+  - DROP COLLATION
+  - drop collation
+  - drop_collation
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required matrix coverage must pass before any derived extension is emitted.
+  - Derived extensions may add stress, dependency, or cross-factor combinations after the baseline audit passes.
+  - Derived extensions must not satisfy required factor, object, relation, table, or column-type coverage.
+  - Derived extensions must use declared factors and preserve success, failure, notice, or no-op attribution.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds: [collation]
+    decision_reason: >
+      DROP COLLATION directly removes a collation object and must cover collation existence, IF EXISTS, ownership, and
+      dependency behavior.
+  target_relation_coverage:
+    required: false
+    coverage_mode: not_applicable
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    decision_reason: >
+      DROP COLLATION does not target a relation kind. Table columns or indexes can be dependency fixtures for CASCADE and
+      RESTRICT, but those fixtures are represented by dependency_state rather than exhaustive relation-kind coverage.
+  table_coverage:
+    required: false
+    coverage_mode: conditional
+    decision_reason: >
+      Collation references can appear on character table columns or indexes and affect sorting/comparison. For DROP COLLATION
+      the baseline boundary is dependency behavior, so a minimal dependent table or index fixture is sufficient and no
+      exhaustive table-kind matrix is required.
+  column_type_coverage:
+    required: false
+    coverage_mode: representative
+    inventory_source: references/common/pg16_type_catalog.md
+    decision_reason: >
+      CASCADE may remove objects that reference a collation on character data, but DROP COLLATION itself does not validate
+      all column types. Character-column dependency fixtures are representative, not required exhaustive column-type coverage.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values: [branch_1]
+      coverage_requirement: all_declared_values
+    object_state:
+      tier: T1
+      coverage_role: main_axis
+      required_values: [not_exists, already_exists_no_deps, already_exists_with_deps]
+      coverage_requirement: all_declared_values
+    expected_status:
+      tier: T1
+      coverage_role: status_axis
+      required_values: [success, failure]
+      coverage_requirement: all_declared_values
+    if_exists_clause:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values: [absent, present]
+      coverage_requirement: all_declared_values
+    cascade_restrict:
+      tier: T2
+      coverage_role: dependency_behavior_axis
+      required_values: [RESTRICT_default, RESTRICT_explicit, CASCADE]
+      coverage_requirement: all_declared_values
+    dependency_state:
+      tier: T2
+      coverage_role: dependency_axis
+      required_values: [no_dependencies, referenced_by_table_column, referenced_by_index]
+      coverage_requirement: all_declared_values
+    collation_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values: [plain_identifier, quoted_identifier, schema_qualified]
+      coverage_requirement: all_declared_values
+    privilege_level:
+      tier: T4
+      coverage_role: privilege_axis
+      required_values: [collation_owner, non_owner]
+      coverage_requirement: all_declared_values
+    nonexistent_collation:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: [without_if_exists, with_if_exists]
+      coverage_requirement: all_declared_values
+    dependent_objects_exist:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: [restrict_with_dependencies]
+      coverage_requirement: all_declared_values
+    insufficient_privilege:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: [non_owner_drop]
+      coverage_requirement: all_declared_values
+    verification_mode:
+      tier: T6
+      coverage_role: verification_axis
+      required_values: [pg_collation_catalog_query, pg_collation_removed_assertion]
+      coverage_requirement: all_declared_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: cleanup_axis
+      required_values: [DROP_COLLATION_CASCADE, DROP_DEPENDENT_OBJECTS_FIRST]
+      coverage_requirement: all_declared_values
+dynamic_inputs: {}
+combination_groups:
+- id: drop_collation_required_factor_value_matrix
+  title: DROP COLLATION required factor value baseline
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  expected_failure_reasons:
+  - missing_collation_without_if_exists
+  - dependent_objects_restricted
+  - insufficient_collation_privilege
+  factors:
+    statement_branch: branch_1
+    object_state: already_exists_no_deps
+    expected_status: success
+    if_exists_clause: absent
+    cascade_restrict: RESTRICT_default
+    dependency_state: no_dependencies
+    collation_name_shape: plain_identifier
+    privilege_level: collation_owner
+    nonexistent_collation: without_if_exists
+    dependent_objects_exist: restrict_with_dependencies
+    insufficient_privilege: non_owner_drop
+    verification_mode: pg_collation_removed_assertion
+    cleanup_mode: DROP_COLLATION_CASCADE
+  expansion:
+    statement_branch:
+      mode: explicit
+      values: [branch_1]
+    object_state:
+      mode: explicit
+      values: [not_exists, already_exists_no_deps, already_exists_with_deps]
+    expected_status:
+      mode: explicit
+      values: [success, failure]
+    if_exists_clause:
+      mode: explicit
+      values: [absent, present]
+    cascade_restrict:
+      mode: explicit
+      values: [RESTRICT_default, RESTRICT_explicit, CASCADE]
+    dependency_state:
+      mode: explicit
+      values: [no_dependencies, referenced_by_table_column, referenced_by_index]
+    collation_name_shape:
+      mode: explicit
+      values: [plain_identifier, quoted_identifier, schema_qualified]
+    privilege_level:
+      mode: explicit
+      values: [collation_owner, non_owner]
+    nonexistent_collation:
+      mode: explicit
+      values: [without_if_exists, with_if_exists]
+    dependent_objects_exist:
+      mode: explicit
+      values: [restrict_with_dependencies]
+    insufficient_privilege:
+      mode: explicit
+      values: [non_owner_drop]
+    verification_mode:
+      mode: explicit
+      values: [pg_collation_catalog_query, pg_collation_removed_assertion]
+    cleanup_mode:
+      mode: explicit
+      values: [DROP_COLLATION_CASCADE, DROP_DEPENDENT_OBJECTS_FIRST]
+  compatibility:
+    resolver: drop_collation_factor_binding
+    success_when:
+    - Existing collation without dependencies can be dropped by the owner with default or explicit RESTRICT.
+    - Missing collation with IF EXISTS is a notice/no-op success.
+    - Existing collation with dependencies succeeds when CASCADE is selected and privileges are sufficient.
+    failure_when:
+    - condition: object_state not_exists with if_exists_clause absent
+      reason: missing_collation_without_if_exists
+    - condition: dependency_state referenced_by_table_column or referenced_by_index with cascade_restrict not CASCADE
+      reason: dependent_objects_restricted
+    - condition: privilege_level non_owner or insufficient_privilege non_owner_drop
+      reason: insufficient_collation_privilege
+    default_failure_reason: drop_collation_invalid_state
+  sql_shape:
+    template: "DROP COLLATION {if_exists} {collation_name} {cascade_restrict}"
+  verification:
+    required: true
+    mode: pg_collation_removed_or_notice_check
+    sql: "SELECT count(*) FROM pg_collation WHERE collname = '{collation_name}'"
+  cleanup:
+    required: true
+    steps:
+    - sql: "DROP COLLATION IF EXISTS {collation_name} CASCADE"
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

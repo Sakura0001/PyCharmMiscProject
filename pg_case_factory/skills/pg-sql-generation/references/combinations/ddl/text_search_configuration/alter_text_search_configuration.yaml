@@ -1,0 +1,484 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: alter_text_search_configuration
+  name: ALTER TEXT SEARCH CONFIGURATION
+  category: ddl
+  domain: text_search_configuration
+  source_reference: references/statements/ddl/text_search_configuration/alter_text_search_configuration.md
+  official_source: https://www.postgresql.org/docs/16/sql-altertsconfiguration.html
+  aliases:
+  - alter_text_search_configuration
+  - ALTER TEXT SEARCH CONFIGURATION
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required matrix coverage must pass before any derived extension is emitted.
+  - Derived extensions may add stress, boundary, dependency, privilege, naming, or cross-factor combinations after the baseline
+    audit passes.
+  - Derived extensions must not be counted as satisfying required factor, object, relation, table, or column-type coverage.
+  - Derived extensions must use declared factors and declared factor values.
+  - Derived extensions must preserve success, failure, no-op, or notice attribution.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds:
+    - text_search_configuration
+    - text_search_dictionary
+    decision_reason: ALTER TEXT SEARCH CONFIGURATION directly targets a text search configuration catalog object. Required
+      baseline coverage is scoped to mapping, dictionary, owner, rename, and schema-move dependencies declared by the statement
+      reference.
+  target_relation_coverage:
+    required: false
+    coverage_mode: not_applicable
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    decision_reason: ALTER TEXT SEARCH CONFIGURATION names text search catalog objects, not pg_class relations. Tables, indexes,
+      views, sequences, materialized views, and foreign tables are outside this statement target surface.
+  table_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: ALTER TEXT SEARCH CONFIGURATION does not directly create, alter, scan, validate, or drop table definitions.
+      Any setup objects are text search catalog dependencies rather than table-kind coverage.
+  column_type_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: The statement changes text search configuration metadata and token-to-dictionary mappings, not table
+      columns. SQL validity and verification do not vary by PG16 table column data type.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values: &id001
+      - branch_add_mapping
+      - branch_alter_mapping
+      - branch_alter_mapping_replace
+      - branch_alter_mapping_for_replace
+      - branch_drop_mapping
+      - branch_rename
+      - branch_owner
+      - branch_set_schema
+      coverage_requirement: all_declared_values
+    object_state:
+      tier: T1
+      coverage_role: main_axis
+      required_values: &id002
+      - exists
+      - not_exists
+      coverage_requirement: all_declared_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values: &id003
+      - success
+      - failure
+      coverage_requirement: all_declared_values
+    alter_action:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values: &id004
+      - add_mapping
+      - alter_mapping
+      - alter_mapping_replace
+      - alter_mapping_for_replace
+      - drop_mapping
+      - rename
+      - owner
+      - set_schema
+      coverage_requirement: all_declared_values
+    if_exists_clause:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values: &id005
+      - omitted
+      - present
+      coverage_requirement: all_declared_values
+    owner_target:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values: &id006
+      - specified_new_owner
+      - specified_current_role
+      - specified_current_user
+      - specified_session_user
+      coverage_requirement: all_declared_values
+    dictionary_existence:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values: &id007
+      - dictionary_exists
+      - dictionary_not_exists
+      coverage_requirement: all_declared_values
+    token_type_existence:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values: &id008
+      - token_type_mapped
+      - token_type_not_mapped
+      coverage_requirement: all_declared_values
+    config_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values: &id009
+      - simple_id
+      - schema_qualified_id
+      - quoted_id
+      - reserved_word_as_name
+      - nonexistent_name
+      coverage_requirement: all_declared_values
+    new_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values: &id010
+      - simple_id
+      - quoted_id
+      - duplicate_name
+      coverage_requirement: all_declared_values
+    owner_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values: &id011
+      - simple_id
+      - quoted_id
+      - nonexistent_role
+      coverage_requirement: all_declared_values
+    schema_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values: &id012
+      - simple_id
+      - nonexistent_schema
+      coverage_requirement: all_declared_values
+    dictionary_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values: &id013
+      - simple_id
+      - schema_qualified_id
+      - nonexistent_name
+      coverage_requirement: all_declared_values
+    token_type_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values: &id014
+      - valid_token_type
+      - invalid_token_type
+      coverage_requirement: all_declared_values
+    privilege_level:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values: &id015
+      - owner
+      - non_owner
+      - superuser
+      coverage_requirement: all_declared_values
+    role_existence:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values: &id016
+      - role_exists
+      - role_not_exists
+      coverage_requirement: all_declared_values
+    schema_existence:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values: &id017
+      - schema_exists
+      - schema_not_exists
+      coverage_requirement: all_declared_values
+    dictionary_dependency:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values: &id018
+      - dictionary_exists_and_valid
+      - dictionary_missing
+      coverage_requirement: all_declared_values
+    nonexistent_config:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: &id019
+      - config_exists
+      - config_missing
+      coverage_requirement: all_declared_values
+    nonexistent_dictionary:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: &id020
+      - dictionary_exists
+      - dictionary_missing
+      coverage_requirement: all_declared_values
+    nonexistent_token_type_mapping:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: &id021
+      - mapping_exists
+      - mapping_missing
+      coverage_requirement: all_declared_values
+    duplicate_new_name:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: &id022
+      - no_conflict
+      - same_name_conflict
+      coverage_requirement: all_declared_values
+    nonexistent_owner_role:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: &id023
+      - role_exists
+      - role_missing
+      coverage_requirement: all_declared_values
+    nonexistent_target_schema:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: &id024
+      - schema_exists
+      - schema_missing
+      coverage_requirement: all_declared_values
+    non_owner_attempt:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: &id025
+      - owner_execution
+      - non_owner_execution
+      coverage_requirement: all_declared_values
+    drop_mapping_without_if_exists:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: &id026
+      - with_if_exists
+      - without_if_exists
+      coverage_requirement: all_declared_values
+    verification_mode:
+      tier: T6
+      coverage_role: verification_cleanup_axis
+      required_values: &id027
+      - catalog_query_pg_ts_config
+      - mapping_query
+      - error_assertion
+      coverage_requirement: all_declared_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: verification_cleanup_axis
+      required_values: &id028
+      - drop_mapping_revert
+      - revert_rename
+      - revert_owner
+      - drop_text_search_configuration
+      - role_cleanup
+      coverage_requirement: all_declared_values
+dynamic_inputs:
+  ts_configuration_object_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/alter_text_search_configuration_object_manifest.json
+    required_fields:
+    - object_name
+    - schema_name
+    - object_state
+    - owner_role
+  ts_configuration_dependency_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/alter_text_search_configuration_dependency_manifest.json
+    required_fields:
+    - dependency_objects
+    - dependency_state
+    - statement_branch
+  ts_configuration_privilege_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/alter_text_search_configuration_privilege_manifest.json
+    required_fields:
+    - execution_role
+    - privilege_context
+    - is_superuser
+combination_groups:
+- id: alter_text_search_configuration_required_factor_value_matrix
+  title: ALTER TEXT SEARCH CONFIGURATION required factor value baseline
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  expected_failure_reasons:
+  - statement_specific_failure
+  - declared_factor_failure
+  - nonexistent_config
+  - nonexistent_dictionary
+  - nonexistent_token_type_mapping
+  - duplicate_new_name
+  - nonexistent_owner_role
+  - nonexistent_target_schema
+  - non_owner_attempt
+  - drop_mapping_without_if_exists
+  factors:
+    statement_branch: branch_add_mapping
+    object_state: exists
+    expected_status: success
+    alter_action: add_mapping
+    if_exists_clause: omitted
+    owner_target: specified_new_owner
+    dictionary_existence: dictionary_exists
+    token_type_existence: token_type_mapped
+    config_name_shape: simple_id
+    new_name_shape: simple_id
+    owner_name_shape: simple_id
+    schema_name_shape: simple_id
+    dictionary_name_shape: simple_id
+    token_type_name_shape: valid_token_type
+    privilege_level: owner
+    role_existence: role_exists
+    schema_existence: schema_exists
+    dictionary_dependency: dictionary_exists_and_valid
+    nonexistent_config: config_exists
+    nonexistent_dictionary: dictionary_exists
+    nonexistent_token_type_mapping: mapping_exists
+    duplicate_new_name: no_conflict
+    nonexistent_owner_role: role_exists
+    nonexistent_target_schema: schema_exists
+    non_owner_attempt: owner_execution
+    drop_mapping_without_if_exists: with_if_exists
+    verification_mode: catalog_query_pg_ts_config
+    cleanup_mode: drop_mapping_revert
+  expansion:
+    statement_branch:
+      mode: explicit
+      values: *id001
+    object_state:
+      mode: explicit
+      values: *id002
+    expected_status:
+      mode: explicit
+      values: *id003
+    alter_action:
+      mode: explicit
+      values: *id004
+    if_exists_clause:
+      mode: explicit
+      values: *id005
+    owner_target:
+      mode: explicit
+      values: *id006
+    dictionary_existence:
+      mode: explicit
+      values: *id007
+    token_type_existence:
+      mode: explicit
+      values: *id008
+    config_name_shape:
+      mode: explicit
+      values: *id009
+    new_name_shape:
+      mode: explicit
+      values: *id010
+    owner_name_shape:
+      mode: explicit
+      values: *id011
+    schema_name_shape:
+      mode: explicit
+      values: *id012
+    dictionary_name_shape:
+      mode: explicit
+      values: *id013
+    token_type_name_shape:
+      mode: explicit
+      values: *id014
+    privilege_level:
+      mode: explicit
+      values: *id015
+    role_existence:
+      mode: explicit
+      values: *id016
+    schema_existence:
+      mode: explicit
+      values: *id017
+    dictionary_dependency:
+      mode: explicit
+      values: *id018
+    nonexistent_config:
+      mode: explicit
+      values: *id019
+    nonexistent_dictionary:
+      mode: explicit
+      values: *id020
+    nonexistent_token_type_mapping:
+      mode: explicit
+      values: *id021
+    duplicate_new_name:
+      mode: explicit
+      values: *id022
+    nonexistent_owner_role:
+      mode: explicit
+      values: *id023
+    nonexistent_target_schema:
+      mode: explicit
+      values: *id024
+    non_owner_attempt:
+      mode: explicit
+      values: *id025
+    drop_mapping_without_if_exists:
+      mode: explicit
+      values: *id026
+    verification_mode:
+      mode: explicit
+      values: *id027
+    cleanup_mode:
+      mode: explicit
+      values: *id028
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - expected_status == success and selected text_search_configuration object, dependency, privilege, and syntax factors
+      describe a legal ALTER TEXT SEARCH CONFIGURATION path
+    - notice and no-op paths are represented by declared IF EXISTS or branch factors and do not replace required success/failure
+      coverage
+    failure_when:
+    - condition: expected_status == failure
+      reason: statement_specific_failure
+    - condition: declared object state, dependency, privilege, name-shape, duplicate, missing-object, or schema boundary factor
+        selects an invalid prerequisite
+      reason: declared_factor_failure
+    default_failure_reason: statement_specific_failure
+  sql_shape:
+    template: ALTER TEXT SEARCH CONFIGURATION {config_name} {alter_action_clause}
+  verification:
+    required: true
+    mode: catalog_or_error_assertion
+    sql: SELECT cfgname FROM pg_ts_config WHERE cfgname = '{config_name}';
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP TEXT SEARCH CONFIGURATION IF EXISTS {config_name} CASCADE;
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

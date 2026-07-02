@@ -1,0 +1,311 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: alter_collation
+  name: ALTER COLLATION
+  category: ddl
+  domain: collation
+  source_reference: references/statements/ddl/collation/alter_collation.md
+  official_source: https://www.postgresql.org/docs/16/sql-altercollation.html
+  aliases:
+  - ALTER COLLATION
+  - alter collation
+  - alter_collation
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required matrix coverage must pass before any derived extension is emitted.
+  - Derived extensions may add stress, environment, or cross-factor combinations after the baseline audit passes.
+  - Derived extensions must not satisfy required factor, object, relation, table, or column-type coverage.
+  - Derived extensions must use declared factors and preserve success or failure attribution.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds: [collation]
+    decision_reason: >
+      ALTER COLLATION directly changes collation metadata, ownership, schema placement, name, or recorded version. Required
+      object coverage is the collation object plus its lifecycle and privilege states.
+  target_relation_coverage:
+    required: false
+    coverage_mode: not_applicable
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    decision_reason: >
+      ALTER COLLATION does not target pg_class relations. Indexes or table columns may reference the collation for dependency
+      smoke tests, but relation-kind coverage is not part of this object-level DDL baseline.
+  table_coverage:
+    required: false
+    coverage_mode: conditional
+    decision_reason: >
+      Collation changes may affect character column sorting or comparison when a table column or index references the
+      collation. Baseline coverage only needs minimal dependency fixtures represented by collation_usage_state and
+      referenced_objects; it does not require exhaustive table-kind coverage.
+  column_type_coverage:
+    required: false
+    coverage_mode: representative
+    inventory_source: references/common/pg16_type_catalog.md
+    decision_reason: >
+      ALTER COLLATION changes collation metadata rather than validating every table column type. Character-column/index usage
+      is a representative dependency boundary, not a requirement to enumerate all PG16 column types.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values: [branch_refresh_version, branch_rename, branch_owner, branch_set_schema]
+      coverage_requirement: all_declared_values
+    object_state:
+      tier: T1
+      coverage_role: main_axis
+      required_values: [collation_exists, collation_not_exists]
+      coverage_requirement: all_declared_values
+    expected_status:
+      tier: T1
+      coverage_role: status_axis
+      required_values: [success, failure]
+      coverage_requirement: all_declared_values
+    collation_usage_state:
+      tier: T2
+      coverage_role: dependency_axis
+      required_values: [no_dependencies, referenced_by_table_column, referenced_by_index]
+      coverage_requirement: all_declared_values
+    target_state:
+      tier: T2
+      coverage_role: branch_target_axis
+      required_values: [new_name_available, new_name_conflict, new_owner_available, new_owner_not_available, new_schema_available, new_schema_conflict]
+      coverage_requirement: all_declared_values
+    collation_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values: [plain_identifier, quoted_identifier, schema_qualified]
+      coverage_requirement: all_declared_values
+    new_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values: [plain_identifier, quoted_identifier]
+      coverage_requirement: all_declared_values
+    new_owner_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values: [plain_role, CURRENT_ROLE, CURRENT_USER, SESSION_USER]
+      coverage_requirement: all_declared_values
+    new_schema_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values: [existing_schema, nonexistent_schema]
+      coverage_requirement: all_declared_values
+    privilege_level:
+      tier: T4
+      coverage_role: privilege_axis
+      required_values: [superuser, collation_owner, non_owner]
+      coverage_requirement: all_declared_values
+    owner_membership:
+      tier: T4
+      coverage_role: privilege_axis
+      required_values: [member_of_new_owner, not_member_of_new_owner]
+      coverage_requirement: all_declared_values
+    referenced_objects:
+      tier: T4
+      coverage_role: dependency_axis
+      required_values: [table_column_with_collate, index_using_collation]
+      coverage_requirement: all_declared_values
+    collation_not_exists:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: [not_exists]
+      coverage_requirement: all_declared_values
+    new_name_conflict:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: [name_already_exists]
+      coverage_requirement: all_declared_values
+    new_owner_not_exists:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: [nonexistent_role]
+      coverage_requirement: all_declared_values
+    new_schema_not_exists:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: [nonexistent_schema]
+      coverage_requirement: all_declared_values
+    insufficient_privilege:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: [non_owner, no_create_on_schema]
+      coverage_requirement: all_declared_values
+    new_schema_same_name_conflict:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: [same_name_in_target_schema]
+      coverage_requirement: all_declared_values
+    verification_mode:
+      tier: T6
+      coverage_role: verification_axis
+      required_values: [pg_collation_catalog_query, pg_collation_actual_version_query, collation_sort_verification]
+      coverage_requirement: all_declared_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: cleanup_axis
+      required_values: [DROP_COLLATION_CASCADE, DROP_DEPENDENT_OBJECTS_FIRST]
+      coverage_requirement: all_declared_values
+dynamic_inputs: {}
+combination_groups:
+- id: alter_collation_required_factor_value_matrix
+  title: ALTER COLLATION required factor value baseline
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  expected_failure_reasons:
+  - missing_collation
+  - duplicate_target_name
+  - invalid_owner_or_schema_target
+  - insufficient_collation_privilege
+  - target_schema_name_conflict
+  factors:
+    statement_branch: branch_refresh_version
+    object_state: collation_exists
+    expected_status: success
+    collation_usage_state: no_dependencies
+    target_state: new_name_available
+    collation_name_shape: plain_identifier
+    new_name_shape: plain_identifier
+    new_owner_shape: plain_role
+    new_schema_shape: existing_schema
+    privilege_level: collation_owner
+    owner_membership: member_of_new_owner
+    referenced_objects: table_column_with_collate
+    collation_not_exists: not_exists
+    new_name_conflict: name_already_exists
+    new_owner_not_exists: nonexistent_role
+    new_schema_not_exists: nonexistent_schema
+    insufficient_privilege: non_owner
+    new_schema_same_name_conflict: same_name_in_target_schema
+    verification_mode: pg_collation_catalog_query
+    cleanup_mode: DROP_COLLATION_CASCADE
+  expansion:
+    statement_branch:
+      mode: explicit
+      values: [branch_refresh_version, branch_rename, branch_owner, branch_set_schema]
+    object_state:
+      mode: explicit
+      values: [collation_exists, collation_not_exists]
+    expected_status:
+      mode: explicit
+      values: [success, failure]
+    collation_usage_state:
+      mode: explicit
+      values: [no_dependencies, referenced_by_table_column, referenced_by_index]
+    target_state:
+      mode: explicit
+      values: [new_name_available, new_name_conflict, new_owner_available, new_owner_not_available, new_schema_available, new_schema_conflict]
+    collation_name_shape:
+      mode: explicit
+      values: [plain_identifier, quoted_identifier, schema_qualified]
+    new_name_shape:
+      mode: explicit
+      values: [plain_identifier, quoted_identifier]
+    new_owner_shape:
+      mode: explicit
+      values: [plain_role, CURRENT_ROLE, CURRENT_USER, SESSION_USER]
+    new_schema_shape:
+      mode: explicit
+      values: [existing_schema, nonexistent_schema]
+    privilege_level:
+      mode: explicit
+      values: [superuser, collation_owner, non_owner]
+    owner_membership:
+      mode: explicit
+      values: [member_of_new_owner, not_member_of_new_owner]
+    referenced_objects:
+      mode: explicit
+      values: [table_column_with_collate, index_using_collation]
+    collation_not_exists:
+      mode: explicit
+      values: [not_exists]
+    new_name_conflict:
+      mode: explicit
+      values: [name_already_exists]
+    new_owner_not_exists:
+      mode: explicit
+      values: [nonexistent_role]
+    new_schema_not_exists:
+      mode: explicit
+      values: [nonexistent_schema]
+    insufficient_privilege:
+      mode: explicit
+      values: [non_owner, no_create_on_schema]
+    new_schema_same_name_conflict:
+      mode: explicit
+      values: [same_name_in_target_schema]
+    verification_mode:
+      mode: explicit
+      values: [pg_collation_catalog_query, pg_collation_actual_version_query, collation_sort_verification]
+    cleanup_mode:
+      mode: explicit
+      values: [DROP_COLLATION_CASCADE, DROP_DEPENDENT_OBJECTS_FIRST]
+  compatibility:
+    resolver: alter_collation_factor_binding
+    success_when:
+    - object_state is collation_exists and branch-specific target state, owner membership, schema privileges, and ownership are valid.
+    - Existing table-column or index references are allowed dependency fixtures and do not by themselves make ALTER COLLATION fail.
+    failure_when:
+    - condition: object_state collation_not_exists or collation_not_exists not_exists
+      reason: missing_collation
+    - condition: statement_branch branch_rename with new_name_conflict name_already_exists
+      reason: duplicate_target_name
+    - condition: statement_branch branch_owner with new_owner_not_exists nonexistent_role or owner_membership not_member_of_new_owner
+      reason: invalid_owner_or_schema_target
+    - condition: statement_branch branch_set_schema with new_schema_not_exists nonexistent_schema
+      reason: invalid_owner_or_schema_target
+    - condition: privilege_level non_owner or insufficient_privilege selected
+      reason: insufficient_collation_privilege
+    - condition: new_schema_same_name_conflict same_name_in_target_schema
+      reason: target_schema_name_conflict
+    default_failure_reason: alter_collation_invalid_state
+  sql_shape:
+    template: "ALTER COLLATION {collation_name} {alter_action}"
+  verification:
+    required: true
+    mode: pg_collation_catalog_or_version_check
+    sql: "SELECT * FROM pg_collation WHERE collname = '{collation_name}'"
+  cleanup:
+    required: true
+    steps:
+    - sql: "DROP COLLATION IF EXISTS {collation_name} CASCADE"
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

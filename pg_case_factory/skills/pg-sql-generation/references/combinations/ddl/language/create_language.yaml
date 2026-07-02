@@ -1,0 +1,280 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: create_language
+  name: CREATE LANGUAGE
+  category: ddl
+  domain: language
+  source_reference: references/statements/ddl/language/create_language.md
+  official_source: https://www.postgresql.org/docs/16/sql-createlanguage.html
+  aliases:
+  - CREATE LANGUAGE
+  - create language
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required matrix coverage must pass before any derived extension is emitted.
+  - Derived extensions may add stress, environment, or cross-factor combinations after the baseline audit passes.
+  - Derived extensions must not satisfy required factor, object, relation, table, or column-type coverage.
+  - Derived extensions must use declared factors and preserve success or failure attribution.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds: [language, function, extension]
+    decision_reason: >
+      CREATE LANGUAGE defines a procedural language object and may depend on handler, inline, or validator functions. The
+      handler-less compatibility form delegates to CREATE EXTENSION behavior, so extension is noted as a compatibility target
+      object but not expanded as an extension matrix here.
+  target_relation_coverage:
+    required: false
+    coverage_mode: not_applicable
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    decision_reason: >
+      CREATE LANGUAGE does not target pg_class relations. It defines procedural-language catalog metadata and handler
+      dependencies, so relation-kind coverage is outside the baseline.
+  table_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: >
+      CREATE LANGUAGE does not directly operate on tables, table predicates, triggers, policies, or table dependencies.
+      Procedural language use inside later functions is outside this object-definition statement.
+  column_type_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: >
+      CREATE LANGUAGE validity is based on language name, handler/validator function state, superuser requirements, and
+      replacement behavior. It does not depend on table column data types.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values: [branch_1, branch_2]
+      coverage_requirement: all_declared_values
+    target_object_state:
+      tier: T1
+      coverage_role: main_axis
+      required_values: [absent, exists, exists_conflict]
+      coverage_requirement: all_declared_values
+    expected_status:
+      tier: T1
+      coverage_role: status_axis
+      required_values: [success, failure]
+      coverage_requirement: all_declared_values
+    or_replace_clause:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values: [absent, present_replace_new, present_replace_existing]
+      coverage_requirement: all_declared_values
+    trusted_clause:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values: [absent, present]
+      coverage_requirement: all_declared_values
+    handler_clause:
+      tier: T2
+      coverage_role: handler_axis
+      required_values: [handler_exists, handler_missing]
+      coverage_requirement: all_declared_values
+    inline_clause:
+      tier: T2
+      coverage_role: handler_axis
+      required_values: [absent, present]
+      coverage_requirement: all_declared_values
+    validator_clause:
+      tier: T2
+      coverage_role: handler_axis
+      required_values: [absent, present]
+      coverage_requirement: all_declared_values
+    privilege_context:
+      tier: T2
+      coverage_role: privilege_axis
+      required_values: [superuser, non_superuser]
+      coverage_requirement: all_declared_values
+    name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values: [plain_identifier, schema_qualified, quoted_identifier]
+      coverage_requirement: all_declared_values
+    handler_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values: [plain_function, schema_qualified_function, missing_function]
+      coverage_requirement: all_declared_values
+    dependency_state:
+      tier: T4
+      coverage_role: dependency_axis
+      required_values: [ready, missing_handler, missing_validator, wrong_signature]
+      coverage_requirement: all_declared_values
+    superuser_requirement:
+      tier: T4
+      coverage_role: environment_axis
+      required_values: [superuser_available, superuser_required_only]
+      coverage_requirement: all_declared_values
+    invalid_combination:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values: [none, syntax_valid_semantic_error, object_type_mismatch]
+      coverage_requirement: all_declared_values
+    ownership_boundary:
+      tier: T5
+      coverage_role: ownership_axis
+      required_values: [superuser, non_superuser]
+      coverage_requirement: all_declared_values
+    verification_mode:
+      tier: T6
+      coverage_role: verification_axis
+      required_values: [catalog_query, effect_query, error_assertion]
+      coverage_requirement: all_declared_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: cleanup_axis
+      required_values: [drop_objects, reset_state]
+      coverage_requirement: all_declared_values
+dynamic_inputs: {}
+combination_groups:
+- id: create_language_required_factor_value_matrix
+  title: CREATE LANGUAGE required factor value baseline
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  expected_failure_reasons:
+  - duplicate_language_without_replace
+  - missing_or_invalid_handler_dependency
+  - insufficient_language_privilege
+  - invalid_language_definition
+  - handlerless_extension_resolution_failure
+  factors:
+    statement_branch: branch_1
+    target_object_state: absent
+    expected_status: success
+    or_replace_clause: absent
+    trusted_clause: absent
+    handler_clause: handler_exists
+    inline_clause: absent
+    validator_clause: absent
+    privilege_context: superuser
+    name_shape: plain_identifier
+    handler_name_shape: plain_function
+    dependency_state: ready
+    superuser_requirement: superuser_available
+    invalid_combination: none
+    ownership_boundary: superuser
+    verification_mode: catalog_query
+    cleanup_mode: drop_objects
+  expansion:
+    statement_branch:
+      mode: explicit
+      values: [branch_1, branch_2]
+    target_object_state:
+      mode: explicit
+      values: [absent, exists, exists_conflict]
+    expected_status:
+      mode: explicit
+      values: [success, failure]
+    or_replace_clause:
+      mode: explicit
+      values: [absent, present_replace_new, present_replace_existing]
+    trusted_clause:
+      mode: explicit
+      values: [absent, present]
+    handler_clause:
+      mode: explicit
+      values: [handler_exists, handler_missing]
+    inline_clause:
+      mode: explicit
+      values: [absent, present]
+    validator_clause:
+      mode: explicit
+      values: [absent, present]
+    privilege_context:
+      mode: explicit
+      values: [superuser, non_superuser]
+    name_shape:
+      mode: explicit
+      values: [plain_identifier, schema_qualified, quoted_identifier]
+    handler_name_shape:
+      mode: explicit
+      values: [plain_function, schema_qualified_function, missing_function]
+    dependency_state:
+      mode: explicit
+      values: [ready, missing_handler, missing_validator, wrong_signature]
+    superuser_requirement:
+      mode: explicit
+      values: [superuser_available, superuser_required_only]
+    invalid_combination:
+      mode: explicit
+      values: [none, syntax_valid_semantic_error, object_type_mismatch]
+    ownership_boundary:
+      mode: explicit
+      values: [superuser, non_superuser]
+    verification_mode:
+      mode: explicit
+      values: [catalog_query, effect_query, error_assertion]
+    cleanup_mode:
+      mode: explicit
+      values: [drop_objects, reset_state]
+  compatibility:
+    resolver: create_language_factor_binding
+    success_when:
+    - Superuser context with valid handler, inline, and validator dependencies can create or replace the target language.
+    - OR REPLACE succeeds for an existing compatible language when replacement semantics are selected.
+    failure_when:
+    - condition: target_object_state exists or exists_conflict with or_replace_clause absent
+      reason: duplicate_language_without_replace
+    - condition: handler_clause handler_missing or dependency_state missing_handler, missing_validator, or wrong_signature
+      reason: missing_or_invalid_handler_dependency
+    - condition: privilege_context non_superuser or ownership_boundary non_superuser
+      reason: insufficient_language_privilege
+    - condition: invalid_combination not none
+      reason: invalid_language_definition
+    - condition: statement_branch branch_2 and handlerless extension resolution is unavailable
+      reason: handlerless_extension_resolution_failure
+    default_failure_reason: create_language_invalid_state
+  sql_shape:
+    template: "CREATE {or_replace} {trusted} PROCEDURAL LANGUAGE {name} {handler_inline_validator_clause}"
+  verification:
+    required: true
+    mode: pg_language_catalog_or_effect_check
+    sql: "SELECT count(*) FROM pg_language WHERE lanname = '{name}'"
+  cleanup:
+    required: true
+    steps:
+    - sql: "DROP LANGUAGE IF EXISTS {name} CASCADE"
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true
