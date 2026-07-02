@@ -1,0 +1,347 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: create_subscription
+  name: CREATE SUBSCRIPTION
+  category: ddl
+  domain: subscription
+  source_reference: references/statements/ddl/subscription/create_subscription.md
+  official_source: https://www.postgresql.org/docs/16/sql-createsubscription.html
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required matrix coverage must pass before any derived extension is emitted.
+  - Derived extensions must not be counted as satisfying required factor or coverage scope requirements.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds:
+    - subscription
+    decision_reason: subscription statement coverage is tracked by explicit PostgreSQL object kind.
+  target_relation_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: subscription statements do not target relation objects directly.
+  table_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: subscription statements do not directly depend on table instance coverage.
+  column_type_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: subscription statements do not vary by table column data type.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values: &id001
+      - branch_create_subscription
+      coverage_requirement: all_values
+    subscription_identity:
+      tier: T1
+      coverage_role: main_axis
+      required_values: &id002
+      - not_exists
+      - exists
+      - reserved_word_name
+      - quoted_duplicate
+      coverage_requirement: all_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values: &id003
+      - success
+      - failure
+      coverage_requirement: all_values
+    with_parameter_clause:
+      tier: T2
+      coverage_role: main_axis
+      required_values: &id004
+      - omitted
+      - connect_true_enabled_true
+      - connect_false_enabled_false
+      - copy_data_true
+      - copy_data_false
+      - slot_name_explicit
+      - create_slot_false
+      - synchronous_commit_on
+      - binary_true
+      - stream_true
+      - disable_on_error_true
+      - run_as_owner_true
+      - multiple_parameters
+      coverage_requirement: all_values
+    publication_list:
+      tier: T2
+      coverage_role: main_axis
+      required_values: &id005
+      - single_publication
+      - multiple_publications
+      coverage_requirement: all_values
+    connection_info:
+      tier: T2
+      coverage_role: main_axis
+      required_values: &id006
+      - valid_conninfo
+      - minimal_conninfo
+      coverage_requirement: all_values
+    copy_data_behavior:
+      tier: T2
+      coverage_role: main_axis
+      required_values: &id007
+      - copy_data_true
+      - copy_data_false
+      coverage_requirement: all_values
+    slot_name_behavior:
+      tier: T2
+      coverage_role: main_axis
+      required_values: &id008
+      - default_auto_slot
+      - explicit_slot_name
+      coverage_requirement: all_values
+    subscription_name_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values: &id009
+      - simple_name
+      - quoted_name
+      - reserved_word_name
+      - non_existing_name
+      coverage_requirement: all_values
+    publication_name_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values: &id010
+      - simple_name
+      - quoted_name
+      coverage_requirement: all_values
+    conninfo_string_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values: &id011
+      - valid_conninfo_string
+      - invalid_conninfo_string
+      coverage_requirement: all_values
+    executor_privilege:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values: &id012
+      - superuser
+      - non_superuser
+      coverage_requirement: all_values
+    replication_connection:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values: &id013
+      - connection_available
+      - connection_unavailable
+      coverage_requirement: all_values
+    publication_dependency:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values: &id014
+      - publication_exists_on_remote
+      - publication_not_exists_on_remote
+      coverage_requirement: all_values
+    duplicate_subscription_name:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id015
+      - same_name_exists
+      coverage_requirement: all_values
+    privilege_insufficient:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id016
+      - non_superuser_creating_subscription
+      coverage_requirement: all_values
+    replication_connection_failure:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id017
+      - connection_refused
+      - authentication_failed
+      coverage_requirement: all_values
+    publication_not_exists_on_remote:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id018
+      - remote_publication_not_exists
+      coverage_requirement: all_values
+    invalid_conninfo:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id019
+      - malformed_conninfo
+      coverage_requirement: all_values
+    verification_mode:
+      tier: T6
+      coverage_role: rotate_attach
+      required_values: &id020
+      - pg_subscription_catalog
+      - error_assertion
+      coverage_requirement: all_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: rotate_attach
+      required_values: &id021
+      - drop_subscription
+      coverage_requirement: all_values
+dynamic_inputs:
+  object_manifest:
+    required: true
+    source: lifecycle_plan
+    required_fields:
+    - object_name
+    - object_kind
+    - expected_status
+combination_groups:
+- id: create_subscription_declared_factor_baseline
+  title: CREATE SUBSCRIPTION declared factor baseline
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  expected_failure_reasons:
+  - create_subscription_declared_failure
+  factors:
+    statement_branch: branch_create_subscription
+    subscription_identity: not_exists
+    expected_status: success
+    with_parameter_clause: omitted
+    publication_list: single_publication
+    connection_info: valid_conninfo
+    copy_data_behavior: copy_data_true
+    slot_name_behavior: default_auto_slot
+    subscription_name_shape: simple_name
+    publication_name_shape: simple_name
+    conninfo_string_shape: valid_conninfo_string
+    executor_privilege: superuser
+    replication_connection: connection_available
+    publication_dependency: publication_exists_on_remote
+    duplicate_subscription_name: same_name_exists
+    privilege_insufficient: non_superuser_creating_subscription
+    replication_connection_failure: connection_refused
+    publication_not_exists_on_remote: remote_publication_not_exists
+    invalid_conninfo: malformed_conninfo
+    verification_mode: pg_subscription_catalog
+    cleanup_mode: drop_subscription
+  expansion:
+    statement_branch:
+      mode: explicit
+      values: *id001
+    subscription_identity:
+      mode: explicit
+      values: *id002
+    expected_status:
+      mode: explicit
+      values: *id003
+    with_parameter_clause:
+      mode: explicit
+      values: *id004
+    publication_list:
+      mode: explicit
+      values: *id005
+    connection_info:
+      mode: explicit
+      values: *id006
+    copy_data_behavior:
+      mode: explicit
+      values: *id007
+    slot_name_behavior:
+      mode: explicit
+      values: *id008
+    subscription_name_shape:
+      mode: explicit
+      values: *id009
+    publication_name_shape:
+      mode: explicit
+      values: *id010
+    conninfo_string_shape:
+      mode: explicit
+      values: *id011
+    executor_privilege:
+      mode: explicit
+      values: *id012
+    replication_connection:
+      mode: explicit
+      values: *id013
+    publication_dependency:
+      mode: explicit
+      values: *id014
+    duplicate_subscription_name:
+      mode: explicit
+      values: *id015
+    privilege_insufficient:
+      mode: explicit
+      values: *id016
+    replication_connection_failure:
+      mode: explicit
+      values: *id017
+    publication_not_exists_on_remote:
+      mode: explicit
+      values: *id018
+    invalid_conninfo:
+      mode: explicit
+      values: *id019
+    verification_mode:
+      mode: explicit
+      values: *id020
+    cleanup_mode:
+      mode: explicit
+      values: *id021
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - expected_status == success
+    failure_when:
+    - condition: expected_status == failure
+      reason: create_subscription_declared_failure
+    default_failure_reason: create_subscription_declared_failure
+  sql_shape:
+    template: CREATE SUBSCRIPTION {object_name};
+  verification:
+    required: true
+    mode: catalog_or_error_assertion
+    sql: SELECT 1;
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup for create_subscription
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

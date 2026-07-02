@@ -1,0 +1,409 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: alter_subscription
+  name: ALTER SUBSCRIPTION
+  category: ddl
+  domain: subscription
+  source_reference: references/statements/ddl/subscription/alter_subscription.md
+  official_source: https://www.postgresql.org/docs/16/sql-altersubscription.html
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required matrix coverage must pass before any derived extension is emitted.
+  - Derived extensions must not be counted as satisfying required factor or coverage scope requirements.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds:
+    - subscription
+    decision_reason: subscription statement coverage is tracked by explicit PostgreSQL object kind.
+  target_relation_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: subscription statements do not target relation objects directly.
+  table_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: subscription statements do not directly depend on table instance coverage.
+  column_type_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: subscription statements do not vary by table column data type.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values: &id001
+      - branch_connection
+      - branch_set_publication
+      - branch_add_publication
+      - branch_drop_publication
+      - branch_refresh_publication
+      - branch_enable
+      - branch_disable
+      - branch_set_parameters
+      - branch_skip
+      - branch_owner_to
+      - branch_rename
+      coverage_requirement: all_values
+    subscription_state:
+      tier: T1
+      coverage_role: main_axis
+      required_values: &id002
+      - exists
+      - non_existent
+      - exists_enabled
+      - exists_disabled
+      coverage_requirement: all_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values: &id003
+      - success
+      - failure
+      coverage_requirement: all_values
+    publication_operation:
+      tier: T2
+      coverage_role: main_axis
+      required_values: &id004
+      - set_publication_single
+      - set_publication_multiple
+      - add_publication_single
+      - add_publication_multiple
+      - drop_publication_single
+      - drop_publication_multiple
+      coverage_requirement: all_values
+    refresh_publication_option:
+      tier: T2
+      coverage_role: main_axis
+      required_values: &id005
+      - without_with_clause
+      - with_copy_data_true
+      - with_copy_data_false
+      coverage_requirement: all_values
+    enable_disable_behavior:
+      tier: T2
+      coverage_role: main_axis
+      required_values: &id006
+      - enable_from_disabled
+      - disable_from_enabled
+      - enable_already_enabled_no_effect
+      coverage_requirement: all_values
+    subscription_parameter:
+      tier: T2
+      coverage_role: main_axis
+      required_values: &id007
+      - single_parameter
+      - multiple_parameters
+      - synchronous_commit
+      - binary
+      - stream
+      coverage_requirement: all_values
+    skip_option:
+      tier: T2
+      coverage_role: main_axis
+      required_values: &id008
+      - skip_lsn
+      coverage_requirement: all_values
+    owner_to_shape:
+      tier: T2
+      coverage_role: main_axis
+      required_values: &id009
+      - explicit_role_name
+      - current_role_keyword
+      - current_user_keyword
+      - session_user_keyword
+      coverage_requirement: all_values
+    rename_behavior:
+      tier: T2
+      coverage_role: main_axis
+      required_values: &id010
+      - rename_to_new_name
+      - rename_to_existing_name_conflict
+      coverage_requirement: all_values
+    connection_change:
+      tier: T2
+      coverage_role: main_axis
+      required_values: &id011
+      - valid_new_conninfo
+      - invalid_new_conninfo
+      coverage_requirement: all_values
+    subscription_name_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values: &id012
+      - simple_name
+      - quoted_name
+      - non_existent_name
+      coverage_requirement: all_values
+    publication_name_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values: &id013
+      - simple_name
+      - quoted_name
+      coverage_requirement: all_values
+    new_name_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values: &id014
+      - simple_name
+      - quoted_name
+      - existing_name_conflict
+      coverage_requirement: all_values
+    conninfo_string_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values: &id015
+      - valid_conninfo
+      - invalid_conninfo
+      coverage_requirement: all_values
+    executor_privilege:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values: &id016
+      - superuser
+      - non_superuser
+      coverage_requirement: all_values
+    replication_connection:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values: &id017
+      - connection_available
+      - connection_unavailable
+      coverage_requirement: all_values
+    publication_dependency:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values: &id018
+      - publication_exists_on_remote
+      - publication_not_exists_on_remote
+      coverage_requirement: all_values
+    nonexistent_subscription:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id019
+      - subscription_does_not_exist
+      coverage_requirement: all_values
+    privilege_insufficient:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id020
+      - non_superuser_altering_subscription
+      coverage_requirement: all_values
+    replication_connection_failure:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id021
+      - connection_refused_on_refresh
+      coverage_requirement: all_values
+    publication_not_exists_on_remote:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id022
+      - remote_publication_not_exists
+      coverage_requirement: all_values
+    disable_while_enabled:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id023
+      - disable_active_subscription
+      coverage_requirement: all_values
+    drop_all_publications:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id024
+      - dropping_last_publication
+      coverage_requirement: all_values
+    verification_mode:
+      tier: T6
+      coverage_role: rotate_attach
+      required_values: &id025
+      - pg_subscription_catalog
+      - error_assertion
+      coverage_requirement: all_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: rotate_attach
+      required_values: &id026
+      - drop_subscription
+      coverage_requirement: all_values
+dynamic_inputs:
+  object_manifest:
+    required: true
+    source: lifecycle_plan
+    required_fields:
+    - object_name
+    - object_kind
+    - expected_status
+combination_groups:
+- id: alter_subscription_declared_factor_baseline
+  title: ALTER SUBSCRIPTION declared factor baseline
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  expected_failure_reasons:
+  - alter_subscription_declared_failure
+  factors:
+    statement_branch: branch_connection
+    subscription_state: exists
+    expected_status: success
+    publication_operation: set_publication_single
+    refresh_publication_option: without_with_clause
+    enable_disable_behavior: enable_from_disabled
+    subscription_parameter: single_parameter
+    skip_option: skip_lsn
+    owner_to_shape: explicit_role_name
+    rename_behavior: rename_to_new_name
+    connection_change: valid_new_conninfo
+    subscription_name_shape: simple_name
+    publication_name_shape: simple_name
+    new_name_shape: simple_name
+    conninfo_string_shape: valid_conninfo
+    executor_privilege: superuser
+    replication_connection: connection_available
+    publication_dependency: publication_exists_on_remote
+    nonexistent_subscription: subscription_does_not_exist
+    privilege_insufficient: non_superuser_altering_subscription
+    replication_connection_failure: connection_refused_on_refresh
+    publication_not_exists_on_remote: remote_publication_not_exists
+    disable_while_enabled: disable_active_subscription
+    drop_all_publications: dropping_last_publication
+    verification_mode: pg_subscription_catalog
+    cleanup_mode: drop_subscription
+  expansion:
+    statement_branch:
+      mode: explicit
+      values: *id001
+    subscription_state:
+      mode: explicit
+      values: *id002
+    expected_status:
+      mode: explicit
+      values: *id003
+    publication_operation:
+      mode: explicit
+      values: *id004
+    refresh_publication_option:
+      mode: explicit
+      values: *id005
+    enable_disable_behavior:
+      mode: explicit
+      values: *id006
+    subscription_parameter:
+      mode: explicit
+      values: *id007
+    skip_option:
+      mode: explicit
+      values: *id008
+    owner_to_shape:
+      mode: explicit
+      values: *id009
+    rename_behavior:
+      mode: explicit
+      values: *id010
+    connection_change:
+      mode: explicit
+      values: *id011
+    subscription_name_shape:
+      mode: explicit
+      values: *id012
+    publication_name_shape:
+      mode: explicit
+      values: *id013
+    new_name_shape:
+      mode: explicit
+      values: *id014
+    conninfo_string_shape:
+      mode: explicit
+      values: *id015
+    executor_privilege:
+      mode: explicit
+      values: *id016
+    replication_connection:
+      mode: explicit
+      values: *id017
+    publication_dependency:
+      mode: explicit
+      values: *id018
+    nonexistent_subscription:
+      mode: explicit
+      values: *id019
+    privilege_insufficient:
+      mode: explicit
+      values: *id020
+    replication_connection_failure:
+      mode: explicit
+      values: *id021
+    publication_not_exists_on_remote:
+      mode: explicit
+      values: *id022
+    disable_while_enabled:
+      mode: explicit
+      values: *id023
+    drop_all_publications:
+      mode: explicit
+      values: *id024
+    verification_mode:
+      mode: explicit
+      values: *id025
+    cleanup_mode:
+      mode: explicit
+      values: *id026
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - expected_status == success
+    failure_when:
+    - condition: expected_status == failure
+      reason: alter_subscription_declared_failure
+    default_failure_reason: alter_subscription_declared_failure
+  sql_shape:
+    template: ALTER SUBSCRIPTION {object_name};
+  verification:
+    required: true
+    mode: catalog_or_error_assertion
+    sql: SELECT 1;
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup for alter_subscription
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

@@ -1,0 +1,383 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: create_event_trigger
+  name: CREATE EVENT TRIGGER
+  category: ddl
+  domain: event_trigger
+  source_reference: references/statements/ddl/event_trigger/create_event_trigger.md
+  official_source: https://www.postgresql.org/docs/16/sql-createeventtrigger.html
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required matrix coverage must pass before any derived extension is emitted.
+  - Derived extensions must not be counted as satisfying required factor or coverage scope requirements.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds:
+    - event_trigger
+    decision_reason: event_trigger statement coverage is tracked by explicit PostgreSQL object kind.
+  target_relation_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: event_trigger statements do not target relation objects directly.
+  table_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: event_trigger statements do not directly depend on table instance coverage.
+  column_type_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: event_trigger statements do not vary by table column data type.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values: &id001
+      - branch_create_event_trigger
+      coverage_requirement: all_values
+    event_type:
+      tier: T1
+      coverage_role: main_axis
+      required_values: &id002
+      - ddl_command_start
+      - ddl_command_end
+      - table_rewrite
+      coverage_requirement: all_values
+    object_state:
+      tier: T1
+      coverage_role: main_axis
+      required_values: &id003
+      - not_exists
+      - exists
+      coverage_requirement: all_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values: &id004
+      - success
+      - failure
+      coverage_requirement: all_values
+    when_filter_clause:
+      tier: T2
+      coverage_role: main_axis
+      required_values: &id005
+      - omitted
+      - single_tag_in_condition
+      - multiple_tag_in_values
+      - and_connected_multiple_conditions
+      coverage_requirement: all_values
+    execute_keyword:
+      tier: T2
+      coverage_role: main_axis
+      required_values: &id006
+      - FUNCTION
+      - PROCEDURE
+      coverage_requirement: all_values
+    trigger_function_state:
+      tier: T2
+      coverage_role: main_axis
+      required_values: &id007
+      - function_exists_valid_signature
+      - function_not_exists
+      - function_exists_wrong_return_type
+      - function_exists_with_parameters
+      coverage_requirement: all_values
+    privilege_level:
+      tier: T2
+      coverage_role: main_axis
+      required_values: &id008
+      - superuser
+      - non_superuser
+      coverage_requirement: all_values
+    trigger_name_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values: &id009
+      - simple_id
+      - quoted_id
+      - duplicate_name
+      - reserved_word_as_name
+      coverage_requirement: all_values
+    function_name_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values: &id010
+      - simple_id
+      - schema_qualified
+      - nonexistent_name
+      coverage_requirement: all_values
+    filter_value_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values: &id011
+      - single_command_tag
+      - multiple_command_tags
+      - representative_tags_drop_function
+      - representative_tags_alter_table
+      - representative_tags_create_table
+      coverage_requirement: all_values
+    function_existence:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values: &id012
+      - function_exists
+      - function_not_exists
+      coverage_requirement: all_values
+    function_return_type:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values: &id013
+      - event_trigger_return_type
+      - non_event_trigger_return_type
+      coverage_requirement: all_values
+    function_parameter_count:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values: &id014
+      - zero_parameters
+      - nonzero_parameters
+      coverage_requirement: all_values
+    single_user_mode:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values: &id015
+      - normal_mode
+      - single_user_mode_disabled
+      coverage_requirement: all_values
+    duplicate_trigger_name:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id016
+      - no_conflict
+      - same_name_conflict
+      coverage_requirement: all_values
+    privilege_denied_non_superuser:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id017
+      - superuser_success
+      - non_superuser_failure
+      coverage_requirement: all_values
+    nonexistent_function:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id018
+      - function_exists
+      - function_not_exists
+      coverage_requirement: all_values
+    function_wrong_return_type:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id019
+      - correct_return_type
+      - wrong_return_type
+      coverage_requirement: all_values
+    function_wrong_parameter_count:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id020
+      - zero_parameters
+      - nonzero_parameters
+      coverage_requirement: all_values
+    invalid_event_type:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id021
+      - valid_event_type
+      - invalid_event_type
+      coverage_requirement: all_values
+    invalid_filter_variable:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id022
+      - tag_variable
+      - unsupported_variable
+      coverage_requirement: all_values
+    verification_mode:
+      tier: T6
+      coverage_role: rotate_attach
+      required_values: &id023
+      - catalog_query_pg_event_trigger
+      - error_assertion
+      - trigger_firing_test
+      coverage_requirement: all_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: rotate_attach
+      required_values: &id024
+      - drop_event_trigger
+      - drop_function
+      - cascade_cleanup
+      coverage_requirement: all_values
+dynamic_inputs:
+  object_manifest:
+    required: true
+    source: lifecycle_plan
+    required_fields:
+    - object_name
+    - object_kind
+    - expected_status
+combination_groups:
+- id: create_event_trigger_declared_factor_baseline
+  title: CREATE EVENT TRIGGER declared factor baseline
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  expected_failure_reasons:
+  - create_event_trigger_declared_failure
+  factors:
+    statement_branch: branch_create_event_trigger
+    event_type: ddl_command_start
+    object_state: not_exists
+    expected_status: success
+    when_filter_clause: omitted
+    execute_keyword: FUNCTION
+    trigger_function_state: function_exists_valid_signature
+    privilege_level: superuser
+    trigger_name_shape: simple_id
+    function_name_shape: simple_id
+    filter_value_shape: single_command_tag
+    function_existence: function_exists
+    function_return_type: event_trigger_return_type
+    function_parameter_count: zero_parameters
+    single_user_mode: normal_mode
+    duplicate_trigger_name: no_conflict
+    privilege_denied_non_superuser: superuser_success
+    nonexistent_function: function_exists
+    function_wrong_return_type: correct_return_type
+    function_wrong_parameter_count: zero_parameters
+    invalid_event_type: valid_event_type
+    invalid_filter_variable: tag_variable
+    verification_mode: catalog_query_pg_event_trigger
+    cleanup_mode: drop_event_trigger
+  expansion:
+    statement_branch:
+      mode: explicit
+      values: *id001
+    event_type:
+      mode: explicit
+      values: *id002
+    object_state:
+      mode: explicit
+      values: *id003
+    expected_status:
+      mode: explicit
+      values: *id004
+    when_filter_clause:
+      mode: explicit
+      values: *id005
+    execute_keyword:
+      mode: explicit
+      values: *id006
+    trigger_function_state:
+      mode: explicit
+      values: *id007
+    privilege_level:
+      mode: explicit
+      values: *id008
+    trigger_name_shape:
+      mode: explicit
+      values: *id009
+    function_name_shape:
+      mode: explicit
+      values: *id010
+    filter_value_shape:
+      mode: explicit
+      values: *id011
+    function_existence:
+      mode: explicit
+      values: *id012
+    function_return_type:
+      mode: explicit
+      values: *id013
+    function_parameter_count:
+      mode: explicit
+      values: *id014
+    single_user_mode:
+      mode: explicit
+      values: *id015
+    duplicate_trigger_name:
+      mode: explicit
+      values: *id016
+    privilege_denied_non_superuser:
+      mode: explicit
+      values: *id017
+    nonexistent_function:
+      mode: explicit
+      values: *id018
+    function_wrong_return_type:
+      mode: explicit
+      values: *id019
+    function_wrong_parameter_count:
+      mode: explicit
+      values: *id020
+    invalid_event_type:
+      mode: explicit
+      values: *id021
+    invalid_filter_variable:
+      mode: explicit
+      values: *id022
+    verification_mode:
+      mode: explicit
+      values: *id023
+    cleanup_mode:
+      mode: explicit
+      values: *id024
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - expected_status == success
+    failure_when:
+    - condition: expected_status == failure
+      reason: create_event_trigger_declared_failure
+    default_failure_reason: create_event_trigger_declared_failure
+  sql_shape:
+    template: CREATE EVENT TRIGGER {object_name};
+  verification:
+    required: true
+    mode: catalog_or_error_assertion
+    sql: SELECT 1;
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup for create_event_trigger
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

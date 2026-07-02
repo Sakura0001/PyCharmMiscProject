@@ -1,0 +1,458 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: comment
+  name: COMMENT ON
+  category: ddl
+  domain: comment
+  source_reference: references/statements/ddl/comment/comment.md
+  official_source: https://www.postgresql.org/docs/16/sql-comment.html
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required matrix coverage must pass before any derived extension is emitted.
+  - Derived extensions must not be counted as satisfying required factor or coverage scope requirements.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds:
+    - schema
+    decision_reason: comment statement coverage is tracked by explicit PostgreSQL object kind.
+  target_relation_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: comment statements do not target relation objects directly.
+  table_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: comment statements do not directly depend on table instance coverage.
+  column_type_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: comment statements do not vary by table column data type.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    object_type:
+      tier: T1
+      coverage_role: main_axis
+      required_values: &id001
+      - access_method
+      - aggregate
+      - cast
+      - collation
+      - column
+      - constraint_on_table
+      - constraint_on_domain
+      - conversion
+      - database
+      - domain
+      - extension
+      - event_trigger
+      - foreign_data_wrapper
+      - foreign_table
+      - function
+      - index
+      - large_object
+      - materialized_view
+      - operator
+      - operator_class
+      - operator_family
+      - policy
+      - procedural_language
+      - procedure
+      - publication
+      - role
+      - routine
+      - rule
+      - schema
+      - sequence
+      - server
+      - statistics
+      - subscription
+      - table
+      - tablespace
+      - text_search_configuration
+      - text_search_dictionary
+      - text_search_parser
+      - text_search_template
+      - transform
+      - trigger
+      - type
+      - view
+      coverage_requirement: all_values
+    comment_action:
+      tier: T1
+      coverage_role: main_axis
+      required_values: &id002
+      - set_comment
+      - remove_comment_null
+      - remove_comment_empty
+      coverage_requirement: all_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values: &id003
+      - success
+      - failure
+      coverage_requirement: all_values
+    privilege_level:
+      tier: T2
+      coverage_role: main_axis
+      required_values: &id004
+      - object_owner
+      - non_owner
+      - superuser
+      - createrole_with_admin
+      coverage_requirement: all_values
+    object_state:
+      tier: T2
+      coverage_role: main_axis
+      required_values: &id005
+      - object_exists
+      - object_not_exists
+      coverage_requirement: all_values
+    identifier_format:
+      tier: T2
+      coverage_role: main_axis
+      required_values: &id006
+      - simple_name
+      - schema_qualified
+      - composite_format_column
+      - composite_format_constraint
+      - composite_format_operator
+      - composite_format_aggregate
+      coverage_requirement: all_values
+    object_name_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values: &id007
+      - simple_id
+      - quoted_id
+      - schema_qualified_id
+      - reserved_word_as_name
+      coverage_requirement: all_values
+    column_name_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values: &id008
+      - simple_column_name
+      - quoted_column_name
+      coverage_requirement: all_values
+    constraint_name_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values: &id009
+      - simple_constraint_name
+      - quoted_constraint_name
+      coverage_requirement: all_values
+    function_signature_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values: &id010
+      - no_args
+      - single_arg_type
+      - multiple_arg_types
+      - wildcard_star
+      coverage_requirement: all_values
+    operator_signature_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values: &id011
+      - both_types_specified
+      - one_none_left
+      - one_none_right
+      coverage_requirement: all_values
+    comment_text_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values: &id012
+      - short_literal
+      - long_literal
+      - empty_string_literal
+      - null_literal
+      - special_chars_literal
+      coverage_requirement: all_values
+    prerequisite_object:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values: &id013
+      - prerequisite_exists
+      - prerequisite_not_exists
+      coverage_requirement: all_values
+    schema_privilege:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values: &id014
+      - has_schema_privilege
+      - lacks_schema_privilege
+      coverage_requirement: all_values
+    role_privilege:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values: &id015
+      - owner
+      - createrole_with_admin_option
+      - no_privilege
+      coverage_requirement: all_values
+    shared_object_scope:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values: &id016
+      - globally_visible
+      - locally_visible
+      coverage_requirement: all_values
+    object_not_exist:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id017
+      - object_exists
+      - object_not_exists
+      coverage_requirement: all_values
+    privilege_denied:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id018
+      - owner_success
+      - non_owner_failure
+      - superuser_success
+      coverage_requirement: all_values
+    wrong_identifier_format:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id019
+      - correct_format
+      - missing_relation_for_column
+      - missing_on_for_constraint
+      coverage_requirement: all_values
+    cast_type_not_exist:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id020
+      - both_types_exist
+      - source_type_not_exist
+      - target_type_not_exist
+      coverage_requirement: all_values
+    aggregate_signature_invalid:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id021
+      - signature_matches
+      - signature_mismatch
+      coverage_requirement: all_values
+    operator_none_misuse:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id022
+      - correct_none_usage
+      - misplaced_none
+      coverage_requirement: all_values
+    transform_type_or_lang_not_exist:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id023
+      - both_exist
+      - type_not_exist
+      - lang_not_exist
+      coverage_requirement: all_values
+    large_object_oid_invalid:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id024
+      - valid_oid
+      - nonexistent_oid
+      coverage_requirement: all_values
+    verification_mode:
+      tier: T6
+      coverage_role: rotate_attach
+      required_values: &id025
+      - obj_description_query
+      - col_description_query
+      - shobj_description_query
+      - psql_dd_command
+      - catalog_query_pg_description
+      coverage_requirement: all_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: rotate_attach
+      required_values: &id026
+      - drop_prerequisite_object
+      - comment_is_null_cleanup
+      - cascade_drop
+      coverage_requirement: all_values
+dynamic_inputs:
+  object_manifest:
+    required: true
+    source: lifecycle_plan
+    required_fields:
+    - object_name
+    - object_kind
+    - expected_status
+combination_groups:
+- id: comment_declared_factor_baseline
+  title: COMMENT ON declared factor baseline
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  expected_failure_reasons:
+  - comment_declared_failure
+  factors:
+    object_type: access_method
+    comment_action: set_comment
+    expected_status: success
+    privilege_level: object_owner
+    object_state: object_exists
+    identifier_format: simple_name
+    object_name_shape: simple_id
+    column_name_shape: simple_column_name
+    constraint_name_shape: simple_constraint_name
+    function_signature_shape: no_args
+    operator_signature_shape: both_types_specified
+    comment_text_shape: short_literal
+    prerequisite_object: prerequisite_exists
+    schema_privilege: has_schema_privilege
+    role_privilege: owner
+    shared_object_scope: globally_visible
+    object_not_exist: object_exists
+    privilege_denied: owner_success
+    wrong_identifier_format: correct_format
+    cast_type_not_exist: both_types_exist
+    aggregate_signature_invalid: signature_matches
+    operator_none_misuse: correct_none_usage
+    transform_type_or_lang_not_exist: both_exist
+    large_object_oid_invalid: valid_oid
+    verification_mode: obj_description_query
+    cleanup_mode: drop_prerequisite_object
+  expansion:
+    object_type:
+      mode: explicit
+      values: *id001
+    comment_action:
+      mode: explicit
+      values: *id002
+    expected_status:
+      mode: explicit
+      values: *id003
+    privilege_level:
+      mode: explicit
+      values: *id004
+    object_state:
+      mode: explicit
+      values: *id005
+    identifier_format:
+      mode: explicit
+      values: *id006
+    object_name_shape:
+      mode: explicit
+      values: *id007
+    column_name_shape:
+      mode: explicit
+      values: *id008
+    constraint_name_shape:
+      mode: explicit
+      values: *id009
+    function_signature_shape:
+      mode: explicit
+      values: *id010
+    operator_signature_shape:
+      mode: explicit
+      values: *id011
+    comment_text_shape:
+      mode: explicit
+      values: *id012
+    prerequisite_object:
+      mode: explicit
+      values: *id013
+    schema_privilege:
+      mode: explicit
+      values: *id014
+    role_privilege:
+      mode: explicit
+      values: *id015
+    shared_object_scope:
+      mode: explicit
+      values: *id016
+    object_not_exist:
+      mode: explicit
+      values: *id017
+    privilege_denied:
+      mode: explicit
+      values: *id018
+    wrong_identifier_format:
+      mode: explicit
+      values: *id019
+    cast_type_not_exist:
+      mode: explicit
+      values: *id020
+    aggregate_signature_invalid:
+      mode: explicit
+      values: *id021
+    operator_none_misuse:
+      mode: explicit
+      values: *id022
+    transform_type_or_lang_not_exist:
+      mode: explicit
+      values: *id023
+    large_object_oid_invalid:
+      mode: explicit
+      values: *id024
+    verification_mode:
+      mode: explicit
+      values: *id025
+    cleanup_mode:
+      mode: explicit
+      values: *id026
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - expected_status == success
+    failure_when:
+    - condition: expected_status == failure
+      reason: comment_declared_failure
+    default_failure_reason: comment_declared_failure
+  sql_shape:
+    template: COMMENT ON {object_name};
+  verification:
+    required: true
+    mode: catalog_or_error_assertion
+    sql: SELECT 1;
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup for comment
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true
