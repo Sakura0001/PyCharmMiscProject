@@ -1,0 +1,1152 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: create_index
+  name: CREATE INDEX
+  category: ddl
+  domain: index
+  source_reference: references/statements/ddl/index/create_index.md
+  official_source: https://www.postgresql.org/docs/16/sql-createindex.html
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required matrix coverage must pass before any derived extension is emitted.
+  - Derived extensions may add stress, boundary, performance, or cross-factor combinations.
+  - Derived extensions must not be counted as satisfying required factor or column-type coverage.
+  - Derived extensions must use declared factors, declared factor values, and declared manifests.
+  - Derived extensions must preserve success or failure attribution.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds:
+    - index
+    - partitioned_index
+    decision_reason: 'CREATE INDEX creates index objects. The matrix tracks index and partitioned-index object outcomes while
+      relation, table, and column-type coverage define the target inputs.
+
+      '
+  target_relation_coverage:
+    required: true
+    coverage_mode: exhaustive
+    inventory_source: inline
+    required_relation_kinds:
+    - regular_table
+    - unlogged_table
+    - temporary_table
+    - partitioned_table_parent
+    - partitioned_table_leaf
+    - inherited_parent_table
+    - inherited_child_table
+    - materialized_view
+    negative_relation_kinds:
+    - plain_view
+    - foreign_table
+    - sequence
+    decision_reason: 'CREATE INDEX constructs an index on columns or expressions of a relation that can be a table or a materialized
+      view. The matrix must explicitly cover regular, unlogged, temporary, partitioned, inherited, and materialized-view relation
+      forms, and must explicitly declare relation kinds that are not valid CREATE INDEX targets.
+
+      '
+  table_coverage:
+    required: true
+    coverage_mode: exhaustive
+    inventory_source: target_relation_coverage.required_relation_kinds
+    required_table_kinds:
+    - regular_table
+    - unlogged_table
+    - temporary_table
+    - partitioned_table_parent
+    - partitioned_table_leaf
+    - inherited_parent_table
+    - inherited_child_table
+    decision_reason: 'CREATE INDEX behavior depends on table form. ONLY applies to partitioned tables, CONCURRENTLY has special
+      behavior on temporary tables and partitioned objects, and inherited or partitioned relations affect index recursion
+      and attachment behavior.
+
+      '
+  column_type_coverage:
+    required: true
+    coverage_mode: exhaustive
+    inventory_source: references/common/pg16_type_catalog.md
+    required_type_set: all_pg16_column_types
+    expansion_mode: expand_every_type
+    require_each_type_success_or_failure: true
+    decision_reason: 'CREATE INDEX method compatibility, operator classes, expression indexes, INCLUDE columns, collation,
+      and ordering all depend on column data type. Every PostgreSQL 16 type that can be declared as a table column must be
+      exercised by at least one CREATE INDEX success or failure case.
+
+      '
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - single_column_btree
+      - multi_column_btree
+      - unique_btree
+      - partial_index
+      - covering_index
+      - expression_index
+      - hash_index
+      - gist_index
+      - spgist_index
+      - gin_index
+      - brin_index
+      - concurrent_build
+      coverage_requirement: all_values
+    method:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - btree
+      - hash
+      - gist
+      - spgist
+      - gin
+      - brin
+      coverage_requirement: all_values
+    column_source:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - all_template_columns
+      coverage_requirement: all_pg16_column_types
+    unique:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - 'false'
+      - 'true'
+      coverage_requirement: success_failure_pair
+    predicate:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - 'false'
+      - 'true'
+      coverage_requirement: all_values
+    include:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - 'false'
+      - 'true'
+      coverage_requirement: success_failure_pair
+    concurrently:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - 'false'
+      - 'true'
+      coverage_requirement: success_failure_pair
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - success
+      - failure
+      coverage_requirement: all_values
+    order:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - none
+      - asc
+      - desc
+      coverage_requirement: all_values
+    nulls:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - none
+      - first
+      - last
+      coverage_requirement: all_values
+    if_not_exists:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - 'false'
+      - 'true'
+      coverage_requirement: success_failure_pair
+    nulls_distinct:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - none
+      - distinct
+      - not_distinct
+      coverage_requirement: all_values
+    only:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - 'false'
+      - 'true'
+      coverage_requirement: all_values
+    name_style:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values:
+      - explicit_compact
+      - explicit_semantic
+      - implicit
+      coverage_requirement: all_values
+    collation:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values:
+      - none
+      - default_collation
+      - non_default_collation
+      coverage_requirement: success_failure_pair
+    opclass:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values:
+      - none
+      - default_opclass
+      - non_default_opclass
+      coverage_requirement: success_failure_pair
+    column_type_compatibility:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values:
+      - btree_compatible
+      - hash_compatible
+      - gist_compatible
+      - spgist_compatible
+      - gin_compatible
+      - brin_compatible
+      - method_type_incompatible
+      coverage_requirement: all_values
+    with_storage:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values:
+      - none
+      - btree_fillfactor
+      - btree_deduplicate_items
+      - gist_buffering
+      - gin_fastupdate
+      - gin_pending_list_limit
+      - brin_pages_per_range
+      - brin_autosummarize
+      coverage_requirement: success_failure_pair
+    tablespace:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values:
+      - none
+      - pg_default
+      - custom_tablespace
+      coverage_requirement: success_failure_pair
+    expression_index:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values:
+      - column_only
+      - simple_expression
+      - complex_expression
+      coverage_requirement: all_values
+    invalid_combination:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values:
+      - unique_with_non_btree
+      - include_with_unsupported_method
+      - multi_column_with_unsupported_method
+      - none
+      coverage_requirement: all_values
+    syntax_error:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values:
+      - none
+      - invalid_syntax
+      coverage_requirement: success_failure_pair
+    concurrent_failure:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values:
+      - none
+      - in_transaction_block
+      - invalid_index_leftover
+      coverage_requirement: success_failure_pair
+    partition_constraint:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values:
+      - none
+      - only_on_partitioned
+      - concurrently_on_partitioned
+      coverage_requirement: success_failure_pair
+    verification_mode:
+      tier: T6
+      coverage_role: rotate_attach
+      required_values:
+      - catalog_query
+      - index_validity_check
+      - explain_index_scan
+      coverage_requirement: all_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: rotate_attach
+      required_values:
+      - drop_index
+      - rollback
+      coverage_requirement: all_values
+dynamic_inputs:
+  table_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/table_manifest.json
+    required_fields:
+    - table_name
+    - relation_kind
+    - columns
+  type_catalog:
+    required: true
+    path: references/common/pg16_type_catalog.md
+    required_fields:
+    - type_key
+    - type_category
+    - declaration_sql
+    - sample_values
+    - index_capabilities
+  column_manifest:
+    required: true
+    source: table_manifest.columns
+    required_fields:
+    - name
+    - type_key
+    - type_category
+    - capabilities
+combination_groups:
+- id: btree_single_column_all_pg16_column_types
+  title: B-tree single-column index over every PG16 column type
+  lifecycle_role: target_statement
+  expected_status_policy: per_column_type
+  default_expected_status: failure
+  factors:
+    statement_branch: single_column_btree
+    method: btree
+    column_source: all_template_columns
+    unique: 'false'
+    predicate: 'false'
+    include: 'false'
+    concurrently: 'false'
+    expected_status: success
+    order: none
+    nulls: none
+    if_not_exists: 'false'
+    nulls_distinct: none
+    only: 'false'
+    name_style: explicit_compact
+    collation: none
+    opclass: none
+    column_type_compatibility: btree_compatible
+    with_storage: none
+    tablespace: none
+    expression_index: column_only
+    invalid_combination: none
+    syntax_error: none
+    concurrent_failure: none
+    partition_constraint: none
+    verification_mode: catalog_query
+    cleanup_mode: drop_index
+  expansion:
+    relation_kinds:
+      mode: exhaustive
+      source: coverage_scope.target_relation_coverage.required_relation_kinds
+    column_types:
+      mode: exhaustive
+      source: coverage_scope.column_type_coverage.required_type_set
+    verification_mode:
+      mode: explicit
+      values:
+      - catalog_query
+      - index_validity_check
+      - explain_index_scan
+    cleanup_mode:
+      mode: explicit
+      values:
+      - drop_index
+      - rollback
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - column.capabilities contains btree
+    failure_when:
+    - condition: column.capabilities not contains btree
+      reason: btree_operator_class_missing
+    default_failure_reason: btree_operator_class_missing
+  sql_shape:
+    template: CREATE INDEX {index_name} ON {table_name} USING btree ({key_column});
+  verification:
+    required: true
+    mode: catalog_query
+    sql: SELECT c.relname, i.indisvalid FROM pg_class c JOIN pg_index i ON i.indexrelid = c.oid WHERE c.relname = '{index_name}';
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP INDEX IF EXISTS {index_name};
+- id: btree_multicolumn_success_and_unsupported_methods_failure
+  title: Multicolumn index capability boundary
+  lifecycle_role: target_statement
+  expected_status_policy: per_method
+  default_expected_status: success
+  factors:
+    statement_branch: multi_column_btree
+    method: btree
+    column_source: all_template_columns
+    unique: 'false'
+    predicate: 'false'
+    include: 'false'
+    concurrently: 'false'
+    expected_status: success
+    invalid_combination: multi_column_with_unsupported_method
+    verification_mode: catalog_query
+    cleanup_mode: drop_index
+  expansion:
+    methods:
+      mode: explicit
+      values:
+      - btree
+      - gist
+      - gin
+      - brin
+      - hash
+      - spgist
+    column_types:
+      mode: exhaustive
+      source: coverage_scope.column_type_coverage.required_type_set
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - method in [btree, gist, gin, brin]
+    failure_when:
+    - condition: method in [hash, spgist]
+      reason: access_method_does_not_support_multicolumn_index
+    default_failure_reason: method_type_incompatible
+  sql_shape:
+    template: CREATE INDEX {index_name} ON {table_name} USING {method} ({key_column}, {second_key_column});
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP INDEX IF EXISTS {index_name};
+  verification:
+    required: true
+    mode: catalog_query
+    sql: SELECT c.relname, i.indisvalid FROM pg_class c JOIN pg_index i ON i.indexrelid = c.oid WHERE c.relname = '{index_name}';
+- id: unique_success_and_non_btree_failure
+  title: UNIQUE support is success for B-tree and failure for unsupported methods
+  lifecycle_role: target_statement
+  expected_status_policy: per_method
+  default_expected_status: failure
+  factors:
+    statement_branch: unique_btree
+    column_source: all_template_columns
+    unique: 'true'
+    predicate: 'false'
+    include: 'false'
+    concurrently: 'false'
+    expected_status: success
+    invalid_combination: unique_with_non_btree
+    verification_mode: catalog_query
+    cleanup_mode: drop_index
+  expansion:
+    methods:
+      mode: explicit
+      values:
+      - btree
+      - hash
+      - gist
+      - spgist
+      - gin
+      - brin
+    column_types:
+      mode: exhaustive
+      source: coverage_scope.column_type_coverage.required_type_set
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - method == btree and column.capabilities contains btree_unique
+    failure_when:
+    - condition: method != btree
+      reason: access_method_does_not_support_unique_index
+    - condition: method == btree and column.capabilities not contains btree_unique
+      reason: btree_unique_operator_class_missing
+    default_failure_reason: unique_index_not_supported_for_binding
+  sql_shape:
+    template: CREATE UNIQUE INDEX {index_name} ON {table_name} USING {method} ({key_column});
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP INDEX IF EXISTS {index_name};
+  verification:
+    required: false
+    mode: expected_error
+    sql: null
+- id: partial_index_all_pg16_column_types
+  title: Partial index predicate over every PG16 column type
+  lifecycle_role: target_statement
+  expected_status_policy: per_column_type
+  default_expected_status: failure
+  factors:
+    statement_branch: partial_index
+    method: btree
+    column_source: all_template_columns
+    unique: 'false'
+    predicate: 'true'
+    include: 'false'
+    concurrently: 'false'
+    expected_status: success
+    verification_mode: catalog_query
+    cleanup_mode: drop_index
+  expansion:
+    column_types:
+      mode: exhaustive
+      source: coverage_scope.column_type_coverage.required_type_set
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - column.capabilities contains btree and column.capabilities contains predicate_expression
+    failure_when:
+    - condition: column.capabilities not contains predicate_expression
+      reason: predicate_expression_not_supported_for_type
+    default_failure_reason: partial_index_binding_not_supported
+  sql_shape:
+    template: CREATE INDEX {index_name} ON {table_name} USING btree ({key_column}) WHERE {predicate_expr};
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP INDEX IF EXISTS {index_name};
+  verification:
+    required: false
+    mode: expected_error
+    sql: null
+- id: include_supported_and_unsupported_methods
+  title: INCLUDE supported methods and unsupported-method failures
+  lifecycle_role: target_statement
+  expected_status_policy: per_method
+  default_expected_status: failure
+  factors:
+    statement_branch: covering_index
+    column_source: all_template_columns
+    unique: 'false'
+    predicate: 'false'
+    include: 'true'
+    concurrently: 'false'
+    expected_status: success
+    invalid_combination: include_with_unsupported_method
+    verification_mode: catalog_query
+    cleanup_mode: drop_index
+  expansion:
+    methods:
+      mode: explicit
+      values:
+      - btree
+      - gist
+      - spgist
+      - hash
+      - gin
+      - brin
+    column_types:
+      mode: exhaustive
+      source: coverage_scope.column_type_coverage.required_type_set
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - method in [btree, gist, spgist] and include_column.is_simple_column == true
+    failure_when:
+    - condition: method in [hash, gin, brin]
+      reason: access_method_does_not_support_include
+    - condition: include_column.is_expression == true
+      reason: include_column_cannot_be_expression
+    default_failure_reason: include_not_supported_for_binding
+  sql_shape:
+    template: CREATE INDEX {index_name} ON {table_name} USING {method} ({key_column}) INCLUDE ({include_column});
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP INDEX IF EXISTS {index_name};
+  verification:
+    required: false
+    mode: expected_error
+    sql: null
+- id: expression_index_simple_and_complex
+  title: Expression index success and immutable-expression boundary
+  lifecycle_role: target_statement
+  expected_status_policy: per_expression
+  default_expected_status: failure
+  factors:
+    statement_branch: expression_index
+    method: btree
+    column_source: all_template_columns
+    unique: 'false'
+    predicate: 'false'
+    include: 'false'
+    concurrently: 'false'
+    expected_status: success
+    expression_index: simple_expression
+    verification_mode: catalog_query
+    cleanup_mode: drop_index
+  expansion:
+    expression_index:
+      mode: explicit
+      values:
+      - simple_expression
+      - complex_expression
+    column_types:
+      mode: exhaustive
+      source: coverage_scope.column_type_coverage.required_type_set
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - expression.is_immutable == true and expression.result_capabilities contains btree
+    failure_when:
+    - condition: expression.is_immutable == false
+      reason: index_expression_must_be_immutable
+    - condition: expression.result_capabilities not contains btree
+      reason: expression_result_operator_class_missing
+    default_failure_reason: expression_index_not_supported_for_binding
+  sql_shape:
+    template: CREATE INDEX {index_name} ON {table_name} USING btree ({expression_sql});
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP INDEX IF EXISTS {index_name};
+  verification:
+    required: false
+    mode: expected_error
+    sql: null
+- id: hash_single_column_all_pg16_column_types
+  title: Hash single-column index over every PG16 column type
+  lifecycle_role: target_statement
+  expected_status_policy: per_column_type
+  default_expected_status: failure
+  factors:
+    statement_branch: hash_index
+    method: hash
+    column_source: all_template_columns
+    unique: 'false'
+    predicate: 'false'
+    include: 'false'
+    concurrently: 'false'
+    expected_status: success
+    column_type_compatibility: hash_compatible
+    verification_mode: catalog_query
+    cleanup_mode: drop_index
+  expansion:
+    column_types:
+      mode: exhaustive
+      source: coverage_scope.column_type_coverage.required_type_set
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - column.capabilities contains hash
+    failure_when:
+    - condition: column.capabilities not contains hash
+      reason: hash_operator_class_missing
+    default_failure_reason: hash_operator_class_missing
+  sql_shape:
+    template: CREATE INDEX {index_name} ON {table_name} USING hash ({key_column});
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP INDEX IF EXISTS {index_name};
+  verification:
+    required: false
+    mode: expected_error
+    sql: null
+- id: gist_spgist_gin_brin_method_type_matrix
+  title: GiST, SP-GiST, GIN, and BRIN method/type compatibility matrix
+  lifecycle_role: target_statement
+  expected_status_policy: per_method_and_column_type
+  default_expected_status: failure
+  factors:
+    column_source: all_template_columns
+    unique: 'false'
+    predicate: 'false'
+    include: 'false'
+    concurrently: 'false'
+    expected_status: success
+    verification_mode: catalog_query
+    cleanup_mode: drop_index
+  expansion:
+    methods:
+      mode: explicit
+      values:
+      - gist
+      - spgist
+      - gin
+      - brin
+    statement_branch:
+      mode: method_map
+      values:
+        gist: gist_index
+        spgist: spgist_index
+        gin: gin_index
+        brin: brin_index
+    column_types:
+      mode: exhaustive
+      source: coverage_scope.column_type_coverage.required_type_set
+    column_type_compatibility:
+      mode: explicit
+      values:
+      - gist_compatible
+      - spgist_compatible
+      - gin_compatible
+      - brin_compatible
+      - method_type_incompatible
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - column.capabilities contains method
+    failure_when:
+    - condition: column.capabilities not contains method
+      reason: method_operator_class_missing
+    default_failure_reason: method_type_incompatible
+  sql_shape:
+    template: CREATE INDEX {index_name} ON {table_name} USING {method} ({key_column});
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP INDEX IF EXISTS {index_name};
+  verification:
+    required: false
+    mode: expected_error
+    sql: null
+- id: concurrently_success_and_transaction_failure
+  title: CONCURRENTLY normal path and transaction-block failure
+  lifecycle_role: target_statement
+  expected_status_policy: per_lifecycle_context
+  default_expected_status: success
+  factors:
+    statement_branch: concurrent_build
+    method: btree
+    column_source: all_template_columns
+    unique: 'false'
+    predicate: 'false'
+    include: 'false'
+    concurrently: 'true'
+    expected_status: success
+    concurrent_failure: none
+    verification_mode: index_validity_check
+    cleanup_mode: drop_index
+  expansion:
+    relation_kinds:
+      mode: exhaustive
+      source: coverage_scope.target_relation_coverage.required_relation_kinds
+    lifecycle_contexts:
+      mode: explicit
+      values:
+      - standalone_statement
+      - inside_transaction_block
+    concurrent_failure:
+      mode: explicit
+      values:
+      - none
+      - in_transaction_block
+      - invalid_index_leftover
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - lifecycle_context == standalone_statement and relation_kind != temporary_table
+    failure_when:
+    - condition: lifecycle_context == inside_transaction_block
+      reason: create_index_concurrently_cannot_run_inside_transaction_block
+    - condition: relation_kind == temporary_table
+      reason: temporary_table_index_is_always_non_concurrent
+    default_failure_reason: concurrently_not_supported_for_binding
+  sql_shape:
+    template: CREATE INDEX CONCURRENTLY {index_name} ON {table_name} USING btree ({key_column});
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP INDEX IF EXISTS {index_name};
+  verification:
+    required: true
+    mode: index_validity_check
+    sql: SELECT c.relname, i.indisvalid FROM pg_class c JOIN pg_index i ON i.indexrelid = c.oid WHERE c.relname = '{index_name}';
+- id: if_not_exists_name_collision
+  title: IF NOT EXISTS existing-name behavior
+  lifecycle_role: target_statement
+  expected_status_policy: per_existing_relation
+  default_expected_status: success
+  factors:
+    statement_branch: single_column_btree
+    method: btree
+    column_source: all_template_columns
+    unique: 'false'
+    predicate: 'false'
+    include: 'false'
+    concurrently: 'false'
+    if_not_exists: 'true'
+    expected_status: success
+    verification_mode: catalog_query
+    cleanup_mode: drop_index
+  expansion:
+    existing_relation:
+      mode: explicit
+      values:
+      - same_name_same_definition
+      - same_name_different_definition
+    name_style:
+      mode: explicit
+      values:
+      - explicit_compact
+      - explicit_semantic
+      - implicit
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - existing_relation in [same_name_same_definition, same_name_different_definition]
+    failure_when: []
+    default_failure_reason: null
+  sql_shape:
+    template: CREATE INDEX IF NOT EXISTS {index_name} ON {table_name} USING btree ({key_column});
+  setup:
+    required: true
+    steps:
+    - sql: CREATE INDEX {index_name} ON {table_name} USING btree ({preexisting_key_column});
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP INDEX IF EXISTS {index_name};
+  verification:
+    required: true
+    mode: catalog_query
+    sql: SELECT c.relname, i.indisvalid FROM pg_class c JOIN pg_index i ON i.indexrelid = c.oid WHERE c.relname = '{index_name}';
+- id: ordering_nulls_nulls_distinct_and_collation
+  title: Ordering, NULLS placement, NULLS DISTINCT, and collation coverage
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  factors:
+    statement_branch: unique_btree
+    method: btree
+    column_source: all_template_columns
+    unique: 'true'
+    predicate: 'false'
+    include: 'false'
+    concurrently: 'false'
+    order: asc
+    nulls: first
+    nulls_distinct: not_distinct
+    collation: default_collation
+    expected_status: success
+    verification_mode: catalog_query
+    cleanup_mode: drop_index
+  expansion:
+    order:
+      mode: explicit
+      values:
+      - asc
+      - desc
+    nulls:
+      mode: explicit
+      values:
+      - first
+      - last
+    nulls_distinct:
+      mode: explicit
+      values:
+      - distinct
+      - not_distinct
+    collation:
+      mode: explicit
+      values:
+      - default_collation
+      - non_default_collation
+    column_types:
+      mode: exhaustive
+      source: coverage_scope.column_type_coverage.required_type_set
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - column.capabilities contains btree and collation == none
+    - column.capabilities contains btree and column.capabilities contains collation
+    failure_when:
+    - condition: collation != none and column.capabilities not contains collation
+      reason: collation_not_supported_for_type
+    default_failure_reason: ordering_or_collation_not_supported_for_binding
+  sql_shape:
+    template: CREATE UNIQUE INDEX {index_name} ON {table_name} USING btree ({key_column} {order_clause} {nulls_clause}) {nulls_distinct_clause};
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP INDEX IF EXISTS {index_name};
+  verification:
+    required: true
+    mode: catalog_query
+    sql: SELECT c.relname, i.indisvalid FROM pg_class c JOIN pg_index i ON i.indexrelid = c.oid WHERE c.relname = '{index_name}';
+- id: storage_parameter_valid_and_invalid_by_method
+  title: Method-specific storage parameters and invalid parameter failures
+  lifecycle_role: target_statement
+  expected_status_policy: per_method_and_storage_parameter
+  default_expected_status: failure
+  factors:
+    column_source: all_template_columns
+    unique: 'false'
+    predicate: 'false'
+    include: 'false'
+    concurrently: 'false'
+    with_storage: none
+    expected_status: success
+    verification_mode: catalog_query
+    cleanup_mode: drop_index
+  expansion:
+    methods:
+      mode: explicit
+      values:
+      - btree
+      - hash
+      - gist
+      - spgist
+      - gin
+      - brin
+    with_storage:
+      mode: explicit
+      values:
+      - btree_fillfactor
+      - btree_deduplicate_items
+      - gist_buffering
+      - gin_fastupdate
+      - gin_pending_list_limit
+      - brin_pages_per_range
+      - brin_autosummarize
+    storage_values:
+      mode: explicit
+      values:
+      - valid_min
+      - valid_default
+      - valid_max
+      - invalid_low
+      - invalid_high
+      - invalid_type
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - storage_parameter.allowed_methods contains method and storage_value.is_valid == true
+    failure_when:
+    - condition: storage_parameter.allowed_methods not contains method
+      reason: storage_parameter_not_allowed_for_method
+    - condition: storage_value.is_valid == false
+      reason: invalid_storage_parameter_value
+    default_failure_reason: storage_parameter_binding_invalid
+  sql_shape:
+    template: CREATE INDEX {index_name} ON {table_name} USING {method} ({key_column}) WITH ({storage_parameter_sql});
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP INDEX IF EXISTS {index_name};
+  verification:
+    required: false
+    mode: expected_error
+    sql: null
+- id: tablespace_valid_and_invalid
+  title: TABLESPACE valid and invalid paths
+  lifecycle_role: target_statement
+  expected_status_policy: per_tablespace_binding
+  default_expected_status: success
+  factors:
+    statement_branch: single_column_btree
+    method: btree
+    column_source: all_template_columns
+    tablespace: custom_tablespace
+    expected_status: success
+    verification_mode: catalog_query
+    cleanup_mode: drop_index
+  expansion:
+    tablespace:
+      mode: explicit
+      values:
+      - none
+      - pg_default
+      - custom_tablespace
+      - nonexistent_tablespace
+      - no_privilege_tablespace
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - tablespace in [none, pg_default, custom_tablespace]
+    failure_when:
+    - condition: tablespace == nonexistent_tablespace
+      reason: tablespace_does_not_exist
+    - condition: tablespace == no_privilege_tablespace
+      reason: tablespace_permission_denied
+    default_failure_reason: tablespace_binding_invalid
+  sql_shape:
+    template: CREATE INDEX {index_name} ON {table_name} USING btree ({key_column}) {tablespace_clause};
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP INDEX IF EXISTS {index_name};
+  verification:
+    required: true
+    mode: catalog_query
+    sql: SELECT c.relname, i.indisvalid FROM pg_class c JOIN pg_index i ON i.indexrelid = c.oid WHERE c.relname = '{index_name}';
+- id: opclass_valid_default_non_default_and_invalid
+  title: Operator class coverage
+  lifecycle_role: target_statement
+  expected_status_policy: per_opclass_binding
+  default_expected_status: success
+  factors:
+    statement_branch: single_column_btree
+    method: btree
+    column_source: all_template_columns
+    opclass: default_opclass
+    expected_status: success
+    verification_mode: catalog_query
+    cleanup_mode: drop_index
+  expansion:
+    opclass:
+      mode: explicit
+      values:
+      - none
+      - default_opclass
+      - non_default_opclass
+      - invalid_opclass_for_type
+    column_types:
+      mode: exhaustive
+      source: coverage_scope.column_type_coverage.required_type_set
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - opclass == none and column.capabilities contains method
+    - opclass in [default_opclass, non_default_opclass] and column.opclasses contains opclass
+    failure_when:
+    - condition: opclass == invalid_opclass_for_type
+      reason: operator_class_not_valid_for_type
+    default_failure_reason: opclass_binding_invalid
+  sql_shape:
+    template: CREATE INDEX {index_name} ON {table_name} USING {method} ({key_column} {opclass_clause});
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP INDEX IF EXISTS {index_name};
+  verification:
+    required: true
+    mode: catalog_query
+    sql: SELECT c.relname, i.indisvalid FROM pg_class c JOIN pg_index i ON i.indexrelid = c.oid WHERE c.relname = '{index_name}';
+- id: only_partitioned_and_non_partitioned
+  title: ONLY clause on partitioned and non-partitioned relations
+  lifecycle_role: target_statement
+  expected_status_policy: per_relation_kind
+  default_expected_status: success
+  factors:
+    statement_branch: single_column_btree
+    method: btree
+    column_source: all_template_columns
+    only: 'true'
+    expected_status: success
+    partition_constraint: only_on_partitioned
+    verification_mode: index_validity_check
+    cleanup_mode: drop_index
+  expansion:
+    relation_kinds:
+      mode: explicit
+      values:
+      - regular_table
+      - partitioned_table_parent
+      - partitioned_table_leaf
+    partition_constraint:
+      mode: explicit
+      values:
+      - only_on_partitioned
+      - concurrently_on_partitioned
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - relation_kind in [regular_table, partitioned_table_parent, partitioned_table_leaf]
+    failure_when: []
+    default_failure_reason: null
+  sql_shape:
+    template: CREATE INDEX {index_name} ON ONLY {table_name} USING btree ({key_column});
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP INDEX IF EXISTS {index_name};
+  verification:
+    required: true
+    mode: index_validity_check
+    sql: SELECT c.relname, i.indisvalid FROM pg_class c JOIN pg_index i ON i.indexrelid = c.oid WHERE c.relname = '{index_name}';
+- id: syntax_error_invalid_syntax
+  title: Explicit syntax-error path
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: failure
+  factors:
+    statement_branch: single_column_btree
+    method: btree
+    column_source: all_template_columns
+    expected_status: failure
+    syntax_error: invalid_syntax
+    cleanup_mode: drop_index
+  expansion:
+    syntax_error:
+      mode: explicit
+      values:
+      - invalid_syntax
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - condition: syntax_error == invalid_syntax
+      reason: create_index_syntax_is_invalid
+    default_failure_reason: create_index_syntax_is_invalid
+  sql_shape:
+    template: CREATE INDEX {index_name} ON {table_name} USING btree;
+  expected_error:
+    required_when_status_failure: true
+    category: syntax_error
+    reason: create_index_syntax_is_invalid
+    sqlstate: null
+    message_like: null
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP INDEX IF EXISTS {index_name};
+  verification:
+    required: false
+    mode: expected_error
+    sql: null
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true
