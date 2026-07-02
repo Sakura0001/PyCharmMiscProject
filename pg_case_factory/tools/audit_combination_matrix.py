@@ -334,6 +334,33 @@ def _baseline_groups(matrix: Mapping[str, Any]) -> list[dict[str, Any]]:
     return groups
 
 
+def _factor_axis_name(axis_name: str, statement_factors: set[str]) -> str | None:
+    if axis_name in statement_factors:
+        return axis_name
+    if axis_name.endswith("s") and axis_name[:-1] in statement_factors:
+        return axis_name[:-1]
+    return None
+
+
+def _record_expansion_coverage(
+    covered_values: dict[str, set[str]],
+    group: Mapping[str, Any],
+    statement_factors: set[str],
+) -> None:
+    for axis_name, axis_doc in _as_mapping(group.get("expansion")).items():
+        axis_doc = _as_mapping(axis_doc)
+        if str(axis_name) == "statement_branch" and isinstance(axis_doc.get("values"), Mapping):
+            for value in _as_mapping(axis_doc.get("values")).values():
+                covered_values.setdefault("statement_branch", set()).add(_text(value))
+            continue
+
+        factor_name = _factor_axis_name(str(axis_name), statement_factors)
+        if factor_name and factor_name in covered_values:
+            for value in _as_sequence(axis_doc.get("values")):
+                covered_values[factor_name].add(_text(value))
+            continue
+
+
 def _validate_factors_against_statement(
     result: AuditResult,
     path: Path,
@@ -368,6 +395,7 @@ def _validate_factors_against_statement(
                 result.errors.append(f"{path}: {group_id}: unknown factor value: {factor_name}={value_key}")
             if factor_name in covered_values and value_key:
                 covered_values[factor_name].add(value_key)
+        _record_expansion_coverage(covered_values, group, statement_factors)
 
     if factor_contract.get("matrix_must_cover_required_factor_values") is True:
         for factor_name, factor_doc in contract_factors.items():
