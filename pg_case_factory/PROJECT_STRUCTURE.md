@@ -116,6 +116,11 @@ statement reference 不应写死完整生命周期。
 
 因子目录映射审计脚本位于 `tools/audit_factor_catalog_mapping.py`。它只做静态一致性检查，不参与 SQL 渲染主路径。
 
+组合矩阵审计脚本位于 `tools/audit_combination_matrix.py`。它检查
+`references/combinations/**/*.yaml` 与 statement reference、共享矩阵 schema、
+PG16 类型目录之间的一致性，确保 required baseline coverage 与 derived
+extension 的边界可被工具验证。
+
 ## 5. `src/pg_case_factory/`
 
 ```text
