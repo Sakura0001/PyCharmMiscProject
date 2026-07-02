@@ -1,0 +1,324 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: alter_rule
+  name: ALTER RULE
+  category: ddl
+  domain: rule
+  source_reference: references/statements/ddl/rule/alter_rule.md
+  official_source: https://www.postgresql.org/docs/16/sql-alterrule.html
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required matrix coverage must pass before any derived extension is emitted.
+  - Derived extensions must not be counted as satisfying required factor or coverage scope requirements.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds:
+    - rule
+    decision_reason: rule statements operate on PostgreSQL rule objects; object coverage is explicit for create, alter, and
+      drop paths.
+  target_relation_coverage:
+    required: true
+    coverage_mode: representative
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_relation_kinds:
+    - regular_table
+    - partitioned_table_parent
+    decision_reason: rule statements are validated against table-backed relations rather than arbitrary relation kinds.
+  table_coverage:
+    required: true
+    coverage_mode: representative
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_table_kinds:
+    - regular_table
+    - partitioned_table_parent
+    decision_reason: rule statements attach behavior to table objects, so representative table forms are required.
+  column_type_coverage:
+    required: true
+    coverage_mode: conditional
+    inventory_source: references/common/pg16_type_catalog.md
+    required_type_set: all_pg16_column_types
+    expansion_mode: predicate_or_expression_columns
+    require_each_type_success_or_failure: true
+    decision_reason: rule behavior can reference table columns in predicates or expressions; coverage is conditional on expression-bearing
+      branches.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values: &id001
+      - branch_rename
+      coverage_requirement: all_values
+    object_state:
+      tier: T1
+      coverage_role: main_axis
+      required_values: &id002
+      - exists
+      - not_exists
+      coverage_requirement: all_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values: &id003
+      - success
+      - failure
+      coverage_requirement: all_values
+    alter_action:
+      tier: T2
+      coverage_role: main_axis
+      required_values: &id004
+      - rename
+      coverage_requirement: all_values
+    table_type:
+      tier: T2
+      coverage_role: main_axis
+      required_values: &id005
+      - table
+      - view
+      coverage_requirement: all_values
+    rule_name_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values: &id006
+      - simple_id
+      - quoted_id
+      - _RETURN_special
+      - nonexistent_name
+      - existing_name
+      coverage_requirement: all_values
+    table_name_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values: &id007
+      - simple_id
+      - quoted_id
+      - schema_qualified
+      - nonexistent_table
+      coverage_requirement: all_values
+    new_name_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values: &id008
+      - simple_id
+      - quoted_id
+      - duplicate_name_same_table
+      - invalid_name
+      coverage_requirement: all_values
+    privilege_level:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values: &id009
+      - superuser
+      - table_owner
+      - non_owner
+      coverage_requirement: all_values
+    table_existence:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values: &id010
+      - table_exists
+      - table_not_exists
+      coverage_requirement: all_values
+    nonexistent_rule:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id011
+      - rule_exists
+      - rule_missing
+      coverage_requirement: all_values
+    nonexistent_table:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id012
+      - table_exists
+      - table_missing
+      coverage_requirement: all_values
+    privilege_denied:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id013
+      - owner_execution
+      - non_owner_denied
+      - superuser_execution
+      coverage_requirement: all_values
+    duplicate_new_name:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id014
+      - no_conflict
+      - same_table_same_event_conflict
+      coverage_requirement: all_values
+    on_select_return_rename:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id015
+      - normal_rule_rename
+      - _RETURN_rename_breaks_view
+      coverage_requirement: all_values
+    verification_mode:
+      tier: T6
+      coverage_role: rotate_attach
+      required_values: &id016
+      - catalog_query_pg_rewrite
+      - error_assertion
+      coverage_requirement: all_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: rotate_attach
+      required_values: &id017
+      - revert_rename
+      - drop_rule
+      - drop_view
+      - drop_table
+      coverage_requirement: all_values
+dynamic_inputs:
+  object_manifest:
+    required: true
+    source: lifecycle_plan
+    required_fields:
+    - object_name
+    - schema_name
+    - expected_status
+  dependency_manifest:
+    required: true
+    source: statement_reference_dependencies
+    required_fields:
+    - dependency_name
+    - dependency_kind
+    - setup_sql
+combination_groups:
+- id: alter_rule_declared_factor_baseline
+  title: ALTER RULE declared factor baseline
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  expected_failure_reasons:
+  - alter_rule_declared_failure
+  factors:
+    statement_branch: branch_rename
+    object_state: exists
+    expected_status: success
+    alter_action: rename
+    table_type: table
+    rule_name_shape: simple_id
+    table_name_shape: simple_id
+    new_name_shape: simple_id
+    privilege_level: superuser
+    table_existence: table_exists
+    nonexistent_rule: rule_exists
+    nonexistent_table: table_exists
+    privilege_denied: owner_execution
+    duplicate_new_name: no_conflict
+    on_select_return_rename: normal_rule_rename
+    verification_mode: catalog_query_pg_rewrite
+    cleanup_mode: revert_rename
+  expansion:
+    statement_branch:
+      mode: explicit
+      values: *id001
+    object_state:
+      mode: explicit
+      values: *id002
+    expected_status:
+      mode: explicit
+      values: *id003
+    alter_action:
+      mode: explicit
+      values: *id004
+    table_type:
+      mode: explicit
+      values: *id005
+    rule_name_shape:
+      mode: explicit
+      values: *id006
+    table_name_shape:
+      mode: explicit
+      values: *id007
+    new_name_shape:
+      mode: explicit
+      values: *id008
+    privilege_level:
+      mode: explicit
+      values: *id009
+    table_existence:
+      mode: explicit
+      values: *id010
+    nonexistent_rule:
+      mode: explicit
+      values: *id011
+    nonexistent_table:
+      mode: explicit
+      values: *id012
+    privilege_denied:
+      mode: explicit
+      values: *id013
+    duplicate_new_name:
+      mode: explicit
+      values: *id014
+    on_select_return_rename:
+      mode: explicit
+      values: *id015
+    verification_mode:
+      mode: explicit
+      values: *id016
+    cleanup_mode:
+      mode: explicit
+      values: *id017
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - expected_status == success
+    failure_when:
+    - condition: expected_status == failure
+      reason: alter_rule_declared_failure
+    default_failure_reason: alter_rule_declared_failure
+  sql_shape:
+    template: ALTER RULE {object_name};
+  verification:
+    required: true
+    mode: catalog_or_error_assertion
+    sql: SELECT 1;
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup for alter_rule
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

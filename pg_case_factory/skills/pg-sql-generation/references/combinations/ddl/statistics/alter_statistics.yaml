@@ -1,0 +1,374 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: alter_statistics
+  name: ALTER STATISTICS
+  category: ddl
+  domain: statistics
+  source_reference: references/statements/ddl/statistics/alter_statistics.md
+  official_source: https://www.postgresql.org/docs/16/sql-alterstatistics.html
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required matrix coverage must pass before any derived extension is emitted.
+  - Derived extensions must not be counted as satisfying required factor or coverage scope requirements.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds:
+    - statistics_object
+    decision_reason: statistics statements operate on PostgreSQL statistics objects; object coverage is explicit for create,
+      alter, and drop paths.
+  target_relation_coverage:
+    required: true
+    coverage_mode: representative
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_relation_kinds:
+    - regular_table
+    - partitioned_table_parent
+    decision_reason: statistics statements are validated against table-backed relations rather than arbitrary relation kinds.
+  table_coverage:
+    required: true
+    coverage_mode: representative
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_table_kinds:
+    - regular_table
+    - partitioned_table_parent
+    decision_reason: statistics statements attach behavior to table objects, so representative table forms are required.
+  column_type_coverage:
+    required: true
+    coverage_mode: representative
+    inventory_source: references/common/pg16_type_catalog.md
+    required_type_set: all_pg16_column_types
+    expansion_mode: representative_type_families
+    require_each_type_success_or_failure: true
+    decision_reason: statistics validity depends on PostgreSQL data type bindings, so representative PG16 type coverage is
+      required.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values: &id001
+      - branch_owner_to
+      - branch_rename
+      - branch_set_schema
+      - branch_set_statistics
+      coverage_requirement: all_values
+    statistics_state:
+      tier: T1
+      coverage_role: main_axis
+      required_values: &id002
+      - exists
+      - non_existent
+      coverage_requirement: all_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values: &id003
+      - success
+      - failure
+      coverage_requirement: all_values
+    owner_to_shape:
+      tier: T2
+      coverage_role: main_axis
+      required_values: &id004
+      - explicit_role_name
+      - current_role_keyword
+      - current_user_keyword
+      - session_user_keyword
+      coverage_requirement: all_values
+    rename_behavior:
+      tier: T2
+      coverage_role: main_axis
+      required_values: &id005
+      - rename_to_new_name
+      - rename_to_existing_name_conflict
+      coverage_requirement: all_values
+    set_schema_behavior:
+      tier: T2
+      coverage_role: main_axis
+      required_values: &id006
+      - existing_schema
+      - nonexistent_schema
+      coverage_requirement: all_values
+    statistics_target_value:
+      tier: T2
+      coverage_role: main_axis
+      required_values: &id007
+      - zero
+      - positive_integer
+      - maximum_value_10000
+      - negative_one_default
+      - out_of_range
+      coverage_requirement: all_values
+    statistics_name_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values: &id008
+      - simple_name
+      - schema_qualified_name
+      - quoted_name
+      - non_existent_name
+      coverage_requirement: all_values
+    new_name_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values: &id009
+      - simple_name
+      - quoted_name
+      - existing_name_conflict
+      coverage_requirement: all_values
+    new_schema_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values: &id010
+      - existing_schema
+      - nonexistent_schema
+      coverage_requirement: all_values
+    new_owner_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values: &id011
+      - existing_role
+      - nonexistent_role
+      coverage_requirement: all_values
+    target_value_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values: &id012
+      - integer_value
+      - negative_one
+      - very_large_value
+      coverage_requirement: all_values
+    executor_privilege:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values: &id013
+      - superuser
+      - table_owner
+      - non_owner_no_privilege
+      coverage_requirement: all_values
+    table_dependency:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values: &id014
+      - underlying_table_exists
+      coverage_requirement: all_values
+    nonexistent_statistics:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id015
+      - statistics_does_not_exist
+      coverage_requirement: all_values
+    privilege_insufficient:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id016
+      - non_table_owner_altering_statistics
+      coverage_requirement: all_values
+    nonexistent_schema:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id017
+      - schema_does_not_exist
+      coverage_requirement: all_values
+    nonexistent_owner:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id018
+      - owner_role_does_not_exist
+      coverage_requirement: all_values
+    target_out_of_range:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id019
+      - negative_other_than_minus_one
+      coverage_requirement: all_values
+    rename_conflict:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id020
+      - new_name_already_exists
+      coverage_requirement: all_values
+    verification_mode:
+      tier: T6
+      coverage_role: rotate_attach
+      required_values: &id021
+      - pg_statistic_ext_catalog
+      - error_assertion
+      coverage_requirement: all_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: rotate_attach
+      required_values: &id022
+      - drop_statistics
+      coverage_requirement: all_values
+dynamic_inputs:
+  object_manifest:
+    required: true
+    source: lifecycle_plan
+    required_fields:
+    - object_name
+    - schema_name
+    - expected_status
+  dependency_manifest:
+    required: true
+    source: statement_reference_dependencies
+    required_fields:
+    - dependency_name
+    - dependency_kind
+    - setup_sql
+combination_groups:
+- id: alter_statistics_declared_factor_baseline
+  title: ALTER STATISTICS declared factor baseline
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  expected_failure_reasons:
+  - alter_statistics_declared_failure
+  factors:
+    statement_branch: branch_owner_to
+    statistics_state: exists
+    expected_status: success
+    owner_to_shape: explicit_role_name
+    rename_behavior: rename_to_new_name
+    set_schema_behavior: existing_schema
+    statistics_target_value: zero
+    statistics_name_shape: simple_name
+    new_name_shape: simple_name
+    new_schema_shape: existing_schema
+    new_owner_shape: existing_role
+    target_value_shape: integer_value
+    executor_privilege: superuser
+    table_dependency: underlying_table_exists
+    nonexistent_statistics: statistics_does_not_exist
+    privilege_insufficient: non_table_owner_altering_statistics
+    nonexistent_schema: schema_does_not_exist
+    nonexistent_owner: owner_role_does_not_exist
+    target_out_of_range: negative_other_than_minus_one
+    rename_conflict: new_name_already_exists
+    verification_mode: pg_statistic_ext_catalog
+    cleanup_mode: drop_statistics
+  expansion:
+    statement_branch:
+      mode: explicit
+      values: *id001
+    statistics_state:
+      mode: explicit
+      values: *id002
+    expected_status:
+      mode: explicit
+      values: *id003
+    owner_to_shape:
+      mode: explicit
+      values: *id004
+    rename_behavior:
+      mode: explicit
+      values: *id005
+    set_schema_behavior:
+      mode: explicit
+      values: *id006
+    statistics_target_value:
+      mode: explicit
+      values: *id007
+    statistics_name_shape:
+      mode: explicit
+      values: *id008
+    new_name_shape:
+      mode: explicit
+      values: *id009
+    new_schema_shape:
+      mode: explicit
+      values: *id010
+    new_owner_shape:
+      mode: explicit
+      values: *id011
+    target_value_shape:
+      mode: explicit
+      values: *id012
+    executor_privilege:
+      mode: explicit
+      values: *id013
+    table_dependency:
+      mode: explicit
+      values: *id014
+    nonexistent_statistics:
+      mode: explicit
+      values: *id015
+    privilege_insufficient:
+      mode: explicit
+      values: *id016
+    nonexistent_schema:
+      mode: explicit
+      values: *id017
+    nonexistent_owner:
+      mode: explicit
+      values: *id018
+    target_out_of_range:
+      mode: explicit
+      values: *id019
+    rename_conflict:
+      mode: explicit
+      values: *id020
+    verification_mode:
+      mode: explicit
+      values: *id021
+    cleanup_mode:
+      mode: explicit
+      values: *id022
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - expected_status == success
+    failure_when:
+    - condition: expected_status == failure
+      reason: alter_statistics_declared_failure
+    default_failure_reason: alter_statistics_declared_failure
+  sql_shape:
+    template: ALTER STATISTICS {object_name};
+  verification:
+    required: true
+    mode: catalog_or_error_assertion
+    sql: SELECT 1;
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup for alter_statistics
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

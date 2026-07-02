@@ -1,0 +1,416 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: create_rule
+  name: CREATE RULE
+  category: ddl
+  domain: rule
+  source_reference: references/statements/ddl/rule/create_rule.md
+  official_source: https://www.postgresql.org/docs/16/sql-createrule.html
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required matrix coverage must pass before any derived extension is emitted.
+  - Derived extensions must not be counted as satisfying required factor or coverage scope requirements.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds:
+    - rule
+    decision_reason: rule statements operate on PostgreSQL rule objects; object coverage is explicit for create, alter, and
+      drop paths.
+  target_relation_coverage:
+    required: true
+    coverage_mode: representative
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_relation_kinds:
+    - regular_table
+    - partitioned_table_parent
+    decision_reason: rule statements are validated against table-backed relations rather than arbitrary relation kinds.
+  table_coverage:
+    required: true
+    coverage_mode: representative
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_table_kinds:
+    - regular_table
+    - partitioned_table_parent
+    decision_reason: rule statements attach behavior to table objects, so representative table forms are required.
+  column_type_coverage:
+    required: true
+    coverage_mode: conditional
+    inventory_source: references/common/pg16_type_catalog.md
+    required_type_set: all_pg16_column_types
+    expansion_mode: predicate_or_expression_columns
+    require_each_type_success_or_failure: true
+    decision_reason: rule behavior can reference table columns in predicates or expressions; coverage is conditional on expression-bearing
+      branches.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values: &id001
+      - branch_create_rule
+      coverage_requirement: all_values
+    event_type:
+      tier: T1
+      coverage_role: main_axis
+      required_values: &id002
+      - SELECT
+      - INSERT
+      - UPDATE
+      - DELETE
+      coverage_requirement: all_values
+    rule_action:
+      tier: T1
+      coverage_role: main_axis
+      required_values: &id003
+      - ALSO
+      - INSTEAD
+      - NOTHING
+      - implicit_also
+      coverage_requirement: all_values
+    object_state:
+      tier: T1
+      coverage_role: main_axis
+      required_values: &id004
+      - not_exists
+      - exists_same_table_same_event
+      - exists_different_table
+      coverage_requirement: all_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values: &id005
+      - success
+      - failure
+      coverage_requirement: all_values
+    or_replace:
+      tier: T2
+      coverage_role: main_axis
+      required_values: &id006
+      - present
+      - absent
+      coverage_requirement: all_values
+    where_condition:
+      tier: T2
+      coverage_role: main_axis
+      required_values: &id007
+      - omitted
+      - simple_boolean_condition
+      - new_old_reference_condition
+      - complex_condition
+      coverage_requirement: all_values
+    command_type:
+      tier: T2
+      coverage_role: main_axis
+      required_values: &id008
+      - NOTHING
+      - single_command
+      - multiple_commands
+      coverage_requirement: all_values
+    command_content:
+      tier: T2
+      coverage_role: main_axis
+      required_values: &id009
+      - SELECT_command
+      - INSERT_command
+      - UPDATE_command
+      - DELETE_command
+      - NOTIFY_command
+      coverage_requirement: all_values
+    rule_name_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values: &id010
+      - simple_id
+      - quoted_id
+      - _RETURN_special_name
+      - reserved_word_as_name
+      - duplicate_name
+      coverage_requirement: all_values
+    table_name_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values: &id011
+      - simple_id
+      - quoted_id
+      - schema_qualified
+      - nonexistent_table
+      coverage_requirement: all_values
+    privilege_level:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values: &id012
+      - superuser
+      - table_owner
+      - non_owner
+      coverage_requirement: all_values
+    table_type:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values: &id013
+      - table
+      - view
+      coverage_requirement: all_values
+    table_existence:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values: &id014
+      - table_exists
+      - table_not_exists
+      coverage_requirement: all_values
+    duplicate_rule:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id015
+      - no_conflict
+      - same_table_same_event_same_name
+      coverage_requirement: all_values
+    nonexistent_table:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id016
+      - table_exists
+      - table_missing
+      coverage_requirement: all_values
+    privilege_denied:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id017
+      - owner_execution
+      - non_owner_denied
+      - superuser_execution
+      coverage_requirement: all_values
+    on_select_rule_constraints:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id018
+      - valid_on_select_on_view
+      - on_select_on_table_invalid
+      - on_select_not_RETURN_name
+      - on_select_conditional_invalid
+      - on_select_not_INSTEAD_invalid
+      - on_select_multi_command_invalid
+      coverage_requirement: all_values
+    on_conflict_incompatibility:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id019
+      - no_on_conflict_issue
+      - on_conflict_insert_rule_conflict
+      coverage_requirement: all_values
+    new_old_in_invalid_event:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id020
+      - valid_new_old_reference
+      - new_in_delete_invalid
+      - old_in_insert_invalid
+      coverage_requirement: all_values
+    circular_rule:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id021
+      - no_circular_dependency
+      - circular_select_rule_error
+      coverage_requirement: all_values
+    conditional_rule_on_view:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id022
+      - unconditional_instead_present
+      - only_conditional_rules_on_view
+      coverage_requirement: all_values
+    verification_mode:
+      tier: T6
+      coverage_role: rotate_attach
+      required_values: &id023
+      - catalog_query_pg_rewrite
+      - rule_behavior_test
+      - error_assertion
+      coverage_requirement: all_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: rotate_attach
+      required_values: &id024
+      - drop_rule
+      - drop_view
+      - drop_table
+      coverage_requirement: all_values
+dynamic_inputs:
+  object_manifest:
+    required: true
+    source: lifecycle_plan
+    required_fields:
+    - object_name
+    - schema_name
+    - expected_status
+  dependency_manifest:
+    required: true
+    source: statement_reference_dependencies
+    required_fields:
+    - dependency_name
+    - dependency_kind
+    - setup_sql
+combination_groups:
+- id: create_rule_declared_factor_baseline
+  title: CREATE RULE declared factor baseline
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  expected_failure_reasons:
+  - create_rule_declared_failure
+  factors:
+    statement_branch: branch_create_rule
+    event_type: SELECT
+    rule_action: ALSO
+    object_state: not_exists
+    expected_status: success
+    or_replace: present
+    where_condition: omitted
+    command_type: NOTHING
+    command_content: SELECT_command
+    rule_name_shape: simple_id
+    table_name_shape: simple_id
+    privilege_level: superuser
+    table_type: table
+    table_existence: table_exists
+    duplicate_rule: no_conflict
+    nonexistent_table: table_exists
+    privilege_denied: owner_execution
+    on_select_rule_constraints: valid_on_select_on_view
+    on_conflict_incompatibility: no_on_conflict_issue
+    new_old_in_invalid_event: valid_new_old_reference
+    circular_rule: no_circular_dependency
+    conditional_rule_on_view: unconditional_instead_present
+    verification_mode: catalog_query_pg_rewrite
+    cleanup_mode: drop_rule
+  expansion:
+    statement_branch:
+      mode: explicit
+      values: *id001
+    event_type:
+      mode: explicit
+      values: *id002
+    rule_action:
+      mode: explicit
+      values: *id003
+    object_state:
+      mode: explicit
+      values: *id004
+    expected_status:
+      mode: explicit
+      values: *id005
+    or_replace:
+      mode: explicit
+      values: *id006
+    where_condition:
+      mode: explicit
+      values: *id007
+    command_type:
+      mode: explicit
+      values: *id008
+    command_content:
+      mode: explicit
+      values: *id009
+    rule_name_shape:
+      mode: explicit
+      values: *id010
+    table_name_shape:
+      mode: explicit
+      values: *id011
+    privilege_level:
+      mode: explicit
+      values: *id012
+    table_type:
+      mode: explicit
+      values: *id013
+    table_existence:
+      mode: explicit
+      values: *id014
+    duplicate_rule:
+      mode: explicit
+      values: *id015
+    nonexistent_table:
+      mode: explicit
+      values: *id016
+    privilege_denied:
+      mode: explicit
+      values: *id017
+    on_select_rule_constraints:
+      mode: explicit
+      values: *id018
+    on_conflict_incompatibility:
+      mode: explicit
+      values: *id019
+    new_old_in_invalid_event:
+      mode: explicit
+      values: *id020
+    circular_rule:
+      mode: explicit
+      values: *id021
+    conditional_rule_on_view:
+      mode: explicit
+      values: *id022
+    verification_mode:
+      mode: explicit
+      values: *id023
+    cleanup_mode:
+      mode: explicit
+      values: *id024
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - expected_status == success
+    failure_when:
+    - condition: expected_status == failure
+      reason: create_rule_declared_failure
+    default_failure_reason: create_rule_declared_failure
+  sql_shape:
+    template: CREATE RULE {object_name};
+  verification:
+    required: true
+    mode: catalog_or_error_assertion
+    sql: SELECT 1;
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup for create_rule
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

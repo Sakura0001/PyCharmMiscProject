@@ -1,0 +1,380 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: create_statistics
+  name: CREATE STATISTICS
+  category: ddl
+  domain: statistics
+  source_reference: references/statements/ddl/statistics/create_statistics.md
+  official_source: https://www.postgresql.org/docs/16/sql-createstatistics.html
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required matrix coverage must pass before any derived extension is emitted.
+  - Derived extensions must not be counted as satisfying required factor or coverage scope requirements.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds:
+    - statistics_object
+    decision_reason: statistics statements operate on PostgreSQL statistics objects; object coverage is explicit for create,
+      alter, and drop paths.
+  target_relation_coverage:
+    required: true
+    coverage_mode: representative
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_relation_kinds:
+    - regular_table
+    - partitioned_table_parent
+    decision_reason: statistics statements are validated against table-backed relations rather than arbitrary relation kinds.
+  table_coverage:
+    required: true
+    coverage_mode: representative
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_table_kinds:
+    - regular_table
+    - partitioned_table_parent
+    decision_reason: statistics statements attach behavior to table objects, so representative table forms are required.
+  column_type_coverage:
+    required: true
+    coverage_mode: representative
+    inventory_source: references/common/pg16_type_catalog.md
+    required_type_set: all_pg16_column_types
+    expansion_mode: representative_type_families
+    require_each_type_success_or_failure: true
+    decision_reason: statistics validity depends on PostgreSQL data type bindings, so representative PG16 type coverage is
+      required.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values: &id001
+      - branch_univariate_expression
+      - branch_multivariate_columns
+      coverage_requirement: all_values
+    statistics_identity:
+      tier: T1
+      coverage_role: main_axis
+      required_values: &id002
+      - not_exists
+      - exists
+      - exists_with_if_not_exists
+      - reserved_word_name
+      coverage_requirement: all_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values: &id003
+      - success
+      - failure
+      coverage_requirement: all_values
+    statistics_kind_clause:
+      tier: T2
+      coverage_role: main_axis
+      required_values: &id004
+      - omitted_all_kinds
+      - ndistinct_only
+      - dependencies_only
+      - mcv_only
+      - ndistinct_and_dependencies
+      - all_three_kinds
+      coverage_requirement: all_values
+    column_combination:
+      tier: T2
+      coverage_role: main_axis
+      required_values: &id005
+      - two_columns
+      - three_columns
+      - column_and_expression_mix
+      - single_expression_univariate
+      coverage_requirement: all_values
+    if_not_exists_clause:
+      tier: T2
+      coverage_role: main_axis
+      required_values: &id006
+      - without_if_not_exists
+      - with_if_not_exists
+      coverage_requirement: all_values
+    expression_shape:
+      tier: T2
+      coverage_role: main_axis
+      required_values: &id007
+      - simple_column_reference
+      - arithmetic_expression
+      - function_call_expression
+      coverage_requirement: all_values
+    statistics_name_presence:
+      tier: T2
+      coverage_role: main_axis
+      required_values: &id008
+      - explicit_name
+      - auto_generated_name_omitted
+      coverage_requirement: all_values
+    statistics_name_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values: &id009
+      - simple_name
+      - schema_qualified_name
+      - quoted_name
+      - reserved_word_name
+      - non_existing_name
+      coverage_requirement: all_values
+    table_name_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values: &id010
+      - simple_name
+      - schema_qualified_name
+      - quoted_name
+      - nonexistent_table
+      coverage_requirement: all_values
+    column_name_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values: &id011
+      - simple_name
+      - quoted_name
+      - nonexistent_column
+      coverage_requirement: all_values
+    executor_privilege:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values: &id012
+      - superuser
+      - table_owner
+      - non_owner_no_privilege
+      coverage_requirement: all_values
+    table_dependency:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values: &id013
+      - table_exists
+      - table_not_exists
+      coverage_requirement: all_values
+    column_dependency:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values: &id014
+      - column_exists
+      - column_not_exists
+      coverage_requirement: all_values
+    duplicate_statistics_name:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id015
+      - none
+      - same_name_exists
+      coverage_requirement: all_values
+    privilege_insufficient:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id016
+      - non_table_owner_creating_statistics
+      coverage_requirement: all_values
+    nonexistent_table:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id017
+      - table_not_exists_failure
+      coverage_requirement: all_values
+    nonexistent_column:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id018
+      - column_not_exists_failure
+      coverage_requirement: all_values
+    single_column_for_multivariate:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id019
+      - single_column_multivariate_failure
+      coverage_requirement: all_values
+    expression_syntax_error:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id020
+      - invalid_expression_failure
+      coverage_requirement: all_values
+    verification_mode:
+      tier: T6
+      coverage_role: rotate_attach
+      required_values: &id021
+      - pg_statistic_ext_catalog
+      - error_assertion
+      coverage_requirement: all_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: rotate_attach
+      required_values: &id022
+      - drop_statistics
+      coverage_requirement: all_values
+dynamic_inputs:
+  object_manifest:
+    required: true
+    source: lifecycle_plan
+    required_fields:
+    - object_name
+    - schema_name
+    - expected_status
+  dependency_manifest:
+    required: true
+    source: statement_reference_dependencies
+    required_fields:
+    - dependency_name
+    - dependency_kind
+    - setup_sql
+combination_groups:
+- id: create_statistics_declared_factor_baseline
+  title: CREATE STATISTICS declared factor baseline
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  expected_failure_reasons:
+  - create_statistics_declared_failure
+  factors:
+    statement_branch: branch_univariate_expression
+    statistics_identity: not_exists
+    expected_status: success
+    statistics_kind_clause: omitted_all_kinds
+    column_combination: two_columns
+    if_not_exists_clause: without_if_not_exists
+    expression_shape: simple_column_reference
+    statistics_name_presence: explicit_name
+    statistics_name_shape: simple_name
+    table_name_shape: simple_name
+    column_name_shape: simple_name
+    executor_privilege: superuser
+    table_dependency: table_exists
+    column_dependency: column_exists
+    duplicate_statistics_name: none
+    privilege_insufficient: non_table_owner_creating_statistics
+    nonexistent_table: table_not_exists_failure
+    nonexistent_column: column_not_exists_failure
+    single_column_for_multivariate: single_column_multivariate_failure
+    expression_syntax_error: invalid_expression_failure
+    verification_mode: pg_statistic_ext_catalog
+    cleanup_mode: drop_statistics
+  expansion:
+    statement_branch:
+      mode: explicit
+      values: *id001
+    statistics_identity:
+      mode: explicit
+      values: *id002
+    expected_status:
+      mode: explicit
+      values: *id003
+    statistics_kind_clause:
+      mode: explicit
+      values: *id004
+    column_combination:
+      mode: explicit
+      values: *id005
+    if_not_exists_clause:
+      mode: explicit
+      values: *id006
+    expression_shape:
+      mode: explicit
+      values: *id007
+    statistics_name_presence:
+      mode: explicit
+      values: *id008
+    statistics_name_shape:
+      mode: explicit
+      values: *id009
+    table_name_shape:
+      mode: explicit
+      values: *id010
+    column_name_shape:
+      mode: explicit
+      values: *id011
+    executor_privilege:
+      mode: explicit
+      values: *id012
+    table_dependency:
+      mode: explicit
+      values: *id013
+    column_dependency:
+      mode: explicit
+      values: *id014
+    duplicate_statistics_name:
+      mode: explicit
+      values: *id015
+    privilege_insufficient:
+      mode: explicit
+      values: *id016
+    nonexistent_table:
+      mode: explicit
+      values: *id017
+    nonexistent_column:
+      mode: explicit
+      values: *id018
+    single_column_for_multivariate:
+      mode: explicit
+      values: *id019
+    expression_syntax_error:
+      mode: explicit
+      values: *id020
+    verification_mode:
+      mode: explicit
+      values: *id021
+    cleanup_mode:
+      mode: explicit
+      values: *id022
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - expected_status == success
+    failure_when:
+    - condition: expected_status == failure
+      reason: create_statistics_declared_failure
+    default_failure_reason: create_statistics_declared_failure
+  sql_shape:
+    template: CREATE STATISTICS {object_name};
+  verification:
+    required: true
+    mode: catalog_or_error_assertion
+    sql: SELECT 1;
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup for create_statistics
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

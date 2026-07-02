@@ -1,0 +1,467 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: create_domain
+  name: CREATE DOMAIN
+  category: ddl
+  domain: domain
+  source_reference: references/statements/ddl/domain/create_domain.md
+  official_source: https://www.postgresql.org/docs/16/sql-createdomain.html
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required matrix coverage must pass before any derived extension is emitted.
+  - Derived extensions must not be counted as satisfying required factor or coverage scope requirements.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds:
+    - domain
+    decision_reason: domain statements operate on PostgreSQL domain objects; object coverage is explicit for create, alter,
+      and drop paths.
+  target_relation_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: domain statements do not target relation objects directly.
+  table_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: domain statements define catalog objects and do not directly operate on table instances.
+  column_type_coverage:
+    required: true
+    coverage_mode: representative
+    inventory_source: references/common/pg16_type_catalog.md
+    required_type_set: all_pg16_column_types
+    expansion_mode: representative_type_families
+    require_each_type_success_or_failure: true
+    decision_reason: domain validity depends on PostgreSQL data type bindings, so representative PG16 type coverage is required.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values: &id001
+      - branch_create_domain
+      coverage_requirement: all_values
+    base_data_type:
+      tier: T1
+      coverage_role: main_axis
+      required_values: &id002
+      - integer
+      - bigint
+      - smallint
+      - numeric
+      - real
+      - double_precision
+      - text
+      - varchar
+      - character
+      - boolean
+      - date
+      - timestamp
+      - timestamptz
+      - time
+      - interval
+      - uuid
+      - jsonb
+      - bytea
+      - int_array
+      - text_array
+      coverage_requirement: all_values
+    object_state:
+      tier: T1
+      coverage_role: main_axis
+      required_values: &id003
+      - not_exists
+      - exists
+      - type_name_conflict
+      coverage_requirement: all_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values: &id004
+      - success
+      - failure
+      coverage_requirement: all_values
+    default_clause:
+      tier: T2
+      coverage_role: main_axis
+      required_values: &id005
+      - omitted
+      - literal_default
+      - expression_default
+      - null_default
+      coverage_requirement: all_values
+    collate_clause:
+      tier: T2
+      coverage_role: main_axis
+      required_values: &id006
+      - omitted
+      - specified_collation
+      coverage_requirement: all_values
+    constraint_type:
+      tier: T2
+      coverage_role: main_axis
+      required_values: &id007
+      - none
+      - not_null
+      - null_explicit
+      - check_only
+      - not_null_and_check
+      - multiple_check
+      coverage_requirement: all_values
+    constraint_naming:
+      tier: T2
+      coverage_role: main_axis
+      required_values: &id008
+      - auto_named
+      - explicitly_named
+      coverage_requirement: all_values
+    domain_name_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values: &id009
+      - simple_id
+      - quoted_id
+      - schema_qualified
+      - reserved_word_as_name
+      - duplicate_name
+      - invalid_name
+      coverage_requirement: all_values
+    type_name_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values: &id010
+      - standard_type_name
+      - quoted_type_name
+      - nonexistent_type
+      - array_type_specifier
+      coverage_requirement: all_values
+    collation_name_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values: &id011
+      - default_collation
+      - explicit_collation_name
+      - nonexistent_collation
+      coverage_requirement: all_values
+    constraint_name_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values: &id012
+      - auto_generated
+      - simple_id
+      - quoted_id
+      coverage_requirement: all_values
+    default_expression_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values: &id013
+      - literal_value
+      - type_matching_expression
+      - type_mismatching_expression
+      - subquery_illegal
+      coverage_requirement: all_values
+    privilege_level:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values: &id014
+      - superuser
+      - schema_owner
+      - non_owner_with_create
+      - non_owner_no_create
+      coverage_requirement: all_values
+    schema_existence:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values: &id015
+      - schema_exists
+      - schema_not_exists
+      coverage_requirement: all_values
+    base_type_privilege:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values: &id016
+      - has_usage
+      - no_usage
+      coverage_requirement: all_values
+    collation_existence:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values: &id017
+      - collation_exists
+      - collation_not_exists
+      - base_type_not_collatable
+      coverage_requirement: all_values
+    duplicate_domain_name:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id018
+      - no_conflict
+      - same_schema_conflict
+      - cross_schema_no_conflict
+      coverage_requirement: all_values
+    nonexistent_base_type:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id019
+      - type_exists
+      - type_not_exists
+      coverage_requirement: all_values
+    privilege_denied_on_base_type:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id020
+      - has_usage_privilege
+      - lacks_usage_privilege
+      coverage_requirement: all_values
+    invalid_default_expression:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id021
+      - valid_expression
+      - subquery_in_default
+      - type_mismatch_default
+      coverage_requirement: all_values
+    null_constraint_conflict:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id022
+      - single_constraint
+      - conflicting_null_not_null
+      coverage_requirement: all_values
+    check_expr_subquery:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id023
+      - valid_check
+      - subquery_in_check
+      coverage_requirement: all_values
+    check_expr_non_boolean:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id024
+      - boolean_check
+      - non_boolean_check
+      coverage_requirement: all_values
+    collation_on_non_collatable_type:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id025
+      - collatable_type_with_collate
+      - non_collatable_type_with_collate
+      coverage_requirement: all_values
+    reserved_name_conflict:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id026
+      - unique_name
+      - name_conflicts_with_type
+      coverage_requirement: all_values
+    verification_mode:
+      tier: T6
+      coverage_role: rotate_attach
+      required_values: &id027
+      - catalog_query_pg_type
+      - domain_value_test
+      - error_assertion
+      coverage_requirement: all_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: rotate_attach
+      required_values: &id028
+      - drop_domain
+      - cascade_drop_domain
+      coverage_requirement: all_values
+dynamic_inputs:
+  object_manifest:
+    required: true
+    source: lifecycle_plan
+    required_fields:
+    - object_name
+    - schema_name
+    - expected_status
+  dependency_manifest:
+    required: true
+    source: statement_reference_dependencies
+    required_fields:
+    - dependency_name
+    - dependency_kind
+    - setup_sql
+combination_groups:
+- id: create_domain_declared_factor_baseline
+  title: CREATE DOMAIN declared factor baseline
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  expected_failure_reasons:
+  - create_domain_declared_failure
+  factors:
+    statement_branch: branch_create_domain
+    base_data_type: integer
+    object_state: not_exists
+    expected_status: success
+    default_clause: omitted
+    collate_clause: omitted
+    constraint_type: none
+    constraint_naming: auto_named
+    domain_name_shape: simple_id
+    type_name_shape: standard_type_name
+    collation_name_shape: default_collation
+    constraint_name_shape: auto_generated
+    default_expression_shape: literal_value
+    privilege_level: superuser
+    schema_existence: schema_exists
+    base_type_privilege: has_usage
+    collation_existence: collation_exists
+    duplicate_domain_name: no_conflict
+    nonexistent_base_type: type_exists
+    privilege_denied_on_base_type: has_usage_privilege
+    invalid_default_expression: valid_expression
+    null_constraint_conflict: single_constraint
+    check_expr_subquery: valid_check
+    check_expr_non_boolean: boolean_check
+    collation_on_non_collatable_type: collatable_type_with_collate
+    reserved_name_conflict: unique_name
+    verification_mode: catalog_query_pg_type
+    cleanup_mode: drop_domain
+  expansion:
+    statement_branch:
+      mode: explicit
+      values: *id001
+    base_data_type:
+      mode: explicit
+      values: *id002
+    object_state:
+      mode: explicit
+      values: *id003
+    expected_status:
+      mode: explicit
+      values: *id004
+    default_clause:
+      mode: explicit
+      values: *id005
+    collate_clause:
+      mode: explicit
+      values: *id006
+    constraint_type:
+      mode: explicit
+      values: *id007
+    constraint_naming:
+      mode: explicit
+      values: *id008
+    domain_name_shape:
+      mode: explicit
+      values: *id009
+    type_name_shape:
+      mode: explicit
+      values: *id010
+    collation_name_shape:
+      mode: explicit
+      values: *id011
+    constraint_name_shape:
+      mode: explicit
+      values: *id012
+    default_expression_shape:
+      mode: explicit
+      values: *id013
+    privilege_level:
+      mode: explicit
+      values: *id014
+    schema_existence:
+      mode: explicit
+      values: *id015
+    base_type_privilege:
+      mode: explicit
+      values: *id016
+    collation_existence:
+      mode: explicit
+      values: *id017
+    duplicate_domain_name:
+      mode: explicit
+      values: *id018
+    nonexistent_base_type:
+      mode: explicit
+      values: *id019
+    privilege_denied_on_base_type:
+      mode: explicit
+      values: *id020
+    invalid_default_expression:
+      mode: explicit
+      values: *id021
+    null_constraint_conflict:
+      mode: explicit
+      values: *id022
+    check_expr_subquery:
+      mode: explicit
+      values: *id023
+    check_expr_non_boolean:
+      mode: explicit
+      values: *id024
+    collation_on_non_collatable_type:
+      mode: explicit
+      values: *id025
+    reserved_name_conflict:
+      mode: explicit
+      values: *id026
+    verification_mode:
+      mode: explicit
+      values: *id027
+    cleanup_mode:
+      mode: explicit
+      values: *id028
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - expected_status == success
+    failure_when:
+    - condition: expected_status == failure
+      reason: create_domain_declared_failure
+    default_failure_reason: create_domain_declared_failure
+  sql_shape:
+    template: CREATE DOMAIN {object_name};
+  verification:
+    required: true
+    mode: catalog_or_error_assertion
+    sql: SELECT 1;
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup for create_domain
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

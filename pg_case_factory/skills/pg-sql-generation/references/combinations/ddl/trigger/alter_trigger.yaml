@@ -1,0 +1,340 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: alter_trigger
+  name: ALTER TRIGGER
+  category: ddl
+  domain: trigger
+  source_reference: references/statements/ddl/trigger/alter_trigger.md
+  official_source: https://www.postgresql.org/docs/16/sql-altertrigger.html
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required matrix coverage must pass before any derived extension is emitted.
+  - Derived extensions must not be counted as satisfying required factor or coverage scope requirements.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds:
+    - trigger
+    decision_reason: trigger statements operate on PostgreSQL trigger objects; object coverage is explicit for create, alter,
+      and drop paths.
+  target_relation_coverage:
+    required: true
+    coverage_mode: representative
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_relation_kinds:
+    - regular_table
+    - partitioned_table_parent
+    decision_reason: trigger statements are validated against table-backed relations rather than arbitrary relation kinds.
+  table_coverage:
+    required: true
+    coverage_mode: representative
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_table_kinds:
+    - regular_table
+    - partitioned_table_parent
+    decision_reason: trigger statements attach behavior to table objects, so representative table forms are required.
+  column_type_coverage:
+    required: true
+    coverage_mode: conditional
+    inventory_source: references/common/pg16_type_catalog.md
+    required_type_set: all_pg16_column_types
+    expansion_mode: predicate_or_expression_columns
+    require_each_type_success_or_failure: true
+    decision_reason: trigger behavior can reference table columns in predicates or expressions; coverage is conditional on
+      expression-bearing branches.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values: &id001
+      - branch_1
+      - branch_2
+      coverage_requirement: all_values
+    object_state:
+      tier: T1
+      coverage_role: main_axis
+      required_values: &id002
+      - exists
+      - not_exists
+      coverage_requirement: all_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values: &id003
+      - success
+      - failure
+      coverage_requirement: all_values
+    rename_target:
+      tier: T2
+      coverage_role: main_axis
+      required_values: &id004
+      - simple
+      - quoted
+      - reserved_word
+      - duplicate_name
+      coverage_requirement: all_values
+    extension_target:
+      tier: T2
+      coverage_role: main_axis
+      required_values: &id005
+      - extension_exists
+      - extension_not_exists
+      - NO_DEPENDS
+      coverage_requirement: all_values
+    partitioned_table_effect:
+      tier: T2
+      coverage_role: main_axis
+      required_values: &id006
+      - partitioned_table
+      - regular_table
+      coverage_requirement: all_values
+    trigger_name_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values: &id007
+      - simple
+      - quoted
+      - reserved_word
+      - schema_qualified
+      coverage_requirement: all_values
+    table_name_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values: &id008
+      - simple
+      - quoted
+      - schema_qualified
+      coverage_requirement: all_values
+    new_name_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values: &id009
+      - simple
+      - quoted
+      - reserved_word
+      coverage_requirement: all_values
+    privilege_level:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values: &id010
+      - superuser
+      - table_owner
+      - non_owner_no_privilege
+      coverage_requirement: all_values
+    extension_dependency:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values: &id011
+      - extension_installed
+      - extension_not_installed
+      coverage_requirement: all_values
+    table_dependency:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values: &id012
+      - table_exists
+      - table_not_exists
+      coverage_requirement: all_values
+    target_trigger_not_exists:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id013
+      - trigger_not_found
+      coverage_requirement: all_values
+    permission_insufficient:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id014
+      - not_table_owner
+      coverage_requirement: all_values
+    target_extension_not_exists:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id015
+      - extension_name_not_found
+      coverage_requirement: all_values
+    identifier_length_exceeded:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id016
+      - over_63_chars
+      coverage_requirement: all_values
+    trigger_name_duplicate:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id017
+      - same_table_same_name
+      coverage_requirement: all_values
+    verification_mode:
+      tier: T6
+      coverage_role: rotate_attach
+      required_values: &id018
+      - pg_trigger_catalog_query
+      - information_schema_triggers
+      coverage_requirement: all_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: rotate_attach
+      required_values: &id019
+      - DROP_TRIGGER
+      - DROP_TRIGGER_IF_EXISTS
+      coverage_requirement: all_values
+dynamic_inputs:
+  object_manifest:
+    required: true
+    source: lifecycle_plan
+    required_fields:
+    - object_name
+    - schema_name
+    - expected_status
+  dependency_manifest:
+    required: true
+    source: statement_reference_dependencies
+    required_fields:
+    - dependency_name
+    - dependency_kind
+    - setup_sql
+combination_groups:
+- id: alter_trigger_declared_factor_baseline
+  title: ALTER TRIGGER declared factor baseline
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  expected_failure_reasons:
+  - alter_trigger_declared_failure
+  factors:
+    statement_branch: branch_1
+    object_state: exists
+    expected_status: success
+    rename_target: simple
+    extension_target: extension_exists
+    partitioned_table_effect: partitioned_table
+    trigger_name_shape: simple
+    table_name_shape: simple
+    new_name_shape: simple
+    privilege_level: superuser
+    extension_dependency: extension_installed
+    table_dependency: table_exists
+    target_trigger_not_exists: trigger_not_found
+    permission_insufficient: not_table_owner
+    target_extension_not_exists: extension_name_not_found
+    identifier_length_exceeded: over_63_chars
+    trigger_name_duplicate: same_table_same_name
+    verification_mode: pg_trigger_catalog_query
+    cleanup_mode: DROP_TRIGGER
+  expansion:
+    statement_branch:
+      mode: explicit
+      values: *id001
+    object_state:
+      mode: explicit
+      values: *id002
+    expected_status:
+      mode: explicit
+      values: *id003
+    rename_target:
+      mode: explicit
+      values: *id004
+    extension_target:
+      mode: explicit
+      values: *id005
+    partitioned_table_effect:
+      mode: explicit
+      values: *id006
+    trigger_name_shape:
+      mode: explicit
+      values: *id007
+    table_name_shape:
+      mode: explicit
+      values: *id008
+    new_name_shape:
+      mode: explicit
+      values: *id009
+    privilege_level:
+      mode: explicit
+      values: *id010
+    extension_dependency:
+      mode: explicit
+      values: *id011
+    table_dependency:
+      mode: explicit
+      values: *id012
+    target_trigger_not_exists:
+      mode: explicit
+      values: *id013
+    permission_insufficient:
+      mode: explicit
+      values: *id014
+    target_extension_not_exists:
+      mode: explicit
+      values: *id015
+    identifier_length_exceeded:
+      mode: explicit
+      values: *id016
+    trigger_name_duplicate:
+      mode: explicit
+      values: *id017
+    verification_mode:
+      mode: explicit
+      values: *id018
+    cleanup_mode:
+      mode: explicit
+      values: *id019
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - expected_status == success
+    failure_when:
+    - condition: expected_status == failure
+      reason: alter_trigger_declared_failure
+    default_failure_reason: alter_trigger_declared_failure
+  sql_shape:
+    template: ALTER TRIGGER {object_name};
+  verification:
+    required: true
+    mode: catalog_or_error_assertion
+    sql: SELECT 1;
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup for alter_trigger
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true
