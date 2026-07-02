@@ -1,0 +1,275 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: declare
+  name: DECLARE
+  category: cursor
+  domain: cursor
+  source_reference: references/statements/cursor/cursor/declare.md
+  official_source: https://www.postgresql.org/docs/16/sql-declare.html
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required matrix coverage must pass before any derived extension is emitted.
+  - Derived extensions must not be counted as satisfying required factor or coverage scope requirements.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds:
+    - cursor
+    decision_reason: cursor/cursor statement coverage is tracked by its explicit runtime or catalog object kind.
+  target_relation_coverage:
+    required: true
+    coverage_mode: representative
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_relation_kinds:
+    - regular_table
+    decision_reason: cursor/cursor statements can operate against table-backed targets in representative workflows.
+  table_coverage:
+    required: true
+    coverage_mode: representative
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_table_kinds:
+    - regular_table
+    decision_reason: cursor/cursor behavior is validated against representative table objects when applicable.
+  column_type_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: cursor/cursor baseline semantics do not vary by table column data type.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values: &id001
+      - branch_1
+      coverage_requirement: all_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values: &id002
+      - success
+      - failure
+      coverage_requirement: all_values
+    cursor_state:
+      tier: T1
+      coverage_role: main_axis
+      required_values: &id003
+      - declared_open
+      - missing_cursor
+      - closed_cursor
+      - with_hold_after_commit
+      coverage_requirement: all_values
+    direction_shape:
+      tier: T2
+      coverage_role: main_axis
+      required_values: &id004
+      - next
+      - prior
+      - absolute
+      - relative
+      - all
+      - forward_backward_count
+      coverage_requirement: all_values
+    hold_scroll_shape:
+      tier: T2
+      coverage_role: main_axis
+      required_values: &id005
+      - default
+      - with_hold
+      - without_hold
+      - scroll
+      - no_scroll
+      coverage_requirement: all_values
+    cursor_name_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values: &id006
+      - plain_identifier
+      - quoted_identifier
+      - all_cursors
+      - missing_name
+      coverage_requirement: all_values
+    query_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values: &id007
+      - simple_select
+      - ordered_select
+      - empty_result
+      - non_scrollable_query
+      coverage_requirement: all_values
+    transaction_context:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values: &id008
+      - outside_transaction
+      - inside_transaction
+      - after_rollback
+      coverage_requirement: all_values
+    dependency_state:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values: &id009
+      - ready
+      - missing_dependency
+      coverage_requirement: all_values
+    invalid_combination:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id010
+      - none
+      - syntax_valid_semantic_error
+      - object_type_mismatch
+      coverage_requirement: all_values
+    position_boundary:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values: &id011
+      - before_first
+      - middle
+      - after_last
+      - negative_or_zero_count
+      coverage_requirement: all_values
+    verification_mode:
+      tier: T6
+      coverage_role: rotate_attach
+      required_values: &id012
+      - catalog_query
+      - effect_query
+      - returned_rows
+      - error_assertion
+      coverage_requirement: all_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: rotate_attach
+      required_values: &id013
+      - rollback
+      - drop_objects
+      - reset_state
+      coverage_requirement: all_values
+dynamic_inputs:
+  execution_context:
+    required: true
+    source: lifecycle_plan
+    required_fields:
+    - session_state
+    - transaction_state
+    - expected_status
+combination_groups:
+- id: declare_declared_factor_baseline
+  title: DECLARE declared factor baseline
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  expected_failure_reasons:
+  - declare_declared_failure
+  factors:
+    statement_branch: branch_1
+    expected_status: success
+    cursor_state: declared_open
+    direction_shape: next
+    hold_scroll_shape: default
+    cursor_name_shape: plain_identifier
+    query_shape: simple_select
+    transaction_context: outside_transaction
+    dependency_state: ready
+    invalid_combination: none
+    position_boundary: before_first
+    verification_mode: catalog_query
+    cleanup_mode: rollback
+  expansion:
+    statement_branch:
+      mode: explicit
+      values: *id001
+    expected_status:
+      mode: explicit
+      values: *id002
+    cursor_state:
+      mode: explicit
+      values: *id003
+    direction_shape:
+      mode: explicit
+      values: *id004
+    hold_scroll_shape:
+      mode: explicit
+      values: *id005
+    cursor_name_shape:
+      mode: explicit
+      values: *id006
+    query_shape:
+      mode: explicit
+      values: *id007
+    transaction_context:
+      mode: explicit
+      values: *id008
+    dependency_state:
+      mode: explicit
+      values: *id009
+    invalid_combination:
+      mode: explicit
+      values: *id010
+    position_boundary:
+      mode: explicit
+      values: *id011
+    verification_mode:
+      mode: explicit
+      values: *id012
+    cleanup_mode:
+      mode: explicit
+      values: *id013
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - expected_status == success
+    failure_when:
+    - condition: expected_status == failure
+      reason: declare_declared_failure
+    default_failure_reason: declare_declared_failure
+  sql_shape:
+    template: DECLARE {target_name};
+  verification:
+    required: true
+    mode: state_or_error_assertion
+    sql: SELECT 1;
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup for declare
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true
