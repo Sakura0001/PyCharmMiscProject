@@ -11,6 +11,7 @@
 - `artifacts/test_plans/<task_slug>.tsv`
 - TSV 中引用的 `base_object_path`
 - TSV 中引用的 `statement_reference_path`
+- TSV notes 或 execution spec 中引用的 `combination_matrix_path`
 - TSV 中引用的 `common_rule_paths`
 - 必要时读取 `references/common/output_script_style.md`
 - 必要时读取 `references/common/factor_policy.md`
@@ -20,10 +21,19 @@
 ## 生成规则
 
 - 对 TSV 中每一行生命周期场景，生成可以批量展开该场景的程序逻辑。
+- 当存在 combination matrix 时，生成器必须先消费矩阵，再使用自由推理。
+  Required baseline coverage 来自 `combination_groups`，不得由 AI 临时补写矩阵外
+  baseline 组合。
+- 当 `tools/audit_combination_matrix.py` 报告 required baseline coverage 通过后，
+  AI 或 runner 才可以将 derived extension combinations 写入
+  `artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml`。
+  这些 extension 不得计入 required coverage。
 - 生成程序应放到 `artifacts/generated_programs/`。
 - SQL 文件应放到 `artifacts/generated_sql/<task_slug>/`。
 - 中间清单、manifest 或统计摘要应放到 `artifacts/intermediates/` 或 `artifacts/evaluations/`。
 - 生成程序必须读取相关 statement reference，遵循其中的语法范围、因子分级、覆盖策略、生成约束、挂靠规则和规模控制规则。
+- 若存在相关 combination matrix，生成程序必须以 matrix 的 `combination_groups`
+  作为 baseline SQL 组合来源，并把矩阵审计结果写入 `artifacts/evaluations/`。
 - 若 statement 涉及列类型，应覆盖对象模板中的所有相关列类型；如果某些列类型对某 method 或语法分支不合法，应保留为可归因失败路径，而不是静默跳过。
 - 每个 SQL 文件只判断一件事情；若需要在 40 个列上创建索引并验证，则生成 40 个独立 SQL 文件，而不是把所有判断塞进一个 SQL 文件。
 - 重要因子采用完整笛卡尔积；非重要因子按 `factor_policy.md` 轮转挂靠。
@@ -46,6 +56,7 @@ structured_config:
     - artifacts/test_plans/
     - assets/objects/**/*.sql
     - references/statements/**/*.md
+    - references/combinations/**/*.yaml
   outputs:
     generated_programs: artifacts/generated_programs/
     generated_sql: artifacts/generated_sql/

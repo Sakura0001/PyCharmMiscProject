@@ -12,6 +12,9 @@
   公共规则 reference，定义 SQL 输出风格、命名、因子组合、生命周期和验证清理策略。
 - `skills/pg-sql-generation/references/statements/`
   statement reference，按 SQL category/domain 存放语句因子、默认值、渲染模板和约束。
+- `skills/pg-sql-generation/references/combinations/`
+  statement combination matrix，按 SQL category/domain 存放可审计的 baseline SQL
+  组合。AI/runner 只能在 baseline 审计通过后追加 marked derived extensions。
 - `skills/pg-sql-generation/assets/objects/`
   基础对象 SQL 模板，随 skill 一起发布。
 - `src/pg_case_factory/`
@@ -52,13 +55,16 @@
 - `skills/pg-sql-generation/references/mainflow/audit_lifecycle_plan.md`
   只审计生命周期计划是否完整、可归因、可生成。
 - `skills/pg-sql-generation/references/mainflow/write_sql_program.md`
-  约束生成程序如何根据计划、对象模板、statement reference 和公共规则输出 SQL。
+  约束生成程序如何根据计划、对象模板、statement reference、combination matrix
+  和公共规则输出 SQL。
 - `skills/pg-sql-generation/references/mainflow/create_statement_reference.md`
   创建或补齐 `skills/pg-sql-generation/references/statements/<category>/<domain>/<statement_key>.md`。
 - `skills/pg-sql-generation/references/common/factor_policy.md`
   因子组合规则入口。
 - `skills/pg-sql-generation/references/common/output_script_style.md`
   SQL 输出风格入口。
+- `skills/pg-sql-generation/references/combinations/README.md`
+  组合矩阵入口；正式矩阵优先于自由推理，derived extension 不能替代 required coverage。
 
 ## Python 适配状态
 

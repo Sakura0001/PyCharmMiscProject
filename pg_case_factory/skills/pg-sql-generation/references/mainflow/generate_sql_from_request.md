@@ -10,6 +10,7 @@
 
 - 基础对象模板：`assets/objects/**/*.sql`
 - statement reference：`references/statements/**/*.md`
+- statement combination matrix：`references/combinations/**/*.yaml`
 - 公共规则：
   - `references/common/output_script_style.md`
   - `references/common/factor_policy.md`
@@ -25,13 +26,17 @@
 - 从用户输入中识别目标基础对象和目标 statement。
 - 搜索 `assets/objects/**/*.sql` 发现基础对象；若基础对象不存在或候选不唯一，请用户二次确认。
 - 搜索 `references/statements/**/*.md` 发现 statement reference。
+- 若存在匹配的 `references/combinations/<category>/<domain>/<statement_key>.yaml`，
+  必须在生命周期计划 notes 和 execution spec 中写入该路径。该矩阵是 baseline SQL
+  combination source，不得要求 AI 在矩阵外推断 baseline 组合。
 - 优先匹配 statement 的别名、名称和 key；不得硬编码对象名或 statement 名。
 - 严格按以下步骤执行，前一步未完成时不得进入后一步：
   1. 结合用户自然语言、对象模板和 statement reference 设计生命周期。
   2. 写计划 TSV 到 `artifacts/test_plans/`。
   3. 读取 `references/mainflow/audit_lifecycle_plan.md` 审计计划，并将审计结果写到 `artifacts/evaluations/`。
   4. 若审计发现缺失、冗余、歧义或错误映射，主 agent 必须先修订 TSV，再继续生成。
-  5. 将 TSV、相关 statement reference、对象模板和公共规则交给 `references/mainflow/write_sql_program.md` 生成批量 SQL 程序。
+  5. 将 TSV、相关 statement reference、可用 combination matrix、对象模板和公共规则交给
+     `references/mainflow/write_sql_program.md` 生成批量 SQL 程序。
   6. 运行生成程序，批量生成 SQL 到 `artifacts/generated_sql/`。
 
 ## 产物约束
@@ -68,6 +73,7 @@ structured_config:
     inputs:
       object_glob: assets/objects/**/*.sql
       reference_glob: references/statements/**/*.md
+      combination_matrix_glob: references/combinations/**/*.yaml
     exclude_reference_dirs: []
     outputs:
       test_plans: artifacts/test_plans/

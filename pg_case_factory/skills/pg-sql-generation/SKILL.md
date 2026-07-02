@@ -15,12 +15,15 @@ Use this skill when converting a natural-language PostgreSQL SQL test request in
 - For creating or completing statement references, read `references/mainflow/create_statement_reference.md`.
 - For shared output, factor, lifecycle, validation, and naming rules, read only the needed files under `references/common/`.
 - For statement-specific syntax, factors, coverage policy, and constraints, read only the needed file under `references/statements/<category>/<domain>/<statement>.md`.
+- For statement factor combination matrices, read `references/combinations/README.md`
+  and then the matching `references/combinations/<category>/<domain>/<statement_key>.yaml`.
 
 ## Directory Roles
 
 - `references/mainflow/` contains agent workflows.
 - `references/common/` contains shared SQL generation rules.
 - `references/statements/` contains PostgreSQL statement references grouped first by SQL category, then by domain.
+- `references/combinations/` contains audited baseline statement combination matrices.
 - `references/templates/` contains reference authoring templates.
 - `assets/templates/` contains output templates that may be copied or consumed.
 - `assets/objects/` contains bundled base-object SQL templates used by generation workflows.

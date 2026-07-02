@@ -37,6 +37,7 @@ skills/
    ├─ references/
    │  ├─ mainflow/
    │  ├─ common/
+   │  ├─ combinations/
    │  ├─ statements/
    │  └─ templates/
    └─ assets/
@@ -60,6 +61,7 @@ skills/
 - 推导生命周期
 - 先写计划 TSV
 - 审计生命周期计划
+- 优先读取 matching combination matrix 作为 baseline SQL 组合来源
 - 再写动态 Python 批量脚本
 - 再批量生成 SQL
 
@@ -85,6 +87,27 @@ skills/
 - `lifecycle_policy.md`：生命周期 TSV 的动作口径
 - `validation_policy.md`：成功/失败验证与幂等清理
 - `naming_rules.md`：对象命名规则
+
+### `references/combinations/`
+
+组合矩阵 reference。
+
+职责：
+
+- 定义 statement 级 baseline SQL 组合
+- 显式声明 target object、relation、table、column type 覆盖范围
+- 约束 AI/runner 在 baseline 审计通过前不得推导矩阵外组合
+- 允许 baseline 审计通过后输出 marked derived extensions，但这些 extension 不计入 required coverage
+
+当前共享文件：
+
+- `README.md`：组合矩阵目录职责和使用边界
+- `_shared/statement_combination_matrix_schema.yaml`：组合矩阵通用 schema
+- `_shared/coverage_inventory.yaml`：对象、relation、table、类型覆盖 inventory
+
+当前正式矩阵：
+
+- `ddl/index/create_index.yaml`：CREATE INDEX baseline combination matrix
 
 ### `references/templates/` 和 `assets/templates/`
 
