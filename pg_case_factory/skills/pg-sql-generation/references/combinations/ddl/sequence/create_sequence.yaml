@@ -1,0 +1,554 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: create_sequence
+  name: CREATE SEQUENCE
+  category: ddl
+  domain: sequence
+  source_reference: references/statements/ddl/sequence/create_sequence.md
+  official_source: https://www.postgresql.org/docs/16/sql-createsequence.html
+  aliases:
+  - CREATE SEQUENCE
+  - create sequence
+  - create_sequence
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required matrix coverage must pass before any derived extension is emitted.
+  - Derived extensions may add stress, boundary, environment, or cross-factor combinations after the baseline audit passes.
+  - Derived extensions must not be counted as satisfying required factor, object, relation, table, or column-type coverage.
+  - Derived extensions must use declared factors and declared factor values.
+  - Derived extensions must preserve success, failure, no-op, or notice attribution.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds:
+    - sequence
+    decision_reason: CREATE_SEQUENCE directly targets PostgreSQL sequence generator objects and must cover sequence existence,
+      permanence, ownership, parameter, and dependency states.
+  target_relation_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_relation_kinds:
+    - sequence
+    decision_reason: CREATE_SEQUENCE targets sequences, which are pg_class relation objects with relkind S. Relation coverage
+      is therefore the sequence relation kind only, not tables, views, or indexes.
+  table_coverage:
+    required: true
+    coverage_mode: conditional
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_table_kinds:
+    - regular_table
+    decision_reason: CREATE_SEQUENCE has direct table-column dependency only for OWNED BY table_name.column_name branches.
+      Required table coverage is conditional on the owned_by factors; numeric sequence parameters are covered by sequence
+      factors instead of table-kind expansion.
+  column_type_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: CREATE_SEQUENCE uses sequence data types and numeric parameters such as AS smallint/integer/bigint, INCREMENT,
+      MINVALUE, MAXVALUE, START, CACHE, and CYCLE. These are sequence-definition factors, not PG16 table column-type coverage
+      from the shared type catalog.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - branch_permanent
+      - branch_temporary
+      - branch_temp
+      - branch_unlogged
+      - branch_if_not_exists_permanent
+      - branch_if_not_exists_temporary
+      coverage_requirement: all_declared_values
+    object_state:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - not_exists
+      - already_exists
+      coverage_requirement: all_declared_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - success
+      - failure
+      coverage_requirement: all_declared_values
+    sequence_type:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values:
+      - permanent
+      - temporary
+      - temporary_short
+      - unlogged
+      coverage_requirement: all_declared_values
+    if_not_exists_clause:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values:
+      - present
+      - absent
+      coverage_requirement: all_declared_values
+    as_data_type:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values:
+      - smallint
+      - integer
+      - bigint
+      - absent_default
+      coverage_requirement: all_declared_values
+    increment_direction:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values:
+      - ascending
+      - descending
+      coverage_requirement: all_declared_values
+    cycle_clause:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values:
+      - CYCLE
+      - NO_CYCLE
+      - absent_default
+      coverage_requirement: all_declared_values
+    owned_by_clause:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values:
+      - owned_by_column
+      - owned_by_none
+      - absent_default
+      coverage_requirement: all_declared_values
+    sequence_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - simple
+      - quoted
+      - reserved_word
+      - schema_qualified
+      - non_existent
+      coverage_requirement: all_declared_values
+    minvalue_maxvalue_setting:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - explicit_values
+      - NO_MINVALUE_NO_MAXVALUE
+      - absent_defaults
+      coverage_requirement: all_declared_values
+    start_value_setting:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - explicit_start
+      - absent_default
+      coverage_requirement: all_declared_values
+    cache_value:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - cache_1
+      - cache_10
+      - absent_default
+      coverage_requirement: all_declared_values
+    privilege_level:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - superuser
+      - sequence_creator
+      - non_creator_no_privilege
+      coverage_requirement: all_declared_values
+    schema_dependency:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - schema_exists
+      - schema_not_exists
+      - pg_catalog_reserved
+      coverage_requirement: all_declared_values
+    owned_by_table_dependency:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - table_column_exists
+      - table_column_not_exists
+      - different_owner
+      - different_schema
+      coverage_requirement: all_declared_values
+    same_name_conflict:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - same_name_table
+      - same_name_view
+      coverage_requirement: all_declared_values
+    duplicate_sequence_name:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - with_IF_NOT_EXISTS_noop
+      - without_IF_NOT_EXISTS_error
+      coverage_requirement: all_declared_values
+    increment_zero:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - zero_increment
+      coverage_requirement: all_declared_values
+    minvalue_greater_than_maxvalue:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - min_greater_than_max
+      coverage_requirement: all_declared_values
+    start_out_of_range:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - start_below_minvalue
+      - start_above_maxvalue
+      coverage_requirement: all_declared_values
+    incompatible_data_type_values:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - smallint_overflow
+      coverage_requirement: all_declared_values
+    temporary_sequence_with_schema:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - temp_with_schema_illegal
+      coverage_requirement: all_declared_values
+    owned_by_different_owner:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - table_different_owner
+      coverage_requirement: all_declared_values
+    owned_by_different_schema:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - table_different_schema
+      coverage_requirement: all_declared_values
+    insufficient_privilege:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - no_CREATE_privilege
+      coverage_requirement: all_declared_values
+    verification_mode:
+      tier: T6
+      coverage_role: verification_cleanup_axis
+      required_values:
+      - pg_class_catalog_query
+      - sequence_inspection_query
+      - nextval_call
+      coverage_requirement: all_declared_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: verification_cleanup_axis
+      required_values:
+      - DROP_SEQUENCE
+      - DROP_SEQUENCE_IF_EXISTS
+      - DROP_SEQUENCE_CASCADE
+      coverage_requirement: all_declared_values
+dynamic_inputs:
+  sequence_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/sequence_manifest.json
+    required_fields:
+    - sequence_name
+    - object_state
+    - sequence_type
+    - owner
+    - schema_name
+  sequence_parameter_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/sequence_parameter_manifest.json
+    required_fields:
+    - as_data_type
+    - increment
+    - minvalue
+    - maxvalue
+    - start_value
+    - cache_value
+    - cycle
+  owned_by_dependency_manifest:
+    required: false
+    path_pattern: artifacts/intermediates/<task_slug>/owned_by_dependency_manifest.json
+    required_fields:
+    - table_name
+    - column_name
+    - same_owner
+    - same_schema
+combination_groups:
+- id: create_sequence_required_factor_value_matrix
+  title: CREATE SEQUENCE required factor value baseline
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  expected_failure_reasons:
+  - duplicate_sequence_name
+  - increment_zero
+  - minvalue_greater_than_maxvalue
+  - start_out_of_range
+  - incompatible_data_type_values
+  - temporary_sequence_with_schema
+  - owned_by_different_owner
+  - owned_by_different_schema
+  - insufficient_privilege
+  factors:
+    statement_branch: branch_permanent
+    object_state: not_exists
+    expected_status: success
+    sequence_type: permanent
+    if_not_exists_clause: absent
+    as_data_type: absent_default
+    increment_direction: ascending
+    cycle_clause: absent_default
+    owned_by_clause: absent_default
+    sequence_name_shape: simple
+    minvalue_maxvalue_setting: explicit_values
+    start_value_setting: absent_default
+    cache_value: absent_default
+    privilege_level: sequence_creator
+    schema_dependency: schema_exists
+    owned_by_table_dependency: table_column_exists
+    same_name_conflict: same_name_table
+    duplicate_sequence_name: with_IF_NOT_EXISTS_noop
+    increment_zero: zero_increment
+    minvalue_greater_than_maxvalue: min_greater_than_max
+    start_out_of_range: start_below_minvalue
+    incompatible_data_type_values: smallint_overflow
+    temporary_sequence_with_schema: temp_with_schema_illegal
+    owned_by_different_owner: table_different_owner
+    owned_by_different_schema: table_different_schema
+    insufficient_privilege: no_CREATE_privilege
+    verification_mode: pg_class_catalog_query
+    cleanup_mode: DROP_SEQUENCE
+  expansion:
+    statement_branch:
+      mode: explicit
+      values:
+      - branch_permanent
+      - branch_temporary
+      - branch_temp
+      - branch_unlogged
+      - branch_if_not_exists_permanent
+      - branch_if_not_exists_temporary
+    object_state:
+      mode: explicit
+      values:
+      - not_exists
+      - already_exists
+    expected_status:
+      mode: explicit
+      values:
+      - success
+      - failure
+    sequence_type:
+      mode: explicit
+      values:
+      - permanent
+      - temporary
+      - temporary_short
+      - unlogged
+    if_not_exists_clause:
+      mode: explicit
+      values:
+      - present
+      - absent
+    as_data_type:
+      mode: explicit
+      values:
+      - smallint
+      - integer
+      - bigint
+      - absent_default
+    increment_direction:
+      mode: explicit
+      values:
+      - ascending
+      - descending
+    cycle_clause:
+      mode: explicit
+      values:
+      - CYCLE
+      - NO_CYCLE
+      - absent_default
+    owned_by_clause:
+      mode: explicit
+      values:
+      - owned_by_column
+      - owned_by_none
+      - absent_default
+    sequence_name_shape:
+      mode: explicit
+      values:
+      - simple
+      - quoted
+      - reserved_word
+      - schema_qualified
+      - non_existent
+    minvalue_maxvalue_setting:
+      mode: explicit
+      values:
+      - explicit_values
+      - NO_MINVALUE_NO_MAXVALUE
+      - absent_defaults
+    start_value_setting:
+      mode: explicit
+      values:
+      - explicit_start
+      - absent_default
+    cache_value:
+      mode: explicit
+      values:
+      - cache_1
+      - cache_10
+      - absent_default
+    privilege_level:
+      mode: explicit
+      values:
+      - superuser
+      - sequence_creator
+      - non_creator_no_privilege
+    schema_dependency:
+      mode: explicit
+      values:
+      - schema_exists
+      - schema_not_exists
+      - pg_catalog_reserved
+    owned_by_table_dependency:
+      mode: explicit
+      values:
+      - table_column_exists
+      - table_column_not_exists
+      - different_owner
+      - different_schema
+    same_name_conflict:
+      mode: explicit
+      values:
+      - same_name_table
+      - same_name_view
+    duplicate_sequence_name:
+      mode: explicit
+      values:
+      - with_IF_NOT_EXISTS_noop
+      - without_IF_NOT_EXISTS_error
+    increment_zero:
+      mode: explicit
+      values:
+      - zero_increment
+    minvalue_greater_than_maxvalue:
+      mode: explicit
+      values:
+      - min_greater_than_max
+    start_out_of_range:
+      mode: explicit
+      values:
+      - start_below_minvalue
+      - start_above_maxvalue
+    incompatible_data_type_values:
+      mode: explicit
+      values:
+      - smallint_overflow
+    temporary_sequence_with_schema:
+      mode: explicit
+      values:
+      - temp_with_schema_illegal
+    owned_by_different_owner:
+      mode: explicit
+      values:
+      - table_different_owner
+    owned_by_different_schema:
+      mode: explicit
+      values:
+      - table_different_schema
+    insufficient_privilege:
+      mode: explicit
+      values:
+      - no_CREATE_privilege
+    verification_mode:
+      mode: explicit
+      values:
+      - pg_class_catalog_query
+      - sequence_inspection_query
+      - nextval_call
+    cleanup_mode:
+      mode: explicit
+      values:
+      - DROP_SEQUENCE
+      - DROP_SEQUENCE_IF_EXISTS
+      - DROP_SEQUENCE_CASCADE
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - expected_status == success and the selected object, privilege, dependency, and syntax factors describe a legal statement
+      execution path
+    - notice or no-op paths are attributed by their declared factors and do not replace required success/failure coverage
+    failure_when:
+    - condition: expected_status == failure
+      reason: statement_specific_failure
+    - condition: declared object state, privilege, dependency, name-shape, validator, or numeric boundary factor selects an
+        invalid prerequisite
+      reason: declared_factor_failure
+    default_failure_reason: statement_specific_failure
+  sql_shape:
+    template: CREATE [ { TEMPORARY | TEMP } | UNLOGGED ] SEQUENCE [ IF NOT EXISTS ] {sequence_name} [ AS data_type ] [ INCREMENT
+      [ BY ] increment ] [ MINVALUE minvalue | NO MINVALUE ] [ MAXVALUE maxvalue | NO MAXVALUE ] [ START [ WITH ] start ]
+      [ CACHE cache ] [ [ NO ] CYCLE ] [ OWNED BY { table_name.column_name | NONE } ]
+  verification:
+    required: true
+    mode: catalog_or_error_assertion
+    sql: SELECT count(*) FROM pg_class WHERE relname = '{sequence_name}' AND relkind = 'S'
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP SEQUENCE IF EXISTS {sequence_name} CASCADE;
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

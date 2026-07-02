@@ -1,0 +1,478 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: create_extension
+  name: CREATE EXTENSION
+  category: ddl
+  domain: extension
+  source_reference: references/statements/ddl/extension/create_extension.md
+  official_source: https://www.postgresql.org/docs/16/sql-createextension.html
+  aliases:
+  - CREATE EXTENSION
+  - create extension
+  - create_extension
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required matrix coverage must pass before any derived extension is emitted.
+  - Derived extensions may add stress, boundary, environment, or cross-factor combinations after the baseline audit passes.
+  - Derived extensions must not be counted as satisfying required factor, object, relation, table, or column-type coverage.
+  - Derived extensions must use declared factors and declared factor values.
+  - Derived extensions must preserve success, failure, no-op, or notice attribution.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds:
+    - extension
+    decision_reason: CREATE_EXTENSION directly targets PostgreSQL extension objects and extension catalog metadata; baseline
+      coverage is scoped to extension lifecycle state, member-object dependencies, privileges, and schema/version behavior.
+  target_relation_coverage:
+    required: false
+    coverage_mode: not_applicable
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    decision_reason: CREATE_EXTENSION names an extension object rather than a pg_class relation. Member objects such as tables,
+      functions, types, views, or sequences are dependency fixtures represented by declared extension factors, not required
+      relation-kind coverage.
+  table_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: CREATE_EXTENSION operates on extension installation, metadata, schema/version state, or extension membership.
+      It does not directly create, alter, scan, or drop table definitions, so table-kind coverage is not a baseline axis.
+  column_type_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: CREATE_EXTENSION does not validate table-column data types. Any types installed or referenced through
+      extension membership are extension member fixtures, not table column-type combinations controlled by the statement.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - branch_create_extension
+      - branch_create_extension_if_not_exists
+      coverage_requirement: all_declared_values
+    object_state:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - not_exists
+      - already_exists
+      coverage_requirement: all_declared_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - success
+      - failure
+      coverage_requirement: all_declared_values
+    if_not_exists_clause:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values:
+      - omitted
+      - specified
+      coverage_requirement: all_declared_values
+    schema_clause:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values:
+      - omitted
+      - specified_schema
+      - control_file_schema_conflict
+      coverage_requirement: all_declared_values
+    version_clause:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values:
+      - omitted
+      - specified_version
+      - invalid_version
+      coverage_requirement: all_declared_values
+    cascade_clause:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values:
+      - omitted
+      - specified
+      coverage_requirement: all_declared_values
+    extension_trust_level:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values:
+      - trusted
+      - untrusted
+      coverage_requirement: all_declared_values
+    extension_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - simple_id
+      - quoted_id
+      - reserved_word_name
+      - nonexistent_extension
+      - duplicate_name
+      coverage_requirement: all_declared_values
+    schema_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - simple_id
+      - quoted_id
+      - nonexistent_schema
+      coverage_requirement: all_declared_values
+    version_string_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - identifier_form
+      - string_literal_form
+      - invalid_version_string
+      coverage_requirement: all_declared_values
+    privilege_level:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - superuser
+      - create_privilege_user
+      - non_superuser_no_create
+      coverage_requirement: all_declared_values
+    schema_existence:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - schema_exists
+      - schema_not_exists
+      coverage_requirement: all_declared_values
+    dependency_extension_state:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - already_installed
+      - not_installed_no_cascade
+      - not_installed_with_cascade
+      coverage_requirement: all_declared_values
+    control_file_presence:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - installed_on_system
+      - not_installed_on_system
+      coverage_requirement: all_declared_values
+    duplicate_extension_name:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - no_conflict
+      - same_name_conflict
+      coverage_requirement: all_declared_values
+    nonexistent_extension_script:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - script_exists
+      - script_missing
+      coverage_requirement: all_declared_values
+    nonexistent_schema:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - schema_exists
+      - schema_missing
+      coverage_requirement: all_declared_values
+    control_file_schema_conflict:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - no_conflict
+      - conflict_without_cascade
+      - conflict_with_cascade_ignored
+      coverage_requirement: all_declared_values
+    insufficient_privilege:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - sufficient_privilege
+      - non_superuser_untrusted_extension
+      - no_create_privilege_trusted
+      coverage_requirement: all_declared_values
+    invalid_version:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - valid_version
+      - nonexistent_version
+      coverage_requirement: all_declared_values
+    if_not_exists_no_op:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - new_install
+      - no_op_notice
+      coverage_requirement: all_declared_values
+    verification_mode:
+      tier: T6
+      coverage_role: verification_cleanup_axis
+      required_values:
+      - pg_available_extensions_query
+      - pg_extension_catalog_query
+      - error_assertion
+      coverage_requirement: all_declared_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: verification_cleanup_axis
+      required_values:
+      - drop_extension
+      - drop_extension_cascade
+      - schema_cleanup
+      coverage_requirement: all_declared_values
+dynamic_inputs:
+  extension_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/extension_manifest.json
+    required_fields:
+    - extension_name
+    - object_state
+    - owner
+    - available_versions
+  extension_dependency_manifest:
+    required: false
+    path_pattern: artifacts/intermediates/<task_slug>/extension_dependency_manifest.json
+    required_fields:
+    - member_object_type
+    - member_object_name
+    - dependency_state
+combination_groups:
+- id: create_extension_required_factor_value_matrix
+  title: CREATE EXTENSION required factor value baseline
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  expected_failure_reasons:
+  - duplicate_extension_name
+  - nonexistent_extension_script
+  - nonexistent_schema
+  - control_file_schema_conflict
+  - insufficient_privilege
+  - invalid_version
+  - if_not_exists_no_op
+  factors:
+    statement_branch: branch_create_extension
+    object_state: not_exists
+    expected_status: success
+    if_not_exists_clause: omitted
+    schema_clause: omitted
+    version_clause: omitted
+    cascade_clause: omitted
+    extension_trust_level: trusted
+    extension_name_shape: simple_id
+    schema_name_shape: simple_id
+    version_string_shape: identifier_form
+    privilege_level: superuser
+    schema_existence: schema_exists
+    dependency_extension_state: already_installed
+    control_file_presence: installed_on_system
+    duplicate_extension_name: no_conflict
+    nonexistent_extension_script: script_exists
+    nonexistent_schema: schema_exists
+    control_file_schema_conflict: no_conflict
+    insufficient_privilege: sufficient_privilege
+    invalid_version: valid_version
+    if_not_exists_no_op: new_install
+    verification_mode: pg_extension_catalog_query
+    cleanup_mode: drop_extension
+  expansion:
+    statement_branch:
+      mode: explicit
+      values:
+      - branch_create_extension
+      - branch_create_extension_if_not_exists
+    object_state:
+      mode: explicit
+      values:
+      - not_exists
+      - already_exists
+    expected_status:
+      mode: explicit
+      values:
+      - success
+      - failure
+    if_not_exists_clause:
+      mode: explicit
+      values:
+      - omitted
+      - specified
+    schema_clause:
+      mode: explicit
+      values:
+      - omitted
+      - specified_schema
+      - control_file_schema_conflict
+    version_clause:
+      mode: explicit
+      values:
+      - omitted
+      - specified_version
+      - invalid_version
+    cascade_clause:
+      mode: explicit
+      values:
+      - omitted
+      - specified
+    extension_trust_level:
+      mode: explicit
+      values:
+      - trusted
+      - untrusted
+    extension_name_shape:
+      mode: explicit
+      values:
+      - simple_id
+      - quoted_id
+      - reserved_word_name
+      - nonexistent_extension
+      - duplicate_name
+    schema_name_shape:
+      mode: explicit
+      values:
+      - simple_id
+      - quoted_id
+      - nonexistent_schema
+    version_string_shape:
+      mode: explicit
+      values:
+      - identifier_form
+      - string_literal_form
+      - invalid_version_string
+    privilege_level:
+      mode: explicit
+      values:
+      - superuser
+      - create_privilege_user
+      - non_superuser_no_create
+    schema_existence:
+      mode: explicit
+      values:
+      - schema_exists
+      - schema_not_exists
+    dependency_extension_state:
+      mode: explicit
+      values:
+      - already_installed
+      - not_installed_no_cascade
+      - not_installed_with_cascade
+    control_file_presence:
+      mode: explicit
+      values:
+      - installed_on_system
+      - not_installed_on_system
+    duplicate_extension_name:
+      mode: explicit
+      values:
+      - no_conflict
+      - same_name_conflict
+    nonexistent_extension_script:
+      mode: explicit
+      values:
+      - script_exists
+      - script_missing
+    nonexistent_schema:
+      mode: explicit
+      values:
+      - schema_exists
+      - schema_missing
+    control_file_schema_conflict:
+      mode: explicit
+      values:
+      - no_conflict
+      - conflict_without_cascade
+      - conflict_with_cascade_ignored
+    insufficient_privilege:
+      mode: explicit
+      values:
+      - sufficient_privilege
+      - non_superuser_untrusted_extension
+      - no_create_privilege_trusted
+    invalid_version:
+      mode: explicit
+      values:
+      - valid_version
+      - nonexistent_version
+    if_not_exists_no_op:
+      mode: explicit
+      values:
+      - new_install
+      - no_op_notice
+    verification_mode:
+      mode: explicit
+      values:
+      - pg_available_extensions_query
+      - pg_extension_catalog_query
+      - error_assertion
+    cleanup_mode:
+      mode: explicit
+      values:
+      - drop_extension
+      - drop_extension_cascade
+      - schema_cleanup
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - expected_status == success and the selected object, privilege, dependency, and syntax factors describe a legal statement
+      execution path
+    - notice or no-op paths are attributed by their declared factors and do not replace required success/failure coverage
+    failure_when:
+    - condition: expected_status == failure
+      reason: statement_specific_failure
+    - condition: declared object state, privilege, dependency, name-shape, validator, or numeric boundary factor selects an
+        invalid prerequisite
+      reason: declared_factor_failure
+    default_failure_reason: statement_specific_failure
+  sql_shape:
+    template: CREATE EXTENSION [ IF NOT EXISTS ] {extension_name} [ WITH ] [ SCHEMA {schema_name} ] [ VERSION {version} ]
+      [ CASCADE ]
+  verification:
+    required: true
+    mode: catalog_or_error_assertion
+    sql: SELECT extname FROM pg_extension WHERE extname = '{extension_name}'
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP EXTENSION IF EXISTS {extension_name} CASCADE;
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

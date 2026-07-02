@@ -1,0 +1,382 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: drop_user_mapping
+  name: DROP USER MAPPING
+  category: ddl
+  domain: user_mapping
+  source_reference: references/statements/ddl/user_mapping/drop_user_mapping.md
+  official_source: https://www.postgresql.org/docs/16/sql-dropusermapping.html
+  aliases:
+  - drop_user_mapping
+  - DROP USER MAPPING
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required matrix coverage must pass before any derived extension is emitted.
+  - Derived extensions may add stress, boundary, environment, or cross-factor combinations after the baseline audit passes.
+  - Derived extensions must not be counted as satisfying required factor, object, relation, table, or column-type coverage.
+  - Derived extensions must use only declared factors and declared factor values.
+  - Derived extensions must preserve success, failure, notice, and no-op attribution.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds:
+    - user_mapping
+    - server
+    decision_reason: DROP USER MAPPING removes a user_mapping entry associated with a foreign server and must cover mapping
+      existence and server dependency states.
+  target_relation_coverage:
+    required: false
+    coverage_mode: not_applicable
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    decision_reason: DROP USER MAPPING is catalog metadata DDL and does not target pg_class relations.
+  table_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: DROP USER MAPPING removes per-user server mapping metadata; no table, foreign table, or table-kind behavior
+      is part of this statement.
+  column_type_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: DROP USER MAPPING has no column-type dependent syntax, permissions, verification, or cleanup. It depends
+      on mapping existence, server existence, IF EXISTS, and authorization context.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - branch_drop_user_mapping
+      - branch_drop_user_mapping_if_exists
+      coverage_requirement: all_values
+    object_state:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - exists
+      - absent
+      coverage_requirement: all_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - success
+      - failure
+      coverage_requirement: all_values
+    user_specification:
+      tier: T2
+      coverage_role: branch_local_axis
+      required_values:
+      - named_user
+      - user_keyword
+      - current_role
+      - current_user
+      - public
+      coverage_requirement: all_values
+    if_exists_clause:
+      tier: T2
+      coverage_role: branch_local_axis
+      required_values:
+      - present
+      - absent
+      coverage_requirement: all_values
+    authorization_path:
+      tier: T2
+      coverage_role: branch_local_axis
+      required_values:
+      - server_owner
+      - user_with_usage
+      - non_privileged
+      coverage_requirement: all_values
+    server_existence:
+      tier: T2
+      coverage_role: branch_local_axis
+      required_values:
+      - server_exists
+      - server_not_exists
+      coverage_requirement: all_values
+    user_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - simple_id
+      - quoted_id
+      - nonexistent_name
+      - public_keyword
+      coverage_requirement: all_values
+    server_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - simple_id
+      - nonexistent_name
+      coverage_requirement: all_values
+    privilege_context:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - server_owner_session
+      - user_with_usage_session
+      - non_privileged_session
+      coverage_requirement: all_values
+    server_dependency:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - server_exists_and_valid
+      - server_missing
+      coverage_requirement: all_values
+    nonexistent_mapping:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - mapping_exists
+      - mapping_missing_without_if_exists
+      coverage_requirement: all_values
+    nonexistent_server:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - server_exists
+      - server_missing
+      coverage_requirement: all_values
+    insufficient_privilege:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - has_privilege
+      - lacks_privilege
+      coverage_requirement: all_values
+    self_mapping_only:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - deleting_own_mapping
+      - attempting_other_user_mapping
+      coverage_requirement: all_values
+    verification_mode:
+      tier: T6
+      coverage_role: verification_axis
+      required_values:
+      - catalog_query
+      - error_assertion
+      - notice_assertion
+      coverage_requirement: all_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: cleanup_axis
+      required_values:
+      - drop_user_mapping
+      - drop_server
+      - drop_fdw
+      coverage_requirement: all_values
+dynamic_inputs:
+  user_mapping_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/user_mapping_manifest.json
+    required_fields:
+    - user_specification
+    - server_name
+    - object_state
+    - authorization_path
+  foreign_server_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/foreign_server_manifest.json
+    required_fields:
+    - server_name
+    - server_existence
+    - privilege_context
+combination_groups:
+- id: drop_user_mapping_required_factor_value_matrix
+  title: DROP USER MAPPING required factor value baseline
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  expected_failure_reasons:
+  - nonexistent_mapping
+  - nonexistent_server
+  - insufficient_privilege
+  - self_mapping_only
+  factors:
+    statement_branch: branch_drop_user_mapping
+    object_state: exists
+    expected_status: success
+    user_specification: named_user
+    if_exists_clause: absent
+    authorization_path: server_owner
+    server_existence: server_exists
+    user_name_shape: simple_id
+    server_name_shape: simple_id
+    privilege_context: server_owner_session
+    server_dependency: server_exists_and_valid
+    nonexistent_mapping: mapping_exists
+    nonexistent_server: server_exists
+    insufficient_privilege: has_privilege
+    self_mapping_only: deleting_own_mapping
+    verification_mode: catalog_query
+    cleanup_mode: drop_user_mapping
+  expansion:
+    statement_branch:
+      mode: explicit
+      values:
+      - branch_drop_user_mapping
+      - branch_drop_user_mapping_if_exists
+    object_state:
+      mode: explicit
+      values:
+      - exists
+      - absent
+    expected_status:
+      mode: explicit
+      values:
+      - success
+      - failure
+    user_specification:
+      mode: explicit
+      values:
+      - named_user
+      - user_keyword
+      - current_role
+      - current_user
+      - public
+    if_exists_clause:
+      mode: explicit
+      values:
+      - present
+      - absent
+    authorization_path:
+      mode: explicit
+      values:
+      - server_owner
+      - user_with_usage
+      - non_privileged
+    server_existence:
+      mode: explicit
+      values:
+      - server_exists
+      - server_not_exists
+    user_name_shape:
+      mode: explicit
+      values:
+      - simple_id
+      - quoted_id
+      - nonexistent_name
+      - public_keyword
+    server_name_shape:
+      mode: explicit
+      values:
+      - simple_id
+      - nonexistent_name
+    privilege_context:
+      mode: explicit
+      values:
+      - server_owner_session
+      - user_with_usage_session
+      - non_privileged_session
+    server_dependency:
+      mode: explicit
+      values:
+      - server_exists_and_valid
+      - server_missing
+    nonexistent_mapping:
+      mode: explicit
+      values:
+      - mapping_exists
+      - mapping_missing_without_if_exists
+    nonexistent_server:
+      mode: explicit
+      values:
+      - server_exists
+      - server_missing
+    insufficient_privilege:
+      mode: explicit
+      values:
+      - has_privilege
+      - lacks_privilege
+    self_mapping_only:
+      mode: explicit
+      values:
+      - deleting_own_mapping
+      - attempting_other_user_mapping
+    verification_mode:
+      mode: explicit
+      values:
+      - catalog_query
+      - error_assertion
+      - notice_assertion
+    cleanup_mode:
+      mode: explicit
+      values:
+      - drop_user_mapping
+      - drop_server
+      - drop_fdw
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - expected_status == success and all selected dependency, privilege, object-state, name-shape, and option factors are
+      compatible
+    - statement branch requirements match the selected clause and lifecycle setup manifests
+    failure_when:
+    - condition: expected_status == failure
+      reason: statement_specific_failure
+    - condition: target object, dependency, privilege, option, or name factor selects an invalid binding
+      reason: statement_specific_failure
+    - condition: nonexistent_mapping selects an error, notice, no-op, or boundary value
+      reason: nonexistent_mapping
+    - condition: nonexistent_server selects an error, notice, no-op, or boundary value
+      reason: nonexistent_server
+    - condition: insufficient_privilege selects an error, notice, no-op, or boundary value
+      reason: insufficient_privilege
+    - condition: self_mapping_only selects an error, notice, no-op, or boundary value
+      reason: self_mapping_only
+    default_failure_reason: statement_specific_failure
+  sql_shape:
+    template: DROP USER MAPPING {if_exists_clause} FOR {user_specification} SERVER {server_name};
+  verification:
+    required: true
+    mode: catalog_error_or_notice_assertion
+    sql: SELECT umuser, umserver FROM pg_user_mapping WHERE umserver = '{server_oid}';
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP USER MAPPING IF EXISTS FOR {user_specification} SERVER {server_name};
+    - sql: DROP SERVER IF EXISTS {server_name} CASCADE;
+    - sql: DROP FOREIGN DATA WRAPPER IF EXISTS {fdw_name} CASCADE;
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

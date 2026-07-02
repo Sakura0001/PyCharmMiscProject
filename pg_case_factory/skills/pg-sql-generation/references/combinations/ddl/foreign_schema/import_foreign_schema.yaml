@@ -1,0 +1,498 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: import_foreign_schema
+  name: IMPORT FOREIGN SCHEMA
+  category: ddl
+  domain: foreign_schema
+  source_reference: references/statements/ddl/foreign_schema/import_foreign_schema.md
+  official_source: https://www.postgresql.org/docs/16/sql-importforeignschema.html
+  aliases:
+  - IMPORT FOREIGN SCHEMA
+  - import foreign schema
+  - import_foreign_schema
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required matrix coverage must pass before any derived extension is emitted.
+  - Derived extensions may add stress, boundary, environment, or cross-factor combinations after the baseline audit passes.
+  - Derived extensions must not be counted as satisfying required factor, object, relation, table, or column-type coverage.
+  - Derived extensions must use only declared factors and declared factor values.
+  - Derived extensions must preserve success, failure, notice, and no-op attribution.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds:
+    - server
+    - foreign_table
+    decision_reason: IMPORT FOREIGN SCHEMA reads a foreign server and creates local foreign-table definitions; baseline coverage
+      explicitly covers server dependency and imported foreign-table outcomes.
+  target_relation_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_relation_kinds:
+    - foreign_table
+    decision_reason: Successful IMPORT FOREIGN SCHEMA materializes pg_class foreign-table relations in the target schema,
+      so the baseline declares foreign_table as the required relation kind.
+  table_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_table_kinds:
+    - foreign_table
+    decision_reason: The local objects produced by IMPORT FOREIGN SCHEMA are foreign tables. Filter clauses and duplicate-name
+      cases decide which foreign tables are created or rejected.
+  column_type_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: IMPORT FOREIGN SCHEMA receives column definitions from the FDW remote schema mapping; this statement
+      has no local column type syntax or declared column-type factor, so baseline validity is driven by server, schema, filter,
+      privilege, and duplicate-table factors.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - branch_basic
+      - branch_limit_to
+      - branch_except
+      coverage_requirement: all_values
+    object_state:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - exists
+      - not_exists
+      coverage_requirement: all_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - success
+      - failure
+      coverage_requirement: all_values
+    filter_clause:
+      tier: T2
+      coverage_role: branch_local_axis
+      required_values:
+      - no_filter
+      - limit_to
+      - except
+      coverage_requirement: all_values
+    options_clause:
+      tier: T2
+      coverage_role: branch_local_axis
+      required_values:
+      - omitted
+      - specified
+      coverage_requirement: all_values
+    server_dependency:
+      tier: T2
+      coverage_role: branch_local_axis
+      required_values:
+      - valid_server
+      - invalid_server
+      - no_usage_privilege
+      coverage_requirement: all_values
+    fdw_dependency:
+      tier: T2
+      coverage_role: branch_local_axis
+      required_values:
+      - fdw_supports_import
+      - fdw_not_support_import
+      coverage_requirement: all_values
+    remote_schema_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - simple_id
+      - quoted_id
+      coverage_requirement: all_values
+    local_schema_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - simple_id
+      - quoted_id
+      - nonexistent_schema
+      coverage_requirement: all_values
+    server_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - simple_id
+      - nonexistent_server
+      coverage_requirement: all_values
+    table_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - simple_id
+      - nonexistent_table
+      coverage_requirement: all_values
+    privilege_level:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - usage_and_create
+      - no_usage
+      - no_create
+      - superuser
+      coverage_requirement: all_values
+    server_existence:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - server_exists
+      - server_not_exists
+      coverage_requirement: all_values
+    schema_existence:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - schema_exists
+      - schema_not_exists
+      coverage_requirement: all_values
+    fdw_import_capability:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - supports_import
+      - not_supports_import
+      coverage_requirement: all_values
+    nonexistent_server:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - server_exists
+      - server_missing
+      coverage_requirement: all_values
+    nonexistent_local_schema:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - schema_exists
+      - schema_missing
+      coverage_requirement: all_values
+    no_usage_privilege:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - has_usage
+      - lacks_usage
+      coverage_requirement: all_values
+    no_create_privilege:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - has_create
+      - lacks_create
+      coverage_requirement: all_values
+    fdw_not_support_import:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - fdw_supports
+      - fdw_not_supports
+      coverage_requirement: all_values
+    table_name_mismatch:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - table_exists_remote
+      - table_not_exists_remote
+      coverage_requirement: all_values
+    duplicate_foreign_table:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - no_conflict
+      - name_conflict
+      coverage_requirement: all_values
+    verification_mode:
+      tier: T6
+      coverage_role: verification_axis
+      required_values:
+      - pg_class_catalog_query
+      - error_assertion
+      coverage_requirement: all_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: cleanup_axis
+      required_values:
+      - drop_foreign_tables
+      - drop_schema
+      - drop_server
+      - drop_fdw
+      coverage_requirement: all_values
+dynamic_inputs:
+  foreign_server_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/foreign_server_manifest.json
+    required_fields:
+    - fdw_name
+    - server_name
+    - server_existence
+    - fdw_import_capability
+  schema_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/schema_manifest.json
+    required_fields:
+    - remote_schema_name
+    - local_schema_name
+    - schema_existence
+    - create_privilege
+  remote_table_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/remote_table_manifest.json
+    required_fields:
+    - remote_table_names
+    - filter_clause
+    - duplicate_foreign_table
+combination_groups:
+- id: import_foreign_schema_required_factor_value_matrix
+  title: IMPORT FOREIGN SCHEMA required factor value baseline
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  expected_failure_reasons:
+  - nonexistent_server
+  - nonexistent_local_schema
+  - no_usage_privilege
+  - no_create_privilege
+  - fdw_not_support_import
+  - table_name_mismatch
+  - duplicate_foreign_table
+  factors:
+    statement_branch: branch_basic
+    object_state: exists
+    expected_status: success
+    filter_clause: no_filter
+    options_clause: omitted
+    server_dependency: valid_server
+    fdw_dependency: fdw_supports_import
+    remote_schema_name_shape: simple_id
+    local_schema_name_shape: simple_id
+    server_name_shape: simple_id
+    table_name_shape: simple_id
+    privilege_level: usage_and_create
+    server_existence: server_exists
+    schema_existence: schema_exists
+    fdw_import_capability: supports_import
+    nonexistent_server: server_exists
+    nonexistent_local_schema: schema_exists
+    no_usage_privilege: has_usage
+    no_create_privilege: has_create
+    fdw_not_support_import: fdw_supports
+    table_name_mismatch: table_exists_remote
+    duplicate_foreign_table: no_conflict
+    verification_mode: pg_class_catalog_query
+    cleanup_mode: drop_foreign_tables
+  expansion:
+    statement_branch:
+      mode: explicit
+      values:
+      - branch_basic
+      - branch_limit_to
+      - branch_except
+    object_state:
+      mode: explicit
+      values:
+      - exists
+      - not_exists
+    expected_status:
+      mode: explicit
+      values:
+      - success
+      - failure
+    filter_clause:
+      mode: explicit
+      values:
+      - no_filter
+      - limit_to
+      - except
+    options_clause:
+      mode: explicit
+      values:
+      - omitted
+      - specified
+    server_dependency:
+      mode: explicit
+      values:
+      - valid_server
+      - invalid_server
+      - no_usage_privilege
+    fdw_dependency:
+      mode: explicit
+      values:
+      - fdw_supports_import
+      - fdw_not_support_import
+    remote_schema_name_shape:
+      mode: explicit
+      values:
+      - simple_id
+      - quoted_id
+    local_schema_name_shape:
+      mode: explicit
+      values:
+      - simple_id
+      - quoted_id
+      - nonexistent_schema
+    server_name_shape:
+      mode: explicit
+      values:
+      - simple_id
+      - nonexistent_server
+    table_name_shape:
+      mode: explicit
+      values:
+      - simple_id
+      - nonexistent_table
+    privilege_level:
+      mode: explicit
+      values:
+      - usage_and_create
+      - no_usage
+      - no_create
+      - superuser
+    server_existence:
+      mode: explicit
+      values:
+      - server_exists
+      - server_not_exists
+    schema_existence:
+      mode: explicit
+      values:
+      - schema_exists
+      - schema_not_exists
+    fdw_import_capability:
+      mode: explicit
+      values:
+      - supports_import
+      - not_supports_import
+    nonexistent_server:
+      mode: explicit
+      values:
+      - server_exists
+      - server_missing
+    nonexistent_local_schema:
+      mode: explicit
+      values:
+      - schema_exists
+      - schema_missing
+    no_usage_privilege:
+      mode: explicit
+      values:
+      - has_usage
+      - lacks_usage
+    no_create_privilege:
+      mode: explicit
+      values:
+      - has_create
+      - lacks_create
+    fdw_not_support_import:
+      mode: explicit
+      values:
+      - fdw_supports
+      - fdw_not_supports
+    table_name_mismatch:
+      mode: explicit
+      values:
+      - table_exists_remote
+      - table_not_exists_remote
+    duplicate_foreign_table:
+      mode: explicit
+      values:
+      - no_conflict
+      - name_conflict
+    verification_mode:
+      mode: explicit
+      values:
+      - pg_class_catalog_query
+      - error_assertion
+    cleanup_mode:
+      mode: explicit
+      values:
+      - drop_foreign_tables
+      - drop_schema
+      - drop_server
+      - drop_fdw
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - expected_status == success and all selected dependency, privilege, object-state, name-shape, and option factors are
+      compatible
+    - statement branch requirements match the selected clause and lifecycle setup manifests
+    failure_when:
+    - condition: expected_status == failure
+      reason: statement_specific_failure
+    - condition: target object, dependency, privilege, option, or name factor selects an invalid binding
+      reason: statement_specific_failure
+    - condition: nonexistent_server selects an error, notice, no-op, or boundary value
+      reason: nonexistent_server
+    - condition: nonexistent_local_schema selects an error, notice, no-op, or boundary value
+      reason: nonexistent_local_schema
+    - condition: no_usage_privilege selects an error, notice, no-op, or boundary value
+      reason: no_usage_privilege
+    - condition: no_create_privilege selects an error, notice, no-op, or boundary value
+      reason: no_create_privilege
+    - condition: fdw_not_support_import selects an error, notice, no-op, or boundary value
+      reason: fdw_not_support_import
+    - condition: table_name_mismatch selects an error, notice, no-op, or boundary value
+      reason: table_name_mismatch
+    - condition: duplicate_foreign_table selects an error, notice, no-op, or boundary value
+      reason: duplicate_foreign_table
+    default_failure_reason: statement_specific_failure
+  sql_shape:
+    template: IMPORT FOREIGN SCHEMA {remote_schema_name} {filter_clause} FROM SERVER {server_name} INTO {local_schema_name}
+      {options_clause};
+  verification:
+    required: true
+    mode: catalog_or_error_assertion
+    sql: SELECT relname FROM pg_class WHERE relnamespace = '{local_schema}'::regnamespace AND relkind = 'f';
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP FOREIGN TABLE IF EXISTS {local_schema_name}.{imported_table_name} CASCADE;
+    - sql: DROP SCHEMA IF EXISTS {local_schema_name} CASCADE;
+    - sql: DROP SERVER IF EXISTS {server_name} CASCADE;
+    - sql: DROP FOREIGN DATA WRAPPER IF EXISTS {fdw_name} CASCADE;
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

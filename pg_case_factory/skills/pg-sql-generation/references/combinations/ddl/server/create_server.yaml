@@ -1,0 +1,385 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: create_server
+  name: CREATE SERVER
+  category: ddl
+  domain: server
+  source_reference: references/statements/ddl/server/create_server.md
+  official_source: https://www.postgresql.org/docs/16/sql-createserver.html
+  aliases:
+  - create_server
+  - CREATE SERVER
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required matrix coverage must pass before any derived extension is emitted.
+  - Derived extensions may add stress, boundary, environment, or cross-factor combinations after the baseline audit passes.
+  - Derived extensions must not be counted as satisfying required factor, object, relation, table, or column-type coverage.
+  - Derived extensions must use declared factors and declared factor values.
+  - Derived extensions must preserve success, failure, no-op, or notice attribution.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds:
+    - server
+    decision_reason: CREATE_SERVER directly targets foreign server objects and their pg_foreign_server metadata, FDW dependency,
+      options, owner, and user-mapping dependency behavior.
+  target_relation_coverage:
+    required: false
+    coverage_mode: not_applicable
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    decision_reason: CREATE_SERVER names a foreign server descriptor, not a table, index, view, sequence, or other pg_class
+      relation. FDW and user-mapping dependencies are represented by declared server factors.
+  table_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: CREATE_SERVER operates on server metadata and FDW/user-mapping dependencies. It does not directly create,
+      alter, scan, or drop table definitions, including foreign table definitions.
+  column_type_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: CREATE_SERVER has no SQL validity, cleanup, or verification behavior dependent on table column data types;
+      options and validators belong to the FDW/server layer.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - branch_create_server
+      - branch_create_server_if_not_exists
+      coverage_requirement: all_declared_values
+    server_identity:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - not_exists
+      - exists
+      - reserved_word_name
+      - quoted_duplicate
+      coverage_requirement: all_declared_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - success
+      - failure
+      coverage_requirement: all_declared_values
+    if_not_exists_clause:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values:
+      - without_if_not_exists
+      - with_if_not_exists
+      coverage_requirement: all_declared_values
+    type_version_clause:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values:
+      - omitted
+      - type_only
+      - version_only
+      - both_type_and_version
+      coverage_requirement: all_declared_values
+    options_clause:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values:
+      - omitted
+      - single_option
+      - multiple_options
+      coverage_requirement: all_declared_values
+    fdw_dependency:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values:
+      - existing_fdw
+      - nonexistent_fdw
+      coverage_requirement: all_declared_values
+    server_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - simple_name
+      - quoted_name
+      - reserved_word_name
+      - non_existing_name
+      coverage_requirement: all_declared_values
+    fdw_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - existing_fdw_name
+      - nonexistent_fdw_name
+      coverage_requirement: all_declared_values
+    option_value_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - valid_option_value
+      - empty_option_value
+      coverage_requirement: all_declared_values
+    executor_privilege:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - superuser
+      - non_superuser
+      coverage_requirement: all_declared_values
+    fdw_existence:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - fdw_exists
+      - fdw_not_exists
+      coverage_requirement: all_declared_values
+    duplicate_server_name:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - none
+      - same_name_exists
+      coverage_requirement: all_declared_values
+    privilege_insufficient:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - non_superuser_creating_server
+      coverage_requirement: all_declared_values
+    nonexistent_fdw:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - fdw_does_not_exist
+      coverage_requirement: all_declared_values
+    fdw_validator_rejection:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - none
+      - validator_rejects_invalid_option
+      coverage_requirement: all_declared_values
+    verification_mode:
+      tier: T6
+      coverage_role: verification_cleanup_axis
+      required_values:
+      - pg_foreign_server_catalog
+      - error_assertion
+      coverage_requirement: all_declared_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: verification_cleanup_axis
+      required_values:
+      - drop_server
+      - drop_fdw_then_drop_server
+      coverage_requirement: all_declared_values
+dynamic_inputs:
+  server_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/server_manifest.json
+    required_fields:
+    - server_name
+    - object_state
+    - owner
+    - fdw_name
+  fdw_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/fdw_manifest.json
+    required_fields:
+    - fdw_name
+    - fdw_exists
+    - validator_behavior
+  user_mapping_manifest:
+    required: false
+    path_pattern: artifacts/intermediates/<task_slug>/user_mapping_manifest.json
+    required_fields:
+    - server_name
+    - mapping_exists
+    - dependency_behavior
+combination_groups:
+- id: create_server_required_factor_value_matrix
+  title: CREATE SERVER required factor value baseline
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  expected_failure_reasons:
+  - duplicate_server_name
+  - privilege_insufficient
+  - nonexistent_fdw
+  - fdw_validator_rejection
+  factors:
+    statement_branch: branch_create_server
+    server_identity: not_exists
+    expected_status: success
+    if_not_exists_clause: without_if_not_exists
+    type_version_clause: omitted
+    options_clause: omitted
+    fdw_dependency: existing_fdw
+    server_name_shape: simple_name
+    fdw_name_shape: existing_fdw_name
+    option_value_shape: valid_option_value
+    executor_privilege: superuser
+    fdw_existence: fdw_exists
+    duplicate_server_name: none
+    privilege_insufficient: non_superuser_creating_server
+    nonexistent_fdw: fdw_does_not_exist
+    fdw_validator_rejection: none
+    verification_mode: pg_foreign_server_catalog
+    cleanup_mode: drop_server
+  expansion:
+    statement_branch:
+      mode: explicit
+      values:
+      - branch_create_server
+      - branch_create_server_if_not_exists
+    server_identity:
+      mode: explicit
+      values:
+      - not_exists
+      - exists
+      - reserved_word_name
+      - quoted_duplicate
+    expected_status:
+      mode: explicit
+      values:
+      - success
+      - failure
+    if_not_exists_clause:
+      mode: explicit
+      values:
+      - without_if_not_exists
+      - with_if_not_exists
+    type_version_clause:
+      mode: explicit
+      values:
+      - omitted
+      - type_only
+      - version_only
+      - both_type_and_version
+    options_clause:
+      mode: explicit
+      values:
+      - omitted
+      - single_option
+      - multiple_options
+    fdw_dependency:
+      mode: explicit
+      values:
+      - existing_fdw
+      - nonexistent_fdw
+    server_name_shape:
+      mode: explicit
+      values:
+      - simple_name
+      - quoted_name
+      - reserved_word_name
+      - non_existing_name
+    fdw_name_shape:
+      mode: explicit
+      values:
+      - existing_fdw_name
+      - nonexistent_fdw_name
+    option_value_shape:
+      mode: explicit
+      values:
+      - valid_option_value
+      - empty_option_value
+    executor_privilege:
+      mode: explicit
+      values:
+      - superuser
+      - non_superuser
+    fdw_existence:
+      mode: explicit
+      values:
+      - fdw_exists
+      - fdw_not_exists
+    duplicate_server_name:
+      mode: explicit
+      values:
+      - none
+      - same_name_exists
+    privilege_insufficient:
+      mode: explicit
+      values:
+      - non_superuser_creating_server
+    nonexistent_fdw:
+      mode: explicit
+      values:
+      - fdw_does_not_exist
+    fdw_validator_rejection:
+      mode: explicit
+      values:
+      - none
+      - validator_rejects_invalid_option
+    verification_mode:
+      mode: explicit
+      values:
+      - pg_foreign_server_catalog
+      - error_assertion
+    cleanup_mode:
+      mode: explicit
+      values:
+      - drop_server
+      - drop_fdw_then_drop_server
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - expected_status == success and the selected object, privilege, dependency, and syntax factors describe a legal statement
+      execution path
+    - notice or no-op paths are attributed by their declared factors and do not replace required success/failure coverage
+    failure_when:
+    - condition: expected_status == failure
+      reason: statement_specific_failure
+    - condition: declared object state, privilege, dependency, name-shape, validator, or numeric boundary factor selects an
+        invalid prerequisite
+      reason: declared_factor_failure
+    default_failure_reason: statement_specific_failure
+  sql_shape:
+    template: CREATE SERVER [ IF NOT EXISTS ] {server_name} FOREIGN DATA WRAPPER {fdw_name} [ OPTIONS ( {options} ) ]
+  verification:
+    required: true
+    mode: catalog_or_error_assertion
+    sql: SELECT srvname FROM pg_foreign_server WHERE srvname = '{server_name}'
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP SERVER IF EXISTS {server_name} CASCADE;
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

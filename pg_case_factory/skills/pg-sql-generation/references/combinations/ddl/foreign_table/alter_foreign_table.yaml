@@ -1,0 +1,672 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: alter_foreign_table
+  name: ALTER FOREIGN TABLE
+  category: ddl
+  domain: foreign_table
+  source_reference: references/statements/ddl/foreign_table/alter_foreign_table.md
+  official_source: https://www.postgresql.org/docs/16/sql-alterforeigntable.html
+  aliases:
+  - ALTER FOREIGN TABLE
+  - alter foreign table
+  - alter_foreign_table
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required matrix coverage must pass before any derived extension is emitted.
+  - Derived extensions may add stress, boundary, environment, or cross-factor combinations after the baseline audit passes.
+  - Derived extensions must not be counted as satisfying required factor, object, relation, table, or column-type coverage.
+  - Derived extensions must use only declared factors and declared factor values.
+  - Derived extensions must preserve success, failure, notice, and no-op attribution.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds:
+    - foreign_table
+    decision_reason: ALTER FOREIGN TABLE targets existing foreign-table relations and may rename, move, change owner, change
+      options, or alter column metadata.
+  target_relation_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_relation_kinds:
+    - foreign_table
+    decision_reason: The statement is specific to foreign_table relations. Non-foreign relation variants are outside the direct
+      target and are not required baseline relation kinds.
+  table_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_table_kinds:
+    - foreign_table
+    decision_reason: ALTER FOREIGN TABLE directly mutates foreign-table metadata; table coverage is explicit for the foreign_table
+      kind and its owner/schema/column/dependency contexts.
+  column_type_coverage:
+    required: true
+    coverage_mode: conditional
+    inventory_source: references/common/pg16_type_catalog.md
+    required_type_set: all_pg16_column_types
+    expansion_mode: conditional
+    require_each_type_success_or_failure: false
+    decision_reason: ALTER FOREIGN TABLE only depends on column types for ADD COLUMN and ALTER COLUMN TYPE actions. The baseline
+      conditionally expands the declared representative column_data_type values for those actions and relies on action factors
+      for non-column branches.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - branch_action_list
+      - branch_rename_column
+      - branch_rename_table
+      - branch_set_schema
+      coverage_requirement: all_values
+    object_state:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - exists
+      - not_exists
+      coverage_requirement: all_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - success
+      - failure
+      coverage_requirement: all_values
+    alter_action:
+      tier: T2
+      coverage_role: branch_local_axis
+      required_values:
+      - add_column
+      - drop_column
+      - alter_column_type
+      - set_not_null
+      - drop_not_null
+      - set_default
+      - drop_default
+      - add_constraint
+      - drop_constraint
+      - validate_constraint
+      - inherit
+      - no_inherit
+      - owner
+      - options
+      - column_options
+      - set_without_oids
+      - enable_trigger
+      - disable_trigger
+      coverage_requirement: all_values
+    if_exists_clause:
+      tier: T2
+      coverage_role: branch_local_axis
+      required_values:
+      - absent
+      - present
+      coverage_requirement: all_values
+    column_data_type:
+      tier: T2
+      coverage_role: branch_local_axis
+      required_values:
+      - integer
+      - bigint
+      - text
+      - varchar
+      - numeric
+      - boolean
+      - date
+      - timestamp
+      - jsonb
+      - uuid
+      coverage_requirement: all_values
+    only_clause:
+      tier: T2
+      coverage_role: branch_local_axis
+      required_values:
+      - omitted
+      - specified
+      coverage_requirement: all_values
+    table_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - simple_id
+      - schema_qualified
+      - quoted_id
+      - nonexistent_name
+      coverage_requirement: all_values
+    column_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - simple_id
+      - quoted_id
+      - nonexistent_column
+      coverage_requirement: all_values
+    new_column_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - simple_id
+      - quoted_id
+      coverage_requirement: all_values
+    new_table_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - simple_id
+      - quoted_id
+      coverage_requirement: all_values
+    new_schema_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - simple_id
+      - nonexistent_schema
+      coverage_requirement: all_values
+    owner_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - simple_id
+      - specified_current_role
+      - specified_current_user
+      - specified_session_user
+      - nonexistent_role
+      coverage_requirement: all_values
+    constraint_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - simple_id
+      - nonexistent_constraint
+      coverage_requirement: all_values
+    parent_table_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - simple_id
+      - nonexistent_parent
+      coverage_requirement: all_values
+    privilege_level:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - table_owner
+      - non_owner
+      - superuser
+      coverage_requirement: all_values
+    schema_existence:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - schema_exists
+      - schema_not_exists
+      coverage_requirement: all_values
+    type_usage_privilege:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - has_usage
+      - lacks_usage
+      coverage_requirement: all_values
+    parent_table_existence:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - parent_exists
+      - parent_not_exists
+      coverage_requirement: all_values
+    set_role_capability:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - can_set_role
+      - cannot_set_role
+      coverage_requirement: all_values
+    nonexistent_table:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - table_exists
+      - table_missing_no_if_exists
+      coverage_requirement: all_values
+    nonexistent_column:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - column_exists
+      - column_missing
+      - column_missing_if_exists
+      coverage_requirement: all_values
+    nonexistent_constraint:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - constraint_exists
+      - constraint_missing
+      coverage_requirement: all_values
+    non_owner_attempt:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - owner_execution
+      - non_owner_execution
+      - superuser_execution
+      coverage_requirement: all_values
+    no_type_usage_privilege:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - has_usage
+      - lacks_usage
+      coverage_requirement: all_values
+    nonexistent_parent_table:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - parent_exists
+      - parent_missing
+      coverage_requirement: all_values
+    constraint_not_enforced:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - with_check_constraint
+      - with_not_valid
+      coverage_requirement: all_values
+    validate_constraint_no_action:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - validate_marks_valid
+      coverage_requirement: all_values
+    consistency_not_checked:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - no_consistency_check
+      coverage_requirement: all_values
+    if_exists_notice:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - no_notice
+      - notice_no_op
+      coverage_requirement: all_values
+    verification_mode:
+      tier: T6
+      coverage_role: verification_axis
+      required_values:
+      - pg_class_catalog_query
+      - pg_attribute_catalog_query
+      - effect_query
+      - error_assertion
+      coverage_requirement: all_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: cleanup_axis
+      required_values:
+      - revert_alter
+      - drop_foreign_table
+      - role_cleanup
+      - schema_cleanup
+      coverage_requirement: all_values
+dynamic_inputs:
+  foreign_table_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/foreign_table_manifest.json
+    required_fields:
+    - table_name
+    - object_state
+    - columns
+    - owner_role
+  type_catalog:
+    required: true
+    path: references/common/pg16_type_catalog.md
+    required_fields:
+    - type_key
+    - type_category
+    - declaration_sql
+    - sample_values
+  dependency_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/foreign_table_dependency_manifest.json
+    required_fields:
+    - parent_table_existence
+    - schema_existence
+    - type_usage_privilege
+    - set_role_capability
+combination_groups:
+- id: alter_foreign_table_required_factor_value_matrix
+  title: ALTER FOREIGN TABLE required factor value baseline
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  expected_failure_reasons:
+  - nonexistent_table
+  - nonexistent_column
+  - nonexistent_constraint
+  - non_owner_attempt
+  - no_type_usage_privilege
+  - nonexistent_parent_table
+  - constraint_not_enforced
+  - validate_constraint_no_action
+  - consistency_not_checked
+  - if_exists_notice
+  factors:
+    statement_branch: branch_action_list
+    object_state: exists
+    expected_status: success
+    alter_action: add_column
+    if_exists_clause: absent
+    column_data_type: integer
+    only_clause: omitted
+    table_name_shape: simple_id
+    column_name_shape: simple_id
+    new_column_name_shape: simple_id
+    new_table_name_shape: simple_id
+    new_schema_name_shape: simple_id
+    owner_name_shape: simple_id
+    constraint_name_shape: simple_id
+    parent_table_name_shape: simple_id
+    privilege_level: table_owner
+    schema_existence: schema_exists
+    type_usage_privilege: has_usage
+    parent_table_existence: parent_exists
+    set_role_capability: can_set_role
+    nonexistent_table: table_exists
+    nonexistent_column: column_exists
+    nonexistent_constraint: constraint_exists
+    non_owner_attempt: owner_execution
+    no_type_usage_privilege: has_usage
+    nonexistent_parent_table: parent_exists
+    constraint_not_enforced: with_check_constraint
+    validate_constraint_no_action: validate_marks_valid
+    consistency_not_checked: no_consistency_check
+    if_exists_notice: no_notice
+    verification_mode: pg_class_catalog_query
+    cleanup_mode: revert_alter
+  expansion:
+    statement_branch:
+      mode: explicit
+      values:
+      - branch_action_list
+      - branch_rename_column
+      - branch_rename_table
+      - branch_set_schema
+    object_state:
+      mode: explicit
+      values:
+      - exists
+      - not_exists
+    expected_status:
+      mode: explicit
+      values:
+      - success
+      - failure
+    alter_action:
+      mode: explicit
+      values:
+      - add_column
+      - drop_column
+      - alter_column_type
+      - set_not_null
+      - drop_not_null
+      - set_default
+      - drop_default
+      - add_constraint
+      - drop_constraint
+      - validate_constraint
+      - inherit
+      - no_inherit
+      - owner
+      - options
+      - column_options
+      - set_without_oids
+      - enable_trigger
+      - disable_trigger
+    if_exists_clause:
+      mode: explicit
+      values:
+      - absent
+      - present
+    column_data_type:
+      mode: explicit
+      values:
+      - integer
+      - bigint
+      - text
+      - varchar
+      - numeric
+      - boolean
+      - date
+      - timestamp
+      - jsonb
+      - uuid
+    only_clause:
+      mode: explicit
+      values:
+      - omitted
+      - specified
+    table_name_shape:
+      mode: explicit
+      values:
+      - simple_id
+      - schema_qualified
+      - quoted_id
+      - nonexistent_name
+    column_name_shape:
+      mode: explicit
+      values:
+      - simple_id
+      - quoted_id
+      - nonexistent_column
+    new_column_name_shape:
+      mode: explicit
+      values:
+      - simple_id
+      - quoted_id
+    new_table_name_shape:
+      mode: explicit
+      values:
+      - simple_id
+      - quoted_id
+    new_schema_name_shape:
+      mode: explicit
+      values:
+      - simple_id
+      - nonexistent_schema
+    owner_name_shape:
+      mode: explicit
+      values:
+      - simple_id
+      - specified_current_role
+      - specified_current_user
+      - specified_session_user
+      - nonexistent_role
+    constraint_name_shape:
+      mode: explicit
+      values:
+      - simple_id
+      - nonexistent_constraint
+    parent_table_name_shape:
+      mode: explicit
+      values:
+      - simple_id
+      - nonexistent_parent
+    privilege_level:
+      mode: explicit
+      values:
+      - table_owner
+      - non_owner
+      - superuser
+    schema_existence:
+      mode: explicit
+      values:
+      - schema_exists
+      - schema_not_exists
+    type_usage_privilege:
+      mode: explicit
+      values:
+      - has_usage
+      - lacks_usage
+    parent_table_existence:
+      mode: explicit
+      values:
+      - parent_exists
+      - parent_not_exists
+    set_role_capability:
+      mode: explicit
+      values:
+      - can_set_role
+      - cannot_set_role
+    nonexistent_table:
+      mode: explicit
+      values:
+      - table_exists
+      - table_missing_no_if_exists
+    nonexistent_column:
+      mode: explicit
+      values:
+      - column_exists
+      - column_missing
+      - column_missing_if_exists
+    nonexistent_constraint:
+      mode: explicit
+      values:
+      - constraint_exists
+      - constraint_missing
+    non_owner_attempt:
+      mode: explicit
+      values:
+      - owner_execution
+      - non_owner_execution
+      - superuser_execution
+    no_type_usage_privilege:
+      mode: explicit
+      values:
+      - has_usage
+      - lacks_usage
+    nonexistent_parent_table:
+      mode: explicit
+      values:
+      - parent_exists
+      - parent_missing
+    constraint_not_enforced:
+      mode: explicit
+      values:
+      - with_check_constraint
+      - with_not_valid
+    validate_constraint_no_action:
+      mode: explicit
+      values:
+      - validate_marks_valid
+    consistency_not_checked:
+      mode: explicit
+      values:
+      - no_consistency_check
+    if_exists_notice:
+      mode: explicit
+      values:
+      - no_notice
+      - notice_no_op
+    verification_mode:
+      mode: explicit
+      values:
+      - pg_class_catalog_query
+      - pg_attribute_catalog_query
+      - effect_query
+      - error_assertion
+    cleanup_mode:
+      mode: explicit
+      values:
+      - revert_alter
+      - drop_foreign_table
+      - role_cleanup
+      - schema_cleanup
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - expected_status == success and all selected dependency, privilege, object-state, name-shape, and option factors are
+      compatible
+    - statement branch requirements match the selected clause and lifecycle setup manifests
+    failure_when:
+    - condition: expected_status == failure
+      reason: statement_specific_failure
+    - condition: target object, dependency, privilege, option, or name factor selects an invalid binding
+      reason: statement_specific_failure
+    - condition: nonexistent_table selects an error, notice, no-op, or boundary value
+      reason: nonexistent_table
+    - condition: nonexistent_column selects an error, notice, no-op, or boundary value
+      reason: nonexistent_column
+    - condition: nonexistent_constraint selects an error, notice, no-op, or boundary value
+      reason: nonexistent_constraint
+    - condition: non_owner_attempt selects an error, notice, no-op, or boundary value
+      reason: non_owner_attempt
+    - condition: no_type_usage_privilege selects an error, notice, no-op, or boundary value
+      reason: no_type_usage_privilege
+    - condition: nonexistent_parent_table selects an error, notice, no-op, or boundary value
+      reason: nonexistent_parent_table
+    - condition: constraint_not_enforced selects an error, notice, no-op, or boundary value
+      reason: constraint_not_enforced
+    - condition: validate_constraint_no_action selects an error, notice, no-op, or boundary value
+      reason: validate_constraint_no_action
+    - condition: consistency_not_checked selects an error, notice, no-op, or boundary value
+      reason: consistency_not_checked
+    - condition: if_exists_notice selects an error, notice, no-op, or boundary value
+      reason: if_exists_notice
+    default_failure_reason: statement_specific_failure
+  sql_shape:
+    template: ALTER FOREIGN TABLE {if_exists_clause} {table_name} {alter_action_clause};
+  verification:
+    required: true
+    mode: catalog_effect_or_error_assertion
+    sql: SELECT relname FROM pg_class WHERE relname = '{table_name}' AND relkind = 'f';
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP FOREIGN TABLE IF EXISTS {table_name} CASCADE;
+    - sql: DROP FOREIGN TABLE IF EXISTS {new_table_name} CASCADE;
+    - sql: DROP SERVER IF EXISTS {server_name} CASCADE;
+    - sql: DROP SCHEMA IF EXISTS {new_schema_name} CASCADE;
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

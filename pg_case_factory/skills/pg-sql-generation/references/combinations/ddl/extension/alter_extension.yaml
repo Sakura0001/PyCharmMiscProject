@@ -1,0 +1,489 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: alter_extension
+  name: ALTER EXTENSION
+  category: ddl
+  domain: extension
+  source_reference: references/statements/ddl/extension/alter_extension.md
+  official_source: https://www.postgresql.org/docs/16/sql-alterextension.html
+  aliases:
+  - ALTER EXTENSION
+  - alter extension
+  - alter_extension
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required matrix coverage must pass before any derived extension is emitted.
+  - Derived extensions may add stress, boundary, environment, or cross-factor combinations after the baseline audit passes.
+  - Derived extensions must not be counted as satisfying required factor, object, relation, table, or column-type coverage.
+  - Derived extensions must use declared factors and declared factor values.
+  - Derived extensions must preserve success, failure, no-op, or notice attribution.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds:
+    - extension
+    decision_reason: ALTER_EXTENSION directly targets PostgreSQL extension objects and extension catalog metadata; baseline
+      coverage is scoped to extension lifecycle state, member-object dependencies, privileges, and schema/version behavior.
+  target_relation_coverage:
+    required: false
+    coverage_mode: not_applicable
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    decision_reason: ALTER_EXTENSION names an extension object rather than a pg_class relation. Member objects such as tables,
+      functions, types, views, or sequences are dependency fixtures represented by declared extension factors, not required
+      relation-kind coverage.
+  table_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: ALTER_EXTENSION operates on extension installation, metadata, schema/version state, or extension membership.
+      It does not directly create, alter, scan, or drop table definitions, so table-kind coverage is not a baseline axis.
+  column_type_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: ALTER_EXTENSION does not validate table-column data types. Any types installed or referenced through
+      extension membership are extension member fixtures, not table column-type combinations controlled by the statement.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - branch_update
+      - branch_set_schema
+      - branch_add_member
+      - branch_drop_member
+      coverage_requirement: all_declared_values
+    object_state:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - exists
+      - not_exists
+      coverage_requirement: all_declared_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - success
+      - failure
+      coverage_requirement: all_declared_values
+    alter_action:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values:
+      - update
+      - set_schema
+      - add
+      - drop
+      coverage_requirement: all_declared_values
+    update_version:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values:
+      - omitted_default
+      - specified_new_version
+      - nonexistent_version
+      coverage_requirement: all_declared_values
+    relocatable_state:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values:
+      - relocatable
+      - non_relocatable
+      coverage_requirement: all_declared_values
+    member_object_type:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values:
+      - table
+      - function
+      - type
+      - view
+      - sequence
+      - domain
+      - aggregate
+      - operator
+      coverage_requirement: all_declared_values
+    extension_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - simple_id
+      - quoted_id
+      - nonexistent_name
+      coverage_requirement: all_declared_values
+    new_schema_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - simple_id
+      - quoted_id
+      - nonexistent_schema
+      coverage_requirement: all_declared_values
+    member_object_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - simple_id
+      - schema_qualified
+      - quoted_id
+      coverage_requirement: all_declared_values
+    version_string_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - identifier_form
+      - string_literal_form
+      coverage_requirement: all_declared_values
+    privilege_level:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - extension_owner
+      - non_owner
+      - superuser
+      coverage_requirement: all_declared_values
+    object_owner_match:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - same_owner
+      - different_owner
+      coverage_requirement: all_declared_values
+    target_schema_existence:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - schema_exists
+      - schema_not_exists
+      coverage_requirement: all_declared_values
+    member_object_existence:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - object_exists
+      - object_not_exists
+      coverage_requirement: all_declared_values
+    nonexistent_extension:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - extension_exists
+      - extension_missing
+      coverage_requirement: all_declared_values
+    non_relocatable_set_schema:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - relocatable_extension
+      - non_relocatable_extension
+      coverage_requirement: all_declared_values
+    nonexistent_member_object:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - object_exists
+      - object_missing
+      coverage_requirement: all_declared_values
+    object_not_owner:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - owner_matches
+      - owner_mismatch
+      coverage_requirement: all_declared_values
+    version_not_available:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - version_available
+      - version_unavailable
+      coverage_requirement: all_declared_values
+    insufficient_privilege:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - owner_execution
+      - non_owner_execution
+      - superuser_execution
+      coverage_requirement: all_declared_values
+    nonexistent_target_schema:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - schema_exists
+      - schema_missing
+      coverage_requirement: all_declared_values
+    verification_mode:
+      tier: T6
+      coverage_role: verification_cleanup_axis
+      required_values:
+      - pg_extension_catalog_query
+      - pg_depend_catalog_query
+      - error_assertion
+      coverage_requirement: all_declared_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: verification_cleanup_axis
+      required_values:
+      - drop_member_from_extension
+      - revert_schema
+      - revert_version
+      - drop_extension
+      coverage_requirement: all_declared_values
+dynamic_inputs:
+  extension_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/extension_manifest.json
+    required_fields:
+    - extension_name
+    - object_state
+    - owner
+    - available_versions
+  extension_dependency_manifest:
+    required: false
+    path_pattern: artifacts/intermediates/<task_slug>/extension_dependency_manifest.json
+    required_fields:
+    - member_object_type
+    - member_object_name
+    - dependency_state
+combination_groups:
+- id: alter_extension_required_factor_value_matrix
+  title: ALTER EXTENSION required factor value baseline
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  expected_failure_reasons:
+  - nonexistent_extension
+  - non_relocatable_set_schema
+  - nonexistent_member_object
+  - object_not_owner
+  - version_not_available
+  - insufficient_privilege
+  - nonexistent_target_schema
+  factors:
+    statement_branch: branch_update
+    object_state: exists
+    expected_status: success
+    alter_action: update
+    update_version: omitted_default
+    relocatable_state: relocatable
+    member_object_type: table
+    extension_name_shape: simple_id
+    new_schema_shape: simple_id
+    member_object_name_shape: simple_id
+    version_string_shape: identifier_form
+    privilege_level: extension_owner
+    object_owner_match: same_owner
+    target_schema_existence: schema_exists
+    member_object_existence: object_exists
+    nonexistent_extension: extension_exists
+    non_relocatable_set_schema: relocatable_extension
+    nonexistent_member_object: object_exists
+    object_not_owner: owner_matches
+    version_not_available: version_available
+    insufficient_privilege: owner_execution
+    nonexistent_target_schema: schema_exists
+    verification_mode: pg_extension_catalog_query
+    cleanup_mode: drop_extension
+  expansion:
+    statement_branch:
+      mode: explicit
+      values:
+      - branch_update
+      - branch_set_schema
+      - branch_add_member
+      - branch_drop_member
+    object_state:
+      mode: explicit
+      values:
+      - exists
+      - not_exists
+    expected_status:
+      mode: explicit
+      values:
+      - success
+      - failure
+    alter_action:
+      mode: explicit
+      values:
+      - update
+      - set_schema
+      - add
+      - drop
+    update_version:
+      mode: explicit
+      values:
+      - omitted_default
+      - specified_new_version
+      - nonexistent_version
+    relocatable_state:
+      mode: explicit
+      values:
+      - relocatable
+      - non_relocatable
+    member_object_type:
+      mode: explicit
+      values:
+      - table
+      - function
+      - type
+      - view
+      - sequence
+      - domain
+      - aggregate
+      - operator
+    extension_name_shape:
+      mode: explicit
+      values:
+      - simple_id
+      - quoted_id
+      - nonexistent_name
+    new_schema_shape:
+      mode: explicit
+      values:
+      - simple_id
+      - quoted_id
+      - nonexistent_schema
+    member_object_name_shape:
+      mode: explicit
+      values:
+      - simple_id
+      - schema_qualified
+      - quoted_id
+    version_string_shape:
+      mode: explicit
+      values:
+      - identifier_form
+      - string_literal_form
+    privilege_level:
+      mode: explicit
+      values:
+      - extension_owner
+      - non_owner
+      - superuser
+    object_owner_match:
+      mode: explicit
+      values:
+      - same_owner
+      - different_owner
+    target_schema_existence:
+      mode: explicit
+      values:
+      - schema_exists
+      - schema_not_exists
+    member_object_existence:
+      mode: explicit
+      values:
+      - object_exists
+      - object_not_exists
+    nonexistent_extension:
+      mode: explicit
+      values:
+      - extension_exists
+      - extension_missing
+    non_relocatable_set_schema:
+      mode: explicit
+      values:
+      - relocatable_extension
+      - non_relocatable_extension
+    nonexistent_member_object:
+      mode: explicit
+      values:
+      - object_exists
+      - object_missing
+    object_not_owner:
+      mode: explicit
+      values:
+      - owner_matches
+      - owner_mismatch
+    version_not_available:
+      mode: explicit
+      values:
+      - version_available
+      - version_unavailable
+    insufficient_privilege:
+      mode: explicit
+      values:
+      - owner_execution
+      - non_owner_execution
+      - superuser_execution
+    nonexistent_target_schema:
+      mode: explicit
+      values:
+      - schema_exists
+      - schema_missing
+    verification_mode:
+      mode: explicit
+      values:
+      - pg_extension_catalog_query
+      - pg_depend_catalog_query
+      - error_assertion
+    cleanup_mode:
+      mode: explicit
+      values:
+      - drop_member_from_extension
+      - revert_schema
+      - revert_version
+      - drop_extension
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - expected_status == success and the selected object, privilege, dependency, and syntax factors describe a legal statement
+      execution path
+    - notice or no-op paths are attributed by their declared factors and do not replace required success/failure coverage
+    failure_when:
+    - condition: expected_status == failure
+      reason: statement_specific_failure
+    - condition: declared object state, privilege, dependency, name-shape, validator, or numeric boundary factor selects an
+        invalid prerequisite
+      reason: declared_factor_failure
+    default_failure_reason: statement_specific_failure
+  sql_shape:
+    template: ALTER EXTENSION {extension_name} {alter_clause}
+  verification:
+    required: true
+    mode: catalog_or_error_assertion
+    sql: SELECT extname, extversion FROM pg_extension WHERE extname = '{extension_name}'
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP EXTENSION IF EXISTS {extension_name} CASCADE;
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

@@ -1,0 +1,521 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: alter_sequence
+  name: ALTER SEQUENCE
+  category: ddl
+  domain: sequence
+  source_reference: references/statements/ddl/sequence/alter_sequence.md
+  official_source: https://www.postgresql.org/docs/16/sql-altersequence.html
+  aliases:
+  - ALTER SEQUENCE
+  - alter sequence
+  - alter_sequence
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required matrix coverage must pass before any derived extension is emitted.
+  - Derived extensions may add stress, boundary, environment, or cross-factor combinations after the baseline audit passes.
+  - Derived extensions must not be counted as satisfying required factor, object, relation, table, or column-type coverage.
+  - Derived extensions must use declared factors and declared factor values.
+  - Derived extensions must preserve success, failure, no-op, or notice attribution.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds:
+    - sequence
+    decision_reason: ALTER_SEQUENCE directly targets PostgreSQL sequence generator objects and must cover sequence existence,
+      permanence, ownership, parameter, and dependency states.
+  target_relation_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_relation_kinds:
+    - sequence
+    decision_reason: ALTER_SEQUENCE targets sequences, which are pg_class relation objects with relkind S. Relation coverage
+      is therefore the sequence relation kind only, not tables, views, or indexes.
+  table_coverage:
+    required: true
+    coverage_mode: conditional
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_table_kinds:
+    - regular_table
+    decision_reason: ALTER_SEQUENCE has direct table-column dependency only for OWNED BY table_name.column_name branches.
+      Required table coverage is conditional on the owned_by factors; numeric sequence parameters are covered by sequence
+      factors instead of table-kind expansion.
+  column_type_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: ALTER_SEQUENCE uses sequence data types and numeric parameters such as AS smallint/integer/bigint, INCREMENT,
+      MINVALUE, MAXVALUE, START, CACHE, and CYCLE. These are sequence-definition factors, not PG16 table column-type coverage
+      from the shared type catalog.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - branch_alter_parameters
+      - branch_set_logged_unlogged
+      - branch_owner
+      - branch_rename
+      - branch_set_schema
+      coverage_requirement: all_declared_values
+    object_state:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - exists
+      - not_exists
+      coverage_requirement: all_declared_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - success
+      - failure
+      coverage_requirement: all_declared_values
+    if_exists_clause:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values:
+      - absent
+      - present
+      coverage_requirement: all_declared_values
+    alter_parameter_type:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values:
+      - change_data_type
+      - change_increment
+      - change_minmax
+      - change_start
+      - restart_with
+      - change_cache
+      - change_cycle
+      - change_owned_by
+      - none_parameter
+      coverage_requirement: all_declared_values
+    logged_unlogged_clause:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values:
+      - LOGGED
+      - UNLOGGED
+      coverage_requirement: all_declared_values
+    role_specification:
+      tier: T2
+      coverage_role: behavior_axis
+      required_values:
+      - new_owner_role
+      - CURRENT_ROLE
+      - CURRENT_USER
+      - SESSION_USER
+      coverage_requirement: all_declared_values
+    sequence_name_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - simple
+      - quoted
+      - reserved_word
+      - schema_qualified
+      coverage_requirement: all_declared_values
+    new_data_type:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - smallint
+      - integer
+      - bigint
+      coverage_requirement: all_declared_values
+    new_owner_shape:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - existing_role
+      - non_existing_role
+      - CURRENT_ROLE
+      - CURRENT_USER
+      - SESSION_USER
+      coverage_requirement: all_declared_values
+    new_schema_name:
+      tier: T3
+      coverage_role: input_shape_axis
+      required_values:
+      - existing_schema
+      - non_existing_schema
+      coverage_requirement: all_declared_values
+    privilege_level:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - superuser
+      - sequence_owner
+      - non_owner
+      coverage_requirement: all_declared_values
+    owned_by_table_dependency:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - same_owner_same_schema
+      - different_owner
+      - different_schema
+      coverage_requirement: all_declared_values
+    schema_privilege:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - has_CREATE
+      - no_CREATE
+      coverage_requirement: all_declared_values
+    owner_change_privilege:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - can_SET_ROLE
+      - cannot_SET_ROLE
+      coverage_requirement: all_declared_values
+    new_owner_schema_privilege:
+      tier: T4
+      coverage_role: dependency_or_environment_axis
+      required_values:
+      - has_CREATE
+      - no_CREATE
+      coverage_requirement: all_declared_values
+    non_existent_sequence:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - target_not_exists_no_if_exists
+      - target_not_exists_with_if_exists
+      coverage_requirement: all_declared_values
+    insufficient_privilege:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - non_owner
+      - cannot_SET_ROLE_to_owner
+      - no_CREATE_on_new_schema
+      coverage_requirement: all_declared_values
+    data_type_incompatible_values:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - values_exceed_new_type_range
+      coverage_requirement: all_declared_values
+    logged_unlogged_on_temporary:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - logged_unlogged_on_temp_illegal
+      coverage_requirement: all_declared_values
+    owned_by_different_owner:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - table_different_owner
+      coverage_requirement: all_declared_values
+    owned_by_different_schema:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - table_different_schema
+      coverage_requirement: all_declared_values
+    restart_value_out_of_range:
+      tier: T5
+      coverage_role: negative_boundary_axis
+      required_values:
+      - restart_exceeds_bounds
+      coverage_requirement: all_declared_values
+    verification_mode:
+      tier: T6
+      coverage_role: verification_cleanup_axis
+      required_values:
+      - pg_class_catalog_query
+      - sequence_inspection_query
+      - nextval_call
+      - currval_call
+      coverage_requirement: all_declared_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: verification_cleanup_axis
+      required_values:
+      - DROP_SEQUENCE
+      - DROP_SEQUENCE_IF_EXISTS
+      - DROP_SEQUENCE_CASCADE
+      coverage_requirement: all_declared_values
+dynamic_inputs:
+  sequence_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/sequence_manifest.json
+    required_fields:
+    - sequence_name
+    - object_state
+    - sequence_type
+    - owner
+    - schema_name
+  sequence_parameter_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/sequence_parameter_manifest.json
+    required_fields:
+    - as_data_type
+    - increment
+    - minvalue
+    - maxvalue
+    - start_value
+    - cache_value
+    - cycle
+  owned_by_dependency_manifest:
+    required: false
+    path_pattern: artifacts/intermediates/<task_slug>/owned_by_dependency_manifest.json
+    required_fields:
+    - table_name
+    - column_name
+    - same_owner
+    - same_schema
+combination_groups:
+- id: alter_sequence_required_factor_value_matrix
+  title: ALTER SEQUENCE required factor value baseline
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  expected_failure_reasons:
+  - non_existent_sequence
+  - insufficient_privilege
+  - data_type_incompatible_values
+  - logged_unlogged_on_temporary
+  - owned_by_different_owner
+  - owned_by_different_schema
+  - restart_value_out_of_range
+  factors:
+    statement_branch: branch_alter_parameters
+    object_state: exists
+    expected_status: success
+    if_exists_clause: absent
+    alter_parameter_type: change_data_type
+    logged_unlogged_clause: LOGGED
+    role_specification: new_owner_role
+    sequence_name_shape: simple
+    new_data_type: smallint
+    new_owner_shape: existing_role
+    new_schema_name: existing_schema
+    privilege_level: superuser
+    owned_by_table_dependency: same_owner_same_schema
+    schema_privilege: has_CREATE
+    owner_change_privilege: can_SET_ROLE
+    new_owner_schema_privilege: has_CREATE
+    non_existent_sequence: target_not_exists_no_if_exists
+    insufficient_privilege: non_owner
+    data_type_incompatible_values: values_exceed_new_type_range
+    logged_unlogged_on_temporary: logged_unlogged_on_temp_illegal
+    owned_by_different_owner: table_different_owner
+    owned_by_different_schema: table_different_schema
+    restart_value_out_of_range: restart_exceeds_bounds
+    verification_mode: pg_class_catalog_query
+    cleanup_mode: DROP_SEQUENCE
+  expansion:
+    statement_branch:
+      mode: explicit
+      values:
+      - branch_alter_parameters
+      - branch_set_logged_unlogged
+      - branch_owner
+      - branch_rename
+      - branch_set_schema
+    object_state:
+      mode: explicit
+      values:
+      - exists
+      - not_exists
+    expected_status:
+      mode: explicit
+      values:
+      - success
+      - failure
+    if_exists_clause:
+      mode: explicit
+      values:
+      - absent
+      - present
+    alter_parameter_type:
+      mode: explicit
+      values:
+      - change_data_type
+      - change_increment
+      - change_minmax
+      - change_start
+      - restart_with
+      - change_cache
+      - change_cycle
+      - change_owned_by
+      - none_parameter
+    logged_unlogged_clause:
+      mode: explicit
+      values:
+      - LOGGED
+      - UNLOGGED
+    role_specification:
+      mode: explicit
+      values:
+      - new_owner_role
+      - CURRENT_ROLE
+      - CURRENT_USER
+      - SESSION_USER
+    sequence_name_shape:
+      mode: explicit
+      values:
+      - simple
+      - quoted
+      - reserved_word
+      - schema_qualified
+    new_data_type:
+      mode: explicit
+      values:
+      - smallint
+      - integer
+      - bigint
+    new_owner_shape:
+      mode: explicit
+      values:
+      - existing_role
+      - non_existing_role
+      - CURRENT_ROLE
+      - CURRENT_USER
+      - SESSION_USER
+    new_schema_name:
+      mode: explicit
+      values:
+      - existing_schema
+      - non_existing_schema
+    privilege_level:
+      mode: explicit
+      values:
+      - superuser
+      - sequence_owner
+      - non_owner
+    owned_by_table_dependency:
+      mode: explicit
+      values:
+      - same_owner_same_schema
+      - different_owner
+      - different_schema
+    schema_privilege:
+      mode: explicit
+      values:
+      - has_CREATE
+      - no_CREATE
+    owner_change_privilege:
+      mode: explicit
+      values:
+      - can_SET_ROLE
+      - cannot_SET_ROLE
+    new_owner_schema_privilege:
+      mode: explicit
+      values:
+      - has_CREATE
+      - no_CREATE
+    non_existent_sequence:
+      mode: explicit
+      values:
+      - target_not_exists_no_if_exists
+      - target_not_exists_with_if_exists
+    insufficient_privilege:
+      mode: explicit
+      values:
+      - non_owner
+      - cannot_SET_ROLE_to_owner
+      - no_CREATE_on_new_schema
+    data_type_incompatible_values:
+      mode: explicit
+      values:
+      - values_exceed_new_type_range
+    logged_unlogged_on_temporary:
+      mode: explicit
+      values:
+      - logged_unlogged_on_temp_illegal
+    owned_by_different_owner:
+      mode: explicit
+      values:
+      - table_different_owner
+    owned_by_different_schema:
+      mode: explicit
+      values:
+      - table_different_schema
+    restart_value_out_of_range:
+      mode: explicit
+      values:
+      - restart_exceeds_bounds
+    verification_mode:
+      mode: explicit
+      values:
+      - pg_class_catalog_query
+      - sequence_inspection_query
+      - nextval_call
+      - currval_call
+    cleanup_mode:
+      mode: explicit
+      values:
+      - DROP_SEQUENCE
+      - DROP_SEQUENCE_IF_EXISTS
+      - DROP_SEQUENCE_CASCADE
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - expected_status == success and the selected object, privilege, dependency, and syntax factors describe a legal statement
+      execution path
+    - notice or no-op paths are attributed by their declared factors and do not replace required success/failure coverage
+    failure_when:
+    - condition: expected_status == failure
+      reason: statement_specific_failure
+    - condition: declared object state, privilege, dependency, name-shape, validator, or numeric boundary factor selects an
+        invalid prerequisite
+      reason: declared_factor_failure
+    default_failure_reason: statement_specific_failure
+  sql_shape:
+    template: ALTER SEQUENCE [ IF EXISTS ] {sequence_name} {alter_action}
+  verification:
+    required: true
+    mode: catalog_or_error_assertion
+    sql: SELECT count(*) FROM pg_class WHERE relname = '{sequence_name}' AND relkind = 'S'
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP SEQUENCE IF EXISTS {sequence_name} CASCADE;
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true
