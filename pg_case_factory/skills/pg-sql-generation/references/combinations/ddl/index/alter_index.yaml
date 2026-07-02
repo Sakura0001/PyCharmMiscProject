@@ -1,0 +1,644 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: alter_index
+  name: ALTER INDEX
+  category: ddl
+  domain: index
+  source_reference: references/statements/ddl/index/alter_index.md
+  official_source: https://www.postgresql.org/docs/16/sql-alterindex.html
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required matrix coverage must pass before any derived extension is emitted.
+  - Derived extensions may add stress, boundary, performance, or cross-factor combinations.
+  - Derived extensions must not be counted as satisfying required factor or column-type coverage.
+  - Derived extensions must use declared factors, declared factor values, and declared manifests.
+  - Derived extensions must preserve success, failure, or no-op attribution.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds: [index, partitioned_index]
+    decision_reason: >
+      ALTER INDEX mutates index relation metadata. The baseline explicitly covers
+      ordinary indexes and partitioned-index attachment behavior.
+  target_relation_coverage:
+    required: true
+    coverage_mode: conditional
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_relation_kinds:
+    - regular_table
+    - unlogged_table
+    - temporary_table
+    - partitioned_table_parent
+    - partitioned_table_leaf
+    - inherited_parent_table
+    - inherited_child_table
+    - materialized_view
+    decision_reason: >
+      Most ALTER INDEX branches target the index object directly. Relation-kind
+      coverage is required only for lifecycle setup that creates the target index,
+      for ATTACH PARTITION, and for ALL IN TABLESPACE batch migration.
+  table_coverage:
+    required: true
+    coverage_mode: conditional
+    inventory_source: coverage_scope.target_relation_coverage.required_relation_kinds
+    required_table_kinds:
+    - regular_table
+    - unlogged_table
+    - temporary_table
+    - partitioned_table_parent
+    - partitioned_table_leaf
+    - inherited_parent_table
+    - inherited_child_table
+    decision_reason: >
+      ALTER INDEX does not create table columns, but table form constrains
+      partition attachment, temporary-index tablespace behavior, and indexed
+      relation setup.
+  column_type_coverage:
+    required: true
+    coverage_mode: conditional
+    inventory_source: references/common/pg16_type_catalog.md
+    required_type_set: all_pg16_column_types
+    expansion_mode: branch_scoped_representative_types
+    require_each_type_success_or_failure: false
+    decision_reason: >
+      ALTER INDEX branches alter existing index metadata. Column type behavior is
+      conditional on the pre-created index used for method-specific storage
+      parameters, partition-index compatibility, and SET STATISTICS column
+      numbers; the baseline therefore uses representative concrete indexed column
+      types in branch setup, while exhaustive type compatibility remains owned by
+      CREATE INDEX.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values: [rename, set_tablespace, attach_partition, depends_on_extension, no_depends_on_extension, set_storage, reset_storage, set_statistics, all_in_tablespace]
+      coverage_requirement: all_values
+    object_state:
+      tier: T1
+      coverage_role: main_axis
+      required_values: [exists, not_exists]
+      coverage_requirement: all_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values: [success, failure, no_op]
+      coverage_requirement: all_values
+    if_exists:
+      tier: T2
+      coverage_role: branch_local_axis
+      required_values: ['false', 'true']
+      coverage_requirement: all_supported_branch_values
+    no_keyword:
+      tier: T2
+      coverage_role: branch_local_axis
+      required_values: ['false', 'true']
+      coverage_requirement: all_supported_branch_values
+    column_keyword:
+      tier: T2
+      coverage_role: branch_local_axis
+      required_values: ['false', 'true']
+      coverage_requirement: all_supported_branch_values
+    owned_by:
+      tier: T2
+      coverage_role: branch_local_axis
+      required_values: [absent, single_role, multiple_roles]
+      coverage_requirement: all_supported_branch_values
+    nowait:
+      tier: T2
+      coverage_role: branch_local_axis
+      required_values: ['false', 'true']
+      coverage_requirement: all_supported_branch_values
+    name_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values: [plain_identifier, schema_qualified, quoted_identifier, reserved_word, existing_object, missing_object]
+      coverage_requirement: all_values
+    storage_parameter_set:
+      tier: T4
+      coverage_role: branch_local_axis
+      required_values: [single_param_with_value, single_param_no_value, multiple_params]
+      coverage_requirement: all_values
+    storage_parameter_reset:
+      tier: T4
+      coverage_role: branch_local_axis
+      required_values: [single_param, multiple_params]
+      coverage_requirement: all_values
+    statistics_value:
+      tier: T4
+      coverage_role: branch_local_axis
+      required_values: [positive_integer, zero, negative_one, out_of_range]
+      coverage_requirement: all_values
+    column_number_value:
+      tier: T4
+      coverage_role: branch_local_axis
+      required_values: [valid_position, zero, out_of_range]
+      coverage_requirement: all_values
+    index_method:
+      tier: T4
+      coverage_role: method_axis
+      required_values: [btree, hash, gist, spgist, gin, brin]
+      coverage_requirement: all_values
+    invalid_combination:
+      tier: T5
+      coverage_role: negative_axis
+      required_values: [nonexistent_index_no_if_exists, attach_partition_definition_mismatch, system_catalog_index, statistics_column_out_of_range, none]
+      coverage_requirement: all_values
+    syntax_error:
+      tier: T5
+      coverage_role: negative_axis
+      required_values: [none, invalid_syntax]
+      coverage_requirement: success_failure_pair
+    permission_boundary:
+      tier: T5
+      coverage_role: negative_axis
+      required_values: [owner, non_owner, insufficient_tablespace_privilege]
+      coverage_requirement: all_values
+    verification_mode:
+      tier: T6
+      coverage_role: verification_axis
+      required_values: [catalog_query, meta_command, parameter_check]
+      coverage_requirement: all_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: cleanup_axis
+      required_values: [drop_index, reset_parameter, detach_partition]
+      coverage_requirement: all_values
+dynamic_inputs:
+  index_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/index_manifest.json
+    required_fields: [index_name, schema_name, table_name, relation_kind, index_method, columns, tablespace]
+  partition_index_manifest:
+    required: false
+    path_pattern: artifacts/intermediates/<task_slug>/partition_index_manifest.json
+    required_fields: [parent_index_name, child_index_name, partition_relation, definition_match]
+  tablespace_manifest:
+    required: false
+    path_pattern: artifacts/intermediates/<task_slug>/tablespace_manifest.json
+    required_fields: [source_tablespace, new_tablespace, role_names]
+  type_catalog:
+    required: true
+    path: references/common/pg16_type_catalog.md
+    required_fields: [type_key, type_category, declaration_sql, index_capabilities]
+combination_groups:
+- id: rename_and_set_tablespace_existing_index_success
+  title: RENAME and SET TABLESPACE for existing indexes
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  factors:
+    statement_branch: rename
+    object_state: exists
+    expected_status: success
+    if_exists: 'false'
+    name_shape: plain_identifier
+    index_method: btree
+    invalid_combination: none
+    syntax_error: none
+    permission_boundary: owner
+    verification_mode: catalog_query
+    cleanup_mode: drop_index
+  expansion:
+    statement_branch:
+      mode: explicit
+      values: [rename, set_tablespace]
+    if_exists:
+      mode: explicit
+      values: ['false', 'true']
+    name_shape:
+      mode: explicit
+      values: [plain_identifier, schema_qualified, quoted_identifier, reserved_word, existing_object]
+    index_method:
+      mode: explicit
+      values: [btree, hash, gist, spgist, gin, brin]
+    column_types:
+      mode: representative
+      values: [integer, text, jsonb, tsvector, int4range]
+    verification_mode:
+      mode: explicit
+      values: [catalog_query, meta_command]
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - object_state == exists and permission_boundary == owner
+    failure_when: []
+    default_failure_reason: none
+  sql_shape:
+    template: ALTER INDEX {if_exists_clause}{index_name} {rename_or_tablespace_action};
+  verification:
+    required: true
+    mode: catalog_query
+    sql: SELECT c.relname, c.reltablespace FROM pg_class c WHERE c.relname = '{index_name}';
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP INDEX IF EXISTS {index_name};
+- id: storage_parameter_set_reset_by_method
+  title: SET and RESET storage parameters across index methods
+  lifecycle_role: target_statement
+  expected_status_policy: per_method_and_storage_parameter
+  default_expected_status: success
+  factors:
+    statement_branch: set_storage
+    object_state: exists
+    expected_status: success
+    if_exists: 'false'
+    storage_parameter_set: single_param_with_value
+    storage_parameter_reset: single_param
+    index_method: btree
+    invalid_combination: none
+    syntax_error: none
+    permission_boundary: owner
+    verification_mode: parameter_check
+    cleanup_mode: reset_parameter
+  expansion:
+    statement_branch:
+      mode: explicit
+      values: [set_storage, reset_storage]
+    if_exists:
+      mode: explicit
+      values: ['false', 'true']
+    storage_parameter_set:
+      mode: explicit
+      values: [single_param_with_value, single_param_no_value, multiple_params]
+    storage_parameter_reset:
+      mode: explicit
+      values: [single_param, multiple_params]
+    index_method:
+      mode: explicit
+      values: [btree, hash, gist, spgist, gin, brin]
+    column_types:
+      mode: representative
+      values: [integer, text, jsonb, point, tsvector, int4range]
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - storage_parameter is valid for index_method
+    failure_when:
+    - condition: storage_parameter is not valid for index_method
+      reason: index_storage_parameter_not_supported_by_method
+    default_failure_reason: index_storage_parameter_not_supported_by_method
+  sql_shape:
+    template: ALTER INDEX {if_exists_clause}{index_name} {storage_parameter_action};
+  verification:
+    required: true
+    mode: parameter_check
+    sql: SELECT relname, reloptions FROM pg_class WHERE relname = '{index_name}';
+  cleanup:
+    required: true
+    steps:
+    - sql: ALTER INDEX IF EXISTS {index_name} RESET ({storage_parameter_names});
+- id: set_statistics_column_number_boundary
+  title: ALTER COLUMN SET STATISTICS column-number and value boundary
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  expected_failure_reasons:
+  - index_column_number_out_of_range
+  - invalid_statistics_target
+  factors:
+    statement_branch: set_statistics
+    object_state: exists
+    expected_status: success
+    if_exists: 'false'
+    column_keyword: 'false'
+    statistics_value: positive_integer
+    column_number_value: valid_position
+    invalid_combination: none
+    syntax_error: none
+    permission_boundary: owner
+    verification_mode: parameter_check
+    cleanup_mode: reset_parameter
+  expansion:
+    column_keyword:
+      mode: explicit
+      values: ['false', 'true']
+    statistics_value:
+      mode: explicit
+      values: [positive_integer, zero, negative_one, out_of_range]
+    column_number_value:
+      mode: explicit
+      values: [valid_position, zero, out_of_range]
+    invalid_combination:
+      mode: explicit
+      values: [none, statistics_column_out_of_range]
+    column_types:
+      mode: representative
+      values: [integer, text, jsonb]
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - column_number_value == valid_position and statistics_value in [positive_integer, zero, negative_one]
+    failure_when:
+    - condition: column_number_value in [zero, out_of_range]
+      reason: index_column_number_out_of_range
+    - condition: statistics_value == out_of_range
+      reason: invalid_statistics_target
+    default_failure_reason: set_statistics_binding_invalid
+  sql_shape:
+    template: ALTER INDEX {if_exists_clause}{index_name} ALTER {column_clause}{column_number} SET STATISTICS {statistics_target};
+  verification:
+    required: true
+    mode: parameter_check
+    sql: SELECT attname, attstattarget FROM pg_attribute WHERE attrelid = '{index_name}'::regclass;
+  cleanup:
+    required: true
+    steps:
+    - sql: ALTER INDEX IF EXISTS {index_name} ALTER COLUMN {column_number} SET STATISTICS -1;
+- id: missing_index_without_if_exists_failure
+  title: Missing index without IF EXISTS fails
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - relation_does_not_exist
+  factors:
+    statement_branch: rename
+    object_state: not_exists
+    expected_status: failure
+    if_exists: 'false'
+    name_shape: missing_object
+    invalid_combination: nonexistent_index_no_if_exists
+    syntax_error: none
+    permission_boundary: owner
+    verification_mode: catalog_query
+    cleanup_mode: drop_index
+  expansion:
+    statement_branch:
+      mode: explicit
+      values: [rename, set_tablespace, set_storage, reset_storage, set_statistics]
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - condition: object_state == not_exists and if_exists == 'false'
+      reason: relation_does_not_exist
+    default_failure_reason: relation_does_not_exist
+  sql_shape:
+    template: ALTER INDEX {missing_index_name} {missing_index_action};
+  verification:
+    required: false
+    mode: expected_error
+    sql: null
+  cleanup:
+    required: false
+- id: missing_index_with_if_exists_noop
+  title: Missing index with IF EXISTS is a no-op on supported branches
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: no_op
+  factors:
+    statement_branch: rename
+    object_state: not_exists
+    expected_status: no_op
+    if_exists: 'true'
+    name_shape: missing_object
+    invalid_combination: none
+    syntax_error: none
+    permission_boundary: owner
+    verification_mode: catalog_query
+    cleanup_mode: drop_index
+  expansion:
+    statement_branch:
+      mode: explicit
+      values: [rename, set_tablespace, set_storage, reset_storage, set_statistics]
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - object_state == not_exists and if_exists == 'true'
+    failure_when: []
+    default_failure_reason: none
+  sql_shape:
+    template: ALTER INDEX IF EXISTS {missing_index_name} {if_exists_noop_action};
+  verification:
+    required: true
+    mode: catalog_query
+    sql: SELECT to_regclass('{missing_index_name}') IS NULL AS remained_missing;
+  cleanup:
+    required: false
+- id: extension_dependency_variants
+  title: DEPENDS ON EXTENSION and NO DEPENDS ON EXTENSION
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  factors:
+    statement_branch: depends_on_extension
+    object_state: exists
+    expected_status: success
+    no_keyword: 'false'
+    name_shape: plain_identifier
+    invalid_combination: none
+    syntax_error: none
+    permission_boundary: owner
+    verification_mode: catalog_query
+    cleanup_mode: drop_index
+  expansion:
+    statement_branch:
+      mode: explicit
+      values: [depends_on_extension, no_depends_on_extension]
+    no_keyword:
+      mode: explicit
+      values: ['false', 'true']
+    name_shape:
+      mode: explicit
+      values: [plain_identifier, schema_qualified, quoted_identifier, reserved_word]
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - extension exists and object_state == exists
+    failure_when:
+    - condition: extension does not exist
+      reason: extension_does_not_exist
+    default_failure_reason: extension_dependency_binding_invalid
+  sql_shape:
+    template: ALTER INDEX {index_name} {no_clause}DEPENDS ON EXTENSION {extension_name};
+  verification:
+    required: true
+    mode: catalog_query
+    sql: SELECT objid FROM pg_depend WHERE objid = '{index_name}'::regclass;
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP INDEX IF EXISTS {index_name};
+- id: attach_partition_success_and_mismatch_failure
+  title: ATTACH PARTITION success and definition mismatch failure
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  expected_failure_reasons:
+  - partition_index_definition_mismatch
+  factors:
+    statement_branch: attach_partition
+    object_state: exists
+    expected_status: success
+    name_shape: schema_qualified
+    index_method: btree
+    invalid_combination: none
+    syntax_error: none
+    permission_boundary: owner
+    verification_mode: catalog_query
+    cleanup_mode: detach_partition
+  expansion:
+    invalid_combination:
+      mode: explicit
+      values: [none, attach_partition_definition_mismatch]
+    column_types:
+      mode: representative
+      values: [integer, text]
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - parent and partition index definitions match
+    failure_when:
+    - condition: invalid_combination == attach_partition_definition_mismatch
+      reason: partition_index_definition_mismatch
+    default_failure_reason: partition_index_definition_mismatch
+  sql_shape:
+    template: ALTER INDEX {parent_index_name} ATTACH PARTITION {partition_index_name};
+  verification:
+    required: true
+    mode: catalog_query
+    sql: SELECT inhrelid::regclass FROM pg_inherits WHERE inhparent = '{parent_index_name}'::regclass;
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP INDEX IF EXISTS {partition_index_name};
+- id: all_in_tablespace_batch_move
+  title: ALL IN TABLESPACE batch migration with role and NOWAIT variants
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  expected_failure_reasons:
+  - tablespace_permission_denied
+  factors:
+    statement_branch: all_in_tablespace
+    object_state: exists
+    expected_status: success
+    owned_by: absent
+    nowait: 'false'
+    invalid_combination: none
+    syntax_error: none
+    permission_boundary: owner
+    verification_mode: catalog_query
+    cleanup_mode: drop_index
+  expansion:
+    owned_by:
+      mode: explicit
+      values: [absent, single_role, multiple_roles]
+    nowait:
+      mode: explicit
+      values: ['false', 'true']
+    permission_boundary:
+      mode: explicit
+      values: [owner, non_owner, insufficient_tablespace_privilege]
+    relation_kinds:
+      mode: conditional
+      source: coverage_scope.target_relation_coverage.required_relation_kinds
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - source_tablespace exists and new_tablespace exists and permission_boundary == owner
+    failure_when:
+    - condition: permission_boundary == insufficient_tablespace_privilege
+      reason: tablespace_permission_denied
+    - condition: permission_boundary == non_owner
+      reason: must_own_index
+    default_failure_reason: alter_index_all_in_tablespace_failed
+  sql_shape:
+    template: ALTER INDEX ALL IN TABLESPACE {source_tablespace} {owned_by_clause}SET TABLESPACE {new_tablespace} {nowait_clause};
+  verification:
+    required: true
+    mode: catalog_query
+    sql: SELECT relname, reltablespace FROM pg_class WHERE relkind = 'i';
+  cleanup:
+    required: true
+    steps:
+    - sql: ALTER INDEX ALL IN TABLESPACE {new_tablespace} SET TABLESPACE {source_tablespace};
+- id: syntax_and_system_catalog_failures
+  title: Explicit syntax, system catalog, and permission failures
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - alter_index_syntax_is_invalid
+  - cannot_alter_system_catalog_index
+  - must_own_index
+  factors:
+    statement_branch: set_storage
+    object_state: exists
+    expected_status: failure
+    name_shape: reserved_word
+    invalid_combination: system_catalog_index
+    syntax_error: invalid_syntax
+    permission_boundary: non_owner
+    verification_mode: catalog_query
+    cleanup_mode: drop_index
+  expansion:
+    syntax_error:
+      mode: explicit
+      values: [none, invalid_syntax]
+    invalid_combination:
+      mode: explicit
+      values: [system_catalog_index, statistics_column_out_of_range]
+    permission_boundary:
+      mode: explicit
+      values: [non_owner, insufficient_tablespace_privilege]
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - condition: syntax_error == invalid_syntax
+      reason: alter_index_syntax_is_invalid
+    - condition: invalid_combination == system_catalog_index
+      reason: cannot_alter_system_catalog_index
+    - condition: permission_boundary == non_owner
+      reason: must_own_index
+    default_failure_reason: alter_index_negative_boundary
+  sql_shape:
+    template: ALTER INDEX {invalid_or_protected_index_name} {invalid_alter_index_action};
+  verification:
+    required: false
+    mode: expected_error
+    sql: null
+  cleanup:
+    required: false
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

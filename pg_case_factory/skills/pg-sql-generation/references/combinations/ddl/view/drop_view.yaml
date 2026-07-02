@@ -1,0 +1,393 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: drop_view
+  name: DROP VIEW
+  category: ddl
+  domain: view
+  source_reference: references/statements/ddl/view/drop_view.md
+  aliases:
+  - drop_view
+  - DROP VIEW
+  - dropview
+  - drop view
+  official_source: https://www.postgresql.org/docs/16/sql-dropview.html
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required matrix coverage must pass before any derived extension is emitted.
+  - Derived extensions may add stress, boundary, performance, or cross-factor combinations.
+  - Derived extensions must not be counted as satisfying required factor or column-type coverage.
+  - Derived extensions must use declared factors, declared factor values, and declared manifests.
+  - Derived extensions must preserve success or failure attribution.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds:
+    - plain_view
+    decision_reason: >-
+      DROP VIEW removes plain view definitions. Other object kinds are covered as
+      wrong-object failures rather than successful target objects.
+  target_relation_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_relation_kinds:
+    - plain_view
+    negative_relation_kinds:
+    - regular_table
+    - materialized_view
+    - sequence
+    decision_reason: >-
+      The target relation must be a plain view. Dependency-chain behavior is
+      represented through dependency_state and cascade_restrict factors.
+  table_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: >-
+      DROP VIEW deletes view definitions and intentionally preserves underlying
+      base tables. It does not operate on table storage or table column values.
+  column_type_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: >-
+      DROP VIEW does not read, transform, validate, or store column values. View
+      column data types have no required coverage role for removal behavior.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - branch_drop_view
+      - branch_drop_view_if_exists
+      coverage_requirement: all_values
+    object_state:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - exists
+      - not_exists
+      coverage_requirement: success_failure_pair
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - success
+      - failure
+      coverage_requirement: all_values
+    if_exists_clause:
+      tier: T2
+      coverage_role: main_axis
+      required_values:
+      - absent
+      - present
+      coverage_requirement: success_failure_pair
+    cascade_restrict:
+      tier: T2
+      coverage_role: main_axis
+      required_values:
+      - none
+      - cascade
+      - restrict
+      coverage_requirement: all_values
+    view_name_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values:
+      - simple
+      - quoted
+      - reserved_word
+      - schema_qualified
+      - non_existent
+      coverage_requirement: all_values
+    multi_view_drop:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values:
+      - single_view
+      - multi_view
+      coverage_requirement: all_values
+    privilege_level:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values:
+      - owner
+      - superuser
+      - schema_owner
+      - non_owner
+      coverage_requirement: success_failure_pair
+    dependency_state:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values:
+      - no_dependents
+      - has_dependent_views
+      - has_dependent_policies
+      coverage_requirement: all_values
+    error_boundary:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values:
+      - none
+      - non_existent_without_if_exists
+      - dependent_objects_without_cascade
+      - insufficient_privilege
+      - wrong_object_type
+      coverage_requirement: all_values
+    verification_mode:
+      tier: T6
+      coverage_role: rotate_attach
+      required_values:
+      - pg_class_query
+      - error_assertion
+      - notice_assertion
+      - effect_query
+      coverage_requirement: all_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: rotate_attach
+      required_values:
+      - cascade_cleanup
+      - manual_cleanup
+      - rollback
+      coverage_requirement: all_values
+dynamic_inputs:
+  view_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/view_manifest.json
+    required_fields:
+    - view_name
+    - schema_name
+    - owner
+    - exists_before_drop
+  dependency_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/view_dependency_manifest.json
+    required_fields:
+    - dependent_views
+    - dependent_policies
+    - cascade_expected_to_remove
+  role_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/role_manifest.json
+    required_fields:
+    - role_name
+    - owns_view
+    - owns_schema
+combination_groups:
+- id: drop_view_existence_and_if_exists_matrix
+  title: DROP VIEW existence and IF EXISTS behavior
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  expected_failure_reasons:
+  - non_existent_without_if_exists
+  factors:
+    statement_branch: branch_drop_view
+    object_state: exists
+    expected_status: success
+    if_exists_clause: absent
+    cascade_restrict: none
+    view_name_shape: simple
+    multi_view_drop: single_view
+    privilege_level: owner
+    dependency_state: no_dependents
+    error_boundary: none
+    verification_mode: pg_class_query
+    cleanup_mode: manual_cleanup
+  expansion:
+    statement_branch:
+      mode: explicit
+      values:
+      - branch_drop_view
+      - branch_drop_view_if_exists
+    object_state:
+      mode: explicit
+      values:
+      - exists
+      - not_exists
+    expected_status:
+      mode: explicit
+      values:
+      - success
+      - failure
+    if_exists_clause:
+      mode: explicit
+      values:
+      - absent
+      - present
+    cascade_restrict:
+      mode: representative
+      values:
+      - none
+      - restrict
+    view_name_shape:
+      mode: representative
+      values:
+      - simple
+      - quoted
+      - reserved_word
+      - schema_qualified
+      - non_existent
+    multi_view_drop:
+      mode: representative
+      values:
+      - single_view
+      - multi_view
+    privilege_level:
+      mode: representative
+      values:
+      - owner
+      - superuser
+      - schema_owner
+    error_boundary:
+      mode: explicit
+      values:
+      - none
+      - non_existent_without_if_exists
+    verification_mode:
+      mode: representative
+      values:
+      - pg_class_query
+      - notice_assertion
+      - error_assertion
+    cleanup_mode:
+      mode: representative
+      values:
+      - manual_cleanup
+      - rollback
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - object_state == exists and privilege_level in [owner, superuser, schema_owner]
+    - object_state == not_exists and if_exists_clause == present
+    failure_when:
+    - condition: object_state == not_exists and if_exists_clause == absent
+      reason: non_existent_without_if_exists
+    default_failure_reason: drop_view_existence_binding_invalid
+  sql_shape:
+    template: DROP VIEW {if_exists_clause} {view_name_list} {cascade_restrict};
+  verification:
+    required: true
+    mode: catalog_or_notice_assertion
+    sql: SELECT 1 FROM pg_class WHERE relname = '{view_name}' AND relkind = 'v';
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP VIEW IF EXISTS {view_name} CASCADE;
+- id: drop_view_dependency_cascade_and_privilege_boundaries
+  title: Dependency chain, CASCADE or RESTRICT, privilege, and wrong-object failures
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: failure
+  expected_failure_reasons:
+  - dependent_objects_without_cascade
+  - insufficient_privilege
+  - wrong_object_type
+  factors:
+    statement_branch: branch_drop_view
+    object_state: exists
+    expected_status: failure
+    if_exists_clause: absent
+    cascade_restrict: restrict
+    view_name_shape: simple
+    multi_view_drop: single_view
+    privilege_level: non_owner
+    dependency_state: has_dependent_views
+    error_boundary: dependent_objects_without_cascade
+    verification_mode: effect_query
+    cleanup_mode: cascade_cleanup
+  expansion:
+    cascade_restrict:
+      mode: explicit
+      values:
+      - none
+      - cascade
+      - restrict
+    privilege_level:
+      mode: explicit
+      values:
+      - non_owner
+    dependency_state:
+      mode: explicit
+      values:
+      - no_dependents
+      - has_dependent_views
+      - has_dependent_policies
+    error_boundary:
+      mode: explicit
+      values:
+      - none
+      - dependent_objects_without_cascade
+      - insufficient_privilege
+      - wrong_object_type
+    verification_mode:
+      mode: explicit
+      values:
+      - error_assertion
+      - effect_query
+    cleanup_mode:
+      mode: explicit
+      values:
+      - cascade_cleanup
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - dependency_state in [has_dependent_views, has_dependent_policies] and cascade_restrict == cascade and privilege_level != non_owner
+    failure_when:
+    - condition: dependency_state in [has_dependent_views, has_dependent_policies] and cascade_restrict in [none, restrict]
+      reason: dependent_objects_without_cascade
+    - condition: privilege_level == non_owner
+      reason: insufficient_privilege
+    - condition: error_boundary == wrong_object_type
+      reason: wrong_object_type
+    default_failure_reason: drop_view_dependency_or_privilege_failure
+  sql_shape:
+    template: DROP VIEW {view_name_list} {cascade_restrict};
+  verification:
+    required: true
+    mode: error_or_effect_assertion
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP VIEW IF EXISTS {view_name} CASCADE;
+    - sql: DROP VIEW IF EXISTS {dependent_view_name} CASCADE;
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

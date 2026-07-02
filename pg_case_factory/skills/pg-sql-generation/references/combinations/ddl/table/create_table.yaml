@@ -1,0 +1,942 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: create_table
+  name: CREATE TABLE
+  category: ddl
+  domain: table
+  source_reference: references/statements/ddl/table/create_table.md
+  aliases:
+  - CREATE TABLE
+  - create table
+  - create_table
+  official_source: https://www.postgresql.org/docs/16/sql-createtable.html
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required baseline audit must pass before any derived extension is emitted.
+  - Derived extensions may add stress, boundary, lifecycle, or cross-factor combinations only after the baseline passes.
+  - Derived extensions must not count toward required declared factor or column-type coverage.
+  - Derived extensions must use only declared factors, declared values, and recorded derivation reasons.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds:
+    - regular_table
+    - unlogged_table
+    - temporary_table
+    - partitioned_table_parent
+    - partitioned_table_leaf
+    - inherited_child_table
+    decision_reason: create_table targets table-backed relation objects; the baseline declares each object kind that can be
+      created, modified, read, emptied, or removed by this statement.
+  target_relation_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_relation_kinds:
+    - regular_table
+    - unlogged_table
+    - temporary_table
+    - partitioned_table_parent
+    - partitioned_table_leaf
+    - inherited_parent_table
+    - inherited_child_table
+    negative_relation_kinds:
+    - plain_view
+    - foreign_table
+    - sequence
+    - materialized_view
+    decision_reason: create_table operates on table relations rather than arbitrary relation objects. Relation coverage is
+      explicit so invalid non-table relation kinds remain negative controls.
+  table_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_table_kinds:
+    - regular_table
+    - unlogged_table
+    - temporary_table
+    - partitioned_table_parent
+    - partitioned_table_leaf
+    - inherited_parent_table
+    - inherited_child_table
+    decision_reason: create_table behavior depends on table form, including permanent, temporary, unlogged, partitioned, and
+      inherited table variants where the statement reference declares those states.
+  column_type_coverage:
+    required: true
+    coverage_mode: exhaustive
+    inventory_source: references/common/pg16_type_catalog.md
+    required_type_set: all_pg16_column_types
+    expansion_mode: exhaustive
+    require_each_type_success_or_failure: true
+    decision_reason: CREATE TABLE is the primary DDL statement that declares table columns. The baseline expands the declared
+      data_type factor and requires every PostgreSQL 16 table-column type from the shared type catalog to resolve to a success
+      or declared failure binding.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - branch_1
+      - branch_2
+      - branch_3
+      coverage_requirement: all_values
+    object_state:
+      tier: T1
+      coverage_role: rotate_attach
+      required_values:
+      - not_exists
+      - already_exists
+      coverage_requirement: all_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - success
+      - failure
+      coverage_requirement: all_values
+    table_type:
+      tier: T2
+      coverage_role: main_axis
+      required_values:
+      - permanent
+      - temporary_global
+      - temporary_local
+      - temp_short
+      - unlogged
+      coverage_requirement: all_values
+    if_not_exists_clause:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - present
+      - absent
+      coverage_requirement: all_values
+    column_definition_count:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - single_column
+      - multiple_columns
+      coverage_requirement: all_values
+    constraint_type:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - PRIMARY_KEY
+      - UNIQUE
+      - CHECK
+      - FOREIGN_KEY
+      - EXCLUDE
+      - NOT_NULL
+      - null
+      - DEFAULT
+      - GENERATED_ALWAYS_STORED
+      - GENERATED_IDENTITY
+      coverage_requirement: all_values
+    partition_clause:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - RANGE
+      - LIST
+      - HASH
+      - not_partitioned
+      coverage_requirement: all_values
+    inheritance_clause:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - INHERITS
+      - no_inheritance
+      coverage_requirement: all_values
+    like_clause:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - LIKE_with_options
+      - LIKE_no_options
+      - no_LIKE
+      coverage_requirement: all_values
+    on_commit_clause:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - PRESERVE_ROWS
+      - DELETE_ROWS
+      - DROP
+      - absent
+      coverage_requirement: all_values
+    table_name_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values:
+      - simple
+      - quoted
+      - reserved_word
+      - schema_qualified
+      - duplicate
+      coverage_requirement: all_values
+    column_name_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values:
+      - simple
+      - quoted
+      - reserved_word
+      - duplicate_in_table
+      coverage_requirement: all_values
+    data_type:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values:
+      - smallint
+      - integer
+      - bigint
+      - smallserial
+      - serial
+      - bigserial
+      - real
+      - double_precision
+      - numeric
+      - decimal
+      - money
+      - character_varying
+      - character
+      - text
+      - bytea
+      - date
+      - time
+      - time_with_time_zone
+      - timestamp
+      - timestamp_with_time_zone
+      - interval
+      - boolean
+      - point
+      - line
+      - lseg
+      - box
+      - path
+      - polygon
+      - circle
+      - cidr
+      - inet
+      - macaddr
+      - macaddr8
+      - bit
+      - bit_varying
+      - tsvector
+      - tsquery
+      - uuid
+      - xml
+      - json
+      - jsonb
+      - integer_array
+      - text_array
+      - varchar_array
+      - numeric_array
+      - timestamp_array
+      - jsonb_array
+      - int4range
+      - int8range
+      - numrange
+      - tsrange
+      - tstzrange
+      - daterange
+      - composite_type
+      - enum_type
+      - oid
+      - regclass
+      - regtype
+      - regproc
+      - regnamespace
+      - regrole
+      - pg_lsn
+      - name
+      - tid
+      - xid
+      - xid8
+      - cid
+      - aclitem
+      - pg_snapshot
+      coverage_requirement: all_values
+    default_value_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values:
+      - with_DEFAULT_literal
+      - with_DEFAULT_expression
+      - without_DEFAULT
+      coverage_requirement: all_values
+    collation_clause:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values:
+      - with_COLLATION
+      - without_COLLATION
+      coverage_requirement: all_values
+    generated_clause:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values:
+      - GENERATED_ALWAYS_AS_STORED
+      - GENERATED_ALWAYS_AS_IDENTITY
+      - GENERATED_BY_DEFAULT_AS_IDENTITY
+      - none
+      coverage_requirement: all_values
+    base_table_template_coverage:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values:
+      - table_01_comprehensive_types
+      - table_02_simplified_types
+      - table_03_partition_parent
+      - table_04_typed_table
+      coverage_requirement: all_values
+    privilege_level:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values:
+      - superuser
+      - table_owner
+      - non_owner_with_create
+      - non_owner_no_privilege
+      coverage_requirement: all_values
+    schema_dependency:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values:
+      - schema_exists
+      - schema_not_exists
+      - pg_catalog_reserved
+      - information_schema_reserved
+      coverage_requirement: all_values
+    tablespace_dependency:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values:
+      - default_tablespace
+      - specified_tablespace_exists
+      - specified_tablespace_not_exists
+      coverage_requirement: all_values
+    role_dependency:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values:
+      - owner_role_exists
+      - owner_role_not_exists
+      coverage_requirement: all_values
+    type_dependency:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values:
+      - composite_type_exists
+      - composite_type_not_exists
+      coverage_requirement: all_values
+    parent_table_dependency:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values:
+      - parent_table_exists
+      - parent_table_not_exists
+      - parent_table_not_partitioned
+      coverage_requirement: all_values
+    referenced_table_dependency:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values:
+      - referenced_table_exists
+      - referenced_table_not_exists
+      coverage_requirement: all_values
+    duplicate_table_name:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values:
+      - with_IF_NOT_EXISTS_noop
+      - without_IF_NOT_EXISTS_error
+      coverage_requirement: all_values
+    duplicate_column_name:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values:
+      - same_column_name_in_table
+      coverage_requirement: all_values
+    invalid_data_type:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values:
+      - unknown_type_name
+      - wrong_array_syntax
+      coverage_requirement: all_values
+    constraint_violation_in_definition:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values:
+      - FK_references_nonexistent_table
+      - CHECK_expression_invalid
+      - PK_with_nullable_column
+      coverage_requirement: all_values
+    schema_permission_insufficient:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values:
+      - no_create_privilege_in_schema
+      coverage_requirement: all_values
+    reserved_schema_name:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values:
+      - pg_catalog
+      - information_schema
+      coverage_requirement: all_values
+    max_column_limit:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values:
+      - approaching_1600
+      - at_1600
+      - over_1600
+      coverage_requirement: all_values
+    identifier_length_exceeded:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values:
+      - over_63_chars
+      coverage_requirement: all_values
+    temporary_table_scope_conflict:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values:
+      - temp_table_same_name_permanent
+      coverage_requirement: all_values
+    partition_bound_invalid:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values:
+      - bound_out_of_range
+      - bound_type_mismatch
+      coverage_requirement: all_values
+    on_commit_with_non_temporary:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values:
+      - on_commit_on_permanent_table
+      coverage_requirement: all_values
+    verification_mode:
+      tier: T6
+      coverage_role: rotate_attach
+      required_values:
+      - pg_class_catalog_query
+      - information_schema_tables
+      - information_schema_columns
+      - SELECT_count
+      - pg_attribute_query
+      coverage_requirement: all_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: rotate_attach
+      required_values:
+      - DROP_TABLE
+      - DROP_TABLE_IF_EXISTS
+      - DROP_TABLE_CASCADE
+      - DROP_TABLE_CASCADE_RESTRICT
+      coverage_requirement: all_values
+dynamic_inputs:
+  table_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/table_manifest.json
+    required_fields:
+    - table_name
+    - relation_kind
+    - table_kind
+    - columns
+  type_catalog:
+    required: true
+    path: references/common/pg16_type_catalog.md
+    required_fields:
+    - type_key
+    - type_category
+    - declaration_sql
+    - sample_values
+  column_definition_manifest:
+    required: true
+    source: type_catalog.types
+    required_fields:
+    - column_name
+    - type_key
+    - declaration_sql
+    - requires_setup
+combination_groups:
+- id: create_table_declared_factor_baseline
+  title: Declared factor baseline with all required statement-reference values
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  factors:
+    statement_branch: branch_1
+    object_state: not_exists
+    expected_status: success
+    table_type: permanent
+    if_not_exists_clause: present
+    column_definition_count: single_column
+    constraint_type: PRIMARY_KEY
+    partition_clause: RANGE
+    inheritance_clause: INHERITS
+    like_clause: LIKE_with_options
+    on_commit_clause: PRESERVE_ROWS
+    table_name_shape: simple
+    column_name_shape: simple
+    data_type: smallint
+    default_value_shape: with_DEFAULT_literal
+    collation_clause: with_COLLATION
+    generated_clause: GENERATED_ALWAYS_AS_STORED
+    base_table_template_coverage: table_01_comprehensive_types
+    privilege_level: superuser
+    schema_dependency: schema_exists
+    tablespace_dependency: default_tablespace
+    role_dependency: owner_role_exists
+    type_dependency: composite_type_exists
+    parent_table_dependency: parent_table_exists
+    referenced_table_dependency: referenced_table_exists
+    duplicate_table_name: with_IF_NOT_EXISTS_noop
+    duplicate_column_name: same_column_name_in_table
+    invalid_data_type: unknown_type_name
+    constraint_violation_in_definition: FK_references_nonexistent_table
+    schema_permission_insufficient: no_create_privilege_in_schema
+    reserved_schema_name: pg_catalog
+    max_column_limit: approaching_1600
+    identifier_length_exceeded: over_63_chars
+    temporary_table_scope_conflict: temp_table_same_name_permanent
+    partition_bound_invalid: bound_out_of_range
+    on_commit_with_non_temporary: on_commit_on_permanent_table
+    verification_mode: pg_class_catalog_query
+    cleanup_mode: DROP_TABLE
+  expansion:
+    statement_branch:
+      mode: explicit
+      values:
+      - branch_1
+      - branch_2
+      - branch_3
+    object_state:
+      mode: explicit
+      values:
+      - not_exists
+      - already_exists
+    table_type:
+      mode: explicit
+      values:
+      - permanent
+      - temporary_global
+      - temporary_local
+      - temp_short
+      - unlogged
+    if_not_exists_clause:
+      mode: explicit
+      values:
+      - present
+      - absent
+    column_definition_count:
+      mode: explicit
+      values:
+      - single_column
+      - multiple_columns
+    constraint_type:
+      mode: explicit
+      values:
+      - PRIMARY_KEY
+      - UNIQUE
+      - CHECK
+      - FOREIGN_KEY
+      - EXCLUDE
+      - NOT_NULL
+      - null
+      - DEFAULT
+      - GENERATED_ALWAYS_STORED
+      - GENERATED_IDENTITY
+    partition_clause:
+      mode: explicit
+      values:
+      - RANGE
+      - LIST
+      - HASH
+      - not_partitioned
+    inheritance_clause:
+      mode: explicit
+      values:
+      - INHERITS
+      - no_inheritance
+    like_clause:
+      mode: explicit
+      values:
+      - LIKE_with_options
+      - LIKE_no_options
+      - no_LIKE
+    on_commit_clause:
+      mode: explicit
+      values:
+      - PRESERVE_ROWS
+      - DELETE_ROWS
+      - DROP
+      - absent
+    table_name_shape:
+      mode: explicit
+      values:
+      - simple
+      - quoted
+      - reserved_word
+      - schema_qualified
+      - duplicate
+    column_name_shape:
+      mode: explicit
+      values:
+      - simple
+      - quoted
+      - reserved_word
+      - duplicate_in_table
+    data_type:
+      mode: explicit
+      values:
+      - smallint
+      - integer
+      - bigint
+      - smallserial
+      - serial
+      - bigserial
+      - real
+      - double_precision
+      - numeric
+      - decimal
+      - money
+      - character_varying
+      - character
+      - text
+      - bytea
+      - date
+      - time
+      - time_with_time_zone
+      - timestamp
+      - timestamp_with_time_zone
+      - interval
+      - boolean
+      - point
+      - line
+      - lseg
+      - box
+      - path
+      - polygon
+      - circle
+      - cidr
+      - inet
+      - macaddr
+      - macaddr8
+      - bit
+      - bit_varying
+      - tsvector
+      - tsquery
+      - uuid
+      - xml
+      - json
+      - jsonb
+      - integer_array
+      - text_array
+      - varchar_array
+      - numeric_array
+      - timestamp_array
+      - jsonb_array
+      - int4range
+      - int8range
+      - numrange
+      - tsrange
+      - tstzrange
+      - daterange
+      - composite_type
+      - enum_type
+      - oid
+      - regclass
+      - regtype
+      - regproc
+      - regnamespace
+      - regrole
+      - pg_lsn
+      - name
+      - tid
+      - xid
+      - xid8
+      - cid
+      - aclitem
+      - pg_snapshot
+    default_value_shape:
+      mode: explicit
+      values:
+      - with_DEFAULT_literal
+      - with_DEFAULT_expression
+      - without_DEFAULT
+    collation_clause:
+      mode: explicit
+      values:
+      - with_COLLATION
+      - without_COLLATION
+    generated_clause:
+      mode: explicit
+      values:
+      - GENERATED_ALWAYS_AS_STORED
+      - GENERATED_ALWAYS_AS_IDENTITY
+      - GENERATED_BY_DEFAULT_AS_IDENTITY
+      - none
+    base_table_template_coverage:
+      mode: explicit
+      values:
+      - table_01_comprehensive_types
+      - table_02_simplified_types
+      - table_03_partition_parent
+      - table_04_typed_table
+    privilege_level:
+      mode: explicit
+      values:
+      - superuser
+      - table_owner
+      - non_owner_with_create
+      - non_owner_no_privilege
+    schema_dependency:
+      mode: explicit
+      values:
+      - schema_exists
+      - schema_not_exists
+      - pg_catalog_reserved
+      - information_schema_reserved
+    tablespace_dependency:
+      mode: explicit
+      values:
+      - default_tablespace
+      - specified_tablespace_exists
+      - specified_tablespace_not_exists
+    role_dependency:
+      mode: explicit
+      values:
+      - owner_role_exists
+      - owner_role_not_exists
+    type_dependency:
+      mode: explicit
+      values:
+      - composite_type_exists
+      - composite_type_not_exists
+    parent_table_dependency:
+      mode: explicit
+      values:
+      - parent_table_exists
+      - parent_table_not_exists
+      - parent_table_not_partitioned
+    referenced_table_dependency:
+      mode: explicit
+      values:
+      - referenced_table_exists
+      - referenced_table_not_exists
+    duplicate_table_name:
+      mode: explicit
+      values:
+      - with_IF_NOT_EXISTS_noop
+      - without_IF_NOT_EXISTS_error
+    duplicate_column_name:
+      mode: explicit
+      values:
+      - same_column_name_in_table
+    invalid_data_type:
+      mode: explicit
+      values:
+      - unknown_type_name
+      - wrong_array_syntax
+    constraint_violation_in_definition:
+      mode: explicit
+      values:
+      - FK_references_nonexistent_table
+      - CHECK_expression_invalid
+      - PK_with_nullable_column
+    schema_permission_insufficient:
+      mode: explicit
+      values:
+      - no_create_privilege_in_schema
+    reserved_schema_name:
+      mode: explicit
+      values:
+      - pg_catalog
+      - information_schema
+    max_column_limit:
+      mode: explicit
+      values:
+      - approaching_1600
+      - at_1600
+      - over_1600
+    identifier_length_exceeded:
+      mode: explicit
+      values:
+      - over_63_chars
+    temporary_table_scope_conflict:
+      mode: explicit
+      values:
+      - temp_table_same_name_permanent
+    partition_bound_invalid:
+      mode: explicit
+      values:
+      - bound_out_of_range
+      - bound_type_mismatch
+    on_commit_with_non_temporary:
+      mode: explicit
+      values:
+      - on_commit_on_permanent_table
+    verification_mode:
+      mode: explicit
+      values:
+      - pg_class_catalog_query
+      - information_schema_tables
+      - information_schema_columns
+      - SELECT_count
+      - pg_attribute_query
+    cleanup_mode:
+      mode: explicit
+      values:
+      - DROP_TABLE
+      - DROP_TABLE_IF_EXISTS
+      - DROP_TABLE_CASCADE
+      - DROP_TABLE_CASCADE_RESTRICT
+    column_types:
+      mode: exhaustive
+      source: coverage_scope.column_type_coverage.required_type_set
+    table_kinds:
+      mode: explicit
+      source: coverage_scope.table_coverage.required_table_kinds
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - binding is syntactically valid and prerequisite objects satisfy the selected factor values
+    failure_when:
+    - condition: binding selects a declared negative object state, dependency state, privilege state, or invalid syntax/input
+        value
+      reason: duplicate_table_without_if_not_exists
+    default_failure_reason: duplicate_table_without_if_not_exists
+  sql_shape:
+    template: CREATE {table_type} TABLE {if_not_exists_clause} {table_name} ({column_definitions}) {partition_clause};
+  verification:
+    required: true
+    mode: catalog_or_effect_query
+    sql: SELECT relname, relkind FROM pg_class WHERE relname = '{table_name}';
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP TABLE IF EXISTS {table_name} CASCADE;
+- id: create_table_failure_attribution_baseline
+  title: Declared failure attribution baseline
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - duplicate_table_without_if_not_exists
+  - invalid_column_definition
+  - missing_dependency_object
+  - insufficient_create_privilege
+  factors:
+    statement_branch: branch_1
+    object_state: already_exists
+    expected_status: failure
+    table_type: permanent
+    if_not_exists_clause: present
+    column_definition_count: single_column
+    constraint_type: PRIMARY_KEY
+    partition_clause: RANGE
+    inheritance_clause: INHERITS
+    like_clause: LIKE_with_options
+    on_commit_clause: PRESERVE_ROWS
+    table_name_shape: simple
+    column_name_shape: simple
+    data_type: smallint
+    default_value_shape: with_DEFAULT_literal
+    collation_clause: with_COLLATION
+    generated_clause: GENERATED_ALWAYS_AS_STORED
+    base_table_template_coverage: table_01_comprehensive_types
+    privilege_level: superuser
+    schema_dependency: schema_exists
+    tablespace_dependency: default_tablespace
+    role_dependency: owner_role_exists
+    type_dependency: composite_type_exists
+    parent_table_dependency: parent_table_exists
+    referenced_table_dependency: referenced_table_exists
+    duplicate_table_name: with_IF_NOT_EXISTS_noop
+    duplicate_column_name: same_column_name_in_table
+    invalid_data_type: unknown_type_name
+    constraint_violation_in_definition: FK_references_nonexistent_table
+    schema_permission_insufficient: no_create_privilege_in_schema
+    reserved_schema_name: pg_catalog
+    max_column_limit: approaching_1600
+    identifier_length_exceeded: over_63_chars
+    temporary_table_scope_conflict: temp_table_same_name_permanent
+    partition_bound_invalid: bound_out_of_range
+    on_commit_with_non_temporary: on_commit_on_permanent_table
+    verification_mode: pg_class_catalog_query
+    cleanup_mode: DROP_TABLE
+  expansion:
+    expected_status:
+      mode: explicit
+      values:
+      - failure
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - condition: duplicate_table_without_if_not_exists
+      reason: duplicate_table_without_if_not_exists
+    - condition: invalid_column_definition
+      reason: invalid_column_definition
+    - condition: missing_dependency_object
+      reason: missing_dependency_object
+    - condition: insufficient_create_privilege
+      reason: insufficient_create_privilege
+    default_failure_reason: duplicate_table_without_if_not_exists
+  sql_shape:
+    template: CREATE {table_type} TABLE {if_not_exists_clause} {table_name} ({column_definitions}) {partition_clause};
+  verification:
+    required: true
+    mode: expected_error_or_notice
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP TABLE IF EXISTS {table_name} CASCADE;
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

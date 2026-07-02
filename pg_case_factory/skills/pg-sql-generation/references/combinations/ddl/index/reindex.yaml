@@ -1,0 +1,643 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: reindex
+  name: REINDEX
+  category: ddl
+  domain: index
+  source_reference: references/statements/ddl/index/reindex.md
+  official_source: https://www.postgresql.org/docs/16/sql-reindex.html
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required matrix coverage must pass before any derived extension is emitted.
+  - Derived extensions may add stress, boundary, performance, or cross-factor combinations.
+  - Derived extensions must not be counted as satisfying required factor or column-type coverage.
+  - Derived extensions must use declared factors, declared factor values, and declared manifests.
+  - Derived extensions must preserve success, failure, or partial-success attribution.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds: [index, partitioned_index, regular_table, partitioned_table_parent, schema, database]
+    decision_reason: >
+      REINDEX targets indexes directly and can also target tables, schemas,
+      databases, and system catalogs. The baseline explicitly declares each target
+      object class represented by the official syntax.
+  target_relation_coverage:
+    required: true
+    coverage_mode: conditional
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_relation_kinds:
+    - regular_table
+    - unlogged_table
+    - temporary_table
+    - partitioned_table_parent
+    - partitioned_table_leaf
+    - inherited_parent_table
+    - inherited_child_table
+    - materialized_view
+    negative_relation_kinds: [plain_view, foreign_table, sequence]
+    decision_reason: >
+      Relation coverage applies to REINDEX TABLE and to setup for REINDEX INDEX.
+      SCHEMA, DATABASE, and SYSTEM operate over relation collections and are
+      represented through lifecycle manifests rather than every relation kind in
+      every branch.
+  table_coverage:
+    required: true
+    coverage_mode: conditional
+    inventory_source: coverage_scope.target_relation_coverage.required_relation_kinds
+    required_table_kinds:
+    - regular_table
+    - unlogged_table
+    - temporary_table
+    - partitioned_table_parent
+    - partitioned_table_leaf
+    - inherited_parent_table
+    - inherited_child_table
+    decision_reason: >
+      REINDEX TABLE and partitioned-index behavior depend on table form. The
+      baseline covers table kinds conditionally by branch and uses partition
+      behavior as the explicit high-impact axis.
+  column_type_coverage:
+    required: true
+    coverage_mode: conditional
+    inventory_source: references/common/pg16_type_catalog.md
+    required_type_set: all_pg16_column_types
+    expansion_mode: method_representative_existing_indexes
+    require_each_type_success_or_failure: false
+    decision_reason: >
+      REINDEX rebuilds existing indexes; the method/type compatibility decision
+      happened when the index was created. Required column-type coverage is
+      conditional on existing-index setup, so the baseline uses concrete
+      representative types for btree, hash, GiST, SP-GiST, GIN, BRIN, and
+      exclusion-constraint paths rather than repeating CREATE INDEX exhaustive
+      type coverage.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values: [reindex_index, reindex_table, reindex_schema, reindex_database, reindex_system]
+      coverage_requirement: all_values
+    object_state:
+      tier: T1
+      coverage_role: main_axis
+      required_values: [exists, not_exists, corrupted_index]
+      coverage_requirement: all_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values: [success, failure, partial_success]
+      coverage_requirement: all_values
+    concurrently_keyword:
+      tier: T2
+      coverage_role: branch_local_axis
+      required_values: ['false', 'true']
+      coverage_requirement: all_values
+    option_concurrently:
+      tier: T2
+      coverage_role: option_axis
+      required_values: [absent, present_true, present_false, present_boolean_keyword]
+      coverage_requirement: all_values
+    option_tablespace:
+      tier: T2
+      coverage_role: option_axis
+      required_values: [absent, present_default, present_custom]
+      coverage_requirement: all_values
+    option_verbose:
+      tier: T2
+      coverage_role: option_axis
+      required_values: [absent, present_true, present_false]
+      coverage_requirement: all_values
+    boolean_value:
+      tier: T2
+      coverage_role: option_axis
+      required_values: [omitted_default, true_keyword, on_keyword, one_numeric, false_keyword, off_keyword, zero_numeric]
+      coverage_requirement: all_values
+    permission:
+      tier: T2
+      coverage_role: permission_axis
+      required_values: [owner, non_owner, superuser, insufficient_privilege]
+      coverage_requirement: all_values
+    name_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values: [plain_identifier, schema_qualified, quoted_identifier, reserved_word, existing_object, missing_object]
+      coverage_requirement: all_values
+    index_method:
+      tier: T4
+      coverage_role: setup_axis
+      required_values: [btree, hash, gist, spgist, gin, brin, exclusion_constraint]
+      coverage_requirement: all_values
+    tablespace_dependency:
+      tier: T4
+      coverage_role: dependency_axis
+      required_values: [no_tablespace_move, move_to_default, move_to_custom, system_relation_warning]
+      coverage_requirement: all_values
+    toast_indexes:
+      tier: T4
+      coverage_role: dependency_axis
+      required_values: [included, not_applicable]
+      coverage_requirement: all_values
+    partition_behavior:
+      tier: T4
+      coverage_role: dependency_axis
+      required_values: [non_partitioned, partitioned_separate_transaction, partitioned_concurrently_restricted]
+      coverage_requirement: all_values
+    invalid_combination:
+      tier: T5
+      coverage_role: negative_axis
+      required_values: [concurrently_with_system, concurrently_with_exclusion_constraint, concurrently_in_transaction, database_name_mismatch, tablespace_on_system_relation, none]
+      coverage_requirement: all_values
+    concurrent_failure:
+      tier: T5
+      coverage_role: negative_axis
+      required_values: [none, invalid_index_leftover, ccnew_suffix, ccold_suffix]
+      coverage_requirement: all_values
+    syntax_error:
+      tier: T5
+      coverage_role: negative_axis
+      required_values: [none, invalid_syntax]
+      coverage_requirement: success_failure_pair
+    permission_insufficient:
+      tier: T5
+      coverage_role: negative_axis
+      required_values: [none, non_owner_reindex, non_superuser_shared_catalog]
+      coverage_requirement: all_values
+    verification_mode:
+      tier: T6
+      coverage_role: verification_axis
+      required_values: [catalog_validity_check, invalid_index_detection, verbose_output_check]
+      coverage_requirement: all_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: cleanup_axis
+      required_values: [drop_invalid_index, reindex_concurrently_fix, rollback]
+      coverage_requirement: all_values
+dynamic_inputs:
+  index_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/index_manifest.json
+    required_fields: [index_name, table_name, schema_name, relation_kind, index_method, columns, validity_state]
+  relation_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/relation_manifest.json
+    required_fields: [relation_name, relation_kind, partition_state, toast_state]
+  tablespace_manifest:
+    required: false
+    path_pattern: artifacts/intermediates/<task_slug>/tablespace_manifest.json
+    required_fields: [tablespace_name, target_tablespace, is_system_relation]
+  type_catalog:
+    required: true
+    path: references/common/pg16_type_catalog.md
+    required_fields: [type_key, type_category, declaration_sql, index_capabilities]
+combination_groups:
+- id: reindex_index_existing_methods
+  title: REINDEX INDEX over existing indexes by access method
+  lifecycle_role: target_statement
+  expected_status_policy: per_method
+  default_expected_status: success
+  factors:
+    statement_branch: reindex_index
+    object_state: exists
+    expected_status: success
+    concurrently_keyword: 'false'
+    option_concurrently: absent
+    option_tablespace: absent
+    option_verbose: absent
+    boolean_value: omitted_default
+    permission: owner
+    name_shape: plain_identifier
+    index_method: btree
+    tablespace_dependency: no_tablespace_move
+    toast_indexes: not_applicable
+    partition_behavior: non_partitioned
+    invalid_combination: none
+    concurrent_failure: none
+    syntax_error: none
+    permission_insufficient: none
+    verification_mode: catalog_validity_check
+    cleanup_mode: rollback
+  expansion:
+    index_method:
+      mode: explicit
+      values: [btree, hash, gist, spgist, gin, brin]
+    name_shape:
+      mode: explicit
+      values: [plain_identifier, schema_qualified, quoted_identifier, reserved_word, existing_object]
+    column_types:
+      mode: representative
+      values: [integer, text, point, jsonb, tsvector, int4range]
+    verification_mode:
+      mode: explicit
+      values: [catalog_validity_check, verbose_output_check]
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - object_state == exists and permission == owner
+    failure_when: []
+    default_failure_reason: none
+  sql_shape:
+    template: REINDEX INDEX {index_name};
+  verification:
+    required: true
+    mode: catalog_validity_check
+    sql: SELECT c.relname, i.indisvalid FROM pg_class c JOIN pg_index i ON i.indexrelid = c.oid WHERE c.relname = '{index_name}';
+  cleanup:
+    required: true
+    steps:
+    - sql: ROLLBACK;
+- id: relation_schema_database_system_targets
+  title: TABLE, SCHEMA, DATABASE, and SYSTEM target forms
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: partial_success
+  factors:
+    statement_branch: reindex_system
+    object_state: exists
+    expected_status: partial_success
+    concurrently_keyword: 'false'
+    option_concurrently: absent
+    option_tablespace: absent
+    option_verbose: absent
+    boolean_value: omitted_default
+    permission: superuser
+    name_shape: existing_object
+    index_method: btree
+    tablespace_dependency: no_tablespace_move
+    toast_indexes: included
+    partition_behavior: non_partitioned
+    invalid_combination: none
+    concurrent_failure: none
+    syntax_error: none
+    permission_insufficient: none
+    verification_mode: catalog_validity_check
+    cleanup_mode: rollback
+  expansion:
+    statement_branch:
+      mode: explicit
+      values: [reindex_table, reindex_schema, reindex_database, reindex_system]
+    toast_indexes:
+      mode: explicit
+      values: [included, not_applicable]
+    partition_behavior:
+      mode: explicit
+      values: [non_partitioned, partitioned_separate_transaction, partitioned_concurrently_restricted]
+    permission:
+      mode: explicit
+      values: [owner, superuser]
+    relation_kinds:
+      mode: conditional
+      source: coverage_scope.target_relation_coverage.required_relation_kinds
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - statement_branch in [reindex_table, reindex_schema, reindex_database]
+    - statement_branch == reindex_system and permission == superuser
+    failure_when:
+    - condition: statement_branch == reindex_system and permission != superuser
+      reason: reindex_system_requires_superuser_or_database_owner_boundary
+    default_failure_reason: reindex_collection_target_failed
+  sql_shape:
+    template: REINDEX {target_type} {target_name};
+  verification:
+    required: true
+    mode: catalog_validity_check
+    sql: SELECT relname FROM pg_class WHERE relkind IN ('i', 'I');
+  cleanup:
+    required: true
+    steps:
+    - sql: ROLLBACK;
+- id: concurrently_keyword_and_boolean_options
+  title: CONCURRENTLY keyword and boolean option variants
+  lifecycle_role: target_statement
+  expected_status_policy: per_lifecycle_context
+  default_expected_status: success
+  factors:
+    statement_branch: reindex_index
+    object_state: exists
+    expected_status: success
+    concurrently_keyword: 'true'
+    option_concurrently: present_true
+    option_tablespace: absent
+    option_verbose: present_true
+    boolean_value: true_keyword
+    permission: owner
+    name_shape: existing_object
+    index_method: btree
+    tablespace_dependency: no_tablespace_move
+    toast_indexes: not_applicable
+    partition_behavior: non_partitioned
+    invalid_combination: none
+    concurrent_failure: none
+    syntax_error: none
+    permission_insufficient: none
+    verification_mode: verbose_output_check
+    cleanup_mode: reindex_concurrently_fix
+  expansion:
+    concurrently_keyword:
+      mode: explicit
+      values: ['false', 'true']
+    option_concurrently:
+      mode: explicit
+      values: [absent, present_true, present_false, present_boolean_keyword]
+    option_verbose:
+      mode: explicit
+      values: [absent, present_true, present_false]
+    boolean_value:
+      mode: explicit
+      values: [omitted_default, true_keyword, on_keyword, one_numeric, false_keyword, off_keyword, zero_numeric]
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - lifecycle_context == standalone_statement and invalid_combination == none
+    failure_when:
+    - condition: lifecycle_context == inside_transaction_block
+      reason: reindex_concurrently_cannot_run_inside_transaction_block
+    default_failure_reason: reindex_concurrently_binding_invalid
+  sql_shape:
+    template: REINDEX ({option_clause}) INDEX CONCURRENTLY {index_name};
+  verification:
+    required: true
+    mode: verbose_output_check
+    sql: SELECT c.relname, i.indisvalid FROM pg_class c JOIN pg_index i ON i.indexrelid = c.oid WHERE c.relname = '{index_name}';
+  cleanup:
+    required: true
+    steps:
+    - sql: REINDEX INDEX CONCURRENTLY {index_name};
+- id: tablespace_option_dependency
+  title: TABLESPACE option and system-relation warning boundary
+  lifecycle_role: target_statement
+  expected_status_policy: per_tablespace_binding
+  default_expected_status: success
+  expected_failure_reasons:
+  - reindex_tablespace_system_relation_warning
+  factors:
+    statement_branch: reindex_index
+    object_state: exists
+    expected_status: success
+    concurrently_keyword: 'false'
+    option_concurrently: absent
+    option_tablespace: present_custom
+    option_verbose: absent
+    boolean_value: omitted_default
+    permission: owner
+    name_shape: existing_object
+    index_method: btree
+    tablespace_dependency: move_to_custom
+    toast_indexes: not_applicable
+    partition_behavior: non_partitioned
+    invalid_combination: none
+    concurrent_failure: none
+    syntax_error: none
+    permission_insufficient: none
+    verification_mode: catalog_validity_check
+    cleanup_mode: rollback
+  expansion:
+    option_tablespace:
+      mode: explicit
+      values: [absent, present_default, present_custom]
+    tablespace_dependency:
+      mode: explicit
+      values: [no_tablespace_move, move_to_default, move_to_custom, system_relation_warning]
+    invalid_combination:
+      mode: explicit
+      values: [none, tablespace_on_system_relation]
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - tablespace_dependency in [no_tablespace_move, move_to_default, move_to_custom]
+    failure_when:
+    - condition: tablespace_dependency == system_relation_warning
+      reason: reindex_tablespace_system_relation_warning
+    default_failure_reason: reindex_tablespace_binding_invalid
+  sql_shape:
+    template: REINDEX ({tablespace_option}) INDEX {index_name};
+  verification:
+    required: true
+    mode: catalog_validity_check
+    sql: SELECT relname, reltablespace FROM pg_class WHERE relname = '{index_name}';
+  cleanup:
+    required: true
+    steps:
+    - sql: ROLLBACK;
+- id: missing_object_and_database_name_mismatch_failures
+  title: Missing target and DATABASE name mismatch failures
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - reindex_target_does_not_exist
+  - reindex_database_name_must_match_current_database
+  factors:
+    statement_branch: reindex_database
+    object_state: not_exists
+    expected_status: failure
+    concurrently_keyword: 'false'
+    option_concurrently: absent
+    option_tablespace: absent
+    option_verbose: absent
+    boolean_value: omitted_default
+    permission: owner
+    name_shape: missing_object
+    index_method: btree
+    tablespace_dependency: no_tablespace_move
+    toast_indexes: not_applicable
+    partition_behavior: non_partitioned
+    invalid_combination: database_name_mismatch
+    concurrent_failure: none
+    syntax_error: none
+    permission_insufficient: none
+    verification_mode: invalid_index_detection
+    cleanup_mode: rollback
+  expansion:
+    name_shape:
+      mode: explicit
+      values: [missing_object]
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - condition: object_state == not_exists
+      reason: reindex_target_does_not_exist
+    - condition: invalid_combination == database_name_mismatch
+      reason: reindex_database_name_must_match_current_database
+    default_failure_reason: reindex_missing_or_mismatched_target
+  sql_shape:
+    template: REINDEX DATABASE {wrong_or_missing_database_name};
+  verification:
+    required: false
+    mode: expected_error
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: ROLLBACK;
+- id: concurrent_corrupted_and_invalid_index_boundaries
+  title: Corrupted or invalid indexes and CONCURRENTLY restrictions
+  lifecycle_role: negative_control
+  expected_status_policy: per_lifecycle_context
+  default_expected_status: failure
+  expected_failure_reasons:
+  - reindex_concurrently_not_supported_for_system
+  - reindex_concurrently_not_supported_for_exclusion_constraint
+  - reindex_concurrently_cannot_run_inside_transaction_block
+  - reindex_concurrently_left_invalid_index
+  factors:
+    statement_branch: reindex_index
+    object_state: corrupted_index
+    expected_status: failure
+    concurrently_keyword: 'true'
+    option_concurrently: present_true
+    option_tablespace: absent
+    option_verbose: absent
+    boolean_value: true_keyword
+    permission: owner
+    name_shape: existing_object
+    index_method: exclusion_constraint
+    tablespace_dependency: no_tablespace_move
+    toast_indexes: not_applicable
+    partition_behavior: partitioned_concurrently_restricted
+    invalid_combination: concurrently_with_exclusion_constraint
+    concurrent_failure: invalid_index_leftover
+    syntax_error: none
+    permission_insufficient: none
+    verification_mode: invalid_index_detection
+    cleanup_mode: drop_invalid_index
+  expansion:
+    index_method:
+      mode: explicit
+      values: [btree, hash, gist, spgist, gin, brin, exclusion_constraint]
+    invalid_combination:
+      mode: explicit
+      values: [concurrently_with_system, concurrently_with_exclusion_constraint, concurrently_in_transaction, tablespace_on_system_relation]
+    concurrent_failure:
+      mode: explicit
+      values: [none, invalid_index_leftover, ccnew_suffix, ccold_suffix]
+    cleanup_mode:
+      mode: explicit
+      values: [drop_invalid_index, reindex_concurrently_fix]
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - condition: invalid_combination == concurrently_with_system
+      reason: reindex_concurrently_not_supported_for_system
+    - condition: invalid_combination == concurrently_with_exclusion_constraint
+      reason: reindex_concurrently_not_supported_for_exclusion_constraint
+    - condition: invalid_combination == concurrently_in_transaction
+      reason: reindex_concurrently_cannot_run_inside_transaction_block
+    - condition: concurrent_failure in [invalid_index_leftover, ccnew_suffix, ccold_suffix]
+      reason: reindex_concurrently_left_invalid_index
+    default_failure_reason: reindex_concurrent_negative_boundary
+  sql_shape:
+    template: REINDEX INDEX CONCURRENTLY {invalid_or_restricted_index_name};
+  verification:
+    required: true
+    mode: invalid_index_detection
+    sql: SELECT c.relname, i.indisvalid FROM pg_class c JOIN pg_index i ON i.indexrelid = c.oid WHERE i.indisvalid = false;
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP INDEX IF EXISTS {invalid_index_name};
+- id: permission_and_syntax_boundaries
+  title: Permission and syntax failure boundaries
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - must_own_reindex_target
+  - non_superuser_cannot_reindex_shared_catalog
+  - reindex_syntax_is_invalid
+  factors:
+    statement_branch: reindex_index
+    object_state: exists
+    expected_status: failure
+    concurrently_keyword: 'false'
+    option_concurrently: absent
+    option_tablespace: absent
+    option_verbose: absent
+    boolean_value: omitted_default
+    permission: insufficient_privilege
+    name_shape: reserved_word
+    index_method: btree
+    tablespace_dependency: no_tablespace_move
+    toast_indexes: not_applicable
+    partition_behavior: non_partitioned
+    invalid_combination: none
+    concurrent_failure: none
+    syntax_error: invalid_syntax
+    permission_insufficient: non_owner_reindex
+    verification_mode: invalid_index_detection
+    cleanup_mode: rollback
+  expansion:
+    permission:
+      mode: explicit
+      values: [owner, non_owner, superuser, insufficient_privilege]
+    permission_insufficient:
+      mode: explicit
+      values: [none, non_owner_reindex, non_superuser_shared_catalog]
+    syntax_error:
+      mode: explicit
+      values: [none, invalid_syntax]
+    cleanup_mode:
+      mode: explicit
+      values: [drop_invalid_index, reindex_concurrently_fix, rollback]
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - condition: permission_insufficient == non_owner_reindex
+      reason: must_own_reindex_target
+    - condition: permission_insufficient == non_superuser_shared_catalog
+      reason: non_superuser_cannot_reindex_shared_catalog
+    - condition: syntax_error == invalid_syntax
+      reason: reindex_syntax_is_invalid
+    default_failure_reason: reindex_negative_boundary
+  sql_shape:
+    template: REINDEX {invalid_or_forbidden_reindex_clause};
+  verification:
+    required: false
+    mode: expected_error
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: ROLLBACK;
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

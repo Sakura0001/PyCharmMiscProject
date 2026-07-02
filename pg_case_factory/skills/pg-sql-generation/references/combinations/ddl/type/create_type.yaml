@@ -1,0 +1,742 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: create_type
+  name: CREATE TYPE
+  category: ddl
+  domain: type
+  source_reference: references/statements/ddl/type/create_type.md
+  official_source: https://www.postgresql.org/docs/16/sql-createtype.html
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required baseline groups must pass audit before any extension is emitted.
+  - Extensions may add stress, boundary, dependency, or cross-factor combinations.
+  - Extensions must not satisfy required factor, type-form, or column-type coverage.
+  - Extensions must use declared statement factors and declared factor values.
+  - Extensions must preserve success or failure attribution.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds:
+    - type
+    - composite_type
+    - enum_type
+    decision_reason: CREATE TYPE defines type-system objects. Composite and enum types are explicit inventory kinds; range, base, and shell forms are covered as type object forms through statement_branch and type_form.
+  target_relation_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: CREATE TYPE does not target existing relations. Relation behavior only appears later when a type is used by another statement.
+  table_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: CREATE TYPE defines standalone type objects, not table variants.
+  column_type_coverage:
+    required: false
+    coverage_mode: conditional
+    inventory_source: references/common/pg16_type_catalog.md
+    decision_reason: CREATE TYPE does not require exhaustive table-column type coverage. The composite branch conditionally covers representative attribute_data_type values and the range branch covers declared range_subtype values; all-PG16 column expansion belongs to table-backed statements.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - branch_composite
+      - branch_enum
+      - branch_range
+      - branch_base
+      - branch_shell
+      coverage_requirement: all_values
+    object_state:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - not_exists
+      - already_exists
+      coverage_requirement: all_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - success
+      - failure
+      coverage_requirement: all_values
+    type_form:
+      tier: T2
+      coverage_role: branch_binding
+      required_values:
+      - composite
+      - enum
+      - range
+      - base
+      - shell
+      coverage_requirement: all_values
+    attribute_count:
+      tier: T2
+      coverage_role: conditional_composite_axis
+      required_values:
+      - zero_attributes
+      - single_attribute
+      - multiple_attributes
+      coverage_requirement: all_values
+    enum_label_count:
+      tier: T2
+      coverage_role: conditional_enum_axis
+      required_values:
+      - zero_labels
+      - single_label
+      - multiple_labels
+      coverage_requirement: all_values
+    range_subtype:
+      tier: T2
+      coverage_role: conditional_range_axis
+      required_values:
+      - integer
+      - bigint
+      - numeric
+      - float8
+      - timestamp
+      - timestamptz
+      - date
+      coverage_requirement: all_values
+    base_type_io_functions:
+      tier: T2
+      coverage_role: conditional_base_axis
+      required_values:
+      - with_shell_type_first
+      - without_shell_type
+      coverage_requirement: all_values
+    type_name_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values:
+      - simple
+      - quoted
+      - reserved_word
+      - underscore_prefix
+      - schema_qualified
+      coverage_requirement: all_values
+    attribute_name_shape:
+      tier: T3
+      coverage_role: conditional_composite_axis
+      required_values:
+      - simple
+      - quoted
+      - reserved_word
+      coverage_requirement: all_values
+    attribute_data_type:
+      tier: T3
+      coverage_role: conditional_composite_axis
+      required_values:
+      - integer
+      - bigint
+      - text
+      - varchar
+      - numeric
+      - boolean
+      - date
+      - timestamp
+      - jsonb
+      - uuid
+      coverage_requirement: representative_declared_values
+    enum_label_shape:
+      tier: T3
+      coverage_role: conditional_enum_axis
+      required_values:
+      - simple_label
+      - quoted_label
+      - long_label
+      coverage_requirement: all_values
+    range_option_completeness:
+      tier: T3
+      coverage_role: conditional_range_axis
+      required_values:
+      - minimal
+      - with_opclass
+      - with_canonical
+      - with_subtype_diff
+      - with_multirange_name
+      coverage_requirement: all_values
+    base_type_option_completeness:
+      tier: T3
+      coverage_role: conditional_base_axis
+      required_values:
+      - required_only
+      - with_optional_functions
+      - with_all_options
+      coverage_requirement: all_values
+    privilege_level:
+      tier: T4
+      coverage_role: dependency_axis
+      required_values:
+      - superuser
+      - type_owner
+      - non_owner
+      coverage_requirement: all_values
+    function_dependency:
+      tier: T4
+      coverage_role: conditional_base_axis
+      required_values:
+      - input_output_functions_exist
+      - input_output_functions_not_exist
+      coverage_requirement: all_values
+    subtype_opclass_dependency:
+      tier: T4
+      coverage_role: conditional_range_axis
+      required_values:
+      - opclass_exists
+      - opclass_not_exists
+      coverage_requirement: all_values
+    canonical_function_dependency:
+      tier: T4
+      coverage_role: conditional_range_axis
+      required_values:
+      - function_exists
+      - function_not_exists
+      coverage_requirement: all_values
+    subtype_diff_dependency:
+      tier: T4
+      coverage_role: conditional_range_axis
+      required_values:
+      - function_exists
+      - function_not_exists
+      coverage_requirement: all_values
+    shell_type_dependency:
+      tier: T4
+      coverage_role: dependency_axis
+      required_values:
+      - shell_type_exists
+      - shell_type_not_exists
+      coverage_requirement: all_values
+    schema_dependency:
+      tier: T4
+      coverage_role: dependency_axis
+      required_values:
+      - schema_exists
+      - schema_not_exists
+      coverage_requirement: all_values
+    duplicate_type_name:
+      tier: T5
+      coverage_role: negative_boundary
+      required_values:
+      - with_existing_type
+      - with_existing_table
+      coverage_requirement: all_values
+    zero_attributes_composite:
+      tier: T5
+      coverage_role: boundary_composite_axis
+      required_values:
+      - valid_but_unusual
+      coverage_requirement: explicit_boundary
+    zero_labels_enum:
+      tier: T5
+      coverage_role: boundary_enum_axis
+      required_values:
+      - valid_but_unusable
+      coverage_requirement: explicit_boundary
+    invalid_data_type_in_attribute:
+      tier: T5
+      coverage_role: negative_boundary
+      required_values:
+      - unknown_type
+      coverage_requirement: explicit_failure
+    invalid_enum_label:
+      tier: T5
+      coverage_role: negative_boundary
+      required_values:
+      - too_long_label
+      coverage_requirement: explicit_failure
+    missing_required_functions:
+      tier: T5
+      coverage_role: negative_boundary
+      required_values:
+      - no_input_function
+      - no_output_function
+      coverage_requirement: all_values
+    insufficient_privilege:
+      tier: T5
+      coverage_role: negative_boundary
+      required_values:
+      - non_superuser_base_type
+      - non_owner_create
+      coverage_requirement: all_values
+    underscore_prefix_name:
+      tier: T5
+      coverage_role: boundary_name_axis
+      required_values:
+      - underscore_prefix_conflict
+      coverage_requirement: explicit_boundary
+    subtype_no_btree_opclass:
+      tier: T5
+      coverage_role: negative_boundary
+      required_values:
+      - no_opclass
+      coverage_requirement: explicit_failure
+    verification_mode:
+      tier: T6
+      coverage_role: rotate_attach
+      required_values:
+      - pg_type_catalog_query
+      - information_schema_user_defined_types
+      - SELECT_type_query
+      coverage_requirement: all_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: rotate_attach
+      required_values:
+      - DROP_TYPE
+      - DROP_TYPE_IF_EXISTS
+      - DROP_TYPE_CASCADE
+      coverage_requirement: all_values
+dynamic_inputs:
+  type_definition_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/type_definition_manifest.json
+    required_fields:
+    - type_name
+    - type_form
+    - schema_name
+    - setup_sql
+    - cleanup_sql
+  type_catalog:
+    required: false
+    path: references/common/pg16_type_catalog.md
+    required_fields:
+    - type_key
+    - type_category
+    - declaration_sql
+    - sample_values
+combination_groups:
+- id: create_type_branch_form_baseline
+  title: All CREATE TYPE syntax forms with matching type forms
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  factors:
+    statement_branch: branch_composite
+    object_state: not_exists
+    expected_status: success
+    type_form: composite
+    type_name_shape: simple
+    privilege_level: type_owner
+    schema_dependency: schema_exists
+    verification_mode: pg_type_catalog_query
+    cleanup_mode: DROP_TYPE_IF_EXISTS
+  expansion:
+    statement_branch:
+      mode: explicit
+      values:
+      - branch_composite
+      - branch_enum
+      - branch_range
+      - branch_base
+      - branch_shell
+    type_form:
+      mode: explicit
+      values:
+      - composite
+      - enum
+      - range
+      - base
+      - shell
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - statement_branch and type_form describe the same CREATE TYPE syntax form and required dependencies exist
+    failure_when:
+    - condition: branch-specific dependencies are absent
+      reason: create_type_dependency_missing
+    default_failure_reason: create_type_dependency_missing
+  sql_shape:
+    template: CREATE TYPE {type_name} {type_definition_clause};
+  verification:
+    required: true
+    mode: pg_type_catalog_query
+    sql: SELECT typname, typtype FROM pg_type WHERE typname = '{type_name}';
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP TYPE IF EXISTS {type_name} CASCADE;
+- id: composite_attribute_definition_baseline
+  title: Composite attributes, attribute names, and representative attribute data types
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  factors:
+    statement_branch: branch_composite
+    object_state: not_exists
+    expected_status: success
+    type_form: composite
+    attribute_count: single_attribute
+    attribute_name_shape: simple
+    attribute_data_type: integer
+    zero_attributes_composite: valid_but_unusual
+    invalid_data_type_in_attribute: unknown_type
+    verification_mode: pg_type_catalog_query
+    cleanup_mode: DROP_TYPE
+  expansion:
+    attribute_count:
+      mode: explicit
+      values:
+      - zero_attributes
+      - single_attribute
+      - multiple_attributes
+    attribute_name_shape:
+      mode: explicit
+      values:
+      - simple
+      - quoted
+      - reserved_word
+    attribute_data_type:
+      mode: explicit
+      values:
+      - integer
+      - bigint
+      - text
+      - varchar
+      - numeric
+      - boolean
+      - date
+      - timestamp
+      - jsonb
+      - uuid
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - attribute_count in [zero_attributes, single_attribute, multiple_attributes] and attribute_data_type is declared
+    failure_when:
+    - condition: invalid_data_type_in_attribute == unknown_type
+      reason: composite_attribute_type_does_not_exist
+    default_failure_reason: composite_attribute_definition_invalid
+  sql_shape:
+    template: CREATE TYPE {type_name} AS ({attribute_definitions});
+  verification:
+    required: true
+    mode: pg_type_catalog_query
+    sql: SELECT a.attname, a.atttypid::regtype FROM pg_attribute a JOIN pg_type t ON t.typrelid = a.attrelid WHERE t.typname = '{type_name}' AND a.attnum > 0;
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP TYPE IF EXISTS {type_name} CASCADE;
+- id: enum_label_definition_baseline
+  title: Enum label counts and label shape boundaries
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  factors:
+    statement_branch: branch_enum
+    object_state: not_exists
+    expected_status: success
+    type_form: enum
+    enum_label_count: multiple_labels
+    enum_label_shape: simple_label
+    zero_labels_enum: valid_but_unusable
+    invalid_enum_label: too_long_label
+    verification_mode: SELECT_type_query
+    cleanup_mode: DROP_TYPE_IF_EXISTS
+  expansion:
+    enum_label_count:
+      mode: explicit
+      values:
+      - zero_labels
+      - single_label
+      - multiple_labels
+    enum_label_shape:
+      mode: explicit
+      values:
+      - simple_label
+      - quoted_label
+      - long_label
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - enum labels are below NAMEDATALEN and labels are unique
+    failure_when:
+    - condition: invalid_enum_label == too_long_label
+      reason: enum_label_exceeds_namedatalen
+    default_failure_reason: enum_label_definition_invalid
+  sql_shape:
+    template: CREATE TYPE {type_name} AS ENUM ({enum_labels});
+  verification:
+    required: true
+    mode: SELECT_type_query
+    sql: SELECT enumlabel FROM pg_enum e JOIN pg_type t ON t.oid = e.enumtypid WHERE t.typname = '{type_name}';
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP TYPE IF EXISTS {type_name} CASCADE;
+- id: range_subtype_and_option_baseline
+  title: Range subtype, range options, and range dependency boundaries
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  factors:
+    statement_branch: branch_range
+    object_state: not_exists
+    expected_status: success
+    type_form: range
+    range_subtype: integer
+    range_option_completeness: minimal
+    subtype_opclass_dependency: opclass_exists
+    canonical_function_dependency: function_exists
+    subtype_diff_dependency: function_exists
+    shell_type_dependency: shell_type_exists
+    subtype_no_btree_opclass: no_opclass
+    verification_mode: pg_type_catalog_query
+    cleanup_mode: DROP_TYPE_CASCADE
+  expansion:
+    range_subtype:
+      mode: explicit
+      values:
+      - integer
+      - bigint
+      - numeric
+      - float8
+      - timestamp
+      - timestamptz
+      - date
+    range_option_completeness:
+      mode: explicit
+      values:
+      - minimal
+      - with_opclass
+      - with_canonical
+      - with_subtype_diff
+      - with_multirange_name
+    subtype_opclass_dependency:
+      mode: explicit
+      values:
+      - opclass_exists
+      - opclass_not_exists
+    canonical_function_dependency:
+      mode: explicit
+      values:
+      - function_exists
+      - function_not_exists
+    subtype_diff_dependency:
+      mode: explicit
+      values:
+      - function_exists
+      - function_not_exists
+    shell_type_dependency:
+      mode: explicit
+      values:
+      - shell_type_exists
+      - shell_type_not_exists
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - range subtype has a btree operator class and referenced functions exist
+    failure_when:
+    - condition: subtype_opclass_dependency == opclass_not_exists
+      reason: range_subtype_btree_opclass_missing
+    - condition: canonical_function_dependency == function_not_exists
+      reason: range_canonical_function_missing
+    - condition: subtype_diff_dependency == function_not_exists
+      reason: range_subtype_diff_function_missing
+    - condition: subtype_no_btree_opclass == no_opclass
+      reason: range_subtype_btree_opclass_missing
+    default_failure_reason: range_type_definition_invalid
+  sql_shape:
+    template: CREATE TYPE {type_name} AS RANGE ({range_options});
+  verification:
+    required: true
+    mode: pg_type_catalog_query
+    sql: SELECT typname, rngsubtype::regtype FROM pg_range r JOIN pg_type t ON t.oid = r.rngtypid WHERE t.typname = '{type_name}';
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP TYPE IF EXISTS {type_name} CASCADE;
+- id: base_type_dependency_and_privilege_baseline
+  title: Base type I/O functions, options, and privilege boundaries
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  factors:
+    statement_branch: branch_base
+    object_state: not_exists
+    expected_status: success
+    type_form: base
+    base_type_io_functions: with_shell_type_first
+    base_type_option_completeness: required_only
+    function_dependency: input_output_functions_exist
+    privilege_level: superuser
+    missing_required_functions: no_input_function
+    insufficient_privilege: non_superuser_base_type
+    verification_mode: pg_type_catalog_query
+    cleanup_mode: DROP_TYPE_CASCADE
+  expansion:
+    base_type_io_functions:
+      mode: explicit
+      values:
+      - with_shell_type_first
+      - without_shell_type
+    base_type_option_completeness:
+      mode: explicit
+      values:
+      - required_only
+      - with_optional_functions
+      - with_all_options
+    function_dependency:
+      mode: explicit
+      values:
+      - input_output_functions_exist
+      - input_output_functions_not_exist
+    privilege_level:
+      mode: explicit
+      values:
+      - superuser
+      - type_owner
+      - non_owner
+    missing_required_functions:
+      mode: explicit
+      values:
+      - no_input_function
+      - no_output_function
+    insufficient_privilege:
+      mode: explicit
+      values:
+      - non_superuser_base_type
+      - non_owner_create
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - privilege_level == superuser and function_dependency == input_output_functions_exist
+    failure_when:
+    - condition: function_dependency == input_output_functions_not_exist
+      reason: base_type_io_function_missing
+    - condition: missing_required_functions in [no_input_function, no_output_function]
+      reason: base_type_required_io_function_missing
+    - condition: insufficient_privilege == non_superuser_base_type
+      reason: base_type_requires_superuser
+    default_failure_reason: base_type_definition_invalid
+  sql_shape:
+    template: CREATE TYPE {type_name} ({base_type_options});
+  verification:
+    required: true
+    mode: pg_type_catalog_query
+    sql: SELECT typname, typtype FROM pg_type WHERE typname = '{type_name}';
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP TYPE IF EXISTS {type_name} CASCADE;
+- id: name_schema_duplicate_and_cleanup_baseline
+  title: Name shape, schema dependency, duplicate-name, verification, and cleanup rotation
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: failure
+  factors:
+    statement_branch: branch_shell
+    object_state: already_exists
+    expected_status: failure
+    type_form: shell
+    type_name_shape: underscore_prefix
+    schema_dependency: schema_not_exists
+    duplicate_type_name: with_existing_type
+    underscore_prefix_name: underscore_prefix_conflict
+    shell_type_dependency: shell_type_not_exists
+    verification_mode: information_schema_user_defined_types
+    cleanup_mode: DROP_TYPE_IF_EXISTS
+  expansion:
+    object_state:
+      mode: explicit
+      values:
+      - not_exists
+      - already_exists
+    expected_status:
+      mode: explicit
+      values:
+      - success
+      - failure
+    type_name_shape:
+      mode: explicit
+      values:
+      - simple
+      - quoted
+      - reserved_word
+      - underscore_prefix
+      - schema_qualified
+    schema_dependency:
+      mode: explicit
+      values:
+      - schema_exists
+      - schema_not_exists
+    duplicate_type_name:
+      mode: explicit
+      values:
+      - with_existing_type
+      - with_existing_table
+    verification_mode:
+      mode: explicit
+      values:
+      - pg_type_catalog_query
+      - information_schema_user_defined_types
+      - SELECT_type_query
+    cleanup_mode:
+      mode: explicit
+      values:
+      - DROP_TYPE
+      - DROP_TYPE_IF_EXISTS
+      - DROP_TYPE_CASCADE
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - object_state == not_exists and schema_dependency == schema_exists
+    failure_when:
+    - condition: object_state == already_exists
+      reason: type_name_already_exists
+    - condition: duplicate_type_name == with_existing_table
+      reason: type_name_conflicts_with_existing_relation
+    - condition: schema_dependency == schema_not_exists
+      reason: target_schema_does_not_exist
+    - condition: underscore_prefix_name == underscore_prefix_conflict
+      reason: underscore_type_name_conflicts_with_array_type_convention
+    default_failure_reason: create_type_name_or_schema_invalid
+  sql_shape:
+    template: CREATE TYPE {type_name};
+  verification:
+    required: true
+    mode: information_schema_user_defined_types
+    sql: SELECT user_defined_type_name FROM information_schema.user_defined_types WHERE user_defined_type_name = '{type_name}';
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP TYPE IF EXISTS {type_name} CASCADE;
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

@@ -1,0 +1,469 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: drop_type
+  name: DROP TYPE
+  category: ddl
+  domain: type
+  source_reference: references/statements/ddl/type/drop_type.md
+  official_source: https://www.postgresql.org/docs/16/sql-droptype.html
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required baseline groups must pass audit before any extension is emitted.
+  - Extensions may add additional dependency chains, multi-type permutations, or privilege cases.
+  - Extensions must not satisfy required factor or dependency coverage.
+  - Extensions must use declared statement factors and declared factor values.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds:
+    - type
+    - composite_type
+    - enum_type
+    decision_reason: DROP TYPE removes user-defined type-system objects. Composite, enum, range, and base categories are covered by factors; range and base use the generic type object kind in the shared inventory.
+  target_relation_coverage:
+    required: false
+    coverage_mode: conditional
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    decision_reason: DROP TYPE does not target relations directly. Relation effects are conditional through dependency_state, especially table-column and typed-table dependents under CASCADE or RESTRICT.
+  table_coverage:
+    required: false
+    coverage_mode: conditional
+    decision_reason: Table variants are not primary DROP TYPE targets. A representative table dependency is covered by dependency_state=used_in_table_columns and dependency_state=used_in_typed_tables.
+  column_type_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: DROP TYPE deletes the type object and checks dependencies. It does not validate table-column type semantics or require expansion over all PG16 column types.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - branch_drop_type
+      - branch_drop_type_if_exists
+      coverage_requirement: all_values
+    object_state:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - exists_composite
+      - exists_enum
+      - exists_range
+      - exists_base
+      - not_exists
+      coverage_requirement: all_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - success
+      - failure
+      coverage_requirement: all_values
+    if_exists_clause:
+      tier: T2
+      coverage_role: syntax_axis
+      required_values:
+      - absent
+      - present
+      coverage_requirement: all_values
+    cascade_restrict:
+      tier: T2
+      coverage_role: dependency_axis
+      required_values:
+      - none
+      - cascade
+      - restrict
+      coverage_requirement: all_values
+    multi_type_drop:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - single_type
+      - multi_type
+      coverage_requirement: all_values
+    type_category:
+      tier: T2
+      coverage_role: object_binding
+      required_values:
+      - composite
+      - enum
+      - range
+      - base
+      coverage_requirement: all_values
+    type_name_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values:
+      - simple
+      - quoted
+      - schema_qualified
+      - reserved_word
+      coverage_requirement: all_values
+    privilege_level:
+      tier: T4
+      coverage_role: dependency_axis
+      required_values:
+      - owner
+      - superuser
+      - non_owner
+      coverage_requirement: all_values
+    dependency_state:
+      tier: T4
+      coverage_role: dependency_axis
+      required_values:
+      - no_dependents
+      - used_in_table_columns
+      - used_in_function_params
+      - used_in_operators
+      - used_in_typed_tables
+      coverage_requirement: all_values
+    error_boundary:
+      tier: T5
+      coverage_role: negative_boundary
+      required_values:
+      - none
+      - non_existent_without_if_exists
+      - dependent_objects_without_cascade
+      - insufficient_privilege
+      coverage_requirement: all_values
+    verification_mode:
+      tier: T6
+      coverage_role: rotate_attach
+      required_values:
+      - pg_type_query
+      - information_schema_user_defined_types
+      - error_assertion
+      - notice_assertion
+      coverage_requirement: all_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: rotate_attach
+      required_values:
+      - no_cleanup_needed
+      - manual_cleanup
+      - rollback
+      coverage_requirement: all_values
+dynamic_inputs:
+  type_dependency_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/type_dependency_manifest.json
+    required_fields:
+    - type_name
+    - type_category
+    - dependency_state
+    - setup_sql
+    - cleanup_sql
+combination_groups:
+- id: drop_existing_type_categories_baseline
+  title: DROP TYPE over existing composite, enum, range, and base categories
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  factors:
+    statement_branch: branch_drop_type
+    object_state: exists_composite
+    expected_status: success
+    if_exists_clause: absent
+    cascade_restrict: none
+    multi_type_drop: single_type
+    type_category: composite
+    type_name_shape: simple
+    privilege_level: owner
+    dependency_state: no_dependents
+    error_boundary: none
+    verification_mode: pg_type_query
+    cleanup_mode: no_cleanup_needed
+  expansion:
+    object_state:
+      mode: explicit
+      values:
+      - exists_composite
+      - exists_enum
+      - exists_range
+      - exists_base
+    type_category:
+      mode: explicit
+      values:
+      - composite
+      - enum
+      - range
+      - base
+    type_name_shape:
+      mode: explicit
+      values:
+      - simple
+      - quoted
+      - schema_qualified
+      - reserved_word
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - target type exists, caller owns the type, and no dependents block RESTRICT
+    failure_when:
+    - condition: dependency_state != no_dependents and cascade_restrict in [none, restrict]
+      reason: dependent_objects_block_drop_type
+    default_failure_reason: drop_type_binding_invalid
+  sql_shape:
+    template: DROP TYPE {type_name};
+  verification:
+    required: true
+    mode: pg_type_query
+    sql: SELECT count(*) FROM pg_type WHERE typname = '{type_name}';
+  cleanup:
+    required: false
+    steps: []
+- id: drop_type_if_exists_missing_noop_baseline
+  title: DROP TYPE IF EXISTS missing object no-op path
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  factors:
+    statement_branch: branch_drop_type_if_exists
+    object_state: not_exists
+    expected_status: success
+    if_exists_clause: present
+    cascade_restrict: none
+    multi_type_drop: single_type
+    type_category: composite
+    type_name_shape: simple
+    privilege_level: owner
+    dependency_state: no_dependents
+    error_boundary: none
+    verification_mode: notice_assertion
+    cleanup_mode: no_cleanup_needed
+  expansion:
+    statement_branch:
+      mode: explicit
+      values:
+      - branch_drop_type
+      - branch_drop_type_if_exists
+    if_exists_clause:
+      mode: explicit
+      values:
+      - absent
+      - present
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - if_exists_clause == present and object_state == not_exists
+    failure_when: []
+    default_failure_reason: no_failure_expected
+  sql_shape:
+    template: DROP TYPE IF EXISTS {type_name};
+  verification:
+    required: true
+    mode: notice_assertion
+    sql: SELECT count(*) FROM pg_type WHERE typname = '{type_name}';
+  cleanup:
+    required: false
+    steps: []
+- id: missing_type_without_if_exists_failure_baseline
+  title: Missing type without IF EXISTS failure
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - type_does_not_exist
+  factors:
+    statement_branch: branch_drop_type
+    object_state: not_exists
+    expected_status: failure
+    if_exists_clause: absent
+    cascade_restrict: none
+    multi_type_drop: single_type
+    type_category: composite
+    type_name_shape: simple
+    privilege_level: owner
+    dependency_state: no_dependents
+    error_boundary: non_existent_without_if_exists
+    verification_mode: error_assertion
+    cleanup_mode: rollback
+  expansion:
+    expected_status:
+      mode: explicit
+      values:
+      - success
+      - failure
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - condition: object_state == not_exists and if_exists_clause == absent
+      reason: type_does_not_exist
+    default_failure_reason: type_does_not_exist
+  sql_shape:
+    template: DROP TYPE {type_name};
+  verification:
+    required: false
+    mode: error_assertion
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: ROLLBACK;
+- id: cascade_restrict_dependency_baseline
+  title: Dependency state coverage for CASCADE and RESTRICT behavior
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: failure
+  factors:
+    statement_branch: branch_drop_type
+    object_state: exists_enum
+    expected_status: failure
+    if_exists_clause: absent
+    cascade_restrict: restrict
+    multi_type_drop: single_type
+    type_category: enum
+    type_name_shape: simple
+    privilege_level: owner
+    dependency_state: used_in_table_columns
+    error_boundary: dependent_objects_without_cascade
+    verification_mode: error_assertion
+    cleanup_mode: manual_cleanup
+  expansion:
+    cascade_restrict:
+      mode: explicit
+      values:
+      - none
+      - cascade
+      - restrict
+    dependency_state:
+      mode: explicit
+      values:
+      - no_dependents
+      - used_in_table_columns
+      - used_in_function_params
+      - used_in_operators
+      - used_in_typed_tables
+    error_boundary:
+      mode: explicit
+      values:
+      - none
+      - dependent_objects_without_cascade
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - cascade_restrict == cascade
+    - dependency_state == no_dependents
+    failure_when:
+    - condition: dependency_state != no_dependents and cascade_restrict in [none, restrict]
+      reason: dependent_objects_block_drop_type
+    default_failure_reason: dependent_objects_block_drop_type
+  sql_shape:
+    template: DROP TYPE {type_name} {cascade_or_restrict};
+  verification:
+    required: false
+    mode: error_assertion
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP TYPE IF EXISTS {type_name} CASCADE;
+- id: multi_type_and_privilege_baseline
+  title: Multi-type deletion and privilege boundary coverage
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: failure
+  factors:
+    statement_branch: branch_drop_type
+    object_state: exists_base
+    expected_status: failure
+    if_exists_clause: absent
+    cascade_restrict: cascade
+    multi_type_drop: multi_type
+    type_category: base
+    type_name_shape: quoted
+    privilege_level: non_owner
+    dependency_state: no_dependents
+    error_boundary: insufficient_privilege
+    verification_mode: information_schema_user_defined_types
+    cleanup_mode: rollback
+  expansion:
+    multi_type_drop:
+      mode: explicit
+      values:
+      - single_type
+      - multi_type
+    privilege_level:
+      mode: explicit
+      values:
+      - owner
+      - superuser
+      - non_owner
+    error_boundary:
+      mode: explicit
+      values:
+      - none
+      - insufficient_privilege
+    verification_mode:
+      mode: explicit
+      values:
+      - pg_type_query
+      - information_schema_user_defined_types
+      - error_assertion
+      - notice_assertion
+    cleanup_mode:
+      mode: explicit
+      values:
+      - no_cleanup_needed
+      - manual_cleanup
+      - rollback
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - privilege_level in [owner, superuser]
+    failure_when:
+    - condition: privilege_level == non_owner
+      reason: drop_type_requires_owner
+    - condition: error_boundary == insufficient_privilege
+      reason: drop_type_requires_owner
+    default_failure_reason: drop_type_privilege_invalid
+  sql_shape:
+    template: DROP TYPE {type_name_list} CASCADE;
+  verification:
+    required: false
+    mode: error_assertion
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: ROLLBACK;
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

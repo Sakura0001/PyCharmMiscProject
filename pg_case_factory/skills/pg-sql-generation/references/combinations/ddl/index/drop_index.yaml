@@ -1,0 +1,526 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: drop_index
+  name: DROP INDEX
+  category: ddl
+  domain: index
+  source_reference: references/statements/ddl/index/drop_index.md
+  official_source: https://www.postgresql.org/docs/16/sql-dropindex.html
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required matrix coverage must pass before any derived extension is emitted.
+  - Derived extensions may add stress, boundary, performance, or cross-factor combinations.
+  - Derived extensions must not be counted as satisfying required factor or column-type coverage.
+  - Derived extensions must use declared factors, declared factor values, and declared manifests.
+  - Derived extensions must preserve success, failure, or no-op attribution.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds: [index, partitioned_index]
+    decision_reason: >
+      DROP INDEX removes index objects. The baseline explicitly distinguishes
+      ordinary indexes from partitioned-index restrictions for CONCURRENTLY.
+  target_relation_coverage:
+    required: true
+    coverage_mode: conditional
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_relation_kinds: [index, partitioned_index]
+    decision_reason: >
+      DROP INDEX names index relations rather than base table relations. Relation
+      coverage is conditional and used only where index relation kind changes
+      behavior, especially partitioned indexes and dependency cleanup.
+  table_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: >
+      The DROP INDEX statement does not alter table definitions or read table
+      columns. Table setup may be needed to create an index, but table kind is not
+      a required DROP INDEX behavior axis except through the index relation kind.
+  column_type_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: >
+      DROP INDEX targets index names and dependency state. It does not inspect,
+      transform, validate, or compare indexed column values, so required column
+      type coverage belongs to CREATE INDEX setup rather than this drop baseline.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values: [drop_single, drop_multiple, drop_concurrently, drop_cascade]
+      coverage_requirement: all_values
+    object_state:
+      tier: T1
+      coverage_role: main_axis
+      required_values: [exists, not_exists, depended_by_constraint]
+      coverage_requirement: all_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values: [success, failure, no_op]
+      coverage_requirement: all_values
+    concurrently:
+      tier: T2
+      coverage_role: branch_local_axis
+      required_values: ['false', 'true']
+      coverage_requirement: all_values
+    if_exists:
+      tier: T2
+      coverage_role: branch_local_axis
+      required_values: ['false', 'true']
+      coverage_requirement: all_values
+    cascade_restrict:
+      tier: T2
+      coverage_role: branch_local_axis
+      required_values: [restrict, cascade]
+      coverage_requirement: all_values
+    multi_index:
+      tier: T2
+      coverage_role: branch_local_axis
+      required_values: [single, multiple]
+      coverage_requirement: all_values
+    permission:
+      tier: T2
+      coverage_role: permission_axis
+      required_values: [owner, non_owner, superuser]
+      coverage_requirement: all_values
+    name_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values: [plain_identifier, schema_qualified, quoted_identifier, reserved_word, existing_object, missing_object]
+      coverage_requirement: all_values
+    dependency_type:
+      tier: T4
+      coverage_role: dependency_axis
+      required_values: [no_dependency, unique_pk_constraint, fk_indirect_dependency]
+      coverage_requirement: all_values
+    index_method:
+      tier: T4
+      coverage_role: setup_axis
+      required_values: [btree, hash, gist, spgist, gin, brin]
+      coverage_requirement: all_values
+    invalid_combination:
+      tier: T5
+      coverage_role: negative_axis
+      required_values: [concurrently_with_cascade, concurrently_with_multiple_indexes, concurrently_on_partitioned, concurrently_in_transaction, restrict_with_dependency, none]
+      coverage_requirement: all_values
+    syntax_error:
+      tier: T5
+      coverage_role: negative_axis
+      required_values: [none, invalid_syntax]
+      coverage_requirement: success_failure_pair
+    permission_insufficient:
+      tier: T5
+      coverage_role: negative_axis
+      required_values: [none, non_owner_drop, no_schema_privilege]
+      coverage_requirement: all_values
+    verification_mode:
+      tier: T6
+      coverage_role: verification_axis
+      required_values: [catalog_absence_check, constraint_integrity_check, error_assertion]
+      coverage_requirement: all_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: cleanup_axis
+      required_values: [explicit_drop, cascade_auto_cleanup, rollback]
+      coverage_requirement: all_values
+dynamic_inputs:
+  index_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/index_manifest.json
+    required_fields: [index_name, schema_name, table_name, relation_kind, index_method, dependency_type]
+  dependency_manifest:
+    required: false
+    path_pattern: artifacts/intermediates/<task_slug>/dependency_manifest.json
+    required_fields: [constraint_name, dependency_type, dependent_object_name]
+combination_groups:
+- id: single_index_owner_success
+  title: Owner drops one existing index
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  factors:
+    statement_branch: drop_single
+    object_state: exists
+    expected_status: success
+    concurrently: 'false'
+    if_exists: 'false'
+    cascade_restrict: restrict
+    multi_index: single
+    permission: owner
+    name_shape: plain_identifier
+    dependency_type: no_dependency
+    index_method: btree
+    invalid_combination: none
+    syntax_error: none
+    permission_insufficient: none
+    verification_mode: catalog_absence_check
+    cleanup_mode: explicit_drop
+  expansion:
+    name_shape:
+      mode: explicit
+      values: [plain_identifier, schema_qualified, quoted_identifier, reserved_word, existing_object]
+    index_method:
+      mode: explicit
+      values: [btree, hash, gist, spgist, gin, brin]
+    permission:
+      mode: explicit
+      values: [owner, superuser]
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - object_state == exists and permission in [owner, superuser]
+    failure_when: []
+    default_failure_reason: none
+  sql_shape:
+    template: DROP INDEX {index_name} RESTRICT;
+  verification:
+    required: true
+    mode: catalog_absence_check
+    sql: SELECT to_regclass('{index_name}') IS NULL AS dropped;
+  cleanup:
+    required: false
+- id: multiple_index_drop_success
+  title: Multiple existing indexes in one DROP INDEX statement
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  factors:
+    statement_branch: drop_multiple
+    object_state: exists
+    expected_status: success
+    concurrently: 'false'
+    if_exists: 'false'
+    cascade_restrict: restrict
+    multi_index: multiple
+    permission: owner
+    name_shape: plain_identifier
+    dependency_type: no_dependency
+    index_method: btree
+    invalid_combination: none
+    syntax_error: none
+    permission_insufficient: none
+    verification_mode: catalog_absence_check
+    cleanup_mode: explicit_drop
+  expansion:
+    multi_index:
+      mode: explicit
+      values: [single, multiple]
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - multi_index == multiple and concurrently == 'false'
+    failure_when: []
+    default_failure_reason: none
+  sql_shape:
+    template: DROP INDEX {index_name_1}, {index_name_2} RESTRICT;
+  verification:
+    required: true
+    mode: catalog_absence_check
+    sql: SELECT to_regclass('{index_name_1}') IS NULL AND to_regclass('{index_name_2}') IS NULL AS dropped;
+  cleanup:
+    required: false
+- id: missing_index_without_if_exists_failure
+  title: Missing index without IF EXISTS fails
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - index_does_not_exist
+  factors:
+    statement_branch: drop_single
+    object_state: not_exists
+    expected_status: failure
+    concurrently: 'false'
+    if_exists: 'false'
+    cascade_restrict: restrict
+    multi_index: single
+    permission: owner
+    name_shape: missing_object
+    dependency_type: no_dependency
+    index_method: btree
+    invalid_combination: none
+    syntax_error: none
+    permission_insufficient: none
+    verification_mode: error_assertion
+    cleanup_mode: rollback
+  expansion:
+    name_shape:
+      mode: explicit
+      values: [missing_object]
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - condition: object_state == not_exists and if_exists == 'false'
+      reason: index_does_not_exist
+    default_failure_reason: index_does_not_exist
+  sql_shape:
+    template: DROP INDEX {missing_index_name} RESTRICT;
+  verification:
+    required: false
+    mode: expected_error
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: ROLLBACK;
+- id: missing_index_with_if_exists_noop
+  title: Missing index with IF EXISTS is a no-op
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: no_op
+  factors:
+    statement_branch: drop_single
+    object_state: not_exists
+    expected_status: no_op
+    concurrently: 'false'
+    if_exists: 'true'
+    cascade_restrict: restrict
+    multi_index: single
+    permission: owner
+    name_shape: missing_object
+    dependency_type: no_dependency
+    index_method: btree
+    invalid_combination: none
+    syntax_error: none
+    permission_insufficient: none
+    verification_mode: catalog_absence_check
+    cleanup_mode: rollback
+  expansion:
+    if_exists:
+      mode: explicit
+      values: ['false', 'true']
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - object_state == not_exists and if_exists == 'true'
+    failure_when: []
+    default_failure_reason: none
+  sql_shape:
+    template: DROP INDEX IF EXISTS {missing_index_name} RESTRICT;
+  verification:
+    required: true
+    mode: catalog_absence_check
+    sql: SELECT to_regclass('{missing_index_name}') IS NULL AS remained_missing;
+  cleanup:
+    required: false
+- id: cascade_restrict_dependency_boundary
+  title: CASCADE succeeds and RESTRICT fails for dependent indexes
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  expected_failure_reasons:
+  - dependent_objects_still_exist
+  factors:
+    statement_branch: drop_cascade
+    object_state: depended_by_constraint
+    expected_status: success
+    concurrently: 'false'
+    if_exists: 'false'
+    cascade_restrict: cascade
+    multi_index: single
+    permission: owner
+    name_shape: existing_object
+    dependency_type: unique_pk_constraint
+    index_method: btree
+    invalid_combination: none
+    syntax_error: none
+    permission_insufficient: none
+    verification_mode: constraint_integrity_check
+    cleanup_mode: cascade_auto_cleanup
+  expansion:
+    cascade_restrict:
+      mode: explicit
+      values: [restrict, cascade]
+    dependency_type:
+      mode: explicit
+      values: [no_dependency, unique_pk_constraint, fk_indirect_dependency]
+    invalid_combination:
+      mode: explicit
+      values: [none, restrict_with_dependency]
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - cascade_restrict == cascade
+    failure_when:
+    - condition: cascade_restrict == restrict and dependency_type in [unique_pk_constraint, fk_indirect_dependency]
+      reason: dependent_objects_still_exist
+    default_failure_reason: dependent_objects_still_exist
+  sql_shape:
+    template: DROP INDEX {index_name} {cascade_restrict_clause};
+  verification:
+    required: true
+    mode: constraint_integrity_check
+    sql: SELECT conname FROM pg_constraint WHERE conindid = '{index_name}'::regclass;
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP TABLE IF EXISTS {dependent_table_name} CASCADE;
+- id: concurrently_success_and_restriction_failures
+  title: CONCURRENTLY success and documented restriction failures
+  lifecycle_role: target_statement
+  expected_status_policy: per_lifecycle_context
+  default_expected_status: success
+  expected_failure_reasons:
+  - drop_index_concurrently_cannot_use_cascade
+  - drop_index_concurrently_cannot_drop_multiple_indexes
+  - drop_index_concurrently_not_supported_on_partitioned_index
+  - drop_index_concurrently_cannot_run_inside_transaction_block
+  factors:
+    statement_branch: drop_concurrently
+    object_state: exists
+    expected_status: success
+    concurrently: 'true'
+    if_exists: 'false'
+    cascade_restrict: restrict
+    multi_index: single
+    permission: owner
+    name_shape: existing_object
+    dependency_type: no_dependency
+    index_method: btree
+    invalid_combination: none
+    syntax_error: none
+    permission_insufficient: none
+    verification_mode: catalog_absence_check
+    cleanup_mode: explicit_drop
+  expansion:
+    concurrently:
+      mode: explicit
+      values: ['false', 'true']
+    cascade_restrict:
+      mode: explicit
+      values: [restrict, cascade]
+    multi_index:
+      mode: explicit
+      values: [single, multiple]
+    invalid_combination:
+      mode: explicit
+      values: [none, concurrently_with_cascade, concurrently_with_multiple_indexes, concurrently_on_partitioned, concurrently_in_transaction]
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - concurrently == 'true' and cascade_restrict == restrict and multi_index == single and relation_kind != partitioned_index and lifecycle_context == standalone_statement
+    failure_when:
+    - condition: invalid_combination == concurrently_with_cascade
+      reason: drop_index_concurrently_cannot_use_cascade
+    - condition: invalid_combination == concurrently_with_multiple_indexes
+      reason: drop_index_concurrently_cannot_drop_multiple_indexes
+    - condition: invalid_combination == concurrently_on_partitioned
+      reason: drop_index_concurrently_not_supported_on_partitioned_index
+    - condition: invalid_combination == concurrently_in_transaction
+      reason: drop_index_concurrently_cannot_run_inside_transaction_block
+    default_failure_reason: drop_index_concurrently_binding_invalid
+  sql_shape:
+    template: DROP INDEX CONCURRENTLY {index_name};
+  verification:
+    required: true
+    mode: catalog_absence_check
+    sql: SELECT to_regclass('{index_name}') IS NULL AS dropped;
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP INDEX IF EXISTS {index_name};
+- id: permission_and_syntax_failures
+  title: Permission and syntax failure boundaries
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - must_own_index
+  - no_schema_privilege
+  - drop_index_syntax_is_invalid
+  factors:
+    statement_branch: drop_single
+    object_state: exists
+    expected_status: failure
+    concurrently: 'false'
+    if_exists: 'false'
+    cascade_restrict: restrict
+    multi_index: single
+    permission: non_owner
+    name_shape: reserved_word
+    dependency_type: no_dependency
+    index_method: btree
+    invalid_combination: none
+    syntax_error: invalid_syntax
+    permission_insufficient: non_owner_drop
+    verification_mode: error_assertion
+    cleanup_mode: rollback
+  expansion:
+    permission:
+      mode: explicit
+      values: [non_owner, superuser]
+    permission_insufficient:
+      mode: explicit
+      values: [non_owner_drop, no_schema_privilege]
+    syntax_error:
+      mode: explicit
+      values: [none, invalid_syntax]
+    verification_mode:
+      mode: explicit
+      values: [catalog_absence_check, constraint_integrity_check, error_assertion]
+    cleanup_mode:
+      mode: explicit
+      values: [explicit_drop, cascade_auto_cleanup, rollback]
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - condition: permission_insufficient == non_owner_drop
+      reason: must_own_index
+    - condition: permission_insufficient == no_schema_privilege
+      reason: no_schema_privilege
+    - condition: syntax_error == invalid_syntax
+      reason: drop_index_syntax_is_invalid
+    default_failure_reason: drop_index_negative_boundary
+  sql_shape:
+    template: DROP INDEX {invalid_or_forbidden_index_name} {invalid_drop_index_clause};
+  verification:
+    required: false
+    mode: expected_error
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: ROLLBACK;
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

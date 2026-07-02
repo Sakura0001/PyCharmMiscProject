@@ -1,0 +1,539 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: alter_view
+  name: ALTER VIEW
+  category: ddl
+  domain: view
+  source_reference: references/statements/ddl/view/alter_view.md
+  aliases:
+  - alter_view
+  - ALTER VIEW
+  - alterview
+  - alter view
+  official_source: https://www.postgresql.org/docs/16/sql-alterview.html
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required matrix coverage must pass before any derived extension is emitted.
+  - Derived extensions may add stress, boundary, performance, or cross-factor combinations.
+  - Derived extensions must not be counted as satisfying required factor or column-type coverage.
+  - Derived extensions must use declared factors, declared factor values, and declared manifests.
+  - Derived extensions must preserve success or failure attribution.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds:
+    - plain_view
+    decision_reason: >-
+      ALTER VIEW modifies an existing plain view relation. Materialized views,
+      tables, sequences, and other relation classes are negative object-type
+      boundaries rather than required target objects.
+  target_relation_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_relation_kinds:
+    - plain_view
+    negative_relation_kinds:
+    - regular_table
+    - materialized_view
+    - sequence
+    decision_reason: >-
+      The target relation must be a plain view. Wrong relation kinds are covered
+      through the wrong_object_type error boundary instead of successful target
+      relation coverage.
+  table_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: >-
+      ALTER VIEW changes view metadata, defaults, ownership, names, schema, and
+      view options. It does not create or transform base tables.
+  column_type_coverage:
+    required: true
+    coverage_mode: conditional
+    inventory_source: references/common/pg16_type_catalog.md
+    required_type_set: all_pg16_column_types
+    expansion_mode: representative_by_statement_branch
+    require_each_type_success_or_failure: false
+    decision_reason: >-
+      ALTER VIEW does not change view column data types, but SET DEFAULT and
+      RENAME COLUMN branches touch output columns. The baseline therefore uses
+      conditional representative column bindings for column-sensitive branches
+      and does not require exhaustive coverage across every PG16 type.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - branch_set_default
+      - branch_drop_default
+      - branch_owner_to
+      - branch_rename_column
+      - branch_rename_view
+      - branch_set_schema
+      - branch_set_option
+      - branch_reset_option
+      coverage_requirement: all_values
+    object_state:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - exists
+      - not_exists
+      coverage_requirement: success_failure_pair
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - success
+      - failure
+      coverage_requirement: all_values
+    if_exists_clause:
+      tier: T2
+      coverage_role: main_axis
+      required_values:
+      - absent
+      - present
+      coverage_requirement: success_failure_pair
+    view_name_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values:
+      - simple
+      - quoted
+      - reserved_word
+      - schema_qualified
+      - non_existent
+      coverage_requirement: all_values
+    column_name_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values:
+      - simple
+      - quoted
+      - with_column_keyword
+      - without_column_keyword
+      coverage_requirement: all_values
+    new_name_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values:
+      - simple
+      - quoted
+      - reserved_word
+      - same_as_existing
+      coverage_requirement: all_values
+    new_schema_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values:
+      - schema_exists
+      - schema_not_exists
+      - pg_catalog_reserved
+      coverage_requirement: all_values
+    owner_target_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values:
+      - role_name
+      - current_role
+      - current_user
+      - session_user
+      - non_existent_role
+      coverage_requirement: all_values
+    view_option_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values:
+      - check_option_local
+      - check_option_cascaded
+      - security_barrier_true
+      - security_barrier_false
+      - security_invoker_true
+      - security_invoker_false
+      - multiple_options
+      coverage_requirement: all_values
+    privilege_level:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values:
+      - owner
+      - superuser
+      - non_owner_with_privilege
+      - non_owner_no_privilege
+      coverage_requirement: success_failure_pair
+    dependency_state:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values:
+      - base_table_exists
+      - base_table_not_exists
+      - other_view_depends
+      coverage_requirement: all_values
+    error_boundary:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values:
+      - none
+      - view_not_exists_without_if_exists
+      - insufficient_privilege
+      - non_existent_role
+      - non_existent_schema
+      - wrong_object_type
+      coverage_requirement: all_values
+    verification_mode:
+      tier: T6
+      coverage_role: rotate_attach
+      required_values:
+      - pg_class_query
+      - pg_views_query
+      - information_schema_views
+      - select_from_view
+      - error_assertion
+      coverage_requirement: all_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: rotate_attach
+      required_values:
+      - drop_view_if_exists
+      - drop_view_cascade
+      - revert_alter
+      coverage_requirement: all_values
+dynamic_inputs:
+  view_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/view_manifest.json
+    required_fields:
+    - view_name
+    - schema_name
+    - owner
+    - columns
+    - view_options
+  column_manifest:
+    required: true
+    source: view_manifest.columns
+    required_fields:
+    - name
+    - type_key
+    - default_expression
+  type_catalog:
+    required: true
+    path: references/common/pg16_type_catalog.md
+    required_fields:
+    - type_key
+    - type_category
+    - declaration_sql
+    - sample_values
+  role_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/role_manifest.json
+    required_fields:
+    - role_name
+    - can_own_view
+    - has_schema_create
+combination_groups:
+- id: alter_view_success_branches
+  title: Successful ALTER VIEW branch coverage over existing views
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  factors:
+    statement_branch: branch_set_default
+    object_state: exists
+    expected_status: success
+    if_exists_clause: absent
+    view_name_shape: simple
+    column_name_shape: simple
+    new_name_shape: simple
+    new_schema_shape: schema_exists
+    owner_target_shape: role_name
+    view_option_shape: check_option_local
+    privilege_level: owner
+    dependency_state: base_table_exists
+    error_boundary: none
+    verification_mode: pg_class_query
+    cleanup_mode: revert_alter
+  expansion:
+    statement_branch:
+      mode: explicit
+      values:
+      - branch_set_default
+      - branch_drop_default
+      - branch_owner_to
+      - branch_rename_column
+      - branch_rename_view
+      - branch_set_schema
+      - branch_set_option
+      - branch_reset_option
+    if_exists_clause:
+      mode: explicit
+      values:
+      - absent
+      - present
+    view_name_shape:
+      mode: representative
+      values:
+      - simple
+      - quoted
+      - reserved_word
+      - schema_qualified
+    column_name_shape:
+      mode: representative
+      values:
+      - simple
+      - quoted
+      - with_column_keyword
+      - without_column_keyword
+    new_name_shape:
+      mode: representative
+      values:
+      - simple
+      - quoted
+      - reserved_word
+    new_schema_shape:
+      mode: representative
+      values:
+      - schema_exists
+      - pg_catalog_reserved
+    owner_target_shape:
+      mode: representative
+      values:
+      - role_name
+      - current_role
+      - current_user
+      - session_user
+    view_option_shape:
+      mode: representative
+      values:
+      - check_option_local
+      - check_option_cascaded
+      - security_barrier_true
+      - security_barrier_false
+      - security_invoker_true
+      - security_invoker_false
+      - multiple_options
+    privilege_level:
+      mode: representative
+      values:
+      - owner
+      - superuser
+      - non_owner_with_privilege
+    dependency_state:
+      mode: representative
+      values:
+      - base_table_exists
+      - base_table_not_exists
+      - other_view_depends
+    verification_mode:
+      mode: representative
+      values:
+      - pg_class_query
+      - pg_views_query
+      - information_schema_views
+      - select_from_view
+    cleanup_mode:
+      mode: representative
+      values:
+      - drop_view_if_exists
+      - drop_view_cascade
+      - revert_alter
+  compatibility:
+    resolver: branch_aware_declared_matrix
+    success_when:
+    - object_state == exists
+    - privilege_level in [owner, superuser, non_owner_with_privilege]
+    - branch preconditions are present for selected ALTER VIEW form
+    failure_when: []
+    default_failure_reason: null
+  sql_shape:
+    template: ALTER VIEW {if_exists_clause} {view_name} {alter_view_action};
+  verification:
+    required: true
+    mode: catalog_or_behavior_query
+    sql: SELECT 1 FROM pg_class WHERE relname = '{view_name}' AND relkind = 'v';
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP VIEW IF EXISTS {view_name} CASCADE;
+- id: alter_view_missing_target_if_exists_boundary
+  title: Missing target view with IF EXISTS no-op and without IF EXISTS failure
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: failure
+  expected_failure_reasons:
+  - view_not_exists_without_if_exists
+  factors:
+    statement_branch: branch_rename_view
+    object_state: not_exists
+    expected_status: failure
+    if_exists_clause: absent
+    view_name_shape: non_existent
+    column_name_shape: simple
+    new_name_shape: simple
+    new_schema_shape: schema_exists
+    owner_target_shape: role_name
+    view_option_shape: check_option_local
+    privilege_level: owner
+    dependency_state: base_table_exists
+    error_boundary: view_not_exists_without_if_exists
+    verification_mode: error_assertion
+    cleanup_mode: drop_view_if_exists
+  expansion:
+    expected_status:
+      mode: explicit
+      values:
+      - success
+      - failure
+    if_exists_clause:
+      mode: explicit
+      values:
+      - absent
+      - present
+    view_name_shape:
+      mode: explicit
+      values:
+      - non_existent
+    error_boundary:
+      mode: explicit
+      values:
+      - view_not_exists_without_if_exists
+      - none
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - object_state == not_exists and if_exists_clause == present
+    failure_when:
+    - condition: object_state == not_exists and if_exists_clause == absent
+      reason: view_not_exists_without_if_exists
+    default_failure_reason: view_not_exists_without_if_exists
+  sql_shape:
+    template: ALTER VIEW {if_exists_clause} {view_name} RENAME TO {new_view_name};
+  verification:
+    required: true
+    mode: error_or_notice_assertion
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP VIEW IF EXISTS {view_name} CASCADE;
+- id: alter_view_privilege_owner_schema_and_type_boundaries
+  title: Privilege, owner, schema, name-collision, and wrong-object failures
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - insufficient_privilege
+  - non_existent_role
+  - non_existent_schema
+  - duplicate_relation_name
+  - wrong_object_type
+  factors:
+    statement_branch: branch_owner_to
+    object_state: exists
+    expected_status: failure
+    if_exists_clause: absent
+    view_name_shape: simple
+    column_name_shape: simple
+    new_name_shape: same_as_existing
+    new_schema_shape: schema_not_exists
+    owner_target_shape: non_existent_role
+    view_option_shape: check_option_local
+    privilege_level: non_owner_no_privilege
+    dependency_state: base_table_exists
+    error_boundary: insufficient_privilege
+    verification_mode: error_assertion
+    cleanup_mode: drop_view_if_exists
+  expansion:
+    statement_branch:
+      mode: explicit
+      values:
+      - branch_owner_to
+      - branch_rename_view
+      - branch_set_schema
+    new_name_shape:
+      mode: explicit
+      values:
+      - same_as_existing
+    new_schema_shape:
+      mode: explicit
+      values:
+      - schema_not_exists
+    owner_target_shape:
+      mode: explicit
+      values:
+      - non_existent_role
+    privilege_level:
+      mode: explicit
+      values:
+      - non_owner_no_privilege
+    error_boundary:
+      mode: explicit
+      values:
+      - insufficient_privilege
+      - non_existent_role
+      - non_existent_schema
+      - wrong_object_type
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - condition: privilege_level == non_owner_no_privilege
+      reason: insufficient_privilege
+    - condition: owner_target_shape == non_existent_role
+      reason: non_existent_role
+    - condition: new_schema_shape == schema_not_exists
+      reason: non_existent_schema
+    - condition: new_name_shape == same_as_existing
+      reason: duplicate_relation_name
+    - condition: error_boundary == wrong_object_type
+      reason: wrong_object_type
+    default_failure_reason: alter_view_boundary_failure
+  sql_shape:
+    template: ALTER VIEW {view_name} {owner_schema_or_rename_action};
+  verification:
+    required: true
+    mode: error_assertion
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP VIEW IF EXISTS {view_name} CASCADE;
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

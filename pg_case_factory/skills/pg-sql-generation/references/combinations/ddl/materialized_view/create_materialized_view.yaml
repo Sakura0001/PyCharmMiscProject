@@ -1,0 +1,569 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: create_materialized_view
+  name: CREATE MATERIALIZED VIEW
+  category: ddl
+  domain: materialized_view
+  source_reference: references/statements/ddl/materialized_view/create_materialized_view.md
+  aliases:
+  - create materialized view
+  - CREATE MATERIALIZED VIEW
+  official_source: https://www.postgresql.org/docs/16/sql-creatematerializedview.html
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required matrix coverage must pass before derived extension combinations are emitted.
+  - Derived extensions may add stress, boundary, or cross-factor combinations after the baseline audit passes.
+  - Derived extensions must not count toward required factor, table, relation, object, or column-type coverage.
+  - Derived extensions must use declared factors and values from the statement reference.
+  - Derived extensions must preserve success or failure attribution.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds:
+    - materialized_view
+    decision_reason: >
+      CREATE MATERIALIZED VIEW creates one schema relation object whose object kind is materialized_view.
+      The baseline tracks successful creation, duplicate-name behavior, and wrong-object-type conflicts.
+  target_relation_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_relation_kinds:
+    - materialized_view
+    negative_relation_kinds:
+    - regular_table
+    - plain_view
+    - foreign_table
+    - sequence
+    decision_reason: >
+      The target relation produced by the statement is always a materialized view. Other relation kinds are
+      negative name-conflict controls rather than valid target relation kinds.
+  table_coverage:
+    required: true
+    coverage_mode: representative
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_table_kinds:
+    - regular_table
+    - unlogged_table
+    - temporary_table
+    - partitioned_table_parent
+    decision_reason: >
+      Source queries may read table-backed relations, but CREATE MATERIALIZED VIEW semantics are driven by the
+      query result rather than every table storage form. The baseline uses representative source table kinds
+      and leaves exhaustive table-kind stress to post-audit extensions.
+  column_type_coverage:
+    required: true
+    coverage_mode: representative
+    inventory_source: references/common/pg16_type_catalog.md
+    required_type_set: all_pg16_column_types
+    expansion_mode: representative_query_result_types
+    require_each_type_success_or_failure: false
+    decision_reason: >
+      Materialized-view columns are derived from the query result, similar to CREATE TABLE AS. Exhaustive PG16
+      column-type expansion is not required for the baseline because this statement stores the result shape and
+      does not apply type-specific operator-class rules. Representative query outputs must include scalar,
+      collatable, datetime, jsonb, array, enum/domain/composite setup, and at least one type with no generic
+      index support so derived-from-query behavior is covered concretely.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - branch_1
+      coverage_requirement: all_values
+    target_object_state:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - absent
+      - exists
+      - exists_conflict
+      coverage_requirement: all_values
+    query_shape:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - minimal_query
+      - explicit_values
+      - select_from_table
+      - cte_source
+      coverage_requirement: all_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - success
+      - failure
+      coverage_requirement: success_failure_pair
+    if_not_exists_clause:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - absent
+      - present
+      coverage_requirement: all_values
+    column_list_clause:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - absent
+      - present
+      coverage_requirement: all_values
+    using_clause:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - absent
+      - present
+      coverage_requirement: all_values
+    storage_parameter_clause:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - absent
+      - present
+      coverage_requirement: success_failure_pair
+    tablespace_clause:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - absent
+      - present
+      coverage_requirement: success_failure_pair
+    data_clause:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - with_data
+      - with_no_data
+      coverage_requirement: all_values
+    privilege_context:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - owner
+      - granted_role
+      - insufficient_privilege
+      coverage_requirement: success_failure_pair
+    name_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values:
+      - plain_identifier
+      - schema_qualified
+      - quoted_identifier
+      coverage_requirement: all_values
+    column_type_coverage:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values:
+      - representative_types
+      - derived_from_query
+      coverage_requirement: representative_values
+    dependency_state:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values:
+      - ready
+      - missing_dependency
+      coverage_requirement: success_failure_pair
+    query_source_state:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values:
+      - source_table_exists
+      - source_table_missing
+      coverage_requirement: success_failure_pair
+    invalid_combination:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values:
+      - none
+      - syntax_valid_semantic_error
+      - object_type_mismatch
+      coverage_requirement: all_values
+    constraint_boundary:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values:
+      - none
+      - security_restricted_operation
+      - unscannable_state
+      coverage_requirement: all_values
+    verification_mode:
+      tier: T6
+      coverage_role: rotate_attach
+      required_values:
+      - catalog_query
+      - effect_query
+      - returned_rows
+      - error_assertion
+      coverage_requirement: all_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: rotate_attach
+      required_values:
+      - drop_objects
+      - reset_state
+      coverage_requirement: all_values
+dynamic_inputs:
+  materialized_view_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/materialized_view_manifest.json
+    required_fields:
+    - materialized_view_name
+    - schema_name
+    - query_sql
+    - column_names
+    - data_clause
+    - is_populated
+  source_table_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/table_manifest.json
+    required_fields:
+    - table_name
+    - relation_kind
+    - columns
+  type_catalog:
+    required: true
+    path: references/common/pg16_type_catalog.md
+    required_fields:
+    - type_key
+    - type_category
+    - declaration_sql
+    - sample_values
+    - requires_setup
+combination_groups:
+- id: create_success_query_shapes_and_options
+  title: Successful creation across query shapes and optional clauses
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  factors:
+    statement_branch: branch_1
+    target_object_state: absent
+    query_shape: minimal_query
+    expected_status: success
+    if_not_exists_clause: absent
+    column_list_clause: absent
+    using_clause: absent
+    storage_parameter_clause: absent
+    tablespace_clause: absent
+    data_clause: with_data
+    privilege_context: owner
+    name_shape: plain_identifier
+    column_type_coverage: representative_types
+    dependency_state: ready
+    query_source_state: source_table_exists
+    invalid_combination: none
+    constraint_boundary: none
+    verification_mode: catalog_query
+    cleanup_mode: drop_objects
+  expansion:
+    query_shape:
+      mode: explicit
+      values:
+      - minimal_query
+      - explicit_values
+      - select_from_table
+      - cte_source
+    if_not_exists_clause:
+      mode: explicit
+      values:
+      - absent
+      - present
+    column_list_clause:
+      mode: explicit
+      values:
+      - absent
+      - present
+    using_clause:
+      mode: explicit
+      values:
+      - absent
+      - present
+    storage_parameter_clause:
+      mode: explicit
+      values:
+      - absent
+      - present
+    tablespace_clause:
+      mode: explicit
+      values:
+      - absent
+      - present
+    data_clause:
+      mode: explicit
+      values:
+      - with_data
+      - with_no_data
+    privilege_context:
+      mode: explicit
+      values:
+      - owner
+      - granted_role
+    name_shape:
+      mode: explicit
+      values:
+      - plain_identifier
+      - schema_qualified
+      - quoted_identifier
+    column_type_coverage:
+      mode: representative
+      values:
+      - representative_types
+      - derived_from_query
+    verification_mode:
+      mode: explicit
+      values:
+      - catalog_query
+      - effect_query
+      - returned_rows
+    cleanup_mode:
+      mode: explicit
+      values:
+      - drop_objects
+      - reset_state
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - target_object_state == absent and dependency_state == ready and query_source_state == source_table_exists
+    - if_not_exists_clause == present and target_object_state == exists
+    failure_when: []
+    default_failure_reason: not_applicable
+  sql_shape:
+    template: CREATE MATERIALIZED VIEW {if_not_exists_sql} {materialized_view_name} {column_list_sql} {using_method_sql} {storage_parameter_sql} {tablespace_sql} AS {query_sql} {data_clause_sql};
+  verification:
+    required: true
+    mode: catalog_query
+    sql: SELECT matviewname, ispopulated FROM pg_matviews WHERE schemaname = '{schema_name}' AND matviewname = '{materialized_view_name}';
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP MATERIALIZED VIEW IF EXISTS {qualified_materialized_view_name};
+- id: existing_name_conflicts_and_if_not_exists_boundary
+  title: Existing-name conflict and IF NOT EXISTS no-op behavior
+  lifecycle_role: target_statement
+  expected_status_policy: per_existing_relation
+  default_expected_status: failure
+  expected_failure_reasons:
+  - duplicate_relation
+  - conflicting_existing_relation_kind
+  factors:
+    statement_branch: branch_1
+    target_object_state: exists
+    query_shape: minimal_query
+    expected_status: failure
+    if_not_exists_clause: absent
+    column_list_clause: absent
+    using_clause: absent
+    storage_parameter_clause: absent
+    tablespace_clause: absent
+    data_clause: with_data
+    privilege_context: owner
+    name_shape: plain_identifier
+    column_type_coverage: derived_from_query
+    dependency_state: ready
+    query_source_state: source_table_exists
+    invalid_combination: object_type_mismatch
+    constraint_boundary: none
+    verification_mode: error_assertion
+    cleanup_mode: drop_objects
+  expansion:
+    target_object_state:
+      mode: explicit
+      values:
+      - exists
+      - exists_conflict
+    if_not_exists_clause:
+      mode: explicit
+      values:
+      - absent
+      - present
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - if_not_exists_clause == present and target_object_state == exists
+    failure_when:
+    - condition: if_not_exists_clause == absent and target_object_state in [exists, exists_conflict]
+      reason: duplicate_relation
+    - condition: target_object_state == exists_conflict
+      reason: conflicting_existing_relation_kind
+    default_failure_reason: duplicate_relation
+  sql_shape:
+    template: CREATE MATERIALIZED VIEW {if_not_exists_sql} {materialized_view_name} AS {query_sql} WITH DATA;
+  verification:
+    required: false
+    mode: error_assertion
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP MATERIALIZED VIEW IF EXISTS {qualified_materialized_view_name};
+    - sql: DROP VIEW IF EXISTS {conflicting_relation_name};
+    - sql: DROP TABLE IF EXISTS {conflicting_relation_name};
+- id: missing_dependency_and_source_failures
+  title: Missing dependency and missing source-table failures
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: failure
+  expected_failure_reasons:
+  - missing_query_dependency
+  - source_table_does_not_exist
+  factors:
+    statement_branch: branch_1
+    target_object_state: absent
+    query_shape: select_from_table
+    expected_status: failure
+    if_not_exists_clause: absent
+    column_list_clause: present
+    using_clause: absent
+    storage_parameter_clause: absent
+    tablespace_clause: absent
+    data_clause: with_data
+    privilege_context: owner
+    name_shape: schema_qualified
+    column_type_coverage: derived_from_query
+    dependency_state: missing_dependency
+    query_source_state: source_table_missing
+    invalid_combination: syntax_valid_semantic_error
+    constraint_boundary: none
+    verification_mode: error_assertion
+    cleanup_mode: drop_objects
+  expansion:
+    dependency_state:
+      mode: explicit
+      values:
+      - missing_dependency
+    query_source_state:
+      mode: explicit
+      values:
+      - source_table_missing
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - condition: dependency_state == missing_dependency
+      reason: missing_query_dependency
+    - condition: query_source_state == source_table_missing
+      reason: source_table_does_not_exist
+    default_failure_reason: missing_query_dependency
+  sql_shape:
+    template: CREATE MATERIALIZED VIEW {materialized_view_name} {column_list_sql} AS SELECT * FROM {missing_source_table} WITH DATA;
+  verification:
+    required: false
+    mode: error_assertion
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP MATERIALIZED VIEW IF EXISTS {qualified_materialized_view_name};
+- id: privilege_and_constraint_boundary_failures
+  title: Privilege, security-restricted, and unscannable-state boundaries
+  lifecycle_role: target_statement
+  expected_status_policy: per_lifecycle_context
+  default_expected_status: failure
+  expected_failure_reasons:
+  - permission_denied_for_schema_or_tablespace
+  - security_restricted_operation_not_allowed
+  - materialized_view_is_unscannable_until_refreshed
+  factors:
+    statement_branch: branch_1
+    target_object_state: absent
+    query_shape: cte_source
+    expected_status: failure
+    if_not_exists_clause: absent
+    column_list_clause: present
+    using_clause: present
+    storage_parameter_clause: present
+    tablespace_clause: present
+    data_clause: with_no_data
+    privilege_context: insufficient_privilege
+    name_shape: quoted_identifier
+    column_type_coverage: representative_types
+    dependency_state: ready
+    query_source_state: source_table_exists
+    invalid_combination: syntax_valid_semantic_error
+    constraint_boundary: security_restricted_operation
+    verification_mode: error_assertion
+    cleanup_mode: reset_state
+  expansion:
+    privilege_context:
+      mode: explicit
+      values:
+      - insufficient_privilege
+    invalid_combination:
+      mode: explicit
+      values:
+      - syntax_valid_semantic_error
+      - object_type_mismatch
+    constraint_boundary:
+      mode: explicit
+      values:
+      - security_restricted_operation
+      - unscannable_state
+    verification_mode:
+      mode: explicit
+      values:
+      - error_assertion
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - condition: privilege_context == insufficient_privilege
+      reason: permission_denied_for_schema_or_tablespace
+    - condition: constraint_boundary == security_restricted_operation
+      reason: security_restricted_operation_not_allowed
+    - condition: constraint_boundary == unscannable_state
+      reason: materialized_view_is_unscannable_until_refreshed
+    default_failure_reason: create_materialized_view_boundary_failure
+  sql_shape:
+    template: CREATE MATERIALIZED VIEW {materialized_view_name} {column_list_sql} USING {access_method} WITH ({storage_parameter_sql}) TABLESPACE {tablespace_name} AS {query_sql} WITH NO DATA;
+  verification:
+    required: false
+    mode: error_assertion
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP MATERIALIZED VIEW IF EXISTS {qualified_materialized_view_name};
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

@@ -1,0 +1,536 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: select_into
+  name: SELECT INTO
+  category: ddl
+  domain: table
+  source_reference: references/statements/ddl/table/select_into.md
+  aliases:
+  - SELECT INTO
+  - select into
+  - select_into
+  official_source: https://www.postgresql.org/docs/16/sql-selectinto.html
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required baseline audit must pass before any derived extension is emitted.
+  - Derived extensions may add stress, boundary, lifecycle, or cross-factor combinations only after the baseline passes.
+  - Derived extensions must not count toward required declared factor or column-type coverage.
+  - Derived extensions must use only declared factors, declared values, and recorded derivation reasons.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds:
+    - regular_table
+    - unlogged_table
+    - temporary_table
+    decision_reason: select_into targets table-backed relation objects; the baseline declares each object kind that can be
+      created, modified, read, emptied, or removed by this statement.
+  target_relation_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_relation_kinds:
+    - regular_table
+    - unlogged_table
+    - temporary_table
+    negative_relation_kinds:
+    - plain_view
+    - foreign_table
+    - sequence
+    - materialized_view
+    decision_reason: select_into operates on table relations rather than arbitrary relation objects. Relation coverage is
+      explicit so invalid non-table relation kinds remain negative controls.
+  table_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_table_kinds:
+    - regular_table
+    - unlogged_table
+    - temporary_table
+    decision_reason: select_into behavior depends on table form, including permanent, temporary, unlogged, partitioned, and
+      inherited table variants where the statement reference declares those states.
+  column_type_coverage:
+    required: true
+    coverage_mode: conditional
+    inventory_source: references/common/pg16_type_catalog.md
+    required_type_set: all_pg16_column_types
+    expansion_mode: conditional
+    require_each_type_success_or_failure: true
+    decision_reason: SELECT INTO creates a table whose column names and types are derived from the SELECT output. Because
+      the syntax cannot declare data types directly, column-type coverage is conditional on source-query output columns and
+      typed source table manifests.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - branch_permanent
+      - branch_temporary
+      - branch_unlogged
+      coverage_requirement: all_values
+    object_state:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - not_exists
+      - already_exists
+      coverage_requirement: all_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - success
+      - failure
+      coverage_requirement: all_values
+    table_type:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - permanent
+      - temporary
+      - unlogged
+      coverage_requirement: all_values
+    keyword_table:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - present
+      - absent
+      coverage_requirement: all_values
+    temp_modifier:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - TEMPORARY
+      - TEMP
+      coverage_requirement: all_values
+    query_shape:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - simple_select
+      - select_with_from_where
+      - select_with_join
+      - select_with_subquery
+      - select_with_aggregate
+      coverage_requirement: all_values
+    with_clause:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - without_with
+      - with_simple
+      - with_recursive
+      coverage_requirement: all_values
+    select_modifier:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - default
+      - ALL
+      - DISTINCT
+      coverage_requirement: all_values
+    table_name_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values:
+      - simple
+      - quoted
+      - schema_qualified
+      - reserved_word
+      - non_existent_schema
+      coverage_requirement: all_values
+    column_name_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values:
+      - inherited_from_query
+      - aliased_with_AS
+      - expression_derived
+      coverage_requirement: all_values
+    privilege_level:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values:
+      - superuser
+      - schema_owner
+      - non_owner_with_create
+      - non_owner_no_privilege
+      coverage_requirement: all_values
+    source_table_dependency:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values:
+      - source_table_exists
+      - source_table_not_exists
+      coverage_requirement: all_values
+    schema_dependency:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values:
+      - schema_exists
+      - schema_not_exists
+      - pg_catalog_reserved
+      coverage_requirement: all_values
+    column_type_derivation:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values:
+      - from_query_result
+      coverage_requirement: all_values
+    duplicate_table_name:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values:
+      - without_if_not_exists_error
+      coverage_requirement: all_values
+    privilege_insufficient:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values:
+      - no_create_privilege_in_schema
+      coverage_requirement: all_values
+    query_error:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values:
+      - source_table_not_exists
+      - expression_invalid
+      - type_mismatch
+      coverage_requirement: all_values
+    schema_not_exists:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values:
+      - target_schema_absent
+      coverage_requirement: all_values
+    reserved_schema_name:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values:
+      - pg_catalog
+      - information_schema
+      coverage_requirement: all_values
+    identifier_length_exceeded:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values:
+      - over_63_chars
+      coverage_requirement: all_values
+    verification_mode:
+      tier: T6
+      coverage_role: rotate_attach
+      required_values:
+      - pg_class_catalog_query
+      - SELECT_count
+      - information_schema_tables
+      coverage_requirement: all_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: rotate_attach
+      required_values:
+      - DROP_TABLE_IF_EXISTS
+      coverage_requirement: all_values
+dynamic_inputs:
+  table_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/table_manifest.json
+    required_fields:
+    - table_name
+    - relation_kind
+    - table_kind
+    - columns
+  type_catalog:
+    required: true
+    path: references/common/pg16_type_catalog.md
+    required_fields:
+    - type_key
+    - type_category
+    - declaration_sql
+    - sample_values
+  source_query_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/source_query_manifest.json
+    required_fields:
+    - query_shape
+    - output_columns
+    - output_column_types
+combination_groups:
+- id: select_into_declared_factor_baseline
+  title: Declared factor baseline with all required statement-reference values
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  factors:
+    statement_branch: branch_permanent
+    object_state: not_exists
+    expected_status: success
+    table_type: permanent
+    keyword_table: present
+    temp_modifier: TEMPORARY
+    query_shape: simple_select
+    with_clause: without_with
+    select_modifier: default
+    table_name_shape: simple
+    column_name_shape: inherited_from_query
+    privilege_level: superuser
+    source_table_dependency: source_table_exists
+    schema_dependency: schema_exists
+    column_type_derivation: from_query_result
+    duplicate_table_name: without_if_not_exists_error
+    privilege_insufficient: no_create_privilege_in_schema
+    query_error: source_table_not_exists
+    schema_not_exists: target_schema_absent
+    reserved_schema_name: pg_catalog
+    identifier_length_exceeded: over_63_chars
+    verification_mode: pg_class_catalog_query
+    cleanup_mode: DROP_TABLE_IF_EXISTS
+  expansion:
+    statement_branch:
+      mode: explicit
+      values:
+      - branch_permanent
+      - branch_temporary
+      - branch_unlogged
+    object_state:
+      mode: explicit
+      values:
+      - not_exists
+      - already_exists
+    table_type:
+      mode: explicit
+      values:
+      - permanent
+      - temporary
+      - unlogged
+    keyword_table:
+      mode: explicit
+      values:
+      - present
+      - absent
+    temp_modifier:
+      mode: explicit
+      values:
+      - TEMPORARY
+      - TEMP
+    query_shape:
+      mode: explicit
+      values:
+      - simple_select
+      - select_with_from_where
+      - select_with_join
+      - select_with_subquery
+      - select_with_aggregate
+    with_clause:
+      mode: explicit
+      values:
+      - without_with
+      - with_simple
+      - with_recursive
+    select_modifier:
+      mode: explicit
+      values:
+      - default
+      - ALL
+      - DISTINCT
+    table_name_shape:
+      mode: explicit
+      values:
+      - simple
+      - quoted
+      - schema_qualified
+      - reserved_word
+      - non_existent_schema
+    column_name_shape:
+      mode: explicit
+      values:
+      - inherited_from_query
+      - aliased_with_AS
+      - expression_derived
+    privilege_level:
+      mode: explicit
+      values:
+      - superuser
+      - schema_owner
+      - non_owner_with_create
+      - non_owner_no_privilege
+    source_table_dependency:
+      mode: explicit
+      values:
+      - source_table_exists
+      - source_table_not_exists
+    schema_dependency:
+      mode: explicit
+      values:
+      - schema_exists
+      - schema_not_exists
+      - pg_catalog_reserved
+    column_type_derivation:
+      mode: explicit
+      values:
+      - from_query_result
+    duplicate_table_name:
+      mode: explicit
+      values:
+      - without_if_not_exists_error
+    privilege_insufficient:
+      mode: explicit
+      values:
+      - no_create_privilege_in_schema
+    query_error:
+      mode: explicit
+      values:
+      - source_table_not_exists
+      - expression_invalid
+      - type_mismatch
+    schema_not_exists:
+      mode: explicit
+      values:
+      - target_schema_absent
+    reserved_schema_name:
+      mode: explicit
+      values:
+      - pg_catalog
+      - information_schema
+    identifier_length_exceeded:
+      mode: explicit
+      values:
+      - over_63_chars
+    verification_mode:
+      mode: explicit
+      values:
+      - pg_class_catalog_query
+      - SELECT_count
+      - information_schema_tables
+    cleanup_mode:
+      mode: explicit
+      values:
+      - DROP_TABLE_IF_EXISTS
+    query_output_column_types:
+      mode: conditional
+      source: coverage_scope.column_type_coverage.required_type_set
+    table_kinds:
+      mode: explicit
+      source: coverage_scope.table_coverage.required_table_kinds
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - binding is syntactically valid and prerequisite objects satisfy the selected factor values
+    failure_when:
+    - condition: binding selects a declared negative object state, dependency state, privilege state, or invalid syntax/input
+        value
+      reason: duplicate_table_without_if_not_exists
+    default_failure_reason: duplicate_table_without_if_not_exists
+  sql_shape:
+    template: SELECT {select_modifier} {select_list} INTO {table_type} {keyword_table} {table_name} FROM {source_query};
+  verification:
+    required: true
+    mode: catalog_or_effect_query
+    sql: SELECT relname, relkind FROM pg_class WHERE relname = '{table_name}';
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP TABLE IF EXISTS {table_name} CASCADE;
+- id: select_into_failure_attribution_baseline
+  title: Declared failure attribution baseline
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - duplicate_table_without_if_not_exists
+  - source_query_failed
+  - target_schema_missing
+  - insufficient_create_privilege
+  factors:
+    statement_branch: branch_permanent
+    object_state: already_exists
+    expected_status: failure
+    table_type: permanent
+    keyword_table: present
+    temp_modifier: TEMPORARY
+    query_shape: simple_select
+    with_clause: without_with
+    select_modifier: default
+    table_name_shape: simple
+    column_name_shape: inherited_from_query
+    privilege_level: superuser
+    source_table_dependency: source_table_exists
+    schema_dependency: schema_exists
+    column_type_derivation: from_query_result
+    duplicate_table_name: without_if_not_exists_error
+    privilege_insufficient: no_create_privilege_in_schema
+    query_error: source_table_not_exists
+    schema_not_exists: target_schema_absent
+    reserved_schema_name: pg_catalog
+    identifier_length_exceeded: over_63_chars
+    verification_mode: pg_class_catalog_query
+    cleanup_mode: DROP_TABLE_IF_EXISTS
+  expansion:
+    expected_status:
+      mode: explicit
+      values:
+      - failure
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - condition: duplicate_table_without_if_not_exists
+      reason: duplicate_table_without_if_not_exists
+    - condition: source_query_failed
+      reason: source_query_failed
+    - condition: target_schema_missing
+      reason: target_schema_missing
+    - condition: insufficient_create_privilege
+      reason: insufficient_create_privilege
+    default_failure_reason: duplicate_table_without_if_not_exists
+  sql_shape:
+    template: SELECT {select_modifier} {select_list} INTO {table_type} {keyword_table} {table_name} FROM {source_query};
+  verification:
+    required: true
+    mode: expected_error_or_notice
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP TABLE IF EXISTS {table_name} CASCADE;
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

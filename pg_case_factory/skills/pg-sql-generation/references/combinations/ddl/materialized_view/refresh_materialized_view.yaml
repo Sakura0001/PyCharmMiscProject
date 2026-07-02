@@ -1,0 +1,534 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: refresh_materialized_view
+  name: REFRESH MATERIALIZED VIEW
+  category: ddl
+  domain: materialized_view
+  source_reference: references/statements/ddl/materialized_view/refresh_materialized_view.md
+  aliases:
+  - refresh materialized view
+  - REFRESH MATERIALIZED VIEW
+  official_source: https://www.postgresql.org/docs/16/sql-refreshmaterializedview.html
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required matrix coverage must pass before derived extension combinations are emitted.
+  - Derived extensions may add stress, boundary, or cross-factor combinations after the baseline audit passes.
+  - Derived extensions must not count toward required factor, table, relation, object, or column-type coverage.
+  - Derived extensions must use declared factors and values from the statement reference.
+  - Derived extensions must preserve success or failure attribution.
+coverage_scope:
+  target_object_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_object_kinds:
+    - materialized_view
+    decision_reason: >
+      REFRESH MATERIALIZED VIEW operates on materialized_view objects and must distinguish populated,
+      unpopulated, and missing target states.
+  target_relation_coverage:
+    required: true
+    coverage_mode: explicit
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_relation_kinds:
+    - materialized_view
+    negative_relation_kinds:
+    - regular_table
+    - plain_view
+    - foreign_table
+    - sequence
+    decision_reason: >
+      The valid refresh target is a materialized_view relation. Other relation kinds are negative controls for
+      wrong target binding and are not valid REFRESH targets.
+  table_coverage:
+    required: true
+    coverage_mode: representative
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    required_table_kinds:
+    - regular_table
+    - unlogged_table
+    - temporary_table
+    - partitioned_table_parent
+    decision_reason: >
+      REFRESH recomputes the materialized-view query, so representative source table kinds are required for
+      setup. Exhaustive table-kind coverage is unnecessary in the baseline because refresh behavior is centered
+      on target population state and CONCURRENTLY restrictions.
+  column_type_coverage:
+    required: true
+    coverage_mode: conditional
+    inventory_source: references/common/pg16_type_catalog.md
+    required_type_set: all_pg16_column_types
+    expansion_mode: conditional_by_query_result_and_unique_index_state
+    require_each_type_success_or_failure: false
+    decision_reason: >
+      REFRESH preserves the query result column definitions established by CREATE MATERIALIZED VIEW. Column-type
+      coverage is conditional: representative query-result columns are required for normal refresh, and
+      CONCURRENTLY cases additionally require at least one simple UNIQUE index over column types that can support
+      a unique btree index. Non-indexable representative result columns remain in the view but are not selected as
+      the CONCURRENTLY unique key.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - branch_1
+      coverage_requirement: all_values
+    target_object_state:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - exists_populated
+      - exists_unpopulated
+      - missing
+      coverage_requirement: all_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - success
+      - failure
+      coverage_requirement: success_failure_pair
+    concurrently_clause:
+      tier: T2
+      coverage_role: main_axis
+      required_values:
+      - absent
+      - present
+      coverage_requirement: success_failure_pair
+    data_clause:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - with_data
+      - with_no_data
+      coverage_requirement: all_values
+    unique_index_state:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - has_unique_index
+      - no_unique_index
+      coverage_requirement: success_failure_pair
+    privilege_context:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - owner
+      - granted_role
+      - insufficient_privilege
+      coverage_requirement: success_failure_pair
+    name_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values:
+      - plain_identifier
+      - schema_qualified
+      - quoted_identifier
+      coverage_requirement: all_values
+    dependency_state:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values:
+      - ready
+      - missing_dependency
+      coverage_requirement: success_failure_pair
+    concurrently_restriction:
+      tier: T4
+      coverage_role: rotate_attach
+      required_values:
+      - all_conditions_met
+      - no_unique_index
+      - unpopulated_view
+      - with_no_data_conflict
+      coverage_requirement: all_values
+    invalid_combination:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values:
+      - none
+      - concurrently_with_no_data
+      - concurrently_without_unique_index
+      coverage_requirement: all_values
+    constraint_boundary:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values:
+      - none
+      - concurrent_refresh_lock
+      - security_restricted_query
+      coverage_requirement: all_values
+    verification_mode:
+      tier: T6
+      coverage_role: rotate_attach
+      required_values:
+      - catalog_query
+      - effect_query
+      - returned_rows
+      - error_assertion
+      coverage_requirement: all_values
+    cleanup_mode:
+      tier: T6
+      coverage_role: rotate_attach
+      required_values:
+      - drop_objects
+      - reset_state
+      coverage_requirement: all_values
+dynamic_inputs:
+  materialized_view_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/materialized_view_manifest.json
+    required_fields:
+    - materialized_view_name
+    - schema_name
+    - query_sql
+    - is_populated
+    - columns
+    - unique_index_name
+  source_table_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/table_manifest.json
+    required_fields:
+    - table_name
+    - relation_kind
+    - columns
+  type_catalog:
+    required: true
+    path: references/common/pg16_type_catalog.md
+    required_fields:
+    - type_key
+    - type_category
+    - declaration_sql
+    - index_capabilities
+  refresh_context_manifest:
+    required: true
+    path_pattern: artifacts/intermediates/<task_slug>/refresh_context_manifest.json
+    required_fields:
+    - standalone_statement
+    - lock_context
+    - execution_role
+combination_groups:
+- id: refresh_non_concurrent_success
+  title: Non-concurrent refresh success for populated and unpopulated result states
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: success
+  factors:
+    statement_branch: branch_1
+    target_object_state: exists_populated
+    expected_status: success
+    concurrently_clause: absent
+    data_clause: with_data
+    unique_index_state: no_unique_index
+    privilege_context: owner
+    name_shape: plain_identifier
+    dependency_state: ready
+    concurrently_restriction: all_conditions_met
+    invalid_combination: none
+    constraint_boundary: none
+    verification_mode: catalog_query
+    cleanup_mode: drop_objects
+  expansion:
+    data_clause:
+      mode: explicit
+      values:
+      - with_data
+      - with_no_data
+    privilege_context:
+      mode: explicit
+      values:
+      - owner
+      - granted_role
+    name_shape:
+      mode: explicit
+      values:
+      - plain_identifier
+      - schema_qualified
+      - quoted_identifier
+    verification_mode:
+      mode: explicit
+      values:
+      - catalog_query
+      - effect_query
+      - returned_rows
+    cleanup_mode:
+      mode: explicit
+      values:
+      - drop_objects
+      - reset_state
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - concurrently_clause == absent and target_object_state in [exists_populated, exists_unpopulated]
+    failure_when: []
+    default_failure_reason: not_applicable
+  sql_shape:
+    template: REFRESH MATERIALIZED VIEW {qualified_materialized_view_name} {data_clause_sql};
+  verification:
+    required: true
+    mode: effect_query
+    sql: SELECT count(*) FROM {qualified_materialized_view_name};
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP MATERIALIZED VIEW IF EXISTS {qualified_materialized_view_name};
+- id: refresh_concurrently_success
+  title: Concurrent refresh success with populated view and qualifying unique index
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  factors:
+    statement_branch: branch_1
+    target_object_state: exists_populated
+    expected_status: success
+    concurrently_clause: present
+    data_clause: with_data
+    unique_index_state: has_unique_index
+    privilege_context: owner
+    name_shape: schema_qualified
+    dependency_state: ready
+    concurrently_restriction: all_conditions_met
+    invalid_combination: none
+    constraint_boundary: none
+    verification_mode: effect_query
+    cleanup_mode: drop_objects
+  expansion:
+    concurrently_clause:
+      mode: explicit
+      values:
+      - present
+    unique_index_state:
+      mode: explicit
+      values:
+      - has_unique_index
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - concurrently_clause == present and unique_index_state == has_unique_index and target_object_state == exists_populated and data_clause == with_data
+    failure_when: []
+    default_failure_reason: not_applicable
+  sql_shape:
+    template: REFRESH MATERIALIZED VIEW CONCURRENTLY {qualified_materialized_view_name} WITH DATA;
+  verification:
+    required: true
+    mode: effect_query
+    sql: SELECT indisunique, indisvalid FROM pg_index WHERE indexrelid = '{unique_index_name}'::regclass;
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP INDEX IF EXISTS {unique_index_name};
+    - sql: DROP MATERIALIZED VIEW IF EXISTS {qualified_materialized_view_name};
+- id: concurrently_restriction_failures
+  title: CONCURRENTLY failures for no unique index, unpopulated view, and WITH NO DATA conflict
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: failure
+  expected_failure_reasons:
+  - concurrently_requires_unique_index
+  - concurrently_requires_populated_view
+  - concurrently_cannot_be_used_with_no_data
+  factors:
+    statement_branch: branch_1
+    target_object_state: exists_unpopulated
+    expected_status: failure
+    concurrently_clause: present
+    data_clause: with_no_data
+    unique_index_state: no_unique_index
+    privilege_context: owner
+    name_shape: quoted_identifier
+    dependency_state: ready
+    concurrently_restriction: no_unique_index
+    invalid_combination: concurrently_with_no_data
+    constraint_boundary: none
+    verification_mode: error_assertion
+    cleanup_mode: reset_state
+  expansion:
+    target_object_state:
+      mode: explicit
+      values:
+      - exists_unpopulated
+    data_clause:
+      mode: explicit
+      values:
+      - with_no_data
+    unique_index_state:
+      mode: explicit
+      values:
+      - no_unique_index
+    concurrently_restriction:
+      mode: explicit
+      values:
+      - no_unique_index
+      - unpopulated_view
+      - with_no_data_conflict
+    invalid_combination:
+      mode: explicit
+      values:
+      - concurrently_with_no_data
+      - concurrently_without_unique_index
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - condition: concurrently_clause == present and unique_index_state == no_unique_index
+      reason: concurrently_requires_unique_index
+    - condition: concurrently_clause == present and target_object_state == exists_unpopulated
+      reason: concurrently_requires_populated_view
+    - condition: concurrently_clause == present and data_clause == with_no_data
+      reason: concurrently_cannot_be_used_with_no_data
+    default_failure_reason: refresh_concurrently_restriction_failed
+  sql_shape:
+    template: REFRESH MATERIALIZED VIEW CONCURRENTLY {qualified_materialized_view_name} {data_clause_sql};
+  verification:
+    required: false
+    mode: error_assertion
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP MATERIALIZED VIEW IF EXISTS {qualified_materialized_view_name};
+- id: missing_target_or_dependency_failures
+  title: Missing target and missing query dependency failures
+  lifecycle_role: target_statement
+  expected_status_policy: per_factor_binding
+  default_expected_status: failure
+  expected_failure_reasons:
+  - materialized_view_does_not_exist
+  - refresh_query_dependency_missing
+  factors:
+    statement_branch: branch_1
+    target_object_state: missing
+    expected_status: failure
+    concurrently_clause: absent
+    data_clause: with_data
+    unique_index_state: no_unique_index
+    privilege_context: owner
+    name_shape: plain_identifier
+    dependency_state: missing_dependency
+    concurrently_restriction: all_conditions_met
+    invalid_combination: none
+    constraint_boundary: none
+    verification_mode: error_assertion
+    cleanup_mode: drop_objects
+  expansion:
+    target_object_state:
+      mode: explicit
+      values:
+      - missing
+    dependency_state:
+      mode: explicit
+      values:
+      - missing_dependency
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - condition: target_object_state == missing
+      reason: materialized_view_does_not_exist
+    - condition: dependency_state == missing_dependency
+      reason: refresh_query_dependency_missing
+    default_failure_reason: refresh_materialized_view_target_or_dependency_missing
+  sql_shape:
+    template: REFRESH MATERIALIZED VIEW {missing_materialized_view_name} WITH DATA;
+  verification:
+    required: false
+    mode: error_assertion
+    sql: null
+  cleanup:
+    required: false
+- id: privilege_and_refresh_context_failures
+  title: Privilege, lock, and security-restricted query failures
+  lifecycle_role: target_statement
+  expected_status_policy: per_lifecycle_context
+  default_expected_status: failure
+  expected_failure_reasons:
+  - must_be_owner_of_materialized_view
+  - concurrent_refresh_already_running
+  - security_restricted_query_not_allowed
+  factors:
+    statement_branch: branch_1
+    target_object_state: exists_populated
+    expected_status: failure
+    concurrently_clause: absent
+    data_clause: with_data
+    unique_index_state: has_unique_index
+    privilege_context: insufficient_privilege
+    name_shape: schema_qualified
+    dependency_state: ready
+    concurrently_restriction: all_conditions_met
+    invalid_combination: none
+    constraint_boundary: concurrent_refresh_lock
+    verification_mode: error_assertion
+    cleanup_mode: reset_state
+  expansion:
+    privilege_context:
+      mode: explicit
+      values:
+      - insufficient_privilege
+    constraint_boundary:
+      mode: explicit
+      values:
+      - concurrent_refresh_lock
+      - security_restricted_query
+    verification_mode:
+      mode: explicit
+      values:
+      - error_assertion
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - condition: privilege_context == insufficient_privilege
+      reason: must_be_owner_of_materialized_view
+    - condition: constraint_boundary == concurrent_refresh_lock
+      reason: concurrent_refresh_already_running
+    - condition: constraint_boundary == security_restricted_query
+      reason: security_restricted_query_not_allowed
+    default_failure_reason: refresh_materialized_view_context_failure
+  sql_shape:
+    template: REFRESH MATERIALIZED VIEW {qualified_materialized_view_name} WITH DATA;
+  verification:
+    required: false
+    mode: error_assertion
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP MATERIALIZED VIEW IF EXISTS {qualified_materialized_view_name};
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true
