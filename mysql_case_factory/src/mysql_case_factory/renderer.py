@@ -26,7 +26,11 @@ def build_name_context(case_token: str, sequence: int, max_identifier_length: in
     return {
         "table_name": _build_object_name("tab_", case_token, sequence, max_identifier_length),
         "index_name": _build_object_name("idx_", case_token, sequence, max_identifier_length),
+        "view_name": _build_object_name("vw_", case_token, sequence, max_identifier_length),
+        "database_name": _build_object_name("db_", case_token, sequence, max_identifier_length),
         "enum_name": _build_object_name("typ_", case_token, sequence, max_identifier_length),
+        "prepared_name": _build_object_name("stmt_", case_token, sequence, max_identifier_length),
+        "procedure_name": _build_object_name("proc_", case_token, sequence, max_identifier_length),
     }
 
 

@@ -1,9 +1,9 @@
 pg_path	mysql_category	mysql_domain	mysql_statement_key	status	reviewer	notes
 skills/pg-sql-generation/references/statements/ddl/table/create_table.md	ddl	table	create_table	in_progress	main	Initial MySQL reference created from official CREATE TABLE syntax.
-skills/pg-sql-generation/references/statements/ddl/table/alter_table.md	ddl	table	alter_table	pending_subagent	DDL core	Needs MySQL ALTER TABLE factor rewrite.
-skills/pg-sql-generation/references/statements/ddl/table/drop_table.md	ddl	table	drop_table	pending_subagent	DDL core	Needs MySQL DROP TABLE factor rewrite.
+skills/pg-sql-generation/references/statements/ddl/table/alter_table.md	ddl	table	alter_table	reference_created	DDL second batch	MySQL ALTER TABLE reference created.
+skills/pg-sql-generation/references/statements/ddl/table/drop_table.md	ddl	table	drop_table	reference_created	DDL second batch	MySQL DROP TABLE reference created.
 skills/pg-sql-generation/references/statements/ddl/index/create_index.md	ddl	index	create_index	in_progress	main	Initial MySQL reference created; sub-agent to audit PG-only index factors.
-skills/pg-sql-generation/references/statements/ddl/index/drop_index.md	ddl	index	drop_index	pending_subagent	DDL core	Needs MySQL DROP INDEX factor rewrite.
+skills/pg-sql-generation/references/statements/ddl/index/drop_index.md	ddl	index	drop_index	reference_created	DDL second batch	MySQL DROP INDEX reference created.
 skills/pg-sql-generation/references/statements/dml/table/insert.md	dml	table	insert	in_progress	main	Initial MySQL reference created from official INSERT syntax.
 skills/pg-sql-generation/references/statements/tcl/transaction/begin.md	tcl	transaction	start_transaction	in_progress	main	MySQL uses START TRANSACTION / BEGIN.
 skills/pg-sql-generation/references/statements/tcl/transaction/commit.md	tcl	transaction	commit	in_progress	main	Initial MySQL transaction reference created.
@@ -11,3 +11,28 @@ skills/pg-sql-generation/references/statements/tcl/transaction/rollback.md	tcl	t
 skills/pg-sql-generation/references/statements/prepared/prepared_statement/prepare.md	prepared	prepared_statement	prepare	in_progress	main	Initial MySQL prepared statement reference created.
 skills/pg-sql-generation/references/statements/utility/plan/explain.md	utility	plan	explain	in_progress	main	Initial MySQL EXPLAIN reference created.
 skills/pg-sql-generation/references/statements/utility/statistics/analyze.md	utility	statistics	analyze_table	in_progress	main	MySQL statement key is ANALYZE TABLE.
+skills/pg-sql-generation/references/statements/ddl/database/create_database.md	ddl	database	create_database	reference_created	main	MySQL CREATE DATABASE reference created.
+skills/pg-sql-generation/references/statements/ddl/database/alter_database.md	ddl	database	alter_database	reference_created	DDL second batch	MySQL ALTER DATABASE reference created.
+skills/pg-sql-generation/references/statements/ddl/database/drop_database.md	ddl	database	drop_database	reference_created	DDL second batch	MySQL DROP DATABASE reference created.
+skills/pg-sql-generation/references/statements/ddl/view/create_view.md	ddl	view	create_view	reference_created	DDL second batch	MySQL CREATE VIEW reference created.
+skills/pg-sql-generation/references/statements/ddl/view/alter_view.md	ddl	view	alter_view	reference_created	DDL second batch	MySQL ALTER VIEW reference created.
+skills/pg-sql-generation/references/statements/ddl/view/drop_view.md	ddl	view	drop_view	reference_created	DDL second batch	MySQL DROP VIEW reference created.
+skills/pg-sql-generation/references/statements/ddl/schema/create_schema.md	ddl	schema	create_schema	reference_created	DDL second batch	MySQL CREATE SCHEMA synonym reference created.
+skills/pg-sql-generation/references/statements/ddl/schema/alter_schema.md	ddl	schema	alter_schema	reference_created	DDL second batch	MySQL ALTER SCHEMA synonym reference created.
+skills/pg-sql-generation/references/statements/ddl/schema/drop_schema.md	ddl	schema	drop_schema	reference_created	DDL second batch	MySQL DROP SCHEMA synonym reference created.
+skills/pg-sql-generation/references/statements/ddl/table/truncate.md	ddl	table	truncate	reference_created	DDL second batch	MySQL TRUNCATE TABLE reference created.
+skills/pg-sql-generation/references/statements/dml/query/select.md	dml	query	select	reference_created	DML query/table	MySQL SELECT reference created.
+skills/pg-sql-generation/references/statements/dml/query/values.md	dml	query	values	reference_created	DML query/table	MySQL VALUES reference created.
+mysql_missing	dml	query	table	reference_created	DML query/table	MySQL TABLE statement added from official docs.
+skills/pg-sql-generation/references/statements/dml/table/update.md	dml	table	update	reference_created	DML query/table	MySQL UPDATE reference created.
+skills/pg-sql-generation/references/statements/dml/table/delete.md	dml	table	delete	reference_created	DML query/table	MySQL DELETE reference created.
+skills/pg-sql-generation/references/statements/dml/table/merge.md	dml	table	merge	drop_pg_only	DML query/table	MySQL 8.0.22 has no MERGE statement.
+skills/pg-sql-generation/references/statements/dml/routine/call.md	dml	routine	call	reference_created	DML query/table	MySQL CALL reference created.
+skills/pg-sql-generation/references/statements/dcl/privilege/revoke.md	dcl	privilege	revoke	reference_created	main	MySQL REVOKE reference created.
+mysql_missing	account	user	create_user	reference_created	main	MySQL CREATE USER reference created.
+mysql_missing	account	user	drop_user	reference_created	main	MySQL DROP USER reference created.
+mysql_missing	account	role	create_role	reference_created	main	MySQL CREATE ROLE reference created.
+skills/pg-sql-generation/references/statements/session/runtime_parameter/set.md	session	runtime_parameter	set	reference_created	main	MySQL SET reference created.
+skills/pg-sql-generation/references/statements/session/runtime_parameter/show.md	session	runtime_parameter	show	reference_created	main	MySQL SHOW reference created.
+skills/pg-sql-generation/references/statements/session/runtime_parameter/reset.md	session	runtime_parameter	reset	reference_created	main	MySQL RESET reference created.
+skills/pg-sql-generation/references/statements/session/authorization/set_role.md	session	authorization	set_role	reference_created	main	MySQL SET ROLE reference created.
