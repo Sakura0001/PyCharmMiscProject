@@ -1,0 +1,181 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: create_index
+  name: CREATE INDEX
+  category: ddl
+  domain: index
+  source_reference: references/statements/ddl/index/create_index.md
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: true
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: true
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields: [id, title, derived_from_combination_group, derivation_reason, factors, expected_status_policy, compatibility, sql_shape, verification, cleanup]
+  guardrails:
+    - Required matrix coverage must pass before derived extensions are emitted.
+coverage_scope:
+  target_object_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Initial MySQL matrix focuses on statement factors.
+  target_relation_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Initial MySQL matrix focuses on one normal table.
+  table_coverage:
+    required: true
+    coverage_mode: representative
+    decision_reason: CREATE INDEX requires a table target.
+  column_type_coverage:
+    required: false
+    coverage_mode: representative
+    decision_reason: Full MySQL type/index compatibility matrix is populated after factor review.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    index_kind:
+      tier: T1
+      coverage_role: main_axis
+      required_values: [normal, unique, fulltext, spatial]
+      coverage_requirement: all_values
+    key_part_shape:
+      tier: T1
+      coverage_role: main_axis
+      required_values: [column, descending_column, functional_key_part, prefix_length]
+      coverage_requirement: all_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values: [success, failure]
+      coverage_requirement: all_values
+dynamic_inputs: {}
+combination_groups:
+  - id: normal_column_success
+    title: Normal index on scalar column
+    lifecycle_role: target_statement
+    expected_status_policy: fixed
+    default_expected_status: success
+    expected_failure_reasons: []
+    derived_extension: false
+    factors:
+      index_kind: normal
+      key_part_shape: column
+      expected_status: success
+    expansion: {}
+    compatibility:
+      resolver: declared_matrix
+      success_when: ["normal index on integer column"]
+      failure_when: []
+      default_failure_reason: ""
+    sql_shape:
+      template: "CREATE INDEX {index_name} ON {table_name} (int_col)"
+    verification:
+      required: true
+      mode: information_schema
+      sql: "SELECT INDEX_NAME FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = '{table_name}' AND INDEX_NAME = '{index_name}'"
+    cleanup:
+      required: true
+      steps:
+        - sql: "DROP INDEX {index_name} ON {table_name}"
+  - id: unique_desc_success
+    title: Unique descending key part
+    lifecycle_role: target_statement
+    expected_status_policy: fixed
+    default_expected_status: success
+    expected_failure_reasons: []
+    derived_extension: false
+    factors:
+      index_kind: unique
+      key_part_shape: descending_column
+      expected_status: success
+    expansion: {}
+    compatibility:
+      resolver: declared_matrix
+      success_when: ["unique index supports descending integer key part"]
+      failure_when: []
+      default_failure_reason: ""
+    sql_shape:
+      template: "CREATE UNIQUE INDEX {index_name} ON {table_name} (int_col DESC)"
+    verification:
+      required: true
+      mode: information_schema
+      sql: "SELECT INDEX_NAME FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = '{table_name}' AND INDEX_NAME = '{index_name}'"
+    cleanup:
+      required: true
+      steps:
+        - sql: "DROP INDEX {index_name} ON {table_name}"
+  - id: fulltext_prefix_failure
+    title: Fulltext index rejects prefix-length integer key part
+    lifecycle_role: negative_control
+    expected_status_policy: fixed
+    default_expected_status: failure
+    expected_failure_reasons: [unsupported_fulltext_key_part]
+    derived_extension: false
+    factors:
+      index_kind: fulltext
+      key_part_shape: prefix_length
+      expected_status: failure
+    expansion: {}
+    compatibility:
+      resolver: declared_matrix
+      success_when: []
+      failure_when: ["FULLTEXT indexes require character columns"]
+      default_failure_reason: unsupported_fulltext_key_part
+    sql_shape:
+      template: "CREATE FULLTEXT INDEX {index_name} ON {table_name} (int_col)"
+    verification:
+      required: false
+      mode: none
+      sql: null
+    cleanup:
+      required: true
+      steps:
+        - sql: "DROP INDEX {index_name} ON {table_name}"
+  - id: spatial_function_failure
+    title: Spatial index rejects functional key part
+    lifecycle_role: negative_control
+    expected_status_policy: fixed
+    default_expected_status: failure
+    expected_failure_reasons: [unsupported_spatial_functional_key_part]
+    derived_extension: false
+    factors:
+      index_kind: spatial
+      key_part_shape: functional_key_part
+      expected_status: failure
+    expansion: {}
+    compatibility:
+      resolver: declared_matrix
+      success_when: []
+      failure_when: ["SPATIAL indexes require spatial columns, not functional key parts"]
+      default_failure_reason: unsupported_spatial_functional_key_part
+    sql_shape:
+      template: "CREATE SPATIAL INDEX {index_name} ON {table_name} ((int_col + 1))"
+    verification:
+      required: false
+      mode: none
+      sql: null
+    cleanup:
+      required: true
+      steps:
+        - sql: "DROP INDEX {index_name} ON {table_name}"
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mysql-case-factory"
+version = "0.1.0"
+description = "Generate SQL-first MySQL 8.0.22 DDL test cases."
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [{ name = "yuyu" }]
+dependencies = ["PyYAML>=6.0.2"]
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]

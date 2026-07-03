@@ -1,0 +1,6 @@
+interface:
+  display_name: "MySQL SQL Generation"
+  short_description: "MySQL 8.0.22 SQL test generation skill"
+  default_prompt: "Use $mysql-sql-generation to design MySQL 8.0.22 SQL generation coverage, lifecycle plans, and SQL cases with bundled base-object templates."
+policy:
+  allow_implicit_invocation: true
