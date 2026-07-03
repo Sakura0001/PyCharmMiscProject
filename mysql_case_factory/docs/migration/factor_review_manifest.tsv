@@ -32,7 +32,39 @@ skills/pg-sql-generation/references/statements/dcl/privilege/revoke.md	dcl	privi
 mysql_missing	account	user	create_user	reference_created	main	MySQL CREATE USER reference created.
 mysql_missing	account	user	drop_user	reference_created	main	MySQL DROP USER reference created.
 mysql_missing	account	role	create_role	reference_created	main	MySQL CREATE ROLE reference created.
+mysql_missing	account	user	alter_user	reference_created	account/admin	MySQL ALTER USER reference created.
+mysql_missing	account	user	rename_user	reference_created	account/admin	MySQL RENAME USER reference created.
+mysql_missing	account	user	set_password	reference_created	account/admin	MySQL SET PASSWORD reference created.
+mysql_missing	account	role	drop_role	reference_created	account/admin	MySQL DROP ROLE reference created.
+mysql_missing	account	role	set_default_role	reference_created	account/admin	MySQL SET DEFAULT ROLE reference created.
 skills/pg-sql-generation/references/statements/session/runtime_parameter/set.md	session	runtime_parameter	set	reference_created	main	MySQL SET reference created.
 skills/pg-sql-generation/references/statements/session/runtime_parameter/show.md	session	runtime_parameter	show	reference_created	main	MySQL SHOW reference created.
 skills/pg-sql-generation/references/statements/session/runtime_parameter/reset.md	session	runtime_parameter	reset	reference_created	main	MySQL RESET reference created.
 skills/pg-sql-generation/references/statements/session/authorization/set_role.md	session	authorization	set_role	reference_created	main	MySQL SET ROLE reference created.
+mysql_missing	session	database	use	reference_created	account/admin	MySQL USE reference created.
+mysql_missing	utility	help	help	reference_created	account/admin	MySQL HELP reference created.
+mysql_missing	admin	session	kill	reference_created	account/admin	MySQL KILL reference created with safe negative defaults.
+mysql_missing	admin	server	flush	reference_created	account/admin	MySQL FLUSH reference created.
+mysql_missing	admin	server	shutdown	reference_created	account/admin	MySQL SHUTDOWN reference created with safe negative defaults.
+mysql_missing	admin	server	restart	reference_created	account/admin	MySQL RESTART reference created with safe negative defaults.
+mysql_missing	utility	maintenance	check_table	reference_created	account/admin	MySQL CHECK TABLE reference created.
+mysql_missing	utility	maintenance	checksum_table	reference_created	account/admin	MySQL CHECKSUM TABLE reference created.
+mysql_missing	utility	maintenance	optimize_table	reference_created	account/admin	MySQL OPTIMIZE TABLE reference created.
+mysql_missing	utility	maintenance	repair_table	reference_created	account/admin	MySQL REPAIR TABLE reference created.
+skills/pg-sql-generation/references/statements/cursor/cursor/declare.md	cursor	cursor	declare	reference_created	cursor/XA	MySQL stored-program DECLARE CURSOR reference created.
+mysql_missing	cursor	cursor	open	reference_created	cursor/XA	MySQL OPEN CURSOR reference created.
+skills/pg-sql-generation/references/statements/cursor/cursor/fetch.md	cursor	cursor	fetch	reference_created	cursor/XA	MySQL FETCH CURSOR reference created.
+skills/pg-sql-generation/references/statements/cursor/cursor/close.md	cursor	cursor	close	reference_created	cursor/XA	MySQL CLOSE CURSOR reference created.
+skills/pg-sql-generation/references/statements/cursor/cursor/move.md	cursor	cursor	move	drop_pg_only	cursor/XA	MySQL has no cursor MOVE statement.
+mysql_missing	tcl	xa	xa_start	reference_created	cursor/XA	MySQL XA START reference created.
+mysql_missing	tcl	xa	xa_end	reference_created	cursor/XA	MySQL XA END reference created.
+skills/pg-sql-generation/references/statements/tcl/two_phase_transaction/prepare_transaction.md	tcl	xa	xa_prepare	reference_created	cursor/XA	PG PREPARE TRANSACTION mapped to MySQL XA PREPARE.
+skills/pg-sql-generation/references/statements/tcl/two_phase_transaction/commit_prepared.md	tcl	xa	xa_commit	reference_created	cursor/XA	PG COMMIT PREPARED mapped to MySQL XA COMMIT.
+skills/pg-sql-generation/references/statements/tcl/two_phase_transaction/rollback_prepared.md	tcl	xa	xa_rollback	reference_created	cursor/XA	PG ROLLBACK PREPARED mapped to MySQL XA ROLLBACK.
+mysql_missing	tcl	xa	xa_recover	reference_created	cursor/XA	MySQL XA RECOVER reference created.
+mysql_missing	dml	expression	do	reference_created	cursor/XA	MySQL DO expression statement created.
+mysql_missing	dml	table	replace	reference_created	cursor/XA	MySQL REPLACE reference created.
+skills/pg-sql-generation/references/statements/utility/data_transfer/copy.md	utility	data_transfer	load_data	reference_created	cursor/XA	PG COPY FROM intent mapped to MySQL LOAD DATA.
+mysql_missing	utility	data_transfer	load_xml	reference_created	cursor/XA	MySQL LOAD XML reference created.
+mysql_missing	dml	table	handler	reference_created	cursor/XA	MySQL HANDLER reference created.
+mysql_missing	utility	data_transfer	import_table	reference_created	cursor/XA	MySQL IMPORT TABLE reference created.

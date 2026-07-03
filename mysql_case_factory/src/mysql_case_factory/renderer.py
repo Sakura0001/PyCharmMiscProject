@@ -31,6 +31,8 @@ def build_name_context(case_token: str, sequence: int, max_identifier_length: in
         "enum_name": _build_object_name("typ_", case_token, sequence, max_identifier_length),
         "prepared_name": _build_object_name("stmt_", case_token, sequence, max_identifier_length),
         "procedure_name": _build_object_name("proc_", case_token, sequence, max_identifier_length),
+        "cursor_name": _build_object_name("cur_", case_token, sequence, max_identifier_length),
+        "xa_xid": _build_object_name("xid_", case_token, sequence, max_identifier_length),
     }
 
 

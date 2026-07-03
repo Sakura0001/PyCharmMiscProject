@@ -20,7 +20,7 @@ structured_config:
     - tier: T1
       factors: [projection_shape, from_shape, predicate_shape, expected_status]
     - tier: T2
-      factors: [grouping_shape, ordering_limit_shape, locking_clause]
+      factors: [grouping_shape, ordering_limit_shape, locking_clause, into_destination]
   factors:
     projection_shape:
       label: Projection
@@ -50,6 +50,10 @@ structured_config:
       label: Locking read
       importance: non_important
       values: [omitted, for_update, for_share, nowait, skip_locked]
+    into_destination:
+      label: SELECT INTO destination
+      importance: non_important
+      values: [omitted, variables, outfile, dumpfile]
   defaults:
     projection_shape: explicit_columns
     from_shape: single_table
@@ -58,9 +62,10 @@ structured_config:
     grouping_shape: omitted
     ordering_limit_shape: omitted
     locking_clause: omitted
+    into_destination: omitted
   coverage_policy:
     main_combination_axes: [projection_shape, from_shape, predicate_shape, expected_status]
-    non_main_factors: [grouping_shape, ordering_limit_shape, locking_clause]
+    non_main_factors: [grouping_shape, ordering_limit_shape, locking_clause, into_destination]
     python_expand_threshold: 200
   rendering:
     statement_template: "SELECT id_col, int_col FROM {table_name}{where_sql}{locking_sql}"
