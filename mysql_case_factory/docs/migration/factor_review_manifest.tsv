@@ -1,16 +1,16 @@
 pg_path	mysql_category	mysql_domain	mysql_statement_key	status	reviewer	notes
-skills/pg-sql-generation/references/statements/ddl/table/create_table.md	ddl	table	create_table	in_progress	main	Initial MySQL reference created from official CREATE TABLE syntax.
+skills/pg-sql-generation/references/statements/ddl/table/create_table.md	ddl	table	create_table	reference_created	main	MySQL CREATE TABLE reference created and retained after full migration review.
 skills/pg-sql-generation/references/statements/ddl/table/alter_table.md	ddl	table	alter_table	reference_created	DDL second batch	MySQL ALTER TABLE reference created.
 skills/pg-sql-generation/references/statements/ddl/table/drop_table.md	ddl	table	drop_table	reference_created	DDL second batch	MySQL DROP TABLE reference created.
-skills/pg-sql-generation/references/statements/ddl/index/create_index.md	ddl	index	create_index	in_progress	main	Initial MySQL reference created; sub-agent to audit PG-only index factors.
+skills/pg-sql-generation/references/statements/ddl/index/create_index.md	ddl	index	create_index	reference_created	main	MySQL CREATE INDEX reference created and retained after full migration review.
 skills/pg-sql-generation/references/statements/ddl/index/drop_index.md	ddl	index	drop_index	reference_created	DDL second batch	MySQL DROP INDEX reference created.
-skills/pg-sql-generation/references/statements/dml/table/insert.md	dml	table	insert	in_progress	main	Initial MySQL reference created from official INSERT syntax.
-skills/pg-sql-generation/references/statements/tcl/transaction/begin.md	tcl	transaction	start_transaction	in_progress	main	MySQL uses START TRANSACTION / BEGIN.
-skills/pg-sql-generation/references/statements/tcl/transaction/commit.md	tcl	transaction	commit	in_progress	main	Initial MySQL transaction reference created.
-skills/pg-sql-generation/references/statements/tcl/transaction/rollback.md	tcl	transaction	rollback	in_progress	main	Initial MySQL transaction reference created.
-skills/pg-sql-generation/references/statements/prepared/prepared_statement/prepare.md	prepared	prepared_statement	prepare	in_progress	main	Initial MySQL prepared statement reference created.
-skills/pg-sql-generation/references/statements/utility/plan/explain.md	utility	plan	explain	in_progress	main	Initial MySQL EXPLAIN reference created.
-skills/pg-sql-generation/references/statements/utility/statistics/analyze.md	utility	statistics	analyze_table	in_progress	main	MySQL statement key is ANALYZE TABLE.
+skills/pg-sql-generation/references/statements/dml/table/insert.md	dml	table	insert	reference_created	main	MySQL INSERT reference created and retained after full migration review.
+skills/pg-sql-generation/references/statements/tcl/transaction/begin.md	tcl	transaction	start_transaction	reference_created	main	MySQL START TRANSACTION / BEGIN reference created and retained after full migration review.
+skills/pg-sql-generation/references/statements/tcl/transaction/commit.md	tcl	transaction	commit	reference_created	main	MySQL COMMIT reference created and retained after full migration review.
+skills/pg-sql-generation/references/statements/tcl/transaction/rollback.md	tcl	transaction	rollback	reference_created	main	MySQL ROLLBACK reference created and retained after full migration review.
+skills/pg-sql-generation/references/statements/prepared/prepared_statement/prepare.md	prepared	prepared_statement	prepare	reference_created	main	MySQL PREPARE reference created and retained after full migration review.
+skills/pg-sql-generation/references/statements/utility/plan/explain.md	utility	plan	explain	reference_created	main	MySQL EXPLAIN reference created and retained after full migration review.
+skills/pg-sql-generation/references/statements/utility/statistics/analyze.md	utility	statistics	analyze_table	reference_created	main	MySQL ANALYZE TABLE reference created and retained after full migration review.
 skills/pg-sql-generation/references/statements/ddl/database/create_database.md	ddl	database	create_database	reference_created	main	MySQL CREATE DATABASE reference created.
 skills/pg-sql-generation/references/statements/ddl/database/alter_database.md	ddl	database	alter_database	reference_created	DDL second batch	MySQL ALTER DATABASE reference created.
 skills/pg-sql-generation/references/statements/ddl/database/drop_database.md	ddl	database	drop_database	reference_created	DDL second batch	MySQL DROP DATABASE reference created.
