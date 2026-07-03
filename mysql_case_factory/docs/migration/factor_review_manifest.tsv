@@ -68,3 +68,41 @@ skills/pg-sql-generation/references/statements/utility/data_transfer/copy.md	uti
 mysql_missing	utility	data_transfer	load_xml	reference_created	cursor/XA	MySQL LOAD XML reference created.
 mysql_missing	dml	table	handler	reference_created	cursor/XA	MySQL HANDLER reference created.
 mysql_missing	utility	data_transfer	import_table	reference_created	cursor/XA	MySQL IMPORT TABLE reference created.
+skills/pg-sql-generation/references/statements/ddl/procedure/create_procedure.md	ddl	procedure	create_procedure	reference_created	stored/server	MySQL CREATE PROCEDURE reference created; routine IF NOT EXISTS excluded for 8.0.22.
+skills/pg-sql-generation/references/statements/ddl/procedure/alter_procedure.md	ddl	procedure	alter_procedure	reference_created	stored/server	MySQL ALTER PROCEDURE reference created; only characteristics are alterable.
+skills/pg-sql-generation/references/statements/ddl/procedure/drop_procedure.md	ddl	procedure	drop_procedure	reference_created	stored/server	MySQL DROP PROCEDURE reference created.
+skills/pg-sql-generation/references/statements/ddl/function/create_function.md	ddl	function	create_function	reference_created	stored/server	MySQL stored CREATE FUNCTION reference created; loadable functions kept out of this domain.
+skills/pg-sql-generation/references/statements/ddl/function/alter_function.md	ddl	function	alter_function	reference_created	stored/server	MySQL ALTER FUNCTION reference created; only characteristics are alterable.
+skills/pg-sql-generation/references/statements/ddl/function/drop_function.md	ddl	function	drop_function	reference_created	stored/server	MySQL stored DROP FUNCTION reference created.
+skills/pg-sql-generation/references/statements/ddl/routine/alter_routine.md	ddl	routine	alter_routine	drop_pg_only	stored/server	MySQL has no ALTER ROUTINE statement; split to ALTER PROCEDURE and ALTER FUNCTION.
+skills/pg-sql-generation/references/statements/ddl/routine/drop_routine.md	ddl	routine	drop_routine	drop_pg_only	stored/server	MySQL has no DROP ROUTINE statement; split to DROP PROCEDURE and DROP FUNCTION.
+skills/pg-sql-generation/references/statements/ddl/trigger/create_trigger.md	ddl	trigger	create_trigger	reference_created	stored/server	MySQL CREATE TRIGGER reference created; PG statement-level and constraint trigger branches removed.
+skills/pg-sql-generation/references/statements/ddl/trigger/drop_trigger.md	ddl	trigger	drop_trigger	reference_created	stored/server	MySQL DROP TRIGGER reference created.
+skills/pg-sql-generation/references/statements/ddl/trigger/alter_trigger.md	ddl	trigger	alter_trigger	drop_pg_only	stored/server	MySQL 8.0.22 has no ALTER TRIGGER statement.
+skills/pg-sql-generation/references/statements/ddl/event_trigger/create_event_trigger.md	ddl	event_trigger	create_event_trigger	drop_pg_only	stored/server	PostgreSQL event triggers are DDL hooks; MySQL EVENT is a scheduler object and is tracked separately.
+skills/pg-sql-generation/references/statements/ddl/event_trigger/alter_event_trigger.md	ddl	event_trigger	alter_event_trigger	drop_pg_only	stored/server	PostgreSQL event triggers are not migrated to MySQL EVENT.
+skills/pg-sql-generation/references/statements/ddl/event_trigger/drop_event_trigger.md	ddl	event_trigger	drop_event_trigger	drop_pg_only	stored/server	PostgreSQL event triggers are not migrated to MySQL EVENT.
+mysql_missing	ddl	event	create_event	reference_created	stored/server	MySQL CREATE EVENT scheduler reference created.
+mysql_missing	ddl	event	alter_event	reference_created	stored/server	MySQL ALTER EVENT scheduler reference created.
+mysql_missing	ddl	event	drop_event	reference_created	stored/server	MySQL DROP EVENT scheduler reference created.
+mysql_missing	ddl	server	create_server	reference_created	stored/server	MySQL CREATE SERVER reference created for FEDERATED server metadata.
+mysql_missing	ddl	server	alter_server	reference_created	stored/server	MySQL ALTER SERVER reference created.
+mysql_missing	ddl	server	drop_server	reference_created	stored/server	MySQL DROP SERVER reference created.
+mysql_missing	ddl	tablespace	create_tablespace	reference_created	stored/server	MySQL CREATE TABLESPACE reference created with InnoDB/NDB execution risk factors.
+skills/pg-sql-generation/references/statements/ddl/tablespace/alter_tablespace.md	ddl	tablespace	alter_tablespace	reference_created	stored/server	MySQL ALTER TABLESPACE reference created.
+skills/pg-sql-generation/references/statements/ddl/tablespace/drop_tablespace.md	ddl	tablespace	drop_tablespace	reference_created	stored/server	MySQL DROP TABLESPACE reference created.
+mysql_missing	ddl	logfile_group	create_logfile_group	reference_created	stored/server	MySQL CREATE LOGFILE GROUP reference created; default execution skips NDB-only positive cases.
+mysql_missing	ddl	logfile_group	alter_logfile_group	reference_created	stored/server	MySQL ALTER LOGFILE GROUP reference created; default execution skips NDB-only positive cases.
+mysql_missing	ddl	logfile_group	drop_logfile_group	reference_created	stored/server	MySQL DROP LOGFILE GROUP reference created; default execution skips NDB-only positive cases.
+mysql_missing	admin	plugin	install_plugin	reference_created	stored/server	MySQL INSTALL PLUGIN reference created with dynamic-load risk isolation.
+mysql_missing	admin	plugin	uninstall_plugin	reference_created	stored/server	MySQL UNINSTALL PLUGIN reference created with dynamic-load risk isolation.
+mysql_missing	admin	component	install_component	reference_created	stored/server	MySQL INSTALL COMPONENT reference created; INSTALL COMPONENT SET excluded as post-8.0.22.
+mysql_missing	admin	component	uninstall_component	reference_created	stored/server	MySQL UNINSTALL COMPONENT reference created.
+mysql_missing	admin	instance	alter_instance	reference_created	stored/server	MySQL ALTER INSTANCE 8.0.22 subset created; RELOAD KEYRING excluded as 8.0.24.
+mysql_missing	admin	resource_group	create_resource_group	reference_created	stored/server	MySQL CREATE RESOURCE GROUP reference created.
+mysql_missing	admin	resource_group	alter_resource_group	reference_created	stored/server	MySQL ALTER RESOURCE GROUP reference created.
+mysql_missing	admin	resource_group	drop_resource_group	reference_created	stored/server	MySQL DROP RESOURCE GROUP reference created.
+mysql_missing	admin	resource_group	set_resource_group	reference_created	stored/server	MySQL SET RESOURCE GROUP reference created.
+mysql_missing	ddl	spatial_reference_system	create_spatial_reference_system	reference_created	stored/server	MySQL CREATE SPATIAL REFERENCE SYSTEM reference created.
+mysql_missing	ddl	spatial_reference_system	drop_spatial_reference_system	reference_created	stored/server	MySQL DROP SPATIAL REFERENCE SYSTEM reference created.
+mysql_missing	ddl	table	rename_table	reference_created	stored/server	MySQL RENAME TABLE reference created.
