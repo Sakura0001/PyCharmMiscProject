@@ -2,6 +2,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from .association_planner import (
+    build_factor_profiles,
+    infer_semantic_tags,
+    load_markdown_yaml,
+    load_yaml_file,
+    plan_associations,
+)
 from .artifact_store import asset_root, prepare_artifacts, write_json, write_text, write_yaml
 from .discovery import discover_request_candidates, list_mainflow_skills, list_object_templates, list_statement_skills
 from .renderer import build_bindings, build_name_context, compose_sql_script, render_object_template, render_statement
@@ -28,6 +35,11 @@ __all__ = [
     "write_text",
     "write_json",
     "write_yaml",
+    "load_markdown_yaml",
+    "load_yaml_file",
+    "infer_semantic_tags",
+    "build_factor_profiles",
+    "plan_associations",
     "list_object_templates",
     "list_statement_skills",
     "list_mainflow_skills",

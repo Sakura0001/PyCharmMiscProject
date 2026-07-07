@@ -65,6 +65,10 @@
   SQL 输出风格入口。
 - `skills/pg-sql-generation/references/combinations/README.md`
   组合矩阵入口；正式矩阵优先于自由推理，derived extension 不能替代 required coverage。
+- `skills/pg-sql-generation/references/common/association_policy.md`
+  hybrid Factor Association Planner 的规则入口；deterministic rules 先于 LLM-derived extensions。
+- `docs/factor_association_planner_map.md`
+  Factor Association Planner 项目版图，说明输入、pipeline、operators、输出 schema 和质量门禁。
 
 ## Python 适配状态
 
