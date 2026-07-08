@@ -59,6 +59,9 @@
   和公共规则输出 SQL。
 - `skills/pg-sql-generation/references/mainflow/create_statement_reference.md`
   创建或补齐 `skills/pg-sql-generation/references/statements/<category>/<domain>/<statement_key>.md`。
+- `skills/pg-sql-generation/references/mainflow/plan_factor_association_from_statement.md`
+  子 agent 因子联想计划契约；配合 `tools/build_factor_planning_prompt.py --statement <key>`
+  生成无上下文 handoff prompt，要求输出影响链路、因子触发规则和 YAML association graph。
 - `skills/pg-sql-generation/references/common/factor_policy.md`
   因子组合规则入口。
 - `skills/pg-sql-generation/references/common/output_script_style.md`
