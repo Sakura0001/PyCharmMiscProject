@@ -17,6 +17,7 @@ CONTRACT_PATH = REFERENCES_ROOT / "mainflow" / "plan_factor_association_from_sta
 FACTOR_POLICY_PATH = REFERENCES_ROOT / "common" / "factor_policy.md"
 COVERAGE_INVENTORY_PATH = COMBINATIONS_ROOT / "_shared" / "coverage_inventory.yaml"
 TYPE_CATALOG_PATH = REFERENCES_ROOT / "common" / "pg16_type_catalog.md"
+QUERY_CONTEXT_POLICY_PATH = REFERENCES_ROOT / "common" / "query_context_policy.md"
 YAML_BLOCK_PATTERN = re.compile(r"```yaml\s*(.*?)```", re.DOTALL)
 
 
@@ -100,13 +101,43 @@ def _existing_required_paths(root: Path, statement_path: Path, matrix_path: Path
             FACTOR_POLICY_PATH,
             COVERAGE_INVENTORY_PATH,
             TYPE_CATALOG_PATH,
+            QUERY_CONTEXT_POLICY_PATH,
         ]
     )
-    return [path.as_posix() for path in paths]
+    return [path.as_posix() for path in paths if (root / path).exists()]
 
 
 def _statement_specific_guidance(statement: dict[str, Any]) -> str:
     statement_key = str(statement["key"]).lower()
+    config = dict(statement.get("config") or {})
+    category = str(config.get("category") or "")
+    domain = str(config.get("domain") or "")
+    if category == "dml" and domain == "query":
+        return """请使用中文回答，路径、factor key 和 YAML key 保持英文。
+
+This is a query-related statement. The answer must use query_context from references/common/query_context_policy.md.
+
+For query-related planning, include these dimensions explicitly:
+- query_role
+- query_shape
+- data_fixture
+- data_distribution
+- index_context
+- hint_context
+- statistics_context
+- optimizer_guc_context
+- parameterization_context
+- transaction_visibility_context
+- parallel_execution_context
+- null_semantics_context
+- collation_context
+- function_volatility_context
+- rewrite_context
+- oracle_context
+
+Required oracle rule: 没有 ORDER BY，不允许断言行顺序。
+Plan or hint observation is secondary; result correctness remains the primary oracle.
+"""
     if statement_key != "insert":
         return "请使用中文回答，路径、factor key 和 YAML key 保持英文。"
 

@@ -14,6 +14,9 @@ Use this skill when converting a natural-language PostgreSQL SQL test request in
 - For generating batch SQL programs from a plan, read `references/mainflow/write_sql_program.md`.
 - For creating or completing statement references, read `references/mainflow/create_statement_reference.md`.
 - For shared output, factor, lifecycle, validation, and naming rules, read only the needed files under `references/common/`.
+- For 查询语句 or any feature that uses query verification, read
+  `references/common/query_context_policy.md` before planning fixtures, data distribution, indexes,
+  hints, optimizer settings, statistics, parameterization, MVCC, parallelism, rewrite behavior, or query oracles.
 - For statement-specific syntax, factors, coverage policy, and constraints, read only the needed file under `references/statements/<category>/<domain>/<statement>.md`.
 - For statement factor combination matrices, read `references/combinations/README.md`
   and then the matching `references/combinations/<category>/<domain>/<statement_key>.yaml`.
