@@ -62,6 +62,8 @@
 - `skills/pg-sql-generation/references/mainflow/plan_factor_association_from_statement.md`
   子 agent 因子联想计划契约；配合 `tools/build_factor_planning_prompt.py --statement <key>`
   生成无上下文 handoff prompt，要求输出影响链路、因子触发规则和 YAML association graph。
+- `skills/pg-sql-generation/references/mainflow/run_feature_test_loop.md`
+  特性级执行闭环入口；给定 feature 和 generated SQL 后，执行、审计、诊断失败并输出反馈晋升候选。
 - `skills/pg-sql-generation/references/common/factor_policy.md`
   因子组合规则入口。
 - `skills/pg-sql-generation/references/common/output_script_style.md`
@@ -69,6 +71,14 @@
 - `skills/pg-sql-generation/references/common/query_context_policy.md`
   查询相关 feature 的联想规则入口，覆盖查询形态、数据夹具、数据分布、索引、hint、统计信息、GUC、
   参数化、MVCC、并行、NULL、collation、函数 volatility、rewrite 和 oracle。
+- `skills/pg-sql-generation/references/common/query_oracle_policy.md`
+  查询结果、row_order、EXPLAIN、hint/no-hint 和 plan_observation 的 oracle 设计规则。
+- `skills/pg-sql-generation/references/common/execution_loop_policy.md`
+  feature_execution_report、loop report、停止条件和 loop 工具契约。
+- `skills/pg-sql-generation/references/common/failure_diagnosis_policy.md`
+  失败聚类规则，区分 unexpected_failure、sqlstate_mismatch、result_mismatch、plan_mismatch 等类别。
+- `skills/pg-sql-generation/references/common/feedback_promotion_policy.md`
+  将失败诊断转换成 reviewed derived extension 候选，禁止自动替代 baseline coverage。
 - `skills/pg-sql-generation/references/combinations/README.md`
   组合矩阵入口；正式矩阵优先于自由推理，derived extension 不能替代 required coverage。
 - `skills/pg-sql-generation/references/common/association_policy.md`
@@ -80,6 +90,21 @@
 
 当前目录已经迁移为 Codex skill 标准形态，`.skill` 文件已改为 `.md` reference。常驻 Python discovery 会递归发现 `skills/pg-sql-generation/references/statements/**/*.md`，并读取分层路径中的 category/domain。
 基础对象模板也已经迁移到 `skills/pg-sql-generation/assets/objects/`，discovery 会从该路径发现对象模板。
+
+## Feature Test Loop 工具
+
+闭环执行工具位于 `tools/`：
+
+- `run_generated_sql.py`
+  执行 generated SQL 并输出 `feature_execution_report`。
+- `audit_execution_report.py`
+  审计 execution report schema 和 case 字段。
+- `diagnose_execution_failures.py`
+  聚类失败为 unexpected failure、SQLSTATE mismatch、result mismatch、plan mismatch、cleanup failure 等类别。
+- `promote_execution_feedback.py`
+  把失败诊断转换成需要人工审查的 `feedback_promotion_candidates`。
+- `run_feature_test_loop.py`
+  多轮编排执行、审计、诊断和反馈晋升，输出 `feature_test_loop_report`。
 
 ## 独立发布
 

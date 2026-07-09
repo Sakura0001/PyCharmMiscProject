@@ -18,8 +18,14 @@
   - `references/common/validation_policy.md`
   - `references/common/naming_rules.md`
   - `references/common/query_context_policy.md`（当目标 statement 是查询语句，或 feature 需要通过查询验证时必须读取）
+  - `references/common/query_oracle_policy.md`（当 feature 需要查询结果、row_order、EXPLAIN 或 plan_observation oracle 时必须读取）
+  - `references/common/execution_loop_policy.md`（当用户要求执行、循环验证或发现问题时必须读取）
+  - `references/common/failure_diagnosis_policy.md`（当执行结果存在失败时必须读取）
+  - `references/common/feedback_promotion_policy.md`（当需要把失败反馈转成下一轮候选时必须读取）
+- feature intake：`references/templates/feature_test_intake_template.md`
 - 计划审计：`references/mainflow/audit_lifecycle_plan.md`
 - 生成程序：`references/mainflow/write_sql_program.md`
+- 测试闭环：`references/mainflow/run_feature_test_loop.md`
 
 ## 主流程规则
 
@@ -39,6 +45,8 @@
   5. 将 TSV、相关 statement reference、可用 combination matrix、对象模板和公共规则交给
      `references/mainflow/write_sql_program.md` 生成批量 SQL 程序。
   6. 运行生成程序，批量生成 SQL 到 `artifacts/generated_sql/`。
+  7. 若用户要求“持续测试、循环发现问题、执行验证、回归闭环”，必须继续读取
+     `references/mainflow/run_feature_test_loop.md`，执行 SQL、审计 report、诊断失败并生成反馈晋升候选。
 
 ## 产物约束
 
@@ -85,6 +93,7 @@ structured_config:
     downstream_skills:
       audit_lifecycle_plan: references/mainflow/audit_lifecycle_plan.md
       write_sql_program: references/mainflow/write_sql_program.md
+      run_feature_test_loop: references/mainflow/run_feature_test_loop.md
     common_rules:
       - references/common/output_script_style.md
       - references/common/factor_policy.md
@@ -92,4 +101,10 @@ structured_config:
       - references/common/validation_policy.md
       - references/common/naming_rules.md
       - references/common/query_context_policy.md
+      - references/common/query_oracle_policy.md
+      - references/common/execution_loop_policy.md
+      - references/common/failure_diagnosis_policy.md
+      - references/common/feedback_promotion_policy.md
+    templates:
+      - references/templates/feature_test_intake_template.md
 ```
