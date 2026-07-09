@@ -66,6 +66,9 @@
   因子组合规则入口。
 - `skills/pg-sql-generation/references/common/output_script_style.md`
   SQL 输出风格入口。
+- `skills/pg-sql-generation/references/common/query_context_policy.md`
+  查询相关 feature 的联想规则入口，覆盖查询形态、数据夹具、数据分布、索引、hint、统计信息、GUC、
+  参数化、MVCC、并行、NULL、collation、函数 volatility、rewrite 和 oracle。
 - `skills/pg-sql-generation/references/combinations/README.md`
   组合矩阵入口；正式矩阵优先于自由推理，derived extension 不能替代 required coverage。
 - `skills/pg-sql-generation/references/common/association_policy.md`

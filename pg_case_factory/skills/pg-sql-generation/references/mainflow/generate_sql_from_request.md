@@ -17,6 +17,7 @@
   - `references/common/lifecycle_policy.md`
   - `references/common/validation_policy.md`
   - `references/common/naming_rules.md`
+  - `references/common/query_context_policy.md`（当目标 statement 是查询语句，或 feature 需要通过查询验证时必须读取）
 - 计划审计：`references/mainflow/audit_lifecycle_plan.md`
 - 生成程序：`references/mainflow/write_sql_program.md`
 
@@ -90,4 +91,5 @@ structured_config:
       - references/common/lifecycle_policy.md
       - references/common/validation_policy.md
       - references/common/naming_rules.md
+      - references/common/query_context_policy.md
 ```

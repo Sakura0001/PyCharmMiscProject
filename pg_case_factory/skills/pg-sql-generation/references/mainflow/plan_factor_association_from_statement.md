@@ -13,6 +13,7 @@
 - 公共因子策略：`references/common/factor_policy.md`
 - 覆盖库存：`references/combinations/_shared/coverage_inventory.yaml`
 - 类型目录：`references/common/pg16_type_catalog.md`
+- 查询上下文策略：`references/common/query_context_policy.md`（当 statement 属于查询语句，或 feature 需要查询验证时必须读取）
 
 如果 combination matrix 存在，它是 baseline coverage source。派生联想只能作为 derived extension 标注，不能替代 baseline required coverage。
 
@@ -28,6 +29,7 @@
 2. **优先联想到的因子维度**
    - 先列 statement 自身语法因子。
    - 再列目标对象、列/类型、依赖、权限、约束、生命周期、数据规模、事务并发、环境副作用、验证 oracle。
+   - 如果涉及查询验证，必须列出 query_context：表类型、数据夹具、数据分布、索引、有/无 hint、统计信息、optimizer GUC、参数化、MVCC、并行、NULL、collation、函数 volatility、rewrite 和 oracle。
    - 每个维度必须给具体取值，而不是只写抽象标题。
 
 3. **因子触发规则**
@@ -102,6 +104,7 @@ structured_config:
       factor_policy: references/common/factor_policy.md
       coverage_inventory: references/combinations/_shared/coverage_inventory.yaml
       type_catalog: references/common/pg16_type_catalog.md
+      query_context_policy: references/common/query_context_policy.md
     output_sections:
       - impact_chain
       - factor_dimensions
