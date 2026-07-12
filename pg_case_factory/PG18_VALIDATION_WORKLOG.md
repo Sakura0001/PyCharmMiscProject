@@ -205,8 +205,8 @@
 13. [x] 离线 build 失败原因已定位为 cache 缺 setuptools；经批准的标准 build 成功生成 sdist/wheel。
 14. [x] 已从父仓库执行 `git status --porcelain=v1 -- . ':(exclude)pg_case_factory'`，输出为空；确认本项目外无改动。
 15. [x] 只执行 `git add -- pg_case_factory`；`git diff --cached --check` 通过，缓存区外路径检查为空；staged 统计为 454 files changed、50,507 insertions、3,478 deletions。
-16. [ ] 创建一次项目提交。
-17. [ ] 强制执行 `git push` 到当前分支；失败时记录网络/认证阻塞。
+16. [x] 已创建主实现提交 `74e8f71`（`feat(pg-case-factory): add PG18 feature test orchestration`），提交范围仅为 `pg_case_factory/`。
+17. [x] 已推送到 `origin/codex/pg18-feature-testing-foundation` 并建立 tracking；沙箱内第一次尝试因 `127.0.0.1:7897` 代理不可达而失败，经批准使用本机网络和安全凭据后推送成功。
 
 ## 7. 最终验证命令清单
 
@@ -245,4 +245,4 @@ git diff --check
 4. 如果实现口径变化，更新“目标和验收口径”；
 5. commit/push 后写入 commit SHA、远端分支和 push 结果。
 
-最后更新：2026-07-13（Asia/Shanghai），实现、独立验证、父仓库范围复核和仅限子项目的暂存复核已完成；下一步仅剩提交和推送，以及保留给真实特性文档/真实数据库的 runtime 工作。
+最后更新：2026-07-13（Asia/Shanghai），实现、独立验证、范围复核、主实现提交和远端推送均已完成；本文件的结果回写将作为单独收尾提交再次推送。保留给真实特性文档/真实数据库的 runtime 工作仍明确未执行。
