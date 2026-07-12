@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-drop-owned.html
+来源：https://www.postgresql.org/docs/18/sql-drop-owned.html
 
 ```sql
 DROP OWNED BY { name | CURRENT_ROLE | CURRENT_USER | SESSION_USER } [, ...] [ CASCADE | RESTRICT ]
@@ -96,7 +96,7 @@ structured_config:
   category: ddl
   domain: ownership
   skill_name: drop_owned
-  official_source: https://www.postgresql.org/docs/16/sql-drop-owned.html
+  official_source: https://www.postgresql.org/docs/18/sql-drop-owned.html
   statement:
     key: drop_owned
     name: DROP OWNED

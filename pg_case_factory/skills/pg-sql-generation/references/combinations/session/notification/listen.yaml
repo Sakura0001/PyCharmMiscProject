@@ -6,7 +6,7 @@ statement:
   category: session
   domain: notification
   source_reference: references/statements/session/notification/listen.md
-  official_source: https://www.postgresql.org/docs/16/sql-listen.html
+  official_source: https://www.postgresql.org/docs/18/sql-listen.html
 execution_contract:
   required_matrix_is_baseline: true
   no_inference_before_required_coverage_passes: true
@@ -41,7 +41,7 @@ coverage_scope:
   target_object_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#object_kinds.all_object_kinds
     required_object_kinds:
     - notification_channel
     decision_reason: session/notification statement coverage is tracked by its explicit runtime or catalog object kind.

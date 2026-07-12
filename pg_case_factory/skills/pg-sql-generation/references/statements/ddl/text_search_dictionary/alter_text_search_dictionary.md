@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-altertsdictionary.html
+来源：https://www.postgresql.org/docs/18/sql-altertsdictionary.html
 
 ```sql
 ALTER TEXT SEARCH DICTIONARY name (
@@ -13,7 +13,7 @@ ALTER TEXT SEARCH DICTIONARY name OWNER TO { new_owner | CURRENT_ROLE | CURRENT_
 ALTER TEXT SEARCH DICTIONARY name SET SCHEMA new_schema
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - ALTER TEXT SEARCH DICTIONARY 要求执行者是字典的 owner
 - 选项形式：option [ = value ]；省略 "= value" 则移除该选项设置（恢复默认值）
 - RENAME/OWNER/SET SCHEMA 与其他对象 ALTER 行为一致
@@ -104,7 +104,7 @@ structured_config:
   category: ddl
   domain: text_search_dictionary
   skill_name: alter_text_search_dictionary
-  official_source: https://www.postgresql.org/docs/16/sql-altertsdictionary.html
+  official_source: https://www.postgresql.org/docs/18/sql-altertsdictionary.html
   statement:
     key: alter_text_search_dictionary
     name: ALTER TEXT SEARCH DICTIONARY

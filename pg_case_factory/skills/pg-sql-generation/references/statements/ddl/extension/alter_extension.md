@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-alterextension.html
+来源：https://www.postgresql.org/docs/18/sql-alterextension.html
 
 ```sql
 ALTER EXTENSION name UPDATE [ TO new_version ]
@@ -48,7 +48,7 @@ and aggregate_signature is:
 [ [ argmode ] [ argname ] argtype [ , ... ] ] ORDER BY [ argmode ] [ argname ] argtype [ , ... ]
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - 必须拥有扩展才能使用 ALTER EXTENSION。ADD/DROP 形式还需要拥有被添加/移除的对象。
 - UPDATE：更新扩展到新版本，扩展必须提供合适的更新脚本。
 - SET SCHEMA：将扩展对象移动到另一个 schema，扩展必须是 relocatable 才能成功。
@@ -155,7 +155,7 @@ structured_config:
   category: ddl
   domain: extension
   skill_name: alter_extension
-  official_source: https://www.postgresql.org/docs/16/sql-alterextension.html
+  official_source: https://www.postgresql.org/docs/18/sql-alterextension.html
   statement:
     key: alter_extension
     name: ALTER EXTENSION

@@ -1,24 +1,29 @@
-# 技能：factor_policy
+# 因子覆盖策略
 
-## 作用
+## 目标
 
-定义 SQL 用例生成时的通用因子组合策略。具体 statement reference 负责声明哪些因子属于主覆盖因子、哪些属于附属因子；本规则只定义展开与挂靠方式。
+定义 PostgreSQL 18.4 SQL 测试的公共因子展开规则。statement reference 声明因子及适用范围，coverage plan 声明完整 inventory 和 test points，本规则禁止静默抽样。
 
-## 组合规则
+## 规则
 
-- 重要因子采用完整笛卡尔积覆盖。
-- 非重要因子按轮转方式挂靠到主组合上。
-- 若主组合数量不足，则复制主组合骨架，直到每个非重要因子的每个取值都至少覆盖一次。
-- 当生成规模超过 statement reference 的阈值时，优先保留 T1 主因子完整覆盖，再裁剪或轮转 T2，最后才允许压缩语句分支数量。
-- 附属因子不得破坏主因子的可识别性、成功/失败归因或生命周期前置条件。
+- 为每个适用 axis 设置 `coverage_mode: complete`、非空 `inventory_source` 和完整 `values`。
+- 对 test point 的全部 `core_axes` 做完整笛卡尔积。
+- 不用 representative、sampling、pairwise 或轮转挂靠替代 relation/table/column type、语法分支或其他适用 inventory 值。
+- 不支持或不适用的值仍保留在 axis 中，并分类为 `expected_failure` 或 `justified_na`；两者必须给出具体 reason。
+- 只把与主语义独立的附属因子拆到单独 test point；拆分后仍要求其每个 inventory 值进入 obligation，不能只选一个样本。
+- 每个组合只能有一个可归因 outcome；冲突 classification 视为计划错误。
+- 规模过大时拆分 test points、降低并发并断点续跑，不裁剪 inventory。
+- 最终证明 `required = success + expected_failure + justified_na` 且 `missing = 0`。
 
 ```yaml
 structured_config:
   skill_name: factor_policy
   statement: common
+  compatibility_target: postgresql-18.4
   factor_policy:
-    important_factor_strategy: full_cross
-    non_important_factor_strategy: rotate_attach
-    clone_main_skeleton_if_needed: true
-    preserve_main_axes_first: true
+    axis_coverage_mode: complete
+    core_factor_strategy: full_cross
+    sampling_allowed: false
+    retain_excluded_values: true
+    require_reconciliation: true
 ```

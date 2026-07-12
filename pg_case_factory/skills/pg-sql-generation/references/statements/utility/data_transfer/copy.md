@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-copy.html
+来源：https://www.postgresql.org/docs/18/sql-copy.html
 
 ```sql
 COPY table_name [ ( column_name [, ...] ) ]
@@ -77,7 +77,7 @@ where option can be one of:
 - 需要文件系统、PROGRAM、共享库、CHECKPOINT、VACUUM FULL 或服务端文件权限的分支不得默认视为普通用户成功路径。
 - LOCK 必须在事务块中验证，VACUUM 部分分支不能放在事务块中运行。
 - EXPLAIN ANALYZE 会执行目标语句，必须使用可控数据和清理策略。
-- COPY FROM/TO 文件和 PROGRAM 分支需要服务端文件或程序执行权限；普通路径优先使用 STDIN/STDOUT 或受控临时表。
+- COPY FROM/TO 文件和 PROGRAM 分支需要服务端文件或程序执行权限。basic runner 禁止 `COPY FROM STDIN` data mode 和 `COPY PROGRAM`；普通单会话路径使用受控表与 `COPY (SELECT ...) TO STDOUT`。COPY FROM STDIN 必须走 `external-copy-ingest`，且 manifest 唯一 SQL 自身包含至少一行 payload 和独立 `\.` 终止符，harness 只执行该精确文件；文件/PROGRAM 分支必须走另一个明确授权的隔离 external harness，不能复用 ingest route 或另喂 payload。
 - 需要特殊权限、外部服务、文件系统、两阶段事务、第二连接或非事务环境的分支必须显式标注，不得伪造为普通成功路径。
 
 ## 挂靠规则
@@ -100,7 +100,11 @@ structured_config:
   category: utility
   domain: data_transfer
   skill_name: copy
-  official_source: https://www.postgresql.org/docs/16/sql-copy.html
+  official_source: https://www.postgresql.org/docs/18/sql-copy.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-copy.html
+    review_status: synopsis_adapted
   statement:
     key: copy
     name: COPY
@@ -180,6 +184,9 @@ structured_config:
       - verbose_or_format
       - boolean_options
       - resource_options
+      - force_all_columns
+      - error_handling
+      - log_verbosity
     execution_mode:
       label: 执行模式
       importance: non_important

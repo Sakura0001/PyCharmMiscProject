@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-dropcollation.html
+来源：https://www.postgresql.org/docs/18/sql-dropcollation.html
 
 ```sql
 DROP COLLATION [ IF EXISTS ] name [ CASCADE | RESTRICT ]
@@ -102,7 +102,7 @@ structured_config:
   category: ddl
   domain: collation
   skill_name: drop_collation
-  official_source: https://www.postgresql.org/docs/16/sql-dropcollation.html
+  official_source: https://www.postgresql.org/docs/18/sql-dropcollation.html
   statement:
     key: drop_collation
     name: DROP COLLATION

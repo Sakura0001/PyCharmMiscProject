@@ -2,13 +2,13 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-droptstemplate.html
+来源：https://www.postgresql.org/docs/18/sql-droptstemplate.html
 
 ```sql
 DROP TEXT SEARCH TEMPLATE [ IF EXISTS ] name [ CASCADE | RESTRICT ]
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - DROP TEXT SEARCH TEMPLATE 要求 SUPERUSER 权限
 - RESTRICT（默认）：如果有 text search dictionary 使用该 template，拒绝删除
 - CASCADE：自动删除依赖该 template 的所有 text search dictionary（以及依赖这些 dictionary 的配置）
@@ -87,7 +87,7 @@ structured_config:
   category: ddl
   domain: text_search_template
   skill_name: drop_text_search_template
-  official_source: https://www.postgresql.org/docs/16/sql-droptstemplate.html
+  official_source: https://www.postgresql.org/docs/18/sql-droptstemplate.html
   statement:
     key: drop_text_search_template
     name: DROP TEXT SEARCH TEMPLATE

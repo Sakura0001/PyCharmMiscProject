@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-importforeignschema.html
+来源：https://www.postgresql.org/docs/18/sql-importforeignschema.html
 
 ```sql
 IMPORT FOREIGN SCHEMA remote_schema
@@ -12,7 +12,7 @@ IMPORT FOREIGN SCHEMA remote_schema
     [ OPTIONS ( option 'value' [, ...] ) ]
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - 用户必须拥有外部服务器的 **USAGE** 权限和目标 schema 的 **CREATE** 权限。**不需要 superuser 权限**。
 - 新创建的外部表由发出命令的用户拥有。
 - 外部表以正确的列定义和选项创建以匹配远程表。
@@ -121,7 +121,7 @@ structured_config:
   category: ddl
   domain: foreign_schema
   skill_name: import_foreign_schema
-  official_source: https://www.postgresql.org/docs/16/sql-importforeignschema.html
+  official_source: https://www.postgresql.org/docs/18/sql-importforeignschema.html
   statement:
     key: import_foreign_schema
     name: IMPORT FOREIGN SCHEMA

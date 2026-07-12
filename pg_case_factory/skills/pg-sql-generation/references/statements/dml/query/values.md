@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-values.html
+来源：https://www.postgresql.org/docs/18/sql-values.html
 
 ```sql
 VALUES ( expression [, ...] ) [, ...]
@@ -83,7 +83,7 @@ structured_config:
   category: dml
   domain: query
   skill_name: values
-  official_source: https://www.postgresql.org/docs/16/sql-values.html
+  official_source: https://www.postgresql.org/docs/18/sql-values.html
   statement:
     key: values
     name: VALUES

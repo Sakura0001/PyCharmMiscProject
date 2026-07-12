@@ -2,13 +2,13 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-droprule.html
+来源：https://www.postgresql.org/docs/18/sql-droprule.html
 
 ```sql
 DROP RULE [ IF EXISTS ] name ON table_name [ CASCADE | RESTRICT ]
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - 必须指定规则所属的表/视图（ON table_name），规则名称仅在表范围内唯一
 - RESTRICT 是默认行为（省略 CASCADE/RESTRICT 时等效于 RESTRICT）
 - 必须拥有目标表/视图才能 DROP RULE
@@ -98,7 +98,7 @@ structured_config:
   category: ddl
   domain: rule
   skill_name: drop_rule
-  official_source: https://www.postgresql.org/docs/16/sql-droprule.html
+  official_source: https://www.postgresql.org/docs/18/sql-droprule.html
   statement:
     key: drop_rule
     name: DROP RULE

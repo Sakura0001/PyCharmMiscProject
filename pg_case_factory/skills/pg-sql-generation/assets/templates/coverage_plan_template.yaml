@@ -1,0 +1,1245 @@
+# Copy to work/<run-id>/coverage_plan.yaml and adapt it to the feature document.
+# Validate and reconcile it before `run init`; that command creates the immutable
+# artifacts/runs/<run-id>/plans snapshot, which must never be hand-edited.
+# Every canonical inventory snapshot is complete and pinned;
+# feature-local axes are finite semantic classes, never representative samples.
+# The four mandatory scopes are object, relation, table, and column_type; table
+# uses five axes and column_type uses seven complementary inventories. All 12
+# risk decisions are mandatory. This exact example expands to 3,175 obligations:
+# 2,787 success, 153 expected_failure, 235 justified_na, and 0 missing.
+schema_version: 1
+kind: coverage_plan
+plan_id: PLAN-REMOTE-STORAGE-READ
+feature_id: remote-storage-read
+axes:
+  object_type:
+    coverage_mode: complete
+    inventory_source: skills/pg-sql-generation/references/combinations/_shared/coverage_inventory.yaml#sql_object_types.all_sql_object_types
+    inventory_count: 52
+    inventory_sha256: 16baf7956eef9b78b8ad585d8fcbe74306d2d3d16dd3004e3cb49a8673ab1180
+    description: Every OBJECT_* member in PostgreSQL 18.4 ObjectType.
+    values:
+      - access_method
+      - aggregate
+      - amop
+      - amproc
+      - attribute
+      - cast
+      - column
+      - collation
+      - conversion
+      - database
+      - default
+      - defacl
+      - domain
+      - domconstraint
+      - event_trigger
+      - extension
+      - fdw
+      - foreign_server
+      - foreign_table
+      - function
+      - index
+      - language
+      - largeobject
+      - matview
+      - opclass
+      - operator
+      - opfamily
+      - parameter_acl
+      - policy
+      - procedure
+      - publication
+      - publication_namespace
+      - publication_rel
+      - role
+      - routine
+      - rule
+      - schema
+      - sequence
+      - subscription
+      - statistic_ext
+      - tabconstraint
+      - table
+      - tablespace
+      - transform
+      - trigger
+      - tsconfiguration
+      - tsdictionary
+      - tsparser
+      - tstemplate
+      - type
+      - user_mapping
+      - view
+  relkind:
+    coverage_mode: complete
+    inventory_source: skills/pg-sql-generation/references/combinations/_shared/coverage_inventory.yaml#relation_kinds.all_pg18_relkinds
+    inventory_count: 10
+    inventory_sha256: 06cae15bce0029a913db85e3e8a76fec1ba50604018c532584bfd461fe20a8fa
+    description: Exact PG18.4 RELKIND_* inventory; persistence and topology are separate axes.
+    values:
+      - relation
+      - index
+      - sequence
+      - toastvalue
+      - view
+      - matview
+      - composite_type
+      - foreign_table
+      - partitioned_table
+      - partitioned_index
+  relpersistence:
+    coverage_mode: complete
+    inventory_source: skills/pg-sql-generation/references/combinations/_shared/coverage_inventory.yaml#relation_dimensions.relpersistence.values
+    inventory_count: 3
+    inventory_sha256: a7ad60e0cd9b2016468df164068d84e23aeff305c177584bd71dfd08ede4badd
+    values: [permanent, unlogged, temp]
+  partition_role:
+    coverage_mode: complete
+    inventory_source: skills/pg-sql-generation/references/combinations/_shared/coverage_inventory.yaml#relation_dimensions.partition_role.values
+    inventory_count: 3
+    inventory_sha256: 4e463abadb471cfea9bc05471c059088b52cbc08ef023929008950aff7ced22b
+    values: [non_partitioned, partitioned_parent, partition_leaf]
+  partition_strategy:
+    coverage_mode: complete
+    inventory_source: skills/pg-sql-generation/references/combinations/_shared/coverage_inventory.yaml#relation_dimensions.partition_strategy.values
+    inventory_count: 4
+    inventory_sha256: e2245b57c7e9b4b5fcc576120dcd7a59b42a66a3e8a315155a047dc27d273eb2
+    values: [none, range, list, hash]
+  inheritance_role:
+    coverage_mode: complete
+    inventory_source: skills/pg-sql-generation/references/combinations/_shared/coverage_inventory.yaml#relation_dimensions.inheritance_role.values
+    inventory_count: 4
+    inventory_sha256: 4a4fed97dd0adb6c49d00dbdb7c1f4eb52a08203dca04249b464ea013985c92e
+    values: [none, parent, child, parent_and_child]
+  table_access_method_selection:
+    coverage_mode: complete
+    inventory_source: skills/pg-sql-generation/references/combinations/_shared/coverage_inventory.yaml#relation_dimensions.table_access_method_selection.values
+    inventory_count: 3
+    inventory_sha256: 5fb7374d7fa87741c11f03ffc9e0cc90e5e74039d8529863c13a6b5550c45d0d
+    values: [default, explicit_builtin, extension_provided]
+  column_type:
+    coverage_mode: complete
+    inventory_source: skills/pg-sql-generation/references/common/pg18_type_catalog.md#structured_config.types
+    inventory_count: 85
+    inventory_sha256: 1dc7ad6615d45c4191b5f00cd1b3a54fcfc1bb9cfa4eaa79f7b9a6377970ee7d
+    description: All 85 finite executable core profiles, not every pg_type row; add concrete/auto-array axes when the feature is sensitive to them.
+    values:
+      - smallint
+      - integer
+      - bigint
+      - smallserial
+      - serial
+      - bigserial
+      - numeric
+      - decimal
+      - real
+      - double_precision
+      - float
+      - money
+      - character_varying
+      - character
+      - bpchar
+      - text
+      - bytea
+      - timestamp
+      - timestamp_with_time_zone
+      - date
+      - time
+      - time_with_time_zone
+      - interval
+      - boolean
+      - enum_type
+      - point
+      - line
+      - lseg
+      - box
+      - path
+      - polygon
+      - circle
+      - cidr
+      - inet
+      - macaddr
+      - macaddr8
+      - bit
+      - bit_varying
+      - tsvector
+      - tsquery
+      - uuid
+      - xml
+      - json
+      - jsonb
+      - jsonpath
+      - integer_array
+      - text_array
+      - varchar_array
+      - numeric_array
+      - timestamp_array
+      - jsonb_array
+      - int4range
+      - int8range
+      - numrange
+      - tsrange
+      - tstzrange
+      - daterange
+      - int4multirange
+      - int8multirange
+      - nummultirange
+      - tsmultirange
+      - tstzmultirange
+      - datemultirange
+      - domain_type
+      - composite_type
+      - oid
+      - regclass
+      - regcollation
+      - regconfig
+      - regdictionary
+      - regnamespace
+      - regoper
+      - regoperator
+      - regproc
+      - regprocedure
+      - regrole
+      - regtype
+      - xid
+      - xid8
+      - cid
+      - tid
+      - pg_lsn
+      - pg_snapshot
+      - txid_snapshot
+      - name
+  concrete_builtin_type:
+    coverage_mode: complete
+    inventory_source: skills/pg-sql-generation/references/common/pg18_type_catalog.md#structured_config.concrete_builtin_types.values
+    inventory_count: 85
+    inventory_sha256: 86ab59230c92253e56d467dd54cd3fe841c1af091595344a2cc33907b948d12e
+    description: Every explicit non-pseudo pg_type.dat record.
+    values:
+      - bool
+      - bytea
+      - char
+      - name
+      - int8
+      - int2
+      - int2vector
+      - int4
+      - regproc
+      - text
+      - oid
+      - tid
+      - xid
+      - cid
+      - oidvector
+      - pg_type
+      - pg_attribute
+      - pg_proc
+      - pg_class
+      - json
+      - xml
+      - pg_node_tree
+      - pg_ndistinct
+      - pg_dependencies
+      - pg_mcv_list
+      - xid8
+      - point
+      - lseg
+      - path
+      - box
+      - polygon
+      - float4
+      - float8
+      - circle
+      - money
+      - macaddr
+      - inet
+      - cidr
+      - macaddr8
+      - aclitem
+      - bpchar
+      - varchar
+      - date
+      - time
+      - timestamp
+      - timestamptz
+      - interval
+      - timetz
+      - bit
+      - varbit
+      - numeric
+      - refcursor
+      - regprocedure
+      - regoper
+      - regoperator
+      - regclass
+      - regcollation
+      - regtype
+      - regrole
+      - regnamespace
+      - uuid
+      - pg_lsn
+      - tsvector
+      - gtsvector
+      - tsquery
+      - regconfig
+      - regdictionary
+      - jsonb
+      - jsonpath
+      - txid_snapshot
+      - pg_snapshot
+      - int4range
+      - numrange
+      - tsrange
+      - tstzrange
+      - daterange
+      - int8range
+      - int4multirange
+      - nummultirange
+      - tsmultirange
+      - tstzmultirange
+      - datemultirange
+      - int8multirange
+      - pg_brin_bloom_summary
+      - pg_brin_minmax_multi_summary
+  auto_array_element_type:
+    coverage_mode: complete
+    inventory_source: skills/pg-sql-generation/references/common/pg18_type_catalog.md#structured_config.auto_array_types.element_types
+    inventory_count: 79
+    inventory_sha256: 97a0c54b16e1020dc13e540fabe97fd59dff5c296c279aaebe398b06ed34c39b
+    description: Every source-derived element type with an automatic PostgreSQL array type.
+    values:
+      - bool
+      - bytea
+      - char
+      - name
+      - int8
+      - int2
+      - int2vector
+      - int4
+      - regproc
+      - text
+      - oid
+      - tid
+      - xid
+      - cid
+      - oidvector
+      - pg_type
+      - pg_attribute
+      - pg_proc
+      - pg_class
+      - json
+      - xml
+      - xid8
+      - point
+      - lseg
+      - path
+      - box
+      - polygon
+      - float4
+      - float8
+      - circle
+      - money
+      - macaddr
+      - inet
+      - cidr
+      - macaddr8
+      - aclitem
+      - bpchar
+      - varchar
+      - date
+      - time
+      - timestamp
+      - timestamptz
+      - interval
+      - timetz
+      - bit
+      - varbit
+      - numeric
+      - refcursor
+      - regprocedure
+      - regoper
+      - regoperator
+      - regclass
+      - regcollation
+      - regtype
+      - regrole
+      - regnamespace
+      - uuid
+      - pg_lsn
+      - tsvector
+      - gtsvector
+      - tsquery
+      - regconfig
+      - regdictionary
+      - jsonb
+      - jsonpath
+      - txid_snapshot
+      - pg_snapshot
+      - int4range
+      - numrange
+      - tsrange
+      - tstzrange
+      - daterange
+      - int8range
+      - int4multirange
+      - nummultirange
+      - tsmultirange
+      - tstzmultirange
+      - datemultirange
+      - int8multirange
+  pseudo_type:
+    coverage_mode: complete
+    inventory_source: skills/pg-sql-generation/references/common/pg18_type_catalog.md#structured_config.pseudo_types.values
+    inventory_count: 26
+    inventory_sha256: e12bc3225ac03af3718b1a15b2af18c14d946ea9e79ab2ef2aabb2b9b265d0ea
+    description: Every PostgreSQL 18.4 pseudo-type; table-column declarations are negative cases.
+    values:
+      - pg_ddl_command
+      - unknown
+      - record
+      - _record
+      - cstring
+      - any
+      - anyarray
+      - void
+      - trigger
+      - event_trigger
+      - language_handler
+      - internal
+      - anyelement
+      - anynonarray
+      - anyenum
+      - fdw_handler
+      - index_am_handler
+      - tsm_handler
+      - table_am_handler
+      - anyrange
+      - anycompatible
+      - anycompatiblearray
+      - anycompatiblenonarray
+      - anycompatiblerange
+      - anymultirange
+      - anycompatiblemultirange
+  declaration_alias:
+    coverage_mode: complete
+    inventory_source: skills/pg-sql-generation/references/common/pg18_type_catalog.md#structured_config.declaration_aliases.mappings
+    inventory_count: 16
+    inventory_sha256: 6a98d14a560cfa6758796766ac3d9014eace86eebe3154d4e4185a0cfa9a9329
+    description: Every maintained SQL declaration alias.
+    values: [smallint, integer, bigint, smallserial, serial, bigserial, decimal, real, double_precision, float, character, character_varying, boolean, timestamp_with_time_zone, time_with_time_zone, bit_varying]
+  typmod_declaration:
+    coverage_mode: complete
+    inventory_source: skills/pg-sql-generation/references/common/pg18_type_catalog.md#structured_config.typmod_declarations.values
+    inventory_count: 60
+    inventory_sha256: 80d2b6ded0f70c983e554c30ec0cd9473a1988981f309f96db6e52bf06a08d34
+    description: Every maintained valid and invalid typmod boundary declaration.
+    values:
+      - NUMERIC
+      - NUMERIC(1)
+      - NUMERIC(1000)
+      - NUMERIC(10,0)
+      - NUMERIC(10,2)
+      - NUMERIC(10,-2)
+      - NUMERIC(1,1000)
+      - NUMERIC(0)
+      - NUMERIC(1001)
+      - NUMERIC(10,-1001)
+      - NUMERIC(10,1001)
+      - VARCHAR
+      - VARCHAR(1)
+      - VARCHAR(10485760)
+      - CHARACTER
+      - CHARACTER(1)
+      - CHARACTER(10485760)
+      - VARCHAR(0)
+      - VARCHAR(10485761)
+      - CHARACTER(0)
+      - CHARACTER(10485761)
+      - BIT
+      - BIT(1)
+      - BIT(83886080)
+      - BIT VARYING
+      - BIT VARYING(1)
+      - BIT VARYING(83886080)
+      - BIT(0)
+      - BIT(83886081)
+      - BIT VARYING(0)
+      - BIT VARYING(83886081)
+      - FLOAT
+      - FLOAT(1)
+      - FLOAT(24)
+      - FLOAT(25)
+      - FLOAT(53)
+      - FLOAT(0)
+      - FLOAT(54)
+      - TIME(0)
+      - TIME(6)
+      - TIMESTAMP(0)
+      - TIMESTAMP(6)
+      - INTERVAL(0)
+      - INTERVAL(6)
+      - TIME(7)
+      - TIMESTAMP(7)
+      - INTERVAL(7)
+      - INTERVAL YEAR
+      - INTERVAL MONTH
+      - INTERVAL DAY
+      - INTERVAL HOUR
+      - INTERVAL MINUTE
+      - INTERVAL SECOND
+      - INTERVAL YEAR TO MONTH
+      - INTERVAL DAY TO HOUR
+      - INTERVAL DAY TO MINUTE
+      - INTERVAL DAY TO SECOND
+      - INTERVAL HOUR TO MINUTE
+      - INTERVAL HOUR TO SECOND
+      - INTERVAL MINUTE TO SECOND
+  user_defined_archetype:
+    coverage_mode: complete
+    inventory_source: skills/pg-sql-generation/references/common/pg18_type_catalog.md#structured_config.user_defined_archetypes.values
+    inventory_count: 8
+    inventory_sha256: d07ccce0cc897da904a968438d7887d7bc3ef40c47ce81d7dbd605c0ae5f08ba
+    description: Every PostgreSQL user-defined type construction family.
+    values: [enum, domain, composite, table_row_type, base_type, range, multirange, array_of_user_defined_type]
+  operation:
+    coverage_mode: complete
+    inventory_source: inline:remote-storage-operations
+    inventory_count: 14
+    inventory_sha256: 74f47214526ccafa93bfdff40ef8da9bda530f02a956c55121e0e7208b8fbe4e
+    values: [create, insert, select, update, delete, copy_from, copy_to, alter, truncate, vacuum, analyze, cluster, reindex, drop]
+    description: Complete storage-facing SQL operation classes used by this feature plan.
+    derivation: Partition PostgreSQL 18.4 table lifecycle and maintenance commands by distinct observable storage effect.
+    source_locators: [feature:REQ-003, pg18:sql-command-reference]
+    exclusion_policy: Non-storage session-only commands are covered by the canonical object/statement ledgers, not this storage-operation axis.
+    review_status: semantic_reviewed
+  copy_pg18_option_case:
+    coverage_mode: complete
+    inventory_source: inline:postgresql-18.4-copy-option-cases
+    inventory_count: 28
+    inventory_sha256: f074f341c3b683eaa2fcaf91eef5fa09a91230176e858bbcca780b346dee98c0
+    values:
+      - to_force_quote_columns
+      - to_force_quote_all
+      - from_force_not_null_columns
+      - from_force_not_null_all
+      - from_force_null_columns
+      - from_force_null_all
+      - from_on_error_stop
+      - from_on_error_ignore_unlimited
+      - from_reject_limit_within
+      - from_reject_limit_max_bigint
+      - from_reject_limit_exceeded
+      - from_reject_limit_zero
+      - from_reject_limit_negative
+      - from_reject_limit_overflow
+      - from_reject_limit_without_ignore
+      - from_log_verbosity_default
+      - from_log_verbosity_verbose
+      - from_log_verbosity_silent
+      - from_log_verbosity_without_ignore
+      - from_on_error_ignore_binary
+      - from_force_quote_invalid_direction
+      - to_on_error_invalid_direction
+      - to_force_not_null_invalid_direction
+      - to_force_null_invalid_direction
+      - to_log_verbosity_verbose_noop
+      - from_force_not_null_text_invalid_format
+      - from_force_null_text_invalid_format
+      - to_force_quote_text_invalid_format
+    description: Complete semantic cases for the FORCE_QUOTE/FORCE_NOT_NULL/FORCE_NULL column-list and wildcard forms plus PostgreSQL 18.4 ON_ERROR, REJECT_LIMIT, and LOG_VERBOSITY behavior.
+    derivation: Enumerate every documented value and selector shape, then retain the direction, format, dependency, positive-bigint, reject-limit crossing, and error-action boundaries that change COPY rows, notices, command outcome, or SQLSTATE.
+    source_locators: [feature:REQ-008, pg18:sql-copy]
+    exclusion_policy: Legacy COPY endpoint, format, delimiter, null/default, header, encoding, FREEZE, WHERE, column-list, file, and PROGRAM dimensions remain complete obligations of the COPY statement matrix job; this feature-local axis adds every PG18-changed option semantic and does not replace that matrix.
+    review_status: source_derived
+  data_profile:
+    coverage_mode: complete
+    inventory_source: inline:remote-storage-data-profiles
+    inventory_count: 8
+    inventory_sha256: ad5961a0b988cd67abdc82cb9c2a215312baaf22d911fc38f5be9110aad6a5e6
+    values: ["null", type_min_boundary, type_max_boundary, typical, duplicate, wide_toast, multi_row_uniform, multi_row_skew]
+    description: Complete semantic data classes that change storage size, cardinality, skew, or boundary behavior.
+    derivation: Cross type-domain boundaries with nullability, duplication, row-count distribution, and TOAST-width classes from REQ-001/REQ-005.
+    source_locators: [feature:REQ-001, feature:REQ-005, pg18:datatype]
+    exclusion_policy: Type-specific literal details are delegated to the seven canonical type inventories; no storage data class is sampled away.
+    review_status: semantic_reviewed
+  transaction_context:
+    coverage_mode: complete
+    inventory_source: inline:remote-storage-transaction-contexts
+    inventory_count: 7
+    inventory_sha256: 4a5cf44eac6ecf485d54ffde256d9cd388d8b2780f84a8db481727275c39e599
+    values: [autocommit, explicit_commit, explicit_rollback, savepoint_release, savepoint_rollback, prepared_commit, prepared_rollback]
+    description: Complete PostgreSQL transaction lifecycle contexts relevant to durable storage effects.
+    derivation: Enumerate autocommit, commit/rollback, subtransaction release/rollback, and two-phase commit/rollback endpoints.
+    source_locators: [feature:REQ-002, pg18:transaction, pg18:savepoint, pg18:prepare-transaction]
+    exclusion_policy: Read-only transaction characteristics belong to isolation_level; every mutation lifecycle endpoint is retained here.
+    review_status: source_derived
+  privilege_context:
+    coverage_mode: complete
+    inventory_source: inline:remote-storage-privilege-contexts
+    inventory_count: 3
+    inventory_sha256: 5affc711c9b41e139746c17060b3dbe7a573cbc2fde25763c091ffe0348d0b35
+    values: [owner, granted_role, insufficient_privilege]
+    description: Complete ownership and privilege-result classes for a dedicated non-superuser runner.
+    derivation: Partition authorization into owner, explicit grant, and missing required privilege because each produces a distinct observable oracle.
+    source_locators: [feature:REQ-003, pg18:ddl-priv]
+    exclusion_policy: Superuser and server-file/program roles are excluded from the basic runner and require an isolated privileged harness.
+    review_status: semantic_reviewed
+  index_constraint_trigger_interaction:
+    coverage_mode: complete
+    inventory_source: inline:remote-storage-index-constraint-trigger-interactions
+    inventory_count: 5
+    inventory_sha256: 62e1513423cb6f41a0653dd9c7154591d65eea58ba6039f558261ebbce2e880c
+    values: [none, index, constraint, trigger, index_constraint_trigger]
+    description: Complete presence combinations needed to expose storage callbacks from indexes, constraints, and triggers.
+    derivation: Use the power set collapsed by equivalent single-component behavior while retaining the all-components interaction.
+    source_locators: [feature:REQ-003, pg18:create-index, pg18:create-table, pg18:create-trigger]
+    exclusion_policy: Pairwise combinations are exercised by the all-components case plus each isolated component; no distinct observable class is excluded.
+    review_status: semantic_reviewed
+  restart_recovery_context:
+    coverage_mode: complete
+    inventory_source: inline:remote-storage-restart-recovery-contexts
+    inventory_count: 4
+    inventory_sha256: 4236e34cb2ceaf8b38f62ab7f43ff3108b2780ebe97f71c958c5e7d1ee31ec9e
+    values: [no_restart, restart_after_commit, restart_after_checkpoint, crash_recovery]
+    description: Complete high-level server lifecycle contexts for persistence parity.
+    derivation: Separate no restart, clean restart before/after checkpoint, and crash recovery according to REQ-004.
+    source_locators: [feature:REQ-004, pg18:wal, pg18:runtime-config-wal]
+    exclusion_policy: Fine-grained WAL/redo timing is retained separately in wal_crash_phase.
+    review_status: semantic_reviewed
+  read_path:
+    coverage_mode: complete
+    inventory_source: inline:remote-storage-read-paths
+    inventory_count: 8
+    inventory_sha256: 1da75665a75d398643660c7a1a9330fad00176ae6c02270ca419f5036a4b2103
+    values: [sequential_scan, btree_index_scan, index_only_scan, bitmap_heap_scan, parallel_sequential_scan, parallel_index_scan, partition_pruning, toast_fetch]
+    description: Complete planner/executor read-path classes that reach table, index, partition, parallel, or TOAST storage.
+    derivation: Enumerate distinct PostgreSQL 18.4 scan-node families plus partition pruning and an explicit out-of-line TOAST fetch.
+    source_locators: [feature:REQ-001, pg18:using-explain, pg18:storage-toast]
+    exclusion_policy: Specialized extension scan nodes require their extension harness; all built-in storage read classes are retained.
+    review_status: semantic_reviewed
+  isolation_level:
+    coverage_mode: complete
+    inventory_source: inline:postgresql-18.4-isolation-levels
+    inventory_count: 3
+    inventory_sha256: dd79cd48fe6b1f14847807705e689cb2c1cc579cee15177848e6f67e1b7ddce2
+    values: [read_committed, repeatable_read, serializable]
+    description: Exact PostgreSQL 18.4 transaction isolation levels (READ UNCOMMITTED maps to READ COMMITTED).
+    derivation: Enumerate the three distinct PostgreSQL MVCC implementations documented for SET TRANSACTION.
+    source_locators: [feature:REQ-006, pg18:transaction-iso, pg18:set-transaction]
+    exclusion_policy: READ UNCOMMITTED is not a fourth behavior in PostgreSQL and is tested as syntax alias coverage, not duplicated here.
+    review_status: source_derived
+  snapshot_timing:
+    coverage_mode: complete
+    inventory_source: inline:remote-storage-snapshot-timings
+    inventory_count: 5
+    inventory_sha256: ff94bbbacd89e8735449b4f4fc546f3c8ff755a743a93a043c0947695fcfbc4f
+    values: [reader_snapshot_before_writer, writer_uncommitted, writer_committed_same_reader_statement, writer_committed_next_reader_statement, writer_rolled_back]
+    description: Complete transaction events that can change reader visibility relative to a writer.
+    derivation: Place snapshot acquisition before the writer, during uncommitted work, after commit within/after a reader statement, and after rollback.
+    source_locators: [feature:REQ-002, feature:REQ-006, pg18:mvcc]
+    exclusion_policy: Wall-clock delays are excluded; deterministic transaction barriers represent every visibility-changing event.
+    review_status: semantic_reviewed
+  wal_crash_phase:
+    coverage_mode: complete
+    inventory_source: inline:remote-storage-wal-crash-phases
+    inventory_count: 7
+    inventory_sha256: f5c6efaeba9535339616437d7f482dcab1d1f9d3935e359fcaab9bb13fe50f81
+    values: [before_wal_flush, after_wal_flush_before_commit, after_commit_before_checkpoint, during_checkpoint, after_checkpoint, during_redo, post_recovery_validation]
+    description: Complete ordered durability boundaries from WAL generation through post-recovery validation.
+    derivation: Cut the commit/checkpoint/recovery sequence at each boundary where durable visibility can change.
+    source_locators: [feature:REQ-004, pg18:wal, pg18:wal-internals]
+    exclusion_policy: Hardware-specific torn-write injection is outside SQL parity and belongs to a lower storage diagnostic harness owned by the user.
+    review_status: semantic_reviewed
+  toastable_column_family:
+    coverage_mode: complete
+    inventory_source: inline:pg18.4-toast-capable-physical-families
+    inventory_count: 18
+    inventory_sha256: f919737cab7a97bdb88aad453a1f5a3015501586ce8f763999ed0997ae172cb8
+    description: Complete physical construction families for every core profile capable of crossing the TOAST threshold; fixed-width, bounded, and plain-only profiles remain explicit N/A in TP-COLUMN-DATA-PROFILE.
+    values: [text_like, binary, json_text, json_binary, xml, arbitrary_precision_numeric, bit_string, geometric_path, geometric_polygon, text_search_vector, jsonpath, array_fixed_element, array_varlena_element, numeric_range, multirange, domain_over_text, composite_with_text, transaction_snapshot]
+    derivation: Group every variable-length core/type-archetype profile by distinct physical value construction and TOAST behavior.
+    source_locators: [feature:REQ-005, pg18:storage-toast, pg18:datatype]
+    exclusion_policy: Fixed-width, bounded, and PLAIN-only profiles remain explicit N/A only for wide_toast in TP-COLUMN-DATA-PROFILE.
+    review_status: semantic_reviewed
+  toast_storage_strategy:
+    coverage_mode: complete
+    inventory_source: inline:postgresql-18.4-toast-storage-strategies
+    inventory_count: 4
+    inventory_sha256: 61f6468c087b3b940b48fd9b329a9862169ffb5ed7b2a15b58141d52d2ce53d0
+    values: [plain, main, external, extended]
+    description: Exact PostgreSQL column storage strategies exposed by ALTER TABLE SET STORAGE.
+    derivation: Enumerate the four STORAGE keywords in PostgreSQL 18.4.
+    source_locators: [feature:REQ-005, pg18:storage-toast, pg18:alter-table]
+    exclusion_policy: No built-in storage strategy is excluded.
+    review_status: source_derived
+  toast_compression:
+    coverage_mode: complete
+    inventory_source: inline:postgresql-18.4-toast-compression-methods
+    inventory_count: 2
+    inventory_sha256: 6f9c7730d22d0a8970c3a5ba85ceafb7967ffcbb1faa1a365cce4f8a6c4f6803
+    description: Both endpoints must be provisioned with LZ4 support; lack of the required harness is blocked work, not justified N/A.
+    values: [pglz, lz4]
+    derivation: Enumerate the two PostgreSQL 18.4 column compression methods accepted by ALTER TABLE SET COMPRESSION.
+    source_locators: [feature:REQ-005, pg18:storage-toast, pg18:alter-table]
+    exclusion_policy: Extension compression methods are outside core PG18.4 and require a feature-specific additional axis.
+    review_status: source_derived
+  toast_size_class:
+    coverage_mode: complete
+    inventory_source: inline:remote-storage-toast-size-boundaries
+    inventory_count: 4
+    inventory_sha256: 3038f6dddd1edf66a36dd22f4afa3c26994023fa3dc9cd10f0e9d571bdfa18d7
+    values: [below_toast_target, at_toast_target, above_toast_target_below_page_limit, multi_chunk_value]
+    description: Complete boundary classes around toast_tuple_target, the heap tuple limit, and multi-chunk external storage.
+    derivation: Choose one value immediately below, at, and above the TOAST threshold plus a value requiring multiple TOAST chunks.
+    source_locators: [feature:REQ-005, pg18:storage-toast]
+    exclusion_policy: Exact byte counts are runtime-derived from endpoint block size/toast_tuple_target; semantic boundary classes are complete.
+    review_status: semantic_reviewed
+  toast_mutation:
+    coverage_mode: complete
+    inventory_source: inline:remote-storage-toast-mutations
+    inventory_count: 4
+    inventory_sha256: 40c7a8bcd2bc7fca3f384f5ac2413de1adff6e0100576fcbdcd275d4941c48ad
+    values: [insert_above_target, expand_below_to_above_target, shrink_above_to_below_target, delete_above_target]
+    description: Complete row-version transitions into, within, out of, and away from TOAST storage.
+    derivation: Cover initial externalization, growth across threshold, shrink back inline, and deletion of an external value.
+    source_locators: [feature:REQ-005, pg18:storage-toast, pg18:mvcc]
+    exclusion_policy: Same-size updates are covered by ordinary UPDATE; these four transitions cover all TOAST allocation state changes.
+    review_status: semantic_reviewed
+  table_topology_class:
+    coverage_mode: complete
+    inventory_source: inline:remote-storage-executable-table-topologies
+    inventory_count: 9
+    inventory_sha256: df223809fed7f5d254099f95cd1cd75dc69fa79bd0d266f3b99640bbac415ed5
+    values: [ordinary, inheritance_parent, inheritance_child, range_parent, range_leaf, list_parent, list_leaf, hash_parent, hash_leaf]
+    description: Complete executable local ordinary, inheritance, and declarative partition topology roles.
+    derivation: Expand every local topology that changes routing, recursion, or pruning; FDW-owned storage is isolated in foreign_topology_class.
+    source_locators: [feature:REQ-001, feature:REQ-003, pg18:ddl-partitioning]
+    exclusion_policy: Foreign storage has its own externally gated point; views and materialized views remain exact relkind obligations.
+    review_status: semantic_reviewed
+  partition_topology_class:
+    coverage_mode: complete
+    inventory_source: inline:remote-storage-executable-partition-topologies
+    inventory_count: 6
+    inventory_sha256: 4cee38e60f739ce26525cf56a0ac9e1d1c96b4fc5b0da66ffbb5955ebe7d3425
+    values: [range_parent, range_leaf, list_parent, list_leaf, hash_parent, hash_leaf]
+    description: Complete parent/leaf roles for local declarative partitions.
+    derivation: Cross range/list/hash with parent and leaf roles; FDW-backed leaves remain in foreign_topology_class.
+    source_locators: [feature:REQ-001, feature:REQ-003, pg18:ddl-partitioning]
+    exclusion_policy: Foreign and multi-level partition stress are separate obligations, so no local parent/leaf role is omitted.
+    review_status: semantic_reviewed
+  partition_dml_operation:
+    coverage_mode: complete
+    inventory_source: inline:remote-storage-partition-dml-operations
+    inventory_count: 6
+    inventory_sha256: 40f1a655c22f8400d56765e8ca9c4b8fbe6bc19f89d6a8dc2d4619c39b1e6536
+    values: [insert_route, select_pruned, update_same_partition, update_move_partition, delete_pruned, truncate_partition_tree]
+    description: Complete DML/storage transitions unique to declarative partitioning.
+    derivation: Cover routing, pruning, same-leaf update, cross-leaf row movement, pruned delete, and whole-tree truncate.
+    source_locators: [feature:REQ-001, pg18:ddl-partitioning, pg18:insert, pg18:update, pg18:delete, pg18:truncate]
+    exclusion_policy: COPY and maintenance are retained in table_topology_class by operation; all partition-unique row transitions are present here.
+    review_status: semantic_reviewed
+  concurrency_schedule:
+    coverage_mode: complete
+    inventory_source: inline:remote-storage-concurrency-schedules
+    inventory_count: 6
+    inventory_sha256: 00a907cb82763afbae923d1c30d5e15f5c2095952e8f6a8570eff62fa61baf24
+    values: [reader_before_writer, writer_before_reader, overlap_commit, overlap_rollback, deadlock_cycle, write_skew_serialization_conflict]
+    description: Complete deterministic order/interleaving classes plus deadlock and serialization anomaly schedules.
+    derivation: Enumerate both serial orders, overlapping commit/rollback, a lock cycle, and serializable write-skew detection.
+    source_locators: [feature:REQ-006, pg18:mvcc, pg18:explicit-locking, pg18:transaction-iso]
+    exclusion_policy: Nondeterministic timing races are prohibited; equivalent schedules use explicit barriers and are not sampled by sleep duration.
+    review_status: semantic_reviewed
+  concurrent_operation:
+    coverage_mode: complete
+    inventory_source: inline:remote-storage-concurrent-operations
+    inventory_count: 6
+    inventory_sha256: 7261d87bec4dbbc2e23ca981c7697275d661d65bd877682ef428c761c601b5ed
+    values: [insert, update, delete, select_for_update, alter_table, truncate]
+    description: Complete row-lock and heavyweight-lock operation classes relevant to concurrent storage behavior.
+    derivation: Retain row creation/change/removal, explicit row locking, schema-lock DDL, and table-wide truncation.
+    source_locators: [feature:REQ-006, pg18:explicit-locking, pg18:insert, pg18:update, pg18:delete, pg18:alter-table, pg18:truncate]
+    exclusion_policy: Plain SELECT is represented by the reader side of every schedule; VACUUM/REINDEX concurrency requires a dedicated long-running maintenance harness.
+    review_status: semantic_reviewed
+  foreign_topology_class:
+    coverage_mode: complete
+    inventory_source: inline:remote-storage-foreign-topologies
+    inventory_count: 4
+    inventory_sha256: 2842da5847e98855b95a8209edb3cbcaa873251b048115aa153cbe968a2ae1f0
+    values: [standalone_foreign_table, range_foreign_partition_leaf, list_foreign_partition_leaf, hash_foreign_partition_leaf]
+    description: Complete standalone and range/list/hash foreign-partition storage roles for the postgres_fdw harness.
+    derivation: Separate a direct foreign table from one foreign leaf under every declarative partition strategy.
+    source_locators: [feature:REQ-007, pg18:create-foreign-table, pg18:ddl-partitioning, pg18:postgres-fdw]
+    exclusion_policy: Other FDWs are extension-specific additional axes; core upper-layer parity is anchored by postgres_fdw on both endpoints.
+    review_status: semantic_reviewed
+  foreign_operation:
+    coverage_mode: complete
+    inventory_source: inline:remote-storage-foreign-operations
+    inventory_count: 6
+    inventory_sha256: 6a9dc821b0a09af05b23267d7f43f3ce5035ff08015cdb4cecf05b6e3d42e381
+    values: [insert, select, update, delete, truncate, analyze]
+    description: Complete postgres_fdw table operations that exercise row access, mutation, truncation, and statistics paths.
+    derivation: Enumerate every supported storage-visible DML/utility operation with a distinct FDW callback or partition-routing behavior.
+    source_locators: [feature:REQ-007, pg18:postgres-fdw, pg18:insert, pg18:select, pg18:update, pg18:delete, pg18:truncate, pg18:analyze]
+    exclusion_policy: Unsupported direct VACUUM/CLUSTER/REINDEX forms are covered as statement negative cases, not mislabeled as foreign storage successes.
+    review_status: semantic_reviewed
+scope_decisions:
+  object: {status: complete, axis: object_type}
+  relation: {status: complete, axis: relkind}
+  table:
+    status: complete
+    axes: [relpersistence, partition_role, partition_strategy, inheritance_role, table_access_method_selection]
+  column_type:
+    status: complete
+    axes: [column_type, concrete_builtin_type, auto_array_element_type, pseudo_type, declaration_alias, typmod_declaration, user_defined_archetype]
+risk_decisions:
+  syntax:
+    status: covered
+    axes: [operation, copy_pg18_option_case, pseudo_type, declaration_alias, typmod_declaration, user_defined_archetype]
+    test_points: [TP-OPERATION-LIFECYCLE, TP-COPY-PG18-OPTIONS, TP-PSEUDO-TYPE-REJECTION, TP-DECLARATION-ALIAS, TP-TYPMOD-BOUNDARY, TP-USER-DEFINED-ARCHETYPE]
+  operation:
+    status: covered
+    axes: [operation, copy_pg18_option_case, table_topology_class, partition_dml_operation, concurrent_operation]
+    test_points: [TP-OPERATION-LIFECYCLE, TP-COPY-PG18-OPTIONS, TP-TABLE-TOPOLOGY-OPERATION, TP-PARTITION-DML, TP-CONCURRENCY-SCHEDULE]
+  copy_protocol_ingest:
+    status: covered
+    axes: [operation, copy_pg18_option_case]
+    test_points: [TP-OPERATION-LIFECYCLE, TP-PRIVILEGE, TP-TABLE-TOPOLOGY-OPERATION, TP-COPY-PG18-OPTIONS]
+    execution_harness: external-copy-ingest
+  lifecycle: {status: covered, axes: [operation, transaction_context], test_points: [TP-OPERATION-LIFECYCLE]}
+  data_profile:
+    status: covered
+    axes: [column_type, data_profile, concrete_builtin_type, auto_array_element_type]
+    test_points: [TP-COLUMN-DATA-PROFILE, TP-CONCRETE-BUILTIN-TYPE, TP-AUTO-ARRAY-TYPE]
+  large_value_toast:
+    status: covered
+    axes: [column_type, data_profile, toastable_column_family, toast_storage_strategy, toast_compression, toast_size_class, toast_mutation]
+    test_points: [TP-COLUMN-DATA-PROFILE, TP-TOAST-STORAGE-SIZE, TP-TOAST-STORAGE-COMPRESSION, TP-TOAST-STORAGE-MUTATION]
+  transaction:
+    status: covered
+    axes: [transaction_context, isolation_level, snapshot_timing]
+    test_points: [TP-OPERATION-LIFECYCLE, TP-ISOLATION-SNAPSHOT]
+  partitioning:
+    status: covered
+    axes: [partition_role, partition_strategy, partition_topology_class, partition_dml_operation]
+    test_points: [TP-TABLE-SHAPES, TP-PARTITION-DML]
+  index_constraint_trigger: {status: covered, axes: [index_constraint_trigger_interaction, column_type], test_points: [TP-INDEX-CONSTRAINT-TRIGGER]}
+  privilege: {status: covered, axes: [privilege_context, operation], test_points: [TP-PRIVILEGE]}
+  maintenance: {status: covered, axes: [operation, privilege_context], test_points: [TP-OPERATION-LIFECYCLE, TP-PRIVILEGE]}
+  concurrency:
+    status: covered
+    axes: [concurrency_schedule, concurrent_operation, isolation_level]
+    test_points: [TP-CONCURRENCY-SCHEDULE]
+    execution_harness: external-multisession
+  restart_recovery:
+    status: covered
+    axes: [restart_recovery_context, relpersistence]
+    test_points: [TP-RESTART-RECOVERY]
+    execution_harness: external-restart-recovery
+  read_scan_path:
+    status: covered
+    axes: [read_path, table_topology_class]
+    test_points: [TP-READ-PATH-TOPOLOGY]
+  mvcc_snapshot:
+    status: covered
+    axes: [isolation_level, snapshot_timing]
+    test_points: [TP-ISOLATION-SNAPSHOT]
+    execution_harness: external-multisession
+  wal_flush_checkpoint_crash:
+    status: covered
+    axes: [wal_crash_phase, relpersistence]
+    test_points: [TP-WAL-CRASH-PERSISTENCE]
+    execution_harness: external-fault-injection
+  toast_physical_storage:
+    status: covered
+    axes: [toastable_column_family, toast_storage_strategy, toast_compression, toast_size_class, toast_mutation]
+    test_points: [TP-TOAST-STORAGE-SIZE, TP-TOAST-STORAGE-COMPRESSION, TP-TOAST-STORAGE-MUTATION]
+  lz4_provisioning:
+    status: covered
+    axes: [toast_compression]
+    test_points: [TP-TOAST-STORAGE-COMPRESSION]
+    execution_harness: external-toast-lz4
+  topology_operation_intersection:
+    status: covered
+    axes: [table_topology_class, operation, partition_topology_class, partition_dml_operation]
+    test_points: [TP-TABLE-TOPOLOGY-OPERATION, TP-PARTITION-DML]
+  extension_table_am_provisioning:
+    status: covered
+    axes: [table_access_method_selection]
+    test_points: [TP-TABLE-SHAPES]
+    execution_harness: external-extension-table-am
+  external_base_type_provisioning:
+    status: covered
+    axes: [user_defined_archetype]
+    test_points: [TP-USER-DEFINED-ARCHETYPE]
+    execution_harness: external-base-type-binary-io
+  superuser_object_provisioning:
+    status: covered
+    axes: [object_type]
+    test_points: [TP-OBJECT-LIFECYCLE]
+    execution_harness: external-superuser-object-lifecycle
+  cluster_admin_object_provisioning:
+    status: covered
+    axes: [object_type]
+    test_points: [TP-OBJECT-LIFECYCLE]
+    execution_harness: external-cluster-role-db-admin
+  extension_object_provisioning:
+    status: covered
+    axes: [object_type]
+    test_points: [TP-OBJECT-LIFECYCLE]
+    execution_harness: external-extension-object-lifecycle
+  logical_replication_provisioning:
+    status: covered
+    axes: [object_type]
+    test_points: [TP-OBJECT-LIFECYCLE]
+    execution_harness: external-logical-replication
+  foreign_object_provisioning:
+    status: covered
+    axes: [object_type, relkind]
+    test_points: [TP-OBJECT-LIFECYCLE, TP-RELKIND-OBSERVABILITY]
+    execution_harness: external-postgres-fdw
+  foreign_storage_integration:
+    status: covered
+    axes: [foreign_topology_class, foreign_operation]
+    test_points: [TP-FOREIGN-STORAGE-INTEGRATION]
+    execution_harness: external-postgres-fdw
+test_points:
+  - id: TP-OBJECT-LIFECYCLE
+    title: Lifecycle or catalog observability for every PostgreSQL 18.4 ObjectType
+    requirement_ids: [REQ-003]
+    core_axes: [object_type]
+    dependencies: []
+    execution_rules:
+      - when:
+          object_type: [access_method, amop, amproc, event_trigger, opclass, opfamily, parameter_acl, tablespace, tsparser, tstemplate]
+        execution_profile: external_isolated
+        execution_harness: external-superuser-object-lifecycle
+      - when: {object_type: [database, role]}
+        execution_profile: external_isolated
+        execution_harness: external-cluster-role-db-admin
+      - when: {object_type: [extension, language, transform]}
+        execution_profile: external_isolated
+        execution_harness: external-extension-object-lifecycle
+      - when: {object_type: subscription}
+        execution_profile: external_isolated
+        execution_harness: external-logical-replication
+      - when: {object_type: [fdw, foreign_server, foreign_table, user_mapping]}
+        execution_profile: external_isolated
+        execution_harness: external-postgres-fdw
+    default_outcome: success
+    description: Direct SQL objects use their documented lifecycle. Internal/subobject ObjectType members such as amop, amproc, attribute, column, default, defacl, domconstraint, publication_namespace, publication_rel, and tabconstraint are exercised through their owning SQL DDL plus catalog/object-address observability; the generator must not invent nonexistent standalone CREATE/DROP syntax.
+  - id: TP-RELKIND-OBSERVABILITY
+    title: Every exact PostgreSQL 18.4 relkind
+    requirement_ids: [REQ-003]
+    core_axes: [relkind]
+    dependencies: []
+    execution_rules:
+      - when: {relkind: foreign_table}
+        execution_profile: external_isolated
+        execution_harness: external-postgres-fdw
+    default_outcome: success
+    description: relation, index, sequence, view, matview, foreign_table, and partitioned_table use their owning SQL lifecycle. toastvalue, composite_type, and partitioned_index are materialized indirectly by a parent table/type/index operation and verified through catalog and user-visible SQL behavior rather than fictional direct relkind DDL.
+  - id: TP-TABLE-SHAPES
+    title: Orthogonal table storage shapes
+    requirement_ids: [REQ-003, REQ-004]
+    core_axes: [relpersistence, partition_role, partition_strategy, inheritance_role, table_access_method_selection]
+    dependencies: []
+    classification_rules:
+      - when:
+          partition_role: non_partitioned
+          partition_strategy: [range, list, hash]
+        outcome: justified_na
+        reason: A non-partitioned relation has no range, list, or hash partition strategy in PostgreSQL 18.4.
+      - when:
+          partition_role: [partitioned_parent, partition_leaf]
+          partition_strategy: none
+        outcome: justified_na
+        reason: A partitioned parent or leaf must belong to a range, list, or hash partition hierarchy.
+      - when:
+          relpersistence: unlogged
+          partition_role: partitioned_parent
+          partition_strategy: [range, list, hash]
+        outcome: expected_failure
+        reason: PostgreSQL 18 disallows UNLOGGED on the storage-less partitioned parent; SQLSTATE and complete diagnostics must match upstream 18.4.
+      - when:
+          relpersistence: unlogged
+          partition_role: partition_leaf
+          partition_strategy: [range, list, hash]
+        outcome: success
+        reason: A leaf partition has physical storage and may be unlogged in PostgreSQL 18.4; do not incorrectly apply the partitioned-parent prohibition to it.
+    execution_rules:
+      - when: {table_access_method_selection: extension_provided}
+        execution_profile: external_isolated
+        execution_harness: external-extension-table-am
+    default_outcome: success
+    description: extension_provided is executable work gated by external-extension-table-am; absence of that harness must block the job instead of converting obligations to N/A.
+  - id: TP-COLUMN-DATA-PROFILE
+    title: Every executable core column profile and storage data class
+    requirement_ids: [REQ-001, REQ-005]
+    core_axes: [column_type, data_profile]
+    dependencies: [TP-TABLE-SHAPES]
+    classification_rules:
+      - when:
+          column_type: [smallint, integer, bigint, smallserial, serial, bigserial, real, double_precision, float, money, timestamp, timestamp_with_time_zone, date, time, time_with_time_zone, interval, boolean, enum_type, point, line, lseg, box, circle, cidr, inet, macaddr, macaddr8, tsquery, uuid, int4range, int8range, tsrange, tstzrange, daterange, oid, regclass, regcollation, regconfig, regdictionary, regnamespace, regoper, regoperator, regproc, regprocedure, regrole, regtype, xid, xid8, cid, tid, pg_lsn, name]
+          data_profile: wide_toast
+        outcome: justified_na
+        reason: This fixed-width, bounded, or plain-storage profile cannot produce a valid value that crosses the TOAST threshold; all TOAST-capable physical families are exercised by the three TP-TOAST matrices.
+    default_outcome: success
+  - id: TP-CONCRETE-BUILTIN-TYPE
+    title: Every explicit non-pseudo PostgreSQL 18.4 catalog type
+    requirement_ids: [REQ-001]
+    core_axes: [concrete_builtin_type]
+    dependencies: [TP-TABLE-SHAPES]
+    default_outcome: success
+  - id: TP-AUTO-ARRAY-TYPE
+    title: Every PostgreSQL 18.4 automatically generated array family
+    requirement_ids: [REQ-001, REQ-005]
+    core_axes: [auto_array_element_type]
+    dependencies: [TP-CONCRETE-BUILTIN-TYPE]
+    default_outcome: success
+  - id: TP-PSEUDO-TYPE-REJECTION
+    title: Every pseudo-type rejected as a table column with exact parity
+    requirement_ids: [REQ-003]
+    core_axes: [pseudo_type]
+    dependencies: [TP-TABLE-SHAPES]
+    default_outcome: expected_failure
+    default_reason: PostgreSQL 18.4 pseudo-types are not legal table-column storage types; SQLSTATE and complete diagnostics must match.
+  - id: TP-DECLARATION-ALIAS
+    title: Every maintained SQL type declaration alias
+    requirement_ids: [REQ-003]
+    core_axes: [declaration_alias]
+    dependencies: [TP-COLUMN-DATA-PROFILE]
+    default_outcome: success
+  - id: TP-TYPMOD-BOUNDARY
+    title: Every maintained valid and invalid typmod boundary
+    requirement_ids: [REQ-003]
+    core_axes: [typmod_declaration]
+    dependencies: [TP-DECLARATION-ALIAS]
+    classification_rules:
+      - when:
+          typmod_declaration: [NUMERIC(0), NUMERIC(1001), "NUMERIC(10,-1001)", "NUMERIC(10,1001)", VARCHAR(0), VARCHAR(10485761), CHARACTER(0), CHARACTER(10485761), BIT(0), BIT(83886081), BIT VARYING(0), BIT VARYING(83886081), FLOAT(0), FLOAT(54), TIME(7), TIMESTAMP(7), INTERVAL(7)]
+        outcome: expected_failure
+        reason: PostgreSQL 18.4 must reject the invalid typmod boundary and return an identical diagnostic.
+    default_outcome: success
+  - id: TP-USER-DEFINED-ARCHETYPE
+    title: Every PostgreSQL user-defined type construction family
+    requirement_ids: [REQ-003]
+    core_axes: [user_defined_archetype]
+    dependencies: [TP-TABLE-SHAPES]
+    execution_rules:
+      - when: {user_defined_archetype: base_type}
+        execution_profile: external_isolated
+        execution_harness: external-base-type-binary-io
+    default_outcome: success
+    description: base_type is executable work gated by external-base-type-binary-io; a missing trusted binary-I/O harness blocks the job and is never counted as N/A.
+  - id: TP-OPERATION-LIFECYCLE
+    title: Every storage operation and transaction lifecycle class
+    requirement_ids: [REQ-001, REQ-002, REQ-003]
+    core_axes: [operation, transaction_context]
+    dependencies: [TP-COLUMN-DATA-PROFILE, TP-AUTO-ARRAY-TYPE, TP-PSEUDO-TYPE-REJECTION, TP-TYPMOD-BOUNDARY, TP-USER-DEFINED-ARCHETYPE]
+    classification_rules:
+      - when:
+          operation: vacuum
+          transaction_context: [explicit_commit, explicit_rollback, savepoint_release, savepoint_rollback, prepared_commit, prepared_rollback]
+        outcome: expected_failure
+        reason: PostgreSQL 18.4 VACUUM cannot execute inside any explicit transaction block; SQLSTATE and complete diagnostics must match.
+    execution_rules:
+      - when: {operation: copy_from}
+        execution_profile: external_isolated
+        execution_harness: external-copy-ingest
+    default_outcome: success
+    description: Every COPY FROM obligation uses the protocol-aware external-copy-ingest harness and one manifest-bound SQL file containing its non-empty inline payload plus standalone `\.` terminator because the basic SQL-file runner rejects COPY data mode; COPY TO remains basic and must render a deterministic COPY (SELECT ...) TO STDOUT form.
+  - id: TP-INDEX-CONSTRAINT-TRIGGER
+    title: Index, constraint, and trigger interactions across column profiles
+    requirement_ids: [REQ-001]
+    core_axes: [index_constraint_trigger_interaction, column_type]
+    dependencies: [TP-COLUMN-DATA-PROFILE]
+    default_outcome: success
+  - id: TP-PRIVILEGE
+    title: Privilege, warning, and skip parity for every operation class
+    requirement_ids: [REQ-003]
+    core_axes: [privilege_context, operation]
+    dependencies: [TP-OPERATION-LIFECYCLE]
+    classification_rules:
+      - when:
+          privilege_context: insufficient_privilege
+          operation: [create, insert, select, update, delete, copy_from, copy_to, alter, truncate, cluster, reindex, drop]
+        outcome: expected_failure
+        reason: PostgreSQL 18.4 must reject the operation and the complete error transcript must match.
+      - when: {privilege_context: insufficient_privilege, operation: vacuum}
+        outcome: success
+        reason: VACUUM skips tables lacking MAINTAIN privilege and emits the upstream warning instead of raising a blanket permission error; warning text and unchanged data must match.
+      - when: {privilege_context: insufficient_privilege, operation: analyze}
+        outcome: success
+        reason: ANALYZE skips tables lacking MAINTAIN privilege and emits the upstream warning instead of raising a blanket permission error; warning text and unchanged statistics must match.
+    execution_rules:
+      - when: {operation: copy_from}
+        execution_profile: external_isolated
+        execution_harness: external-copy-ingest
+    default_outcome: success
+    description: COPY FROM privilege outcomes are still executable protocol cases and stay on external-copy-ingest with the payload inline in the exact manifest SQL even when PostgreSQL is expected to reject access; COPY TO uses deterministic STDOUT on the basic route.
+  - id: TP-READ-PATH-TOPOLOGY
+    title: Forced read and scan paths across executable table topologies
+    requirement_ids: [REQ-001]
+    core_axes: [read_path, table_topology_class]
+    dependencies: [TP-OPERATION-LIFECYCLE]
+    classification_rules:
+      - when:
+          read_path: partition_pruning
+          table_topology_class: [ordinary, inheritance_parent, inheritance_child]
+        outcome: justified_na
+        reason: Declarative partition pruning has no semantic target on ordinary or inheritance-only topologies; range, list, and hash parent/leaf forms remain executable.
+    default_outcome: success
+  - id: TP-ISOLATION-SNAPSHOT
+    title: MVCC visibility at every isolation level and snapshot boundary
+    requirement_ids: [REQ-001, REQ-002, REQ-006]
+    core_axes: [isolation_level, snapshot_timing]
+    dependencies: [TP-OPERATION-LIFECYCLE]
+    default_execution_profile: external_isolated
+    default_execution_harness: external-multisession
+    default_outcome: success
+  - id: TP-TABLE-TOPOLOGY-OPERATION
+    title: Every storage operation across executable ordinary, inheritance, and partition topologies
+    requirement_ids: [REQ-001, REQ-003]
+    core_axes: [table_topology_class, operation]
+    dependencies: [TP-OPERATION-LIFECYCLE, TP-TABLE-SHAPES]
+    execution_rules:
+      - when: {operation: copy_from}
+        execution_profile: external_isolated
+        execution_harness: external-copy-ingest
+    default_outcome: success
+    description: COPY FROM uses a non-empty payload embedded in the manifest-bound exact SQL program through external-copy-ingest for every topology; no second payload file or out-of-band stdin exists. COPY TO remains on the basic route and uses COPY (SELECT ...) TO STDOUT where a direct relation form is unsupported, so the point tests the logical operation without manufacturing false failures.
+  - id: TP-COPY-PG18-OPTIONS
+    title: Every PostgreSQL 18.4 COPY wildcard, error-action, reject-limit, and diagnostic-verbosity semantic
+    requirement_ids: [REQ-003, REQ-008]
+    core_axes: [copy_pg18_option_case]
+    dependencies: [TP-TABLE-TOPOLOGY-OPERATION]
+    classification_rules:
+      - when:
+          copy_pg18_option_case:
+            - from_on_error_stop
+            - from_reject_limit_exceeded
+            - from_reject_limit_zero
+            - from_reject_limit_negative
+            - from_reject_limit_overflow
+            - from_reject_limit_without_ignore
+            - from_on_error_ignore_binary
+            - from_force_quote_invalid_direction
+            - to_on_error_invalid_direction
+            - to_force_not_null_invalid_direction
+            - to_force_null_invalid_direction
+            - from_force_not_null_text_invalid_format
+            - from_force_null_text_invalid_format
+            - to_force_quote_text_invalid_format
+        outcome: expected_failure
+        reason: The case deliberately crosses a documented PostgreSQL 18.4 COPY option direction, format, dependency, conversion-error, or positive-bigint boundary; SQLSTATE, complete diagnostics, atomic row effect, and command tag must match upstream.
+    execution_rules:
+      - when:
+          copy_pg18_option_case:
+            - from_force_not_null_columns
+            - from_force_not_null_all
+            - from_force_null_columns
+            - from_force_null_all
+            - from_on_error_stop
+            - from_on_error_ignore_unlimited
+            - from_reject_limit_within
+            - from_reject_limit_max_bigint
+            - from_reject_limit_exceeded
+            - from_reject_limit_zero
+            - from_reject_limit_negative
+            - from_reject_limit_overflow
+            - from_reject_limit_without_ignore
+            - from_log_verbosity_default
+            - from_log_verbosity_verbose
+            - from_log_verbosity_silent
+            - from_log_verbosity_without_ignore
+            - from_on_error_ignore_binary
+            - from_force_quote_invalid_direction
+            - from_force_not_null_text_invalid_format
+            - from_force_null_text_invalid_format
+        execution_profile: external_isolated
+        execution_harness: external-copy-ingest
+    default_outcome: success
+    description: >-
+      Each FROM case is one independent frontend COPY operation with an immutable payload and therefore blocks on external-copy-ingest readiness instead of becoming N/A. ON_ERROR stop receives a conversion-invalid row and must abort; ignore/unlimited and LOG_VERBOSITY default/verbose/silent receive the same mixed-validity CSV rows so accepted rows and NOTICE behavior can be compared. Because PostgreSQL 18.4 documents LOG_VERBOSITY as merely currently used with ON_ERROR ignore, rather than requiring it, the without-ignore FROM case and verbose COPY TO case are successful accepted/no-extra-message oracles. REJECT_LIMIT covers equal-to-limit success, limit crossing, the positive-bigint maximum, zero, negative, bigint overflow, and missing-ON_ERROR dependency; FORCE_NOT_NULL/FORCE_NULL cover column-list and wildcard selectors plus non-CSV rejection. The seven TO cases are safe basic SQL-file obligations using COPY (SELECT ...) TO STDOUT and cover FORCE_QUOTE list/wildcard success, ON_ERROR/FORCE_NOT_NULL/FORCE_NULL wrong-direction rejection, LOG_VERBOSITY accepted no-op, and FORCE_QUOTE non-CSV rejection. The full legacy endpoint/format/options product remains assigned to the COPY statement matrix job.
+  - id: TP-PARTITION-DML
+    title: Routing, pruning, row movement, delete, and truncate across every partition strategy and role
+    requirement_ids: [REQ-001]
+    core_axes: [partition_topology_class, partition_dml_operation]
+    dependencies: [TP-TABLE-TOPOLOGY-OPERATION]
+    default_outcome: success
+  - id: TP-FOREIGN-STORAGE-INTEGRATION
+    title: Standalone and partitioned postgres_fdw storage paths across all supported operations
+    requirement_ids: [REQ-001, REQ-003, REQ-007]
+    core_axes: [foreign_topology_class, foreign_operation]
+    dependencies: [TP-PARTITION-DML, TP-READ-PATH-TOPOLOGY]
+    default_execution_profile: external_isolated
+    default_execution_harness: external-postgres-fdw
+    default_outcome: success
+    description: Requires equivalent postgres_fdw loopback fixtures on both endpoints. Missing FDW/server/user-mapping capability blocks this job through external-postgres-fdw harness evidence.
+  - id: TP-TOAST-STORAGE-SIZE
+    title: Every TOAST-capable physical family across storage strategies and threshold boundaries
+    requirement_ids: [REQ-005]
+    core_axes: [toastable_column_family, toast_storage_strategy, toast_size_class]
+    dependencies: [TP-COLUMN-DATA-PROFILE]
+    classification_rules:
+      - when: {toast_storage_strategy: plain, toast_size_class: multi_chunk_value}
+        outcome: expected_failure
+        reason: PLAIN forbids compression and out-of-line storage, so a value exceeding the heap tuple limit must fail with the same SQLSTATE and diagnostic as upstream PostgreSQL 18.4.
+    default_outcome: success
+  - id: TP-TOAST-STORAGE-COMPRESSION
+    title: PGLZ and LZ4 behavior under every TOAST storage strategy
+    requirement_ids: [REQ-005]
+    core_axes: [toastable_column_family, toast_storage_strategy, toast_compression]
+    dependencies: [TP-TOAST-STORAGE-SIZE]
+    execution_rules:
+      - when: {toast_compression: lz4}
+        execution_profile: external_isolated
+        execution_harness: external-toast-lz4
+    default_outcome: success
+    description: Both endpoints must provide LZ4. PLAIN and EXTERNAL still execute and prove that the configured compression method is not applied when the storage strategy forbids compression.
+  - id: TP-TOAST-STORAGE-MUTATION
+    title: Insert, expansion, shrink, and delete transitions under every TOAST storage strategy
+    requirement_ids: [REQ-005]
+    core_axes: [toastable_column_family, toast_storage_strategy, toast_mutation]
+    dependencies: [TP-TOAST-STORAGE-SIZE]
+    default_outcome: success
+    description: Values are above toast_tuple_target but below the heap tuple limit, allowing PLAIN to remain a valid inline oracle while MAIN, EXTERNAL, and EXTENDED exercise their physical policies.
+  - id: TP-CONCURRENCY-SCHEDULE
+    title: Deterministic multi-session interleavings across isolation levels and write operations
+    requirement_ids: [REQ-002, REQ-006]
+    core_axes: [concurrency_schedule, isolation_level, concurrent_operation]
+    dependencies: [TP-ISOLATION-SNAPSHOT, TP-TABLE-TOPOLOGY-OPERATION]
+    default_execution_profile: external_isolated
+    default_execution_harness: external-multisession
+    classification_rules:
+      - when: {concurrency_schedule: deadlock_cycle}
+        outcome: expected_failure
+        reason: The controlled two-object lock cycle must abort one participant with SQLSTATE 40P01 and an identical complete transcript.
+      - when: {concurrency_schedule: write_skew_serialization_conflict, isolation_level: serializable}
+        outcome: expected_failure
+        reason: The controlled write-skew schedule must abort one SERIALIZABLE transaction with SQLSTATE 40001 and an identical complete transcript.
+    default_outcome: success
+  - id: TP-RESTART-RECOVERY
+    title: Persistence semantics across clean restart, checkpoint, and crash recovery
+    requirement_ids: [REQ-004]
+    core_axes: [relpersistence, restart_recovery_context]
+    dependencies: [TP-OPERATION-LIFECYCLE]
+    default_execution_profile: external_isolated
+    default_execution_harness: external-restart-recovery
+    default_outcome: success
+    description: permanent rows persist, unlogged rows follow upstream crash-truncation semantics, and temporary relations follow session-lifetime semantics; all are positive differential oracles.
+  - id: TP-WAL-CRASH-PERSISTENCE
+    title: WAL flush, checkpoint, redo, and post-recovery boundaries for every persistence class
+    requirement_ids: [REQ-004]
+    core_axes: [relpersistence, wal_crash_phase]
+    dependencies: [TP-RESTART-RECOVERY]
+    default_execution_profile: external_isolated
+    default_execution_harness: external-fault-injection
+    default_outcome: success
+    description: Requires deterministic external fault injection. Missing crash hooks or LSN control blocks execution instead of reclassifying obligations as N/A.
+metadata:
+  compatibility_target: postgresql-18.4
+  coverage_rule: required=success+expected_failure+justified_na
+  sampling_allowed: false
+  note: Column completeness includes all seven canonical inventories. Fixed-width or bounded profiles are explicitly N/A only for impossible TOAST-wide values; privileged objects, extension files, logical replication, extension AM, base types, postgres_fdw, LZ4, multisession, and crash cases remain executable obligations whose jobs block until their named harness exists.

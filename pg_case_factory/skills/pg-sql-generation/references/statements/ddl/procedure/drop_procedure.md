@@ -2,7 +2,7 @@
 
 ## 官方语法范围
 
-来源：https://www.postgresql.org/docs/16/sql-dropprocedure.html
+来源：https://www.postgresql.org/docs/18/sql-dropprocedure.html
 
 ### Synopsis
 
@@ -107,7 +107,7 @@ structured_config:
   category: ddl
   domain: procedure
   skill_name: drop_procedure
-  official_source: https://www.postgresql.org/docs/16/sql-dropprocedure.html
+  official_source: https://www.postgresql.org/docs/18/sql-dropprocedure.html
   statement:
     key: drop_procedure
     name: DROP PROCEDURE

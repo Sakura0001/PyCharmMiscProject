@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-rollback-prepared.html
+来源：https://www.postgresql.org/docs/18/sql-rollback-prepared.html
 
 ```sql
 ROLLBACK PREPARED transaction_id
@@ -78,7 +78,7 @@ structured_config:
   category: tcl
   domain: two_phase_transaction
   skill_name: rollback_prepared
-  official_source: https://www.postgresql.org/docs/16/sql-rollback-prepared.html
+  official_source: https://www.postgresql.org/docs/18/sql-rollback-prepared.html
   statement:
     key: rollback_prepared
     name: ROLLBACK PREPARED

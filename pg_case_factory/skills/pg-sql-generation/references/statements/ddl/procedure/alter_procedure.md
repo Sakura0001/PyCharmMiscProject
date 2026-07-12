@@ -2,7 +2,7 @@
 
 ## 官方语法范围
 
-来源：https://www.postgresql.org/docs/16/sql-alterprocedure.html
+来源：https://www.postgresql.org/docs/18/sql-alterprocedure.html
 
 ### Synopsis 形式 1：属性修改 (action)
 
@@ -151,7 +151,7 @@ structured_config:
   category: ddl
   domain: procedure
   skill_name: alter_procedure
-  official_source: https://www.postgresql.org/docs/16/sql-alterprocedure.html
+  official_source: https://www.postgresql.org/docs/18/sql-alterprocedure.html
   statement:
     key: alter_procedure
     name: ALTER PROCEDURE

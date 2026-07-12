@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-createsequence.html
+来源：https://www.postgresql.org/docs/18/sql-createsequence.html
 
 ```sql
 CREATE [ { TEMPORARY | TEMP } | UNLOGGED ] SEQUENCE [ IF NOT EXISTS ] name
@@ -140,7 +140,11 @@ structured_config:
   category: ddl
   domain: sequence
   skill_name: create_sequence
-  official_source: https://www.postgresql.org/docs/16/sql-createsequence.html
+  official_source: https://www.postgresql.org/docs/18/sql-createsequence.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-createsequence.html
+    review_status: synopsis_adapted
   statement:
     key: create_sequence
     name: CREATE SEQUENCE

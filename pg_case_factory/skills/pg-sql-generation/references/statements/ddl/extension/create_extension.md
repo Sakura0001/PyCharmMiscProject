@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-createextension.html
+来源：https://www.postgresql.org/docs/18/sql-createextension.html
 
 ```sql
 CREATE EXTENSION [ IF NOT EXISTS ] extension_name
@@ -11,7 +11,7 @@ CREATE EXTENSION [ IF NOT EXISTS ] extension_name
              [ CASCADE ]
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - 加载扩展需要与创建其组成对象相同的权限。对于许多扩展，这意味着需要 **superuser** 权限。
 - 如果扩展在其 control 文件中被标记为 **trusted**，则拥有当前数据库 **CREATE** 权限的任何用户都可以安装该扩展。
 - 执行 CREATE EXTENSION 的用户将成为该扩展的 owner，通常也成为其创建对象的 owner。
@@ -120,7 +120,11 @@ structured_config:
   category: ddl
   domain: extension
   skill_name: create_extension
-  official_source: https://www.postgresql.org/docs/16/sql-createextension.html
+  official_source: https://www.postgresql.org/docs/18/sql-createextension.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-createextension.html
+    review_status: semantic_reviewed
   statement:
     key: create_extension
     name: CREATE EXTENSION
@@ -312,6 +316,8 @@ structured_config:
         label: 扩展支持文件已安装在系统上
       - key: not_installed_on_system
         label: 扩展支持文件未安装在系统上
+      - key: installed_in_extension_control_path
+        label: 扩展 control 文件位于 extension_control_path（PG18）
     duplicate_extension_name:
       label: 重名冲突
       importance: non_important

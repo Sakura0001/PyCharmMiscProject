@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-selectinto.html
+来源：https://www.postgresql.org/docs/18/sql-selectinto.html
 
 ```sql
 [ WITH [ RECURSIVE ] with_query [, ...] ]
@@ -136,7 +136,7 @@ structured_config:
   category: ddl
   domain: table
   skill_name: select_into
-  official_source: https://www.postgresql.org/docs/16/sql-selectinto.html
+  official_source: https://www.postgresql.org/docs/18/sql-selectinto.html
   statement:
     key: select_into
     name: SELECT INTO

@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-alterview.html
+来源：https://www.postgresql.org/docs/18/sql-alterview.html
 
 ```sql
 ALTER VIEW [ IF EXISTS ] name ALTER [ COLUMN ] column_name SET DEFAULT expression
@@ -111,7 +111,7 @@ structured_config:
   category: ddl
   domain: view
   skill_name: alter_view
-  official_source: https://www.postgresql.org/docs/16/sql-alterview.html
+  official_source: https://www.postgresql.org/docs/18/sql-alterview.html
   statement:
     key: alter_view
     name: ALTER VIEW

@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-truncate.html
+来源：https://www.postgresql.org/docs/18/sql-truncate.html
 
 ```sql
 TRUNCATE [ TABLE ] [ ONLY ] name [ * ] [, ... ]
@@ -103,7 +103,7 @@ structured_config:
   category: ddl
   domain: table
   skill_name: truncate
-  official_source: https://www.postgresql.org/docs/16/sql-truncate.html
+  official_source: https://www.postgresql.org/docs/18/sql-truncate.html
   statement:
     key: truncate
     name: TRUNCATE

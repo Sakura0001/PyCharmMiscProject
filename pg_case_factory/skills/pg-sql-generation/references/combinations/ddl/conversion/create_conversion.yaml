@@ -6,7 +6,7 @@ statement:
   category: ddl
   domain: conversion
   source_reference: references/statements/ddl/conversion/create_conversion.md
-  official_source: https://www.postgresql.org/docs/16/sql-createconversion.html
+  official_source: https://www.postgresql.org/docs/18/sql-createconversion.html
   aliases:
   - CREATE CONVERSION
   - create_conversion
@@ -46,7 +46,7 @@ coverage_scope:
   target_object_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#object_kinds.all_object_kinds
     required_object_kinds: [conversion, function]
     decision_reason: >
       CREATE CONVERSION defines a conversion object whose validity depends on source/destination encodings and a conversion
@@ -55,7 +55,7 @@ coverage_scope:
   target_relation_coverage:
     required: false
     coverage_mode: not_applicable
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#relation_kinds.all_relation_kinds
     decision_reason: >
       CREATE CONVERSION does not target pg_class relations. Encoding conversion is catalog metadata plus a function binding,
       so relation-kind coverage is outside this statement boundary.
@@ -70,7 +70,7 @@ coverage_scope:
     coverage_mode: not_applicable
     decision_reason: >
       CREATE CONVERSION does not depend on table column data types. Source and destination encodings are statement factors,
-      not PG16 table column-type coverage.
+      not PG18.4 table column-type coverage.
 factor_contract:
   source_reference_must_define_all_factors: true
   matrix_must_cover_required_factor_values: true

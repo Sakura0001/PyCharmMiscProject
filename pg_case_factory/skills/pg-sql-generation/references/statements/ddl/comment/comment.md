@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-comment.html
+来源：https://www.postgresql.org/docs/18/sql-comment.html
 
 ```sql
 COMMENT ON
@@ -59,7 +59,7 @@ where aggregate_signature is:
 [ [ argmode ] [ argname ] argtype [ , ... ] ] ORDER BY [ argmode ] [ argname ] argtype [ , ... ]
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - COMMENT ON 每个对象只有一个注释，新注释替换旧注释
 - 使用 IS NULL 或 IS ''（空字符串）可移除注释，两者等效
 - 注释随对象删除而自动清除
@@ -175,7 +175,11 @@ structured_config:
   category: ddl
   domain: comment
   skill_name: comment
-  official_source: https://www.postgresql.org/docs/16/sql-comment.html
+  official_source: https://www.postgresql.org/docs/18/sql-comment.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-comment.html
+    review_status: semantic_reviewed
   statement:
     key: comment
     name: COMMENT ON

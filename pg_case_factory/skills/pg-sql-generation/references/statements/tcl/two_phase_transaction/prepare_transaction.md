@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-prepare-transaction.html
+来源：https://www.postgresql.org/docs/18/sql-prepare-transaction.html
 
 ```sql
 PREPARE TRANSACTION transaction_id
@@ -78,7 +78,7 @@ structured_config:
   category: tcl
   domain: two_phase_transaction
   skill_name: prepare_transaction
-  official_source: https://www.postgresql.org/docs/16/sql-prepare-transaction.html
+  official_source: https://www.postgresql.org/docs/18/sql-prepare-transaction.html
   statement:
     key: prepare_transaction
     name: PREPARE TRANSACTION

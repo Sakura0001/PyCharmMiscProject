@@ -2,13 +2,13 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-droppolicy.html
+来源：https://www.postgresql.org/docs/18/sql-droppolicy.html
 
 ```sql
 DROP POLICY [ IF EXISTS ] name ON table_name [ CASCADE | RESTRICT ]
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - 必须拥有目标表才能 DROP POLICY
 - CASCADE/RESTRICT 对 policy 无实质效果，因为 policy 没有依赖对象
 - 如果删除的是表的最后一个 policy，且表仍启用 RLS，将应用默认 deny 规则
@@ -95,7 +95,7 @@ structured_config:
   category: ddl
   domain: policy
   skill_name: drop_policy
-  official_source: https://www.postgresql.org/docs/16/sql-droppolicy.html
+  official_source: https://www.postgresql.org/docs/18/sql-droppolicy.html
   statement:
     key: drop_policy
     name: DROP POLICY

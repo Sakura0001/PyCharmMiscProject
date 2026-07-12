@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-reindex.html
+来源：https://www.postgresql.org/docs/18/sql-reindex.html
 
 ```sql
 REINDEX [ ( option [, ...] ) ] { INDEX | TABLE | SCHEMA } [ CONCURRENTLY ] name
@@ -154,7 +154,11 @@ structured_config:
   category: ddl
   domain: index
   skill_name: reindex
-  official_source: https://www.postgresql.org/docs/16/sql-reindex.html
+  official_source: https://www.postgresql.org/docs/18/sql-reindex.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-reindex.html
+    review_status: semantic_reviewed
   statement:
     key: reindex
     name: REINDEX
@@ -281,6 +285,8 @@ structured_config:
       - owner
       - non_owner
       - superuser
+      - maintain_privilege
+      - pg_maintain_role
       - insufficient_privilege
     name_shape:
       label: 目标对象名形态
@@ -342,6 +348,9 @@ structured_config:
       - invalid_index_leftover
       - ccnew_suffix
       - ccold_suffix
+      - underscore_ccnew_suffix
+      - underscore_ccold_suffix
+      - suffixed_numeric_disambiguator
     syntax_error:
       label: 语法非法组合
       importance: non_important
@@ -362,6 +371,7 @@ structured_config:
       - catalog_validity_check
       - invalid_index_detection
       - verbose_output_check
+      - search_path_sandbox
     cleanup_mode:
       label: 清理方式
       importance: non_important
@@ -437,4 +447,5 @@ structured_config:
           absent: ""
           present_true: "(CONCURRENTLY TRUE) "
           present_false: "(CONCURRENTLY FALSE) "
+          present_boolean_keyword: "(CONCURRENTLY) "
 ```

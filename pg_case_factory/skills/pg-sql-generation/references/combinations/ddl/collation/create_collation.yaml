@@ -6,7 +6,7 @@ statement:
   category: ddl
   domain: collation
   source_reference: references/statements/ddl/collation/create_collation.md
-  official_source: https://www.postgresql.org/docs/16/sql-createcollation.html
+  official_source: https://www.postgresql.org/docs/18/sql-createcollation.html
   aliases:
   - CREATE COLLATION
   - create collation
@@ -47,7 +47,7 @@ coverage_scope:
   target_object_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#object_kinds.all_object_kinds
     required_object_kinds: [collation]
     decision_reason: >
       CREATE COLLATION directly defines a schema-level collation object in pg_collation. Required object coverage is scoped
@@ -55,7 +55,7 @@ coverage_scope:
   target_relation_coverage:
     required: false
     coverage_mode: not_applicable
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#relation_kinds.all_relation_kinds
     decision_reason: >
       CREATE COLLATION creates a collation object, not a pg_class relation. Later tables or indexes may reference the
       collation, but relation-kind coverage belongs to those dependent statements rather than this object definition.
@@ -69,11 +69,11 @@ coverage_scope:
   column_type_coverage:
     required: false
     coverage_mode: representative
-    inventory_source: references/common/pg16_type_catalog.md
+    inventory_source: references/common/pg18_type_catalog.md
     decision_reason: >
       Collations are relevant to character comparisons, but CREATE COLLATION validates provider, locale, determinism, and
       source-collation inputs rather than every table column type. Character-column usage may be represented as a smoke
-      verification fixture, not an exhaustive PG16 column-type matrix.
+      verification fixture, not an exhaustive PG18.4 column-type matrix.
 factor_contract:
   source_reference_must_define_all_factors: true
   matrix_must_cover_required_factor_values: true
@@ -101,7 +101,7 @@ factor_contract:
     provider:
       tier: T2
       coverage_role: behavior_axis
-      required_values: [libc_default, icu]
+      required_values: [libc_default, icu, builtin]
       coverage_requirement: all_declared_values
     deterministic_option:
       tier: T2
@@ -116,7 +116,8 @@ factor_contract:
     locale_setting:
       tier: T3
       coverage_role: locale_axis
-      required_values: [LOCALE_only, LC_COLLATE_LC_CTYPE_separate, LOCALE_with_provider]
+      required_values: [LOCALE_only, LC_COLLATE_LC_CTYPE_separate, LOCALE_with_provider, BUILTIN_C, BUILTIN_C_UTF8,
+        BUILTIN_PG_UNICODE_FAST]
       coverage_requirement: all_declared_values
     from_collation_shape:
       tier: T3
@@ -327,6 +328,90 @@ combination_groups:
     required: true
     steps:
     - sql: "DROP COLLATION IF EXISTS {collation_name} CASCADE"
+- id: create_collation_pg18_builtin_c
+  title: CREATE COLLATION with PG18 builtin C locale
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  factors:
+    expected_status: success
+    provider: builtin
+    locale_setting: BUILTIN_C
+  expansion: {}
+  compatibility:
+    resolver: pg18_reference_parity
+    success_when:
+    - PostgreSQL 18.4 creates the builtin C collation
+    failure_when:
+    - condition: PostgreSQL 18.4 rejects the statement
+      reason: pg18_builtin_c_collation_reference_failure
+    default_failure_reason: pg18_builtin_c_collation_reference_failure
+  sql_shape:
+    template: CREATE COLLATION {collation_name} (provider = builtin, locale = 'C');
+  verification:
+    required: true
+    mode: pg_collation_catalog_query
+    sql: SELECT collname, collprovider FROM pg_collation WHERE collname = '{collation_name}';
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP COLLATION IF EXISTS {collation_name} CASCADE;
+- id: create_collation_pg18_builtin_c_utf8
+  title: CREATE COLLATION with PG18 builtin C.UTF-8 locale
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  factors:
+    expected_status: success
+    provider: builtin
+    locale_setting: BUILTIN_C_UTF8
+  expansion: {}
+  compatibility:
+    resolver: pg18_reference_parity
+    success_when:
+    - PostgreSQL 18.4 creates the builtin C.UTF-8 collation
+    failure_when:
+    - condition: PostgreSQL 18.4 rejects the statement
+      reason: pg18_builtin_c_utf8_collation_reference_failure
+    default_failure_reason: pg18_builtin_c_utf8_collation_reference_failure
+  sql_shape:
+    template: CREATE COLLATION {collation_name} (provider = builtin, locale = 'C.UTF-8');
+  verification:
+    required: true
+    mode: pg_collation_catalog_query
+    sql: SELECT collname, collprovider FROM pg_collation WHERE collname = '{collation_name}';
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP COLLATION IF EXISTS {collation_name} CASCADE;
+- id: create_collation_pg18_builtin_pg_unicode_fast
+  title: CREATE COLLATION with PG18 builtin PG_UNICODE_FAST locale
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  factors:
+    expected_status: success
+    provider: builtin
+    locale_setting: BUILTIN_PG_UNICODE_FAST
+  expansion: {}
+  compatibility:
+    resolver: pg18_reference_parity
+    success_when:
+    - PostgreSQL 18.4 creates the builtin PG_UNICODE_FAST collation
+    failure_when:
+    - condition: PostgreSQL 18.4 rejects the statement
+      reason: pg18_builtin_pg_unicode_fast_collation_reference_failure
+    default_failure_reason: pg18_builtin_pg_unicode_fast_collation_reference_failure
+  sql_shape:
+    template: CREATE COLLATION {collation_name} (provider = builtin, locale = 'PG_UNICODE_FAST');
+  verification:
+    required: true
+    mode: pg_collation_catalog_query
+    sql: SELECT collname, collprovider FROM pg_collation WHERE collname = '{collation_name}';
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP COLLATION IF EXISTS {collation_name} CASCADE;
 audit_rules:
   require_all_required_top_level_keys: true
   require_declared_coverage_scope: true
@@ -335,3 +420,47 @@ audit_rules:
   require_post_coverage_extension_policy: true
   forbid_extension_before_required_coverage_passes: true
   forbid_extension_counting_toward_required_coverage: true
+pg18_compatibility:
+  target_version: '18.4'
+  synopsis_change: unchanged
+  document_change: changed
+  test_points:
+  - id: PG18-CREATE-COLLATION-BUILTIN-C
+    affected_factors:
+    - provider
+    - locale_setting
+    affected_values:
+      provider:
+      - builtin
+      locale_setting:
+      - BUILTIN_C
+    sql: >-
+      CREATE COLLATION {collation_name} (provider = builtin, locale = 'C');
+    oracle: reference_parity
+    covers: builtin provider C locale
+  - id: PG18-CREATE-COLLATION-BUILTIN-C-UTF8
+    affected_factors:
+    - provider
+    - locale_setting
+    affected_values:
+      provider:
+      - builtin
+      locale_setting:
+      - BUILTIN_C_UTF8
+    sql: >-
+      CREATE COLLATION {collation_name} (provider = builtin, locale = 'C.UTF-8');
+    oracle: reference_parity
+    covers: builtin provider C.UTF-8 locale
+  - id: PG18-CREATE-COLLATION-PG-UNICODE-FAST
+    affected_factors:
+    - provider
+    - locale_setting
+    affected_values:
+      provider:
+      - builtin
+      locale_setting:
+      - BUILTIN_PG_UNICODE_FAST
+    sql: >-
+      CREATE COLLATION {collation_name} (provider = builtin, locale = 'PG_UNICODE_FAST');
+    oracle: reference_parity
+    covers: builtin provider PG_UNICODE_FAST locale

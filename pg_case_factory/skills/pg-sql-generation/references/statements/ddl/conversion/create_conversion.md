@@ -2,14 +2,14 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-createconversion.html
+来源：https://www.postgresql.org/docs/18/sql-createconversion.html
 
 ```sql
 CREATE [ DEFAULT ] CONVERSION name
     FOR source_encoding TO dest_encoding FROM function_name
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - 需要 CREATE 权限于目标 schema 和 EXECUTE 权限于转换函数
 - 创建 conversion 的权限要求可能在未来版本中变更
 - DEFAULT 标记该转换为 source→dest 编码对的默认转换；同一 schema 内每个编码对只能有一个 DEFAULT 转换
@@ -105,7 +105,7 @@ structured_config:
   category: ddl
   domain: conversion
   skill_name: create_conversion
-  official_source: https://www.postgresql.org/docs/16/sql-createconversion.html
+  official_source: https://www.postgresql.org/docs/18/sql-createconversion.html
   statement:
     key: create_conversion
     name: CREATE CONVERSION

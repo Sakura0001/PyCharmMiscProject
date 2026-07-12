@@ -12,7 +12,7 @@ import yaml
 
 
 YAML_BLOCK_PATTERN = re.compile(r"```yaml\s*(.*?)```", re.DOTALL)
-EXPECTED_SOURCE_CATALOG = "references/common/pg16_factor_catalog.md"
+EXPECTED_SOURCE_CATALOG = "references/common/pg18_factor_catalog.md"
 REQUIRED_MAPPING_ENTRY_FIELDS = (
     "catalog_factor",
     "local_factor",
@@ -120,6 +120,65 @@ def _catalog_values(catalog_config: dict) -> dict[str, set[str]]:
     return values_by_factor
 
 
+def _applies_to_values(value: object) -> set[str]:
+    if isinstance(value, str):
+        return {value.strip()} if value.strip() else set()
+    if isinstance(value, list):
+        return {str(item).strip() for item in value if str(item).strip()}
+    return set()
+
+
+def _catalog_applicability(catalog_config: dict) -> dict[str, set[str]]:
+    """Return every catalog factor required by each applies_to statement."""
+
+    factors_by_statement: dict[str, set[str]] = {}
+    object_domains = dict(catalog_config.get("object_domains") or {})
+    for domain_key, domain_doc in object_domains.items():
+        domain_doc = dict(domain_doc or {})
+        normalized_domain_key = str(domain_doc.get("key") or domain_key)
+        domain_applies_to = _applies_to_values(domain_doc.get("applies_to"))
+        factor_groups = dict(domain_doc.get("factor_groups") or {})
+        for group_key, group_doc in factor_groups.items():
+            group_doc = dict(group_doc or {})
+            normalized_group_key = str(group_doc.get("key") or group_key)
+            group_applies_to = (
+                _applies_to_values(group_doc.get("applies_to"))
+                if "applies_to" in group_doc
+                else domain_applies_to
+            )
+            factors = dict(group_doc.get("factors") or {})
+            for factor_key, factor_doc in factors.items():
+                factor_doc = dict(factor_doc or {})
+                normalized_factor_key = str(factor_doc.get("key") or factor_key)
+                factor_path = (
+                    f"{normalized_domain_key}.{normalized_group_key}.{normalized_factor_key}"
+                )
+                applies_to = (
+                    _applies_to_values(factor_doc.get("applies_to"))
+                    if "applies_to" in factor_doc
+                    else group_applies_to
+                )
+                for statement_key in applies_to:
+                    factors_by_statement.setdefault(statement_key, set()).add(factor_path)
+    return factors_by_statement
+
+
+def _resolved_catalog_config(catalog_path: Path) -> dict:
+    config = _load_structured_config(catalog_path)
+    if config.get("kind") != "inherited_factor_catalog":
+        return config
+    inherits = dict(config.get("inherits") or {})
+    inherited_path = str(inherits.get("path") or "")
+    if not inherited_path:
+        raise ValueError(f"{catalog_path}: inherited factor catalog has no inherits.path")
+    skill_root = catalog_path.parents[2]
+    baseline_path = skill_root / inherited_path
+    baseline = _load_structured_config(baseline_path)
+    if baseline.get("kind") != "factor_catalog":
+        raise ValueError(f"{baseline_path}: inherited source must be a factor_catalog")
+    return baseline
+
+
 def _factor_tiers(statement_config: dict) -> dict[str, str]:
     tiers: dict[str, str] = {}
     for layer in list(statement_config.get("factor_layers") or []):
@@ -132,6 +191,11 @@ def _factor_tiers(statement_config: dict) -> dict[str, str]:
 
 def _statement_factor_names(statement_config: dict) -> set[str]:
     return {str(name) for name in dict(statement_config.get("factors") or {}).keys()}
+
+
+def _statement_key(statement_config: dict) -> str:
+    statement = dict(statement_config.get("statement") or {})
+    return str(statement.get("key") or "").strip()
 
 
 def _coverage_sets(statement_config: dict) -> tuple[set[str], set[str]]:
@@ -225,9 +289,15 @@ def _validate_statement_mapping(
     catalog_domains: set[str],
     catalog_paths: set[str],
     catalog_values: dict[str, set[str]],
+    required_catalog_factors: set[str],
 ) -> None:
     mapping = dict(statement_config.get("factor_catalog_mapping") or {})
     if not mapping:
+        for catalog_factor in sorted(required_catalog_factors):
+            result.errors.append(
+                f"{statement_path}: catalog factor required by applies_to is neither "
+                f"mapped nor excluded: {catalog_factor}"
+            )
         return
 
     source_catalog = _text_field(mapping, "source_catalog")
@@ -246,7 +316,11 @@ def _validate_statement_mapping(
     factor_tiers = _factor_tiers(statement_config)
     main_axes, non_main = _coverage_sets(statement_config)
 
+    mapped_factors: list[str] = []
     for section, entry in _mapping_entries(mapping):
+        catalog_factor = _text_field(entry, "catalog_factor")
+        if catalog_factor:
+            mapped_factors.append(catalog_factor)
         _validate_mapping_entry(
             result,
             statement_path,
@@ -260,9 +334,12 @@ def _validate_statement_mapping(
             non_main,
         )
 
+    excluded_factors: list[str] = []
     for item in list(mapping.get("excluded_factors") or []):
         item = dict(item or {})
         catalog_factor = str(item.get("catalog_factor") or "")
+        if catalog_factor:
+            excluded_factors.append(catalog_factor)
         reason = str(item.get("reason") or "").strip()
         prefix = f"{statement_path}: excluded_factors: {catalog_factor or '<missing catalog_factor>'}"
         if catalog_factor not in catalog_paths:
@@ -271,19 +348,40 @@ def _validate_statement_mapping(
             result.errors.append(f"{prefix}: reason is required")
         result.excluded_count += 1
 
+    for catalog_factor in sorted(set(mapped_factors) & set(excluded_factors)):
+        result.errors.append(
+            f"{statement_path}: catalog factor cannot be both mapped and excluded: "
+            f"{catalog_factor}"
+        )
+    accounted_factors = set(mapped_factors) | set(excluded_factors)
+    for catalog_factor in sorted(required_catalog_factors - accounted_factors):
+        result.errors.append(
+            f"{statement_path}: catalog factor required by applies_to is neither "
+            f"mapped nor excluded: {catalog_factor}"
+        )
+
 
 def audit_paths(catalog_path: Path, statement_paths: list[Path]) -> AuditResult:
     result = AuditResult()
-    catalog_config = _load_structured_config(catalog_path)
+    catalog_config = _resolved_catalog_config(catalog_path)
     catalog_paths = _catalog_factor_paths(catalog_config)
     catalog_domains = _catalog_domains(catalog_config)
     catalog_values = _catalog_values(catalog_config)
+    catalog_applicability = _catalog_applicability(catalog_config)
 
     if not catalog_paths:
         result.errors.append(f"{catalog_path}: catalog contains no factors")
+    if not statement_paths:
+        result.errors.append("statement reference set is empty")
 
+    audited_statement_keys: dict[str, list[Path]] = {}
     for statement_path in statement_paths:
         statement_config = _load_structured_config(statement_path)
+        statement_key = _statement_key(statement_config)
+        if not statement_key:
+            result.errors.append(f"{statement_path}: statement.key is required")
+        else:
+            audited_statement_keys.setdefault(statement_key, []).append(statement_path)
         _validate_statement_mapping(
             result,
             statement_path,
@@ -291,6 +389,18 @@ def audit_paths(catalog_path: Path, statement_paths: list[Path]) -> AuditResult:
             catalog_domains,
             catalog_paths,
             catalog_values,
+            catalog_applicability.get(statement_key, set()),
+        )
+
+    for statement_key, duplicate_paths in sorted(audited_statement_keys.items()):
+        if len(duplicate_paths) > 1:
+            result.errors.append(
+                f"duplicate audited statement key {statement_key}: "
+                + ", ".join(str(path) for path in duplicate_paths)
+            )
+    for statement_key in sorted(set(catalog_applicability) - set(audited_statement_keys)):
+        result.errors.append(
+            f"catalog applies_to references statement that was not audited: {statement_key}"
         )
 
     return result
@@ -301,7 +411,7 @@ def _default_statement_paths(root: Path) -> list[Path]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Audit PG16 factor catalog mappings in statement references.")
+    parser = argparse.ArgumentParser(description="Audit PostgreSQL 18.4 factor catalog mappings in statement references.")
     parser.add_argument(
         "--root",
         type=Path,
@@ -312,7 +422,7 @@ def main(argv: list[str] | None = None) -> int:
         "--catalog",
         type=Path,
         default=None,
-        help="factor catalog path; defaults to skills/pg-sql-generation/references/common/pg16_factor_catalog.md",
+        help="factor catalog path; defaults to skills/pg-sql-generation/references/common/pg18_factor_catalog.md",
     )
     parser.add_argument(
         "statements",
@@ -323,7 +433,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     root = args.root.resolve()
-    catalog_path = args.catalog or root / "skills" / "pg-sql-generation" / "references" / "common" / "pg16_factor_catalog.md"
+    catalog_path = args.catalog or root / "skills" / "pg-sql-generation" / "references" / "common" / "pg18_factor_catalog.md"
     statement_paths = args.statements or _default_statement_paths(root)
     try:
         result = audit_paths(catalog_path, [path.resolve() for path in statement_paths])

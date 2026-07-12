@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-refreshmaterializedview.html
+来源：https://www.postgresql.org/docs/18/sql-refreshmaterializedview.html
 
 ```sql
 REFRESH MATERIALIZED VIEW [ CONCURRENTLY ] name
@@ -85,7 +85,11 @@ structured_config:
   category: ddl
   domain: materialized_view
   skill_name: refresh_materialized_view
-  official_source: https://www.postgresql.org/docs/16/sql-refreshmaterializedview.html
+  official_source: https://www.postgresql.org/docs/18/sql-refreshmaterializedview.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-refreshmaterializedview.html
+    review_status: semantic_reviewed
   statement:
     key: refresh_materialized_view
     name: REFRESH MATERIALIZED VIEW
@@ -172,6 +176,7 @@ structured_config:
       values:
       - owner
       - granted_role
+      - maintain_privilege
       - insufficient_privilege
     name_shape:
       label: materialized view 名形态
@@ -186,6 +191,7 @@ structured_config:
       values:
       - ready
       - missing_dependency
+      - search_path_sandbox
     concurrently_restriction:
       label: CONCURRENTLY 限制条件
       importance: non_important

@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-alterroutine.html
+来源：https://www.postgresql.org/docs/18/sql-alterroutine.html
 
 ```sql
 ALTER ROUTINE name [ ( [ [ argmode ] [ argname ] argtype [, ...] ] ) ]
@@ -127,19 +127,13 @@ structured_config:
   category: ddl
   domain: routine
   skill_name: alter_routine
-  official_source: https://www.postgresql.org/docs/16/sql-alterroutine.html
+  official_source: https://www.postgresql.org/docs/18/sql-alterroutine.html
   statement:
     key: alter_routine
     name: ALTER ROUTINE
     aliases:
     - alter_routine
     - ALTER ROUTINE
-    - alter_function
-    - ALTER FUNCTION
-    - alter_procedure
-    - ALTER PROCEDURE
-    - alter_aggregate
-    - ALTER AGGREGATE
     purpose: ALTER ROUTINE — change the definition of a routine
   syntax_templates:
   - "ALTER ROUTINE name [ ( [ [ argmode ] [ argname ] argtype [, ...] ] ) ]\n    action [ ... ] [ RESTRICT ]"

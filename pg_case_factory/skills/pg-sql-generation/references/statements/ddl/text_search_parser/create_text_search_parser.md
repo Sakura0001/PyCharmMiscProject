@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-createtsparser.html
+来源：https://www.postgresql.org/docs/18/sql-createtsparser.html
 
 ```sql
 CREATE TEXT SEARCH PARSER name (
@@ -14,7 +14,7 @@ CREATE TEXT SEARCH PARSER name (
 )
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - CREATE TEXT SEARCH PARSER 要求 SUPERUSER 权限，非 superuser 执行路径属于失败路径
 - START、GETTOKEN、END、LEXTYPES 四个函数必须全部指定（强制性）
 - HEADLINE 为可选函数
@@ -99,7 +99,7 @@ structured_config:
   category: ddl
   domain: text_search_parser
   skill_name: create_text_search_parser
-  official_source: https://www.postgresql.org/docs/16/sql-createtsparser.html
+  official_source: https://www.postgresql.org/docs/18/sql-createtsparser.html
   statement:
     key: create_text_search_parser
     name: CREATE TEXT SEARCH PARSER

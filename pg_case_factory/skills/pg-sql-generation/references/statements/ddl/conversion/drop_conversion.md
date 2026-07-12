@@ -2,13 +2,13 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-dropconversion.html
+来源：https://www.postgresql.org/docs/18/sql-dropconversion.html
 
 ```sql
 DROP CONVERSION [ IF EXISTS ] name [ CASCADE | RESTRICT ]
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - 必须拥有该 conversion 才能删除它
 - CASCADE 和 RESTRICT 关键字实际上没有效果，因为不存在依赖于 conversion 的对象
 - 不在 SQL 标准中（SQL 标准使用 DROP TRANSLATION）
@@ -89,7 +89,7 @@ structured_config:
   category: ddl
   domain: conversion
   skill_name: drop_conversion
-  official_source: https://www.postgresql.org/docs/16/sql-dropconversion.html
+  official_source: https://www.postgresql.org/docs/18/sql-dropconversion.html
   statement:
     key: drop_conversion
     name: DROP CONVERSION

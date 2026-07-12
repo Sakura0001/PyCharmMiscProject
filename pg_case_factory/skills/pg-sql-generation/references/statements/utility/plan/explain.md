@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-explain.html
+来源：https://www.postgresql.org/docs/18/sql-explain.html
 
 ```sql
 EXPLAIN [ ( option [, ...] ) ] statement
@@ -92,7 +92,11 @@ structured_config:
   category: utility
   domain: plan
   skill_name: explain
-  official_source: https://www.postgresql.org/docs/16/sql-explain.html
+  official_source: https://www.postgresql.org/docs/18/sql-explain.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-explain.html
+    review_status: synopsis_adapted
   statement:
     key: explain
     name: EXPLAIN
@@ -168,6 +172,8 @@ structured_config:
       - verbose_or_format
       - boolean_options
       - resource_options
+      - serialize
+      - memory
     execution_mode:
       label: 执行模式
       importance: non_important

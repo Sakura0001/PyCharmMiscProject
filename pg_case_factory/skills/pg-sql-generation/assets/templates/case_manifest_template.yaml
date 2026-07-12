@@ -1,0 +1,37 @@
+# Copy once per executable (success or expected_failure) obligation to
+# artifacts/runs/<run-id>/cases/manifests/<case-id>.yaml.  The identifiers and
+# assignments below match coverage_plan_template.yaml; replace the obligation ID
+# with the stable value emitted by plan expand.
+schema_version: 1
+kind: case_manifest
+case_id: CASE-TP-COLUMN-DATA-PROFILE-0001
+test_point_id: TP-COLUMN-DATA-PROFILE
+obligation_id: obl-tp-column-data-profile-replace-me
+outcome: success
+sql_files:
+  - cases/sql/TP-COLUMN-DATA-PROFILE/case_0001.sql
+# Replace this sample digest with SHA-256 of the exact UTF-8 SQL bytes.  The
+# sample value below is the digest of "SELECT 1;\n" and is not a wildcard.
+sql_sha256: b4e0497804e46e0a0b0b8c31975b062152d551bac49c3c2e80932567b4085dcd
+execution_profile: basic_psql
+# For COPY STDIN, privileged, multisession, restart, or fault-injection work,
+# use external_isolated and add execution_harness matching a covered plan risk.
+# An external-copy-ingest case has an extra fail-closed contract: this one SQL
+# file must itself contain COPY ... FROM STDIN;, at least one inline payload
+# line, and a standalone `\.` terminator line.  The harness executes this exact
+# manifest-bound file with psql; do not pipe stdin or name a payload/PROGRAM.
+comparison:
+  mode: exact_text
+  oracle: upstream-postgresql-18.4
+  require_identical: true
+cleanup:
+  required: true
+  idempotent: true
+metadata:
+  assignments:
+    column_type: integer
+    data_profile: typical
+  requirement_ids:
+    - REQ-001
+  source_manifest: inputs/feature_manifest.yaml
+  coverage_plan: plans/coverage_plan.yaml

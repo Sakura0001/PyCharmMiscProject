@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-reassign-owned.html
+来源：https://www.postgresql.org/docs/18/sql-reassign-owned.html
 
 ```sql
 REASSIGN OWNED BY { old_role | CURRENT_ROLE | CURRENT_USER | SESSION_USER } [, ...]
@@ -101,7 +101,7 @@ structured_config:
   category: ddl
   domain: ownership
   skill_name: reassign_owned
-  official_source: https://www.postgresql.org/docs/16/sql-reassign-owned.html
+  official_source: https://www.postgresql.org/docs/18/sql-reassign-owned.html
   statement:
     key: reassign_owned
     name: REASSIGN OWNED

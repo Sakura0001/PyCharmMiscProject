@@ -21,3 +21,20 @@ Rules:
 - Every expected failure must have a stable reason.
 - Every matrix must explicitly declare whether target object, relation, table,
   and column-type coverage are required.
+- `coverage_mode: representative` or `conditional` is an honest legacy
+  capability marker, not exhaustive evidence. A feature workflow must add a
+  complete inventory axis and may not count such a scope toward `missing=0`.
+- `all_pg18_column_types` is a deprecated name for only the 85 portable core
+  profiles and can never prove exhaustive column coverage. An exhaustive claim
+  must enumerate all seven canonical selectors in `pg18_type_catalog.md` and
+  contain a direct `mode: exhaustive` baseline expansion for every selector.
+- An exhaustive object or relation scope must use the canonical PG18.4 source
+  selector, declare a set exactly equal to it, and expand that exact set. The
+  legacy flat `table_kinds` selector is not canonical; complete table scope is
+  instead the five-dimensional feature-plan inventory.
+- The shipped 183 statement matrices currently contain **0 validated exhaustive
+  scope claims**. Their profile/table scopes are conditional, representative,
+  or explicit static declarations; they do not prove rendered SQL or runtime
+  execution. The feature workflow must close those gaps obligation by obligation.
+- Run `tools/audit_combination_matrix.py`; treat its partial-scope warnings as
+  required feature-plan work, not as ignorable sampling permission.

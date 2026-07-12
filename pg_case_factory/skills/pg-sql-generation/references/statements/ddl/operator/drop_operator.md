@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-dropoperator.html
+来源：https://www.postgresql.org/docs/18/sql-dropoperator.html
 
 ```sql
 DROP OPERATOR [ IF EXISTS ] name ( { left_type | NONE } , right_type ) [, ...] [ CASCADE | RESTRICT ]
@@ -86,7 +86,7 @@ structured_config:
   category: ddl
   domain: operator
   skill_name: drop_operator
-  official_source: https://www.postgresql.org/docs/16/sql-dropoperator.html
+  official_source: https://www.postgresql.org/docs/18/sql-dropoperator.html
   statement:
     key: drop_operator
     name: DROP OPERATOR

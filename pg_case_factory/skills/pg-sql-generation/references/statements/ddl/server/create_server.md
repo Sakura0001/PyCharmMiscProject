@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-createserver.html
+来源：https://www.postgresql.org/docs/18/sql-createserver.html
 
 ```sql
 CREATE SERVER [ IF NOT EXISTS ] server_name [ TYPE 'server_type' ] [ VERSION 'server_version' ]
@@ -102,7 +102,7 @@ structured_config:
   category: ddl
   domain: server
   skill_name: create_server
-  official_source: https://www.postgresql.org/docs/16/sql-createserver.html
+  official_source: https://www.postgresql.org/docs/18/sql-createserver.html
   statement:
     key: create_server
     name: CREATE SERVER

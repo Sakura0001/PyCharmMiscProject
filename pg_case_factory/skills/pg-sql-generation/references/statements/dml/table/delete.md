@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-delete.html
+来源：https://www.postgresql.org/docs/18/sql-delete.html
 
 ```sql
 [ WITH [ RECURSIVE ] with_query [, ...] ]
@@ -83,7 +83,11 @@ structured_config:
   category: dml
   domain: table
   skill_name: delete
-  official_source: https://www.postgresql.org/docs/16/sql-delete.html
+  official_source: https://www.postgresql.org/docs/18/sql-delete.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-delete.html
+    review_status: synopsis_adapted
   statement:
     key: delete
     name: DELETE
@@ -175,6 +179,7 @@ structured_config:
       - returning_star
       - returning_expression
       - rowset_projection
+      - returning_old_new_aliases
     with_clause:
       label: WITH 子句
       importance: non_important

@@ -6,7 +6,7 @@ statement:
   category: tcl
   domain: two_phase_transaction
   source_reference: references/statements/tcl/two_phase_transaction/prepare_transaction.md
-  official_source: https://www.postgresql.org/docs/16/sql-prepare-transaction.html
+  official_source: https://www.postgresql.org/docs/18/sql-prepare-transaction.html
 execution_contract:
   required_matrix_is_baseline: true
   no_inference_before_required_coverage_passes: true
@@ -41,7 +41,7 @@ coverage_scope:
   target_object_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#object_kinds.all_object_kinds
     required_object_kinds:
     - two_phase_transaction
     decision_reason: tcl/two_phase_transaction statement coverage is tracked by its explicit runtime or catalog object kind.

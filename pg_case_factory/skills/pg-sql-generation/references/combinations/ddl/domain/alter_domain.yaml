@@ -6,7 +6,7 @@ statement:
   category: ddl
   domain: domain
   source_reference: references/statements/ddl/domain/alter_domain.md
-  official_source: https://www.postgresql.org/docs/16/sql-alterdomain.html
+  official_source: https://www.postgresql.org/docs/18/sql-alterdomain.html
 execution_contract:
   required_matrix_is_baseline: true
   no_inference_before_required_coverage_passes: true
@@ -41,7 +41,7 @@ coverage_scope:
   target_object_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#object_kinds.all_object_kinds
     required_object_kinds:
     - domain
     decision_reason: domain statements operate on PostgreSQL domain objects; object coverage is explicit for create, alter,
@@ -57,11 +57,11 @@ coverage_scope:
   column_type_coverage:
     required: true
     coverage_mode: representative
-    inventory_source: references/common/pg16_type_catalog.md
-    required_type_set: all_pg16_column_types
+    inventory_source: references/common/pg18_type_catalog.md
+    required_type_set: all_pg18_column_types
     expansion_mode: representative_type_families
     require_each_type_success_or_failure: true
-    decision_reason: domain validity depends on PostgreSQL data type bindings, so representative PG16 type coverage is required.
+    decision_reason: domain validity depends on PostgreSQL data type bindings, so representative PG18.4 type coverage is required.
 factor_contract:
   source_reference_must_define_all_factors: true
   matrix_must_cover_required_factor_values: true
@@ -523,3 +523,20 @@ audit_rules:
   require_post_coverage_extension_policy: true
   forbid_extension_before_required_coverage_passes: true
   forbid_extension_counting_toward_required_coverage: true
+pg18_compatibility:
+  target_version: '18.4'
+  synopsis_change: changed
+  test_points:
+  - id: PG18-ALTER-DOMAIN-CONSTRAINT-GRAMMAR
+    affected_factors:
+    - alter_action
+    - constraint_type
+    affected_values:
+      alter_action:
+      - add_constraint
+      constraint_type:
+      - check_with_name
+    sql: >-
+      ALTER DOMAIN {domain_name} ADD CONSTRAINT {constraint_name} CHECK (VALUE IS NOT NULL);
+    oracle: reference_parity
+    covers: domain_constraint grammar

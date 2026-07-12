@@ -6,7 +6,7 @@ statement:
   category: ddl
   domain: database
   source_reference: references/statements/ddl/database/drop_database.md
-  official_source: https://www.postgresql.org/docs/16/sql-dropdatabase.html
+  official_source: https://www.postgresql.org/docs/18/sql-dropdatabase.html
   aliases:
   - drop_database
   - DROP DATABASE
@@ -47,7 +47,7 @@ coverage_scope:
   target_object_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#object_kinds.all_object_kinds
     required_object_kinds:
     - database
     decision_reason: DROP_DATABASE targets PostgreSQL database cluster objects. Required coverage is the database object state
@@ -55,7 +55,7 @@ coverage_scope:
   target_relation_coverage:
     required: false
     coverage_mode: not_applicable
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#relation_kinds.all_relation_kinds
     decision_reason: DROP_DATABASE does not name a table, index, view, sequence, or other pg_class relation as its target.
       Database-level storage or connection side effects are represented by database factors instead of relation-kind coverage.
   table_coverage:

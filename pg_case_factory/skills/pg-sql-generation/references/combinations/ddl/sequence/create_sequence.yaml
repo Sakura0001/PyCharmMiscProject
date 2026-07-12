@@ -6,7 +6,7 @@ statement:
   category: ddl
   domain: sequence
   source_reference: references/statements/ddl/sequence/create_sequence.md
-  official_source: https://www.postgresql.org/docs/16/sql-createsequence.html
+  official_source: https://www.postgresql.org/docs/18/sql-createsequence.html
   aliases:
   - CREATE SEQUENCE
   - create sequence
@@ -48,7 +48,7 @@ coverage_scope:
   target_object_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#object_kinds.all_object_kinds
     required_object_kinds:
     - sequence
     decision_reason: CREATE_SEQUENCE directly targets PostgreSQL sequence generator objects and must cover sequence existence,
@@ -56,7 +56,7 @@ coverage_scope:
   target_relation_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#relation_kinds.all_relation_kinds
     required_relation_kinds:
     - sequence
     decision_reason: CREATE_SEQUENCE targets sequences, which are pg_class relation objects with relkind S. Relation coverage
@@ -64,7 +64,7 @@ coverage_scope:
   table_coverage:
     required: true
     coverage_mode: conditional
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#table_kinds.all_table_kinds
     required_table_kinds:
     - regular_table
     decision_reason: CREATE_SEQUENCE has direct table-column dependency only for OWNED BY table_name.column_name branches.
@@ -74,7 +74,7 @@ coverage_scope:
     required: false
     coverage_mode: not_applicable
     decision_reason: CREATE_SEQUENCE uses sequence data types and numeric parameters such as AS smallint/integer/bigint, INCREMENT,
-      MINVALUE, MAXVALUE, START, CACHE, and CYCLE. These are sequence-definition factors, not PG16 table column-type coverage
+      MINVALUE, MAXVALUE, START, CACHE, and CYCLE. These are sequence-definition factors, not PG18.4 table column-type coverage
       from the shared type catalog.
 factor_contract:
   source_reference_must_define_all_factors: true
@@ -552,3 +552,23 @@ audit_rules:
   require_post_coverage_extension_policy: true
   forbid_extension_before_required_coverage_passes: true
   forbid_extension_counting_toward_required_coverage: true
+pg18_compatibility:
+  target_version: '18.4'
+  synopsis_change: changed
+  test_points:
+  - id: PG18-CREATE-SEQUENCE-OPTION-ORDER
+    affected_factors:
+    - cycle_clause
+    - start_value_setting
+    - cache_value
+    affected_values:
+      cycle_clause:
+      - NO_CYCLE
+      start_value_setting:
+      - explicit_start
+      cache_value:
+      - cache_10
+    sql: >-
+      CREATE SEQUENCE {sequence_name} NO CYCLE START WITH 1 CACHE 10;
+    oracle: reference_parity
+    covers: documented PG18 option ordering

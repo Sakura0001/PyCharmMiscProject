@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-prepare.html
+来源：https://www.postgresql.org/docs/18/sql-prepare.html
 
 ```sql
 PREPARE name [ ( data_type [, ...] ) ] AS statement
@@ -77,7 +77,7 @@ structured_config:
   category: prepared
   domain: prepared_statement
   skill_name: prepare
-  official_source: https://www.postgresql.org/docs/16/sql-prepare.html
+  official_source: https://www.postgresql.org/docs/18/sql-prepare.html
   statement:
     key: prepare
     name: PREPARE

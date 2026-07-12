@@ -11,7 +11,7 @@ statement:
   - DROP VIEW
   - dropview
   - drop view
-  official_source: https://www.postgresql.org/docs/16/sql-dropview.html
+  official_source: https://www.postgresql.org/docs/18/sql-dropview.html
 execution_contract:
   required_matrix_is_baseline: true
   no_inference_before_required_coverage_passes: true
@@ -49,7 +49,7 @@ coverage_scope:
   target_object_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#object_kinds.all_object_kinds
     required_object_kinds:
     - plain_view
     decision_reason: >-
@@ -58,7 +58,7 @@ coverage_scope:
   target_relation_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#relation_kinds.all_relation_kinds
     required_relation_kinds:
     - plain_view
     negative_relation_kinds:

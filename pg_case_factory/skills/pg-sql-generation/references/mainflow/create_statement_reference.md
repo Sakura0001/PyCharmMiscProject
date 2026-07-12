@@ -1,82 +1,47 @@
-# 技能：Create Statement Reference
+# 创建 PostgreSQL 18.4 Statement Reference
 
-## 作用
+## 目标
 
-为 PostgreSQL 16.4 statement 创建或补齐 `references/statements/<category>/<domain>/<statement_key>.md`。本 skill 用于规范 statement reference 的内容结构，使其既能被 agent 用来做测试设计，也能被后续工具读取结构化配置。
+创建或补齐 `references/statements/<category>/<domain>/<statement_key>.md`，使 agent 能按 PostgreSQL 18.4 官方语义设计完整覆盖，工具能稳定读取结构化配置。
 
 ## 输入
 
-- 用户指定的 statement，例如 `CREATE TABLESPACE`、`ALTER TYPE`。
-- PostgreSQL 16 官方语法。
-- 同类 statement reference 示例，例如 `references/statements/ddl/index/create_index.md`、`references/statements/dml/table/insert.md`。
-- 标准模板：`references/templates/statement_reference_template.md`。
+- 用户指定的 statement
+- PostgreSQL 18.4 官方 synopsis 与正文
+- `references/common/compatibility_profile.yaml`
+- `references/common/statement_support_inventory.yaml`
+- PG18.4 factor/type catalogs
+- 同类 statement reference 和 matching combination matrix
+- `references/templates/statement_reference_template.md`
 
-## 输出位置
+## 编写步骤
 
-- 新增或更新：`references/statements/<category>/<domain>/<statement_key>.md`
-- 不在 helper code 或 runner 中写入 statement 专用逻辑。
-- 不在 statement reference 中写死完整生命周期；生命周期由 mainflow 和 common 规则组合生成。
+1. 确定 category、domain 和小写 snake_case statement key。
+2. 读取 PostgreSQL 18.4 官方文档，保留全部顶层 synopsis 分支、选项、约束和版本差异。记录官方 ref/source 标识。
+3. 对照 support inventory 与 16.4 -> 18.4 compatibility audit。未审计项标为 pending，不得冒充 ready。
+4. 定义语句作用、SQL 可观察结果和边界；不写底层日志或根因逻辑。
+5. 按 T1-T6 组织因子：核心语义、重要行为、名称/输入形态、依赖/环境、异常/边界、验证/清理。
+6. 对涉及表、列、表达式、索引、约束或数据访问的 statement，引用完整 PG18.4 relation/table/type inventory。对不适用的 inventory 给出明确原因。
+7. 完整覆盖所有语法分支与每个适用 inventory 值；核心 axes 做笛卡尔积。不得用 representative、sampling、pairwise 或轮转值替代完整覆盖。
+8. 定义成功、expected failure、权限、事务、锁、外部环境、稳定验证和幂等清理约束。
+9. 需要 superuser、文件系统、复制连接、外部服务、非事务环境或特殊集群配置的分支，显式声明环境依赖；不要伪造普通成功路径。
+10. 补齐 `structured_config`：kind/category/domain/skill_name、statement、syntax_templates、factor_layers、factors、coverage_policy、rendering 和 compatibility target。
+11. 运行 statement reference、factor mapping、combination matrix 与 PG18.4 compatibility audits；全部通过后才更新 ready 状态。
 
-## 编写流程
+## 覆盖门禁
 
-1. 确定 category、domain 与 statement_key，使用小写 snake_case，例如 `ddl/tablespace/create_tablespace`、`dml/table/insert`。
-2. 查询 PostgreSQL 16 官方语法，保留所有顶层 synopsis 分支。
-3. 描述语句作用，并明确该 skill 的职责边界。
-4. 按 T1-T6 分级测试因子：
-   - T1：核心语义因子。
-   - T2：重要行为因子。
-   - T3：对象名与输入形态因子。
-   - T4：依赖对象与环境因子。
-   - T5：异常与边界因子。
-   - T6：验证与清理因子。
-5. 定义覆盖策略：
-   - 是否覆盖所有语法分支。
-   - 是否覆盖所有基表。
-   - 是否覆盖所有列类型。
-   - T1 是否完整笛卡尔积。
-   - T2 是否参与主组合或降级为代表性覆盖。
-   - T3 及之后因子如何挂靠。
-6. 定义生成约束：
-   - 成功路径。
-   - 失败路径。
-   - 前置依赖。
-   - 权限、事务、锁、环境限制。
-   - 验证和清理要求。
-7. 定义挂靠规则与规模控制规则。
-8. 补齐 `structured_config`，至少包含：
-   - `kind: statement`
-   - `category`
-   - `domain`
-   - `skill_name`
-   - `statement.key`
-   - `statement.name`
-   - `statement.aliases`
-   - `syntax_templates`
-   - `factor_layers`
-   - `factors`
-   - `coverage_policy`
-   - `rendering`
-
-## 覆盖口径
-
-- 对涉及表、列、表达式、索引、约束或数据访问的 statement，默认需要分析是否覆盖所有基表和列类型。
-- 对不引用表列的对象级 statement，例如 role、database、tablespace，应明确写出“不需要覆盖所有基表/列类型”的原因。
-- 对支持 `IF EXISTS`、`IF NOT EXISTS`、`OR REPLACE`、`CASCADE`、`RESTRICT` 等开关的 statement，必须覆盖正常路径、no-op 或替换语义、冲突边界和失败路径。
-- 需要 superuser、文件系统、复制连接、外部服务、非事务环境或特殊集群配置的分支，必须显式标注环境依赖，不得伪造为普通成功路径。
+- 每个适用语法分支、对象类型、relation/table 类型和列类型必须进入 required coverage。
+- 不适用或不支持的值不得从 inventory 静默删除；在计划中分类为 `justified_na` 或 `expected_failure` 并给 reason。
+- `IF EXISTS`、`IF NOT EXISTS`、`OR REPLACE`、`CASCADE`、`RESTRICT` 等分支必须覆盖正常、no-op/替换、冲突和失败语义。
+- 规模过大时拆分 test points 并断点执行，不裁剪 inventory。
 
 ```yaml
 structured_config:
   kind: mainflow
   skill_name: create_statement_reference
   mainflow_role: create_statement_reference
+  compatibility_target: postgresql-18.4
   template: references/templates/statement_reference_template.md
-  required_sections:
-    - 语句作用
-    - 官方语法范围补充
-    - 测试因子分级
-    - 覆盖策略
-    - 生成约束
-    - 挂靠规则
-    - 规模控制规则
-    - 结构化配置
+  require_complete_inventory: true
+  sampling_allowed: false
 ```

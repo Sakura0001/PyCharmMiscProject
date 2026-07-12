@@ -6,7 +6,7 @@ statement:
   category: ddl
   domain: foreign_table
   source_reference: references/statements/ddl/foreign_table/drop_foreign_table.md
-  official_source: https://www.postgresql.org/docs/16/sql-dropforeigntable.html
+  official_source: https://www.postgresql.org/docs/18/sql-dropforeigntable.html
   aliases:
   - DROP FOREIGN TABLE
   - drop foreign table
@@ -48,7 +48,7 @@ coverage_scope:
   target_object_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#object_kinds.all_object_kinds
     required_object_kinds:
     - foreign_table
     decision_reason: DROP FOREIGN TABLE directly targets foreign-table relation objects and must cover existence, IF EXISTS,
@@ -56,7 +56,7 @@ coverage_scope:
   target_relation_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#relation_kinds.all_relation_kinds
     required_relation_kinds:
     - foreign_table
     decision_reason: The only direct relation target is foreign_table. View dependencies are represented by dependency factors
@@ -64,7 +64,7 @@ coverage_scope:
   table_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#table_kinds.all_table_kinds
     required_table_kinds:
     - foreign_table
     decision_reason: DROP FOREIGN TABLE removes foreign-table objects and branches on multi-table, dependency, cascade/restrict,

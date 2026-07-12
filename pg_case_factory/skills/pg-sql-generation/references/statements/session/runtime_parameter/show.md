@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-show.html
+来源：https://www.postgresql.org/docs/18/sql-show.html
 
 ```sql
 SHOW name
@@ -78,7 +78,11 @@ structured_config:
   category: session
   domain: runtime_parameter
   skill_name: show
-  official_source: https://www.postgresql.org/docs/16/sql-show.html
+  official_source: https://www.postgresql.org/docs/18/sql-show.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-show.html
+    review_status: semantic_reviewed
   statement:
     key: show
     name: SHOW
@@ -169,6 +173,8 @@ structured_config:
       - schema_qualified
       - quoted_identifier
       - alias_used
+      - lc_collate
+      - lc_ctype
     payload_shape:
       label: payload 形态
       importance: non_important

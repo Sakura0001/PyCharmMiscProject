@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-rollback-to.html
+来源：https://www.postgresql.org/docs/18/sql-rollback-to.html
 
 ```sql
 ROLLBACK [ WORK | TRANSACTION ] TO [ SAVEPOINT ] savepoint_name
@@ -77,7 +77,7 @@ structured_config:
   category: tcl
   domain: savepoint
   skill_name: rollback_to_savepoint
-  official_source: https://www.postgresql.org/docs/16/sql-rollback-to.html
+  official_source: https://www.postgresql.org/docs/18/sql-rollback-to.html
   statement:
     key: rollback_to_savepoint
     name: ROLLBACK TO SAVEPOINT

@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-altereventtrigger.html
+来源：https://www.postgresql.org/docs/18/sql-altereventtrigger.html
 
 ```sql
 ALTER EVENT TRIGGER name DISABLE
@@ -11,7 +11,7 @@ ALTER EVENT TRIGGER name OWNER TO { new_owner | CURRENT_ROLE | CURRENT_USER | SE
 ALTER EVENT TRIGGER name RENAME TO new_name
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - 必须 superuser 才能执行 ALTER EVENT TRIGGER（所有分支均需 superuser）
 - DISABLE：禁用触发器，仍注册在系统目录中但不执行
 - ENABLE：正常启用（仅在 session_replication_role 为 origin 时触发）
@@ -116,7 +116,7 @@ structured_config:
   category: ddl
   domain: event_trigger
   skill_name: alter_event_trigger
-  official_source: https://www.postgresql.org/docs/16/sql-altereventtrigger.html
+  official_source: https://www.postgresql.org/docs/18/sql-altereventtrigger.html
   statement:
     key: alter_event_trigger
     name: ALTER EVENT TRIGGER

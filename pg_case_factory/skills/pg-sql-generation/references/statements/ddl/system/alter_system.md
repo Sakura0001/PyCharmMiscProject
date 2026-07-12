@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-altersystem.html
+来源：https://www.postgresql.org/docs/18/sql-altersystem.html
 
 ```sql
 ALTER SYSTEM SET configuration_parameter { TO | = } { value [, ...] | DEFAULT }
@@ -107,7 +107,11 @@ structured_config:
   category: ddl
   domain: system
   skill_name: alter_system
-  official_source: https://www.postgresql.org/docs/16/sql-altersystem.html
+  official_source: https://www.postgresql.org/docs/18/sql-altersystem.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-altersystem.html
+    review_status: semantic_reviewed
   statement:
     key: alter_system
     name: ALTER SYSTEM
@@ -235,6 +239,7 @@ structured_config:
       - valid_parameter_and_value
       - valid_parameter_invalid_value
       - nonexistent_parameter
+      - allow_alter_system_off
     privilege_insufficient:
       label: 权限不足
       importance: non_important

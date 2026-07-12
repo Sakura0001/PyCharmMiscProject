@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-createaccessmethod.html
+来源：https://www.postgresql.org/docs/18/sql-createaccessmethod.html
 
 ```sql
 CREATE ACCESS METHOD name
@@ -106,7 +106,7 @@ structured_config:
   category: ddl
   domain: access_method
   skill_name: create_access_method
-  official_source: https://www.postgresql.org/docs/16/sql-createaccessmethod.html
+  official_source: https://www.postgresql.org/docs/18/sql-createaccessmethod.html
   statement:
     key: create_access_method
     name: CREATE ACCESS METHOD

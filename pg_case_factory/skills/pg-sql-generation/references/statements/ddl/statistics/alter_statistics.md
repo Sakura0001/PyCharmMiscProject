@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-alterstatistics.html
+来源：https://www.postgresql.org/docs/18/sql-alterstatistics.html
 
 ```sql
 ALTER STATISTICS name OWNER TO { new_owner | CURRENT_ROLE | CURRENT_USER | SESSION_USER }
@@ -104,7 +104,11 @@ structured_config:
   category: ddl
   domain: statistics
   skill_name: alter_statistics
-  official_source: https://www.postgresql.org/docs/16/sql-alterstatistics.html
+  official_source: https://www.postgresql.org/docs/18/sql-alterstatistics.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-alterstatistics.html
+    review_status: synopsis_adapted
   statement:
     key: alter_statistics
     name: ALTER STATISTICS
@@ -211,6 +215,7 @@ structured_config:
       - positive_integer
       - maximum_value_10000
       - negative_one_default
+      - default_keyword
       - out_of_range
     statistics_name_shape:
       label: statistics 名形态
@@ -245,6 +250,7 @@ structured_config:
       values:
       - integer_value
       - negative_one
+      - default_keyword
       - very_large_value
     executor_privilege:
       label: 执行者权限上下文

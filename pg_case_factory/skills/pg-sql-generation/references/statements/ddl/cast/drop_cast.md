@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-dropcast.html
+来源：https://www.postgresql.org/docs/18/sql-dropcast.html
 
 ```sql
 DROP CAST [ IF EXISTS ] (source_type AS target_type) [ CASCADE | RESTRICT ]
@@ -104,7 +104,7 @@ structured_config:
   category: ddl
   domain: cast
   skill_name: drop_cast
-  official_source: https://www.postgresql.org/docs/16/sql-dropcast.html
+  official_source: https://www.postgresql.org/docs/18/sql-dropcast.html
   statement:
     key: drop_cast
     name: DROP CAST

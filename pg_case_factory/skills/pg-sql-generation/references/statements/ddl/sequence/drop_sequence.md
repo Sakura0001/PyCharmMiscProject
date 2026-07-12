@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-dropsequence.html
+来源：https://www.postgresql.org/docs/18/sql-dropsequence.html
 
 ```sql
 DROP SEQUENCE [ IF EXISTS ] name [, ...] [ CASCADE | RESTRICT ]
@@ -102,7 +102,7 @@ structured_config:
   category: ddl
   domain: sequence
   skill_name: drop_sequence
-  official_source: https://www.postgresql.org/docs/16/sql-dropsequence.html
+  official_source: https://www.postgresql.org/docs/18/sql-dropsequence.html
   statement:
     key: drop_sequence
     name: DROP SEQUENCE

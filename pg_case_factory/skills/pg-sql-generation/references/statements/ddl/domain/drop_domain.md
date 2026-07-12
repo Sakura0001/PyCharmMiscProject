@@ -2,13 +2,13 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-dropdomain.html
+来源：https://www.postgresql.org/docs/18/sql-dropdomain.html
 
 ```sql
 DROP DOMAIN [ IF EXISTS ] name [, ...] [ CASCADE | RESTRICT ]
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - 只有 domain 的 owner 或 superuser 才能执行 DROP DOMAIN
 - RESTRICT 是默认行为（省略 CASCADE/RESTRICT 时等效于 RESTRICT）
 - 当 domain 被表列或其他对象引用时，RESTRICT 模式拒绝删除
@@ -94,7 +94,7 @@ structured_config:
   category: ddl
   domain: domain
   skill_name: drop_domain
-  official_source: https://www.postgresql.org/docs/16/sql-dropdomain.html
+  official_source: https://www.postgresql.org/docs/18/sql-dropdomain.html
   statement:
     key: drop_domain
     name: DROP DOMAIN

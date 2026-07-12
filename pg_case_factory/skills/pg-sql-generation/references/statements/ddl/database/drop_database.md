@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-dropdatabase.html
+来源：https://www.postgresql.org/docs/18/sql-dropdatabase.html
 
 ```sql
 DROP DATABASE [ IF EXISTS ] name [ [ WITH ] ( option [, ...] ) ]
@@ -11,7 +11,7 @@ where option can be:
     FORCE
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - 只能由 database owner 执行（superuser 也可以）
 - 不能在连接到目标数据库时执行，必须先连接到其他数据库（如 postgres）
 - 如果其他人连接到目标数据库，命令失败除非使用 FORCE
@@ -105,7 +105,7 @@ structured_config:
   category: ddl
   domain: database
   skill_name: drop_database
-  official_source: https://www.postgresql.org/docs/16/sql-dropdatabase.html
+  official_source: https://www.postgresql.org/docs/18/sql-dropdatabase.html
   statement:
     key: drop_database
     name: DROP DATABASE
@@ -323,7 +323,7 @@ structured_config:
     preserve_axes_first:
     - statement_branch
   factor_catalog_mapping:
-    source_catalog: references/common/pg16_factor_catalog.md
+    source_catalog: references/common/pg18_factor_catalog.md
     object_domain: database
     imported_factors:
     - catalog_factor: database.naming.name_shape

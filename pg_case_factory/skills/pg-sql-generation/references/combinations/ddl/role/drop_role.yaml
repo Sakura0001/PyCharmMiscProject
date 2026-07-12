@@ -10,7 +10,7 @@ statement:
   - drop_role
   - DROP ROLE
   - droprole
-  official_source: https://www.postgresql.org/docs/16/sql-droprole.html
+  official_source: https://www.postgresql.org/docs/18/sql-droprole.html
 execution_contract:
   required_matrix_is_baseline: true
   no_inference_before_required_coverage_passes: true
@@ -48,7 +48,7 @@ coverage_scope:
   target_object_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#object_kinds.all_object_kinds
     required_object_kinds:
     - role
     decision_reason: DROP ROLE removes role catalog objects; role DDL operates on database roles stored in PostgreSQL role
@@ -68,7 +68,7 @@ coverage_scope:
     required: false
     coverage_mode: not_applicable
     decision_reason: DROP ROLE does not declare table columns or validate expressions whose SQL validity depends on column
-      data types; role/user/group DDL is independent of PG16 column-type coverage.
+      data types; role/user/group DDL is independent of PG18.4 column-type coverage.
 factor_contract:
   source_reference_must_define_all_factors: true
   matrix_must_cover_required_factor_values: true

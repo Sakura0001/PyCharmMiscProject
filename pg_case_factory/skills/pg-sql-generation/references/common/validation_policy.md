@@ -1,4 +1,4 @@
-6# 技能：validation_policy
+# 技能：validation_policy
 
 ## 作用
 

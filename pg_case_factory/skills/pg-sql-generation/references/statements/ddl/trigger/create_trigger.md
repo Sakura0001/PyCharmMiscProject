@@ -2,7 +2,7 @@
 
 ## 官方语法范围
 
-来源：https://www.postgresql.org/docs/16/sql-createtrigger.html
+来源：https://www.postgresql.org/docs/18/sql-createtrigger.html
 
 ### Synopsis
 
@@ -143,7 +143,11 @@ structured_config:
   category: ddl
   domain: trigger
   skill_name: create_trigger
-  official_source: https://www.postgresql.org/docs/16/sql-createtrigger.html
+  official_source: https://www.postgresql.org/docs/18/sql-createtrigger.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-createtrigger.html
+    review_status: semantic_reviewed
   statement:
     key: create_trigger
     name: CREATE TRIGGER
@@ -326,6 +330,8 @@ structured_config:
         label: REFERENCING OLD TABLE / NEW TABLE
       - key: absent
         label: 无 REFERENCING 子句
+      - key: transition_table_on_foreign_table
+        label: 外部表上使用 transition table（PG18 明确失败边界）
     from_clause:
       label: FROM 子句
       importance: important

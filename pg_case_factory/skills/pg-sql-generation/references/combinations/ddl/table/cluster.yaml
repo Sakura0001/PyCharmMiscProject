@@ -9,7 +9,7 @@ statement:
   aliases:
   - CLUSTER
   - CLUSTER VERBOSE
-  official_source: https://www.postgresql.org/docs/16/sql-cluster.html
+  official_source: https://www.postgresql.org/docs/18/sql-cluster.html
 execution_contract:
   required_matrix_is_baseline: true
   no_inference_before_required_coverage_passes: true
@@ -46,7 +46,7 @@ coverage_scope:
   target_object_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#object_kinds.all_object_kinds
     required_object_kinds:
     - regular_table
     - unlogged_table
@@ -58,7 +58,7 @@ coverage_scope:
   target_relation_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#relation_kinds.all_relation_kinds
     required_relation_kinds:
     - regular_table
     - unlogged_table
@@ -76,7 +76,7 @@ coverage_scope:
   table_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#table_kinds.all_table_kinds
     required_table_kinds:
     - regular_table
     - unlogged_table
@@ -90,8 +90,8 @@ coverage_scope:
   column_type_coverage:
     required: true
     coverage_mode: conditional
-    inventory_source: references/common/pg16_type_catalog.md
-    required_type_set: all_pg16_column_types
+    inventory_source: references/common/pg18_type_catalog.md
+    required_type_set: all_pg18_column_types
     expansion_mode: conditional
     require_each_type_success_or_failure: false
     decision_reason: CLUSTER rewrites table storage according to an existing index and does not declare, coerce, or validate
@@ -257,7 +257,7 @@ dynamic_inputs:
     - columns
   type_catalog:
     required: true
-    path: references/common/pg16_type_catalog.md
+    path: references/common/pg18_type_catalog.md
     required_fields:
     - type_key
     - type_category
@@ -495,3 +495,70 @@ audit_rules:
   require_post_coverage_extension_policy: true
   forbid_extension_before_required_coverage_passes: true
   forbid_extension_counting_toward_required_coverage: true
+pg18_compatibility:
+  target_version: '18.4'
+  synopsis_change: changed
+  test_points:
+  - id: PG18-CLUSTER-UNIFIED-OPTIONS
+    affected_factors:
+    - verbose_option
+    - cluster_all
+    - using_clause
+    affected_values:
+      verbose_option:
+      - paren_verbose_true
+      cluster_all:
+      - single_table
+      using_clause:
+      - using_index
+    sql: >-
+      CLUSTER (VERBOSE true) {table_name} USING {index_name};
+    oracle: reference_parity
+    covers: unified option-list with explicit table and USING index
+  - id: PG18-CLUSTER-PAREN-VERBOSE-FALSE
+    affected_factors:
+    - verbose_option
+    - cluster_all
+    - using_clause
+    affected_values:
+      verbose_option:
+      - paren_verbose_false
+      cluster_all:
+      - single_table
+      using_clause:
+      - without_using
+    sql: >-
+      CLUSTER (VERBOSE false) {table_name};
+    oracle: reference_parity
+    covers: parenthesized false option with remembered table index
+  - id: PG18-CLUSTER-ALL-TABLES
+    affected_factors:
+    - verbose_option
+    - cluster_all
+    - using_clause
+    affected_values:
+      verbose_option:
+      - no_verbose
+      cluster_all:
+      - all_tables
+      using_clause:
+      - without_using
+    sql: CLUSTER;
+    oracle: reference_parity
+    covers: optional target omitted to cluster all eligible tables
+  - id: PG18-CLUSTER-LEGACY-VERBOSE
+    affected_factors:
+    - verbose_option
+    - cluster_all
+    - using_clause
+    affected_values:
+      verbose_option:
+      - verbose_keyword
+      cluster_all:
+      - single_table
+      using_clause:
+      - using_index
+    sql: >-
+      CLUSTER VERBOSE {table_name} USING {index_name};
+    oracle: reference_parity
+    covers: legacy non-parenthesized VERBOSE parser boundary after synopsis consolidation

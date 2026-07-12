@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-alterconversion.html
+来源：https://www.postgresql.org/docs/18/sql-alterconversion.html
 
 ```sql
 ALTER CONVERSION name RENAME TO new_name
@@ -10,7 +10,7 @@ ALTER CONVERSION name OWNER TO { new_owner | CURRENT_ROLE | CURRENT_USER | SESSI
 ALTER CONVERSION name SET SCHEMA new_schema
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - 必须拥有该 conversion 才能使用 ALTER CONVERSION
 - 更改 owner：必须能够 SET ROLE 到新拥有角色，且该角色必须对 conversion 所在 schema 有 CREATE 权限
 - superuser 可以更改任何 conversion 的 owner，不受上述限制
@@ -120,7 +120,7 @@ structured_config:
   category: ddl
   domain: conversion
   skill_name: alter_conversion
-  official_source: https://www.postgresql.org/docs/16/sql-alterconversion.html
+  official_source: https://www.postgresql.org/docs/18/sql-alterconversion.html
   statement:
     key: alter_conversion
     name: ALTER CONVERSION

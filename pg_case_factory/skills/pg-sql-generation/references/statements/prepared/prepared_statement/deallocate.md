@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-deallocate.html
+来源：https://www.postgresql.org/docs/18/sql-deallocate.html
 
 ```sql
 DEALLOCATE [ PREPARE ] { name | ALL }
@@ -77,7 +77,7 @@ structured_config:
   category: prepared
   domain: prepared_statement
   skill_name: deallocate
-  official_source: https://www.postgresql.org/docs/16/sql-deallocate.html
+  official_source: https://www.postgresql.org/docs/18/sql-deallocate.html
   statement:
     key: deallocate
     name: DEALLOCATE

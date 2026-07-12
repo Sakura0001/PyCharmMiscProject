@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-altertablespace.html
+来源：https://www.postgresql.org/docs/18/sql-altertablespace.html
 
 ```sql
 ALTER TABLESPACE name RENAME TO new_name
@@ -97,7 +97,11 @@ structured_config:
   category: ddl
   domain: tablespace
   skill_name: alter_tablespace
-  official_source: https://www.postgresql.org/docs/16/sql-altertablespace.html
+  official_source: https://www.postgresql.org/docs/18/sql-altertablespace.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-altertablespace.html
+    review_status: semantic_reviewed
   statement:
     key: alter_tablespace
     name: ALTER TABLESPACE

@@ -6,7 +6,7 @@ statement:
   category: ddl
   domain: cast
   source_reference: references/statements/ddl/cast/drop_cast.md
-  official_source: https://www.postgresql.org/docs/16/sql-dropcast.html
+  official_source: https://www.postgresql.org/docs/18/sql-dropcast.html
   aliases:
   - DROP CAST
   - drop cast
@@ -46,7 +46,7 @@ coverage_scope:
   target_object_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#object_kinds.all_object_kinds
     required_object_kinds:
     - cast
     - type
@@ -55,7 +55,7 @@ coverage_scope:
   target_relation_coverage:
     required: false
     coverage_mode: not_applicable
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#relation_kinds.all_relation_kinds
     decision_reason: DROP CAST does not target pg_class relations; it removes a type-system cast object.
   table_coverage:
     required: false
@@ -64,7 +64,7 @@ coverage_scope:
   column_type_coverage:
     required: false
     coverage_mode: representative
-    inventory_source: references/common/pg16_type_catalog.md
+    inventory_source: references/common/pg18_type_catalog.md
     decision_reason: Exhaustive table-column type coverage is not applicable because DROP CAST uses source_type and
       target_type as cast identity keys, not table columns. Representative type-pair coverage is expressed by source_type,
       target_type, and the cast_type_pair_manifest.

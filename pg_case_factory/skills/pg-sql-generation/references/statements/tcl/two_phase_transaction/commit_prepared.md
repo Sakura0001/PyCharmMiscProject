@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-commit-prepared.html
+来源：https://www.postgresql.org/docs/18/sql-commit-prepared.html
 
 ```sql
 COMMIT PREPARED transaction_id
@@ -78,7 +78,7 @@ structured_config:
   category: tcl
   domain: two_phase_transaction
   skill_name: commit_prepared
-  official_source: https://www.postgresql.org/docs/16/sql-commit-prepared.html
+  official_source: https://www.postgresql.org/docs/18/sql-commit-prepared.html
   statement:
     key: commit_prepared
     name: COMMIT PREPARED

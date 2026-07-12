@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-fetch.html
+来源：https://www.postgresql.org/docs/18/sql-fetch.html
 
 ```sql
 FETCH [ direction ] [ FROM | IN ] cursor_name
@@ -94,7 +94,7 @@ structured_config:
   category: cursor
   domain: cursor
   skill_name: fetch
-  official_source: https://www.postgresql.org/docs/16/sql-fetch.html
+  official_source: https://www.postgresql.org/docs/18/sql-fetch.html
   statement:
     key: fetch
     name: FETCH

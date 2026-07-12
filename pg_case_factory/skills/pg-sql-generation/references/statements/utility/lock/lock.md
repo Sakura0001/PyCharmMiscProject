@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-lock.html
+来源：https://www.postgresql.org/docs/18/sql-lock.html
 
 ```sql
 LOCK [ TABLE ] [ ONLY ] name [ * ] [, ...] [ IN lockmode MODE ] [ NOWAIT ]
@@ -83,7 +83,11 @@ structured_config:
   category: utility
   domain: lock
   skill_name: lock
-  official_source: https://www.postgresql.org/docs/16/sql-lock.html
+  official_source: https://www.postgresql.org/docs/18/sql-lock.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-lock.html
+    review_status: semantic_reviewed
   statement:
     key: lock
     name: LOCK
@@ -196,6 +200,7 @@ structured_config:
       values:
       - owner
       - granted_role
+      - maintain_privilege
       - insufficient_privilege
     invalid_combination:
       label: 非法组合

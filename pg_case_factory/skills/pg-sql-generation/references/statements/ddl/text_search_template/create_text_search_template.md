@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-createtstemplate.html
+来源：https://www.postgresql.org/docs/18/sql-createtstemplate.html
 
 ```sql
 CREATE TEXT SEARCH TEMPLATE name (
@@ -11,7 +11,7 @@ CREATE TEXT SEARCH TEMPLATE name (
 )
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - CREATE TEXT SEARCH TEMPLATE 要求 SUPERUSER 权限，非 superuser 执行路径属于失败路径
 - LEXIZE 函数必须指定（强制性）
 - INIT 函数可选
@@ -97,7 +97,7 @@ structured_config:
   category: ddl
   domain: text_search_template
   skill_name: create_text_search_template
-  official_source: https://www.postgresql.org/docs/16/sql-createtstemplate.html
+  official_source: https://www.postgresql.org/docs/18/sql-createtstemplate.html
   statement:
     key: create_text_search_template
     name: CREATE TEXT SEARCH TEMPLATE

@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-createlanguage.html
+来源：https://www.postgresql.org/docs/18/sql-createlanguage.html
 
 ```sql
 CREATE [ OR REPLACE ] [ TRUSTED ] [ PROCEDURAL ] LANGUAGE name
@@ -89,7 +89,7 @@ structured_config:
   category: ddl
   domain: language
   skill_name: create_language
-  official_source: https://www.postgresql.org/docs/16/sql-createlanguage.html
+  official_source: https://www.postgresql.org/docs/18/sql-createlanguage.html
   statement:
     key: create_language
     name: CREATE LANGUAGE

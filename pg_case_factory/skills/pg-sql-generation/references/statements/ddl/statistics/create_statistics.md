@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-createstatistics.html
+来源：https://www.postgresql.org/docs/18/sql-createstatistics.html
 
 ```sql
 CREATE STATISTICS [ [ IF NOT EXISTS ] statistics_name ]
@@ -113,7 +113,7 @@ structured_config:
   category: ddl
   domain: statistics
   skill_name: create_statistics
-  official_source: https://www.postgresql.org/docs/16/sql-createstatistics.html
+  official_source: https://www.postgresql.org/docs/18/sql-createstatistics.html
   statement:
     key: create_statistics
     name: CREATE STATISTICS

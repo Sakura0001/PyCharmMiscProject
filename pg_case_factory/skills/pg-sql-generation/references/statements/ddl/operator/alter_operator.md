@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-alteroperator.html
+来源：https://www.postgresql.org/docs/18/sql-alteroperator.html
 
 ```sql
 ALTER OPERATOR name ( { left_type | NONE } , right_type )
@@ -96,7 +96,11 @@ structured_config:
   category: ddl
   domain: operator
   skill_name: alter_operator
-  official_source: https://www.postgresql.org/docs/16/sql-alteroperator.html
+  official_source: https://www.postgresql.org/docs/18/sql-alteroperator.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-alteroperator.html
+    review_status: synopsis_adapted
   statement:
     key: alter_operator
     name: ALTER OPERATOR
@@ -183,6 +187,10 @@ structured_config:
       - owner_change
       - set_schema
       - set_estimator
+      - set_commutator
+      - set_negator
+      - set_hashes
+      - set_merges
     new_owner_shape:
       label: 新 owner 形态
       importance: non_important

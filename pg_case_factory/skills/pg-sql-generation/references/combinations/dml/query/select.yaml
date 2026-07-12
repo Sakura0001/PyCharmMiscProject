@@ -6,7 +6,7 @@ statement:
   category: dml
   domain: query
   source_reference: references/statements/dml/query/select.md
-  official_source: https://www.postgresql.org/docs/16/sql-select.html
+  official_source: https://www.postgresql.org/docs/18/sql-select.html
 execution_contract:
   required_matrix_is_baseline: true
   no_inference_before_required_coverage_passes: true
@@ -44,7 +44,7 @@ coverage_scope:
   target_object_coverage:
     required: true
     coverage_mode: representative
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#object_kinds.all_object_kinds
     required_object_kinds:
     - regular_table
     - plain_view
@@ -56,7 +56,7 @@ coverage_scope:
   target_relation_coverage:
     required: true
     coverage_mode: representative
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#relation_kinds.all_relation_kinds
     required_relation_kinds:
     - regular_table
     - unlogged_table
@@ -74,7 +74,7 @@ coverage_scope:
   table_coverage:
     required: true
     coverage_mode: representative
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#table_kinds.all_table_kinds
     required_table_kinds:
     - regular_table
     - unlogged_table
@@ -85,13 +85,13 @@ coverage_scope:
       Representative table-kind coverage is required, while view and foreign-table coverage stay in target_relation_coverage.
   column_type_coverage:
     required: true
-    coverage_mode: exhaustive
-    inventory_source: references/common/pg16_type_catalog.md
-    required_type_set: all_pg16_column_types
+    coverage_mode: conditional
+    inventory_source: references/common/pg18_type_catalog.md
+    required_type_set: canonical_executable_column_profiles
     expansion_mode: expand_every_type
     require_each_type_success_or_failure: true
     decision_reason: SELECT projections, predicates, joins, grouping, ordering, and returned rows are type-sensitive.
-      Each PG16 column type must be covered by at least one success or declared failure case.
+      This matrix expands every portable executable profile; the feature plan separately reconciles all seven PG18.4 type dimensions.
 factor_contract:
   source_reference_must_define_all_factors: true
   matrix_must_cover_required_factor_values: true
@@ -270,6 +270,9 @@ combination_groups:
     verification_mode: effect_query
     cleanup_mode: rollback
   expansion:
+    column_types:
+      mode: exhaustive
+      source: coverage_scope.column_type_coverage.required_type_set
     data_or_query_shape:
       mode: explicit
       values:
@@ -513,3 +516,27 @@ audit_rules:
   require_post_coverage_extension_policy: true
   forbid_extension_before_required_coverage_passes: true
   forbid_extension_counting_toward_required_coverage: true
+pg18_compatibility:
+  target_version: '18.4'
+  synopsis_change: changed
+  test_points:
+  - id: PG18-SELECT-LOCK-OF-ALIAS
+    affected_factors:
+    - name_shape
+    affected_values:
+      name_shape:
+      - row_lock_of_alias
+    sql: >-
+      SELECT * FROM {table_name} AS t FOR UPDATE OF t;
+    oracle: reference_parity
+    covers: row lock OF from_reference
+  - id: PG18-SELECT-MERGE-CTE
+    affected_factors:
+    - with_clause
+    affected_values:
+      with_clause:
+      - merge_cte
+    sql: >-
+      WITH merged AS (MERGE INTO {target_table} t USING {source_table} s ON {join_condition} WHEN MATCHED THEN DO NOTHING RETURNING *) SELECT * FROM merged;
+    oracle: reference_parity
+    covers: MERGE in WITH query

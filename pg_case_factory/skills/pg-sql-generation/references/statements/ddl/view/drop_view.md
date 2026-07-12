@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-dropview.html
+来源：https://www.postgresql.org/docs/18/sql-dropview.html
 
 ```sql
 DROP VIEW [ IF EXISTS ] name [, ...] [ CASCADE | RESTRICT ]
@@ -99,7 +99,7 @@ structured_config:
   category: ddl
   domain: view
   skill_name: drop_view
-  official_source: https://www.postgresql.org/docs/16/sql-dropview.html
+  official_source: https://www.postgresql.org/docs/18/sql-dropview.html
   statement:
     key: drop_view
     name: DROP VIEW

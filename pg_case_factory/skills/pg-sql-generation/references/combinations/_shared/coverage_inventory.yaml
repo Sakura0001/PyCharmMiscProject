@@ -11,21 +11,105 @@ coverage_modes:
     description: Statement covers representative values and records why exhaustive coverage is not required.
   conditional:
     description: Coverage depends on another declared factor, object kind, or lifecycle context.
-object_kinds:
-  database_cluster_objects:
+source_provenance:
+  product: PostgreSQL
+  version: "18.4"
+  source_archive: postgresql-18.4.tar.bz2
+  source_archive_sha256: 81a81ec695fb0c7901407defaa1d2f7973617154cf27ba74e3a7ab8e64436094
+  members:
+    pg_class_h:
+      path: src/include/catalog/pg_class.h
+      sha256: 4c086f9f3eacc8e46490649397fa75a3693dd6e699c26270c95ec46649da0557
+    parsenodes_h:
+      path: src/include/nodes/parsenodes.h
+      sha256: 9450d06624158bee5f495333c519342d5e13d7536c62989c982ad6069a08a73d
+    pg_type_dat:
+      path: src/include/catalog/pg_type.dat
+      sha256: 5f5887b75677cba2d4a1a0cfeb355df5ed91f85d385fac88bd8d7c605b3578f9
+    pg_am_dat:
+      path: src/include/catalog/pg_am.dat
+      sha256: b3cb86b102a42fb0024cbd99779c9897afb40d12a71f5cc5a0e5aee7ff2f9969
+
+# Canonical SQL object types are the 52 OBJECT_* members of PostgreSQL 18.4's
+# ObjectType enum.  Names are the lowercase enum suffixes, without aliases.
+sql_object_types:
+  canonical: true
+  source_member: parsenodes_h
+  derivation: lowercase OBJECT_ enum suffix in declaration order
+  count: 52
+  inventory_sha256: 16baf7956eef9b78b8ad585d8fcbe74306d2d3d16dd3004e3cb49a8673ab1180
+  all_sql_object_types:
+    - access_method
+    - aggregate
+    - amop
+    - amproc
+    - attribute
+    - cast
+    - column
+    - collation
+    - conversion
+    - database
+    - default
+    - defacl
+    - domain
+    - domconstraint
+    - event_trigger
+    - extension
+    - fdw
+    - foreign_server
+    - foreign_table
+    - function
+    - index
+    - language
+    - largeobject
+    - matview
+    - opclass
+    - operator
+    - opfamily
+    - parameter_acl
+    - policy
+    - procedure
+    - publication
+    - publication_namespace
+    - publication_rel
+    - role
+    - routine
+    - rule
+    - schema
+    - sequence
+    - subscription
+    - statistic_ext
+    - tabconstraint
+    - table
+    - tablespace
+    - transform
+    - trigger
+    - tsconfiguration
+    - tsdictionary
+    - tsparser
+    - tstemplate
+    - type
+    - user_mapping
+    - view
+
+# These are legacy generator target contexts, not PostgreSQL object types.  The
+# list is retained while existing matrices migrate to the canonical object or a
+# dedicated operation/context axis.
+test_target_contexts:
+  canonical: false
+  completeness_scope: legacy_statement_matrix_targets
+  all_legacy_test_target_contexts: &legacy_test_target_contexts
     - database
     - tablespace
     - role
     - user
     - group
-  schema_objects:
     - schema
     - extension
     - collation
     - conversion
     - language
     - access_method
-  relation_objects:
     - regular_table
     - unlogged_table
     - temporary_table
@@ -40,14 +124,12 @@ object_kinds:
     - index
     - partitioned_index
     - statistics_object
-  routine_objects:
     - function
     - procedure
     - aggregate
     - routine
     - operator
     - transform
-  type_system_objects:
     - type
     - enum_type
     - composite_type
@@ -55,17 +137,13 @@ object_kinds:
     - cast
     - operator_class
     - operator_family
-  text_search_objects:
     - text_search_configuration
     - text_search_dictionary
     - text_search_parser
     - text_search_template
-  foreign_server_objects:
     - foreign_data_wrapper
     - server
     - user_mapping
-    - foreign_table
-  security_objects:
     - privilege
     - default_privileges
     - policy
@@ -73,21 +151,17 @@ object_kinds:
     - trigger
     - event_trigger
     - security_label
-  replication_objects:
     - publication
     - subscription
-  runtime_objects:
     - runtime_parameter
     - prepared_statement
     - cursor
     - notification_channel
     - session_authorization
     - role_setting
-  transaction_objects:
     - transaction
     - savepoint
     - two_phase_transaction
-  utility_objects:
     - copy_stream
     - anonymous_code_block
     - checkpoint
@@ -96,8 +170,50 @@ object_kinds:
     - maintenance_target
     - execution_plan
     - large_object
+
+# Deprecated selector alias required by existing statement matrices.  It points
+# to test_target_contexts and MUST NOT be used as PostgreSQL object completeness
+# evidence.
+object_kinds:
+  canonical: false
+  compatibility_status: deprecated_matrix_selector_alias
+  replacement_selector: sql_object_types.all_sql_object_types
+  all_object_kinds: *legacy_test_target_contexts
+
+# Exact PostgreSQL relkind inventory.  Values are lowercase RELKIND_* suffixes;
+# persistence, partition role and inheritance are deliberately separate axes.
 relation_kinds:
-  indexable_relation_kinds:
+  canonical: true
+  canonical_selector: relation_kinds.all_pg18_relkinds
+  source_member: pg_class_h
+  derivation: lowercase RELKIND_ macro suffix in declaration order
+  count: 10
+  inventory_sha256: 06cae15bce0029a913db85e3e8a76fec1ba50604018c532584bfd461fe20a8fa
+  all_pg18_relkinds:
+    - relation
+    - index
+    - sequence
+    - toastvalue
+    - view
+    - matview
+    - composite_type
+    - foreign_table
+    - partitioned_table
+    - partitioned_index
+  codes:
+    relation: r
+    index: i
+    sequence: S
+    toastvalue: t
+    view: v
+    matview: m
+    composite_type: c
+    foreign_table: f
+    partitioned_table: p
+    partitioned_index: I
+  # Deprecated compatibility selector for the 183 existing matrices.  These
+  # are relation test shapes, not PostgreSQL relkind values.
+  all_relation_kinds: &legacy_relation_test_shapes
     - regular_table
     - unlogged_table
     - temporary_table
@@ -105,12 +221,81 @@ relation_kinds:
     - partitioned_table_leaf
     - inherited_parent_table
     - inherited_child_table
-    - materialized_view
-  non_indexable_relation_kinds:
-    - plain_view
     - foreign_table
+    - plain_view
+    - materialized_view
     - sequence
+    - index
+    - partitioned_index
+    - statistics_object
+  legacy_selector_status: deprecated_matrix_selector
+
+legacy_relation_test_shapes:
+  canonical: false
+  completeness_scope: legacy_statement_matrix_relation_shapes
+  values: *legacy_relation_test_shapes
+
+relation_dimensions:
+  relpersistence:
+    source_member: pg_class_h
+    count: 3
+    inventory_sha256: a7ad60e0cd9b2016468df164068d84e23aeff305c177584bd71dfd08ede4badd
+    values:
+      - permanent
+      - unlogged
+      - temp
+  partition_role:
+    count: 3
+    inventory_sha256: 4e463abadb471cfea9bc05471c059088b52cbc08ef023929008950aff7ced22b
+    values:
+      - non_partitioned
+      - partitioned_parent
+      - partition_leaf
+  partition_strategy:
+    count: 4
+    inventory_sha256: e2245b57c7e9b4b5fcc576120dcd7a59b42a66a3e8a315155a047dc27d273eb2
+    values:
+      - none
+      - range
+      - list
+      - hash
+  inheritance_role:
+    count: 4
+    inventory_sha256: 4a4fed97dd0adb6c49d00dbdb7c1f4eb52a08203dca04249b464ea013985c92e
+    values:
+      - none
+      - parent
+      - child
+      - parent_and_child
+  builtin_table_access_methods:
+    source_member: pg_am_dat
+    count: 1
+    inventory_sha256: c81dbd6547cc3ba40989b17658cd6b67559b0a5ef488790d415e63512b8b9b3b
+    values:
+      - heap
+  table_access_method_selection:
+    count: 3
+    inventory_sha256: 5fb7374d7fa87741c11f03ffc9e0cc90e5e74039d8529863c13a6b5550c45d0d
+    values:
+      - default
+      - explicit_builtin
+      - extension_provided
+
+# A table is described by the orthogonal relation_dimensions above.  This flat
+# selector remains solely for matrix compatibility and is not canonical.
 table_kinds:
+  canonical: false
+  compatibility_status: deprecated_matrix_selector
+  replacement: relation_dimensions
+  all_table_kinds: &legacy_table_test_shapes
+    - regular_table
+    - unlogged_table
+    - temporary_table
+    - partitioned_table_parent
+    - partitioned_table_leaf
+    - inherited_parent_table
+    - inherited_child_table
+    - foreign_table
   table_backed_statement_table_kinds:
     - regular_table
     - unlogged_table
@@ -119,9 +304,20 @@ table_kinds:
     - partitioned_table_leaf
     - inherited_parent_table
     - inherited_child_table
+
+legacy_table_test_shapes:
+  canonical: false
+  completeness_scope: legacy_statement_matrix_table_shapes
+  values: *legacy_table_test_shapes
+
 column_type_sets:
-  all_pg16_column_types:
-    source: references/common/pg16_type_catalog.md
+  canonical_executable_profiles:
+    source: references/common/pg18_type_catalog.md#structured_config.types
+    scope: finite_core_executable_profiles_not_all_pg_type_rows
+  source_derived_builtins:
+    source: references/common/pg18_type_catalog.md#structured_config.concrete_builtin_types.values
+  source_derived_auto_arrays:
+    source: references/common/pg18_type_catalog.md#structured_config.auto_array_types.element_types
 matrix_artifacts:
   derived_extension_combinations:
     path_pattern: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml

@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-alterusermapping.html
+来源：https://www.postgresql.org/docs/18/sql-alterusermapping.html
 
 ```sql
 ALTER USER MAPPING FOR { user_name | USER | CURRENT_ROLE | CURRENT_USER | SESSION_USER | PUBLIC }
@@ -10,7 +10,7 @@ ALTER USER MAPPING FOR { user_name | USER | CURRENT_ROLE | CURRENT_USER | SESSIO
     OPTIONS ( [ ADD | SET | DROP ] option ['value'] [, ... ] )
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - 外部服务器的 owner 可修改任何用户的 user mapping
 - 拥有外部服务器 USAGE 权限的用户只能修改自己用户名的 user mapping
 - OPTIONS 中 ADD 为默认操作（未显式指定操作时）
@@ -100,7 +100,7 @@ structured_config:
   category: ddl
   domain: user_mapping
   skill_name: alter_user_mapping
-  official_source: https://www.postgresql.org/docs/16/sql-alterusermapping.html
+  official_source: https://www.postgresql.org/docs/18/sql-alterusermapping.html
   statement:
     key: alter_user_mapping
     name: ALTER USER MAPPING

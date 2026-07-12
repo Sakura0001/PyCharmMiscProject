@@ -6,7 +6,7 @@ statement:
   category: ddl
   domain: text_search_dictionary
   source_reference: references/statements/ddl/text_search_dictionary/drop_text_search_dictionary.md
-  official_source: https://www.postgresql.org/docs/16/sql-droptsdictionary.html
+  official_source: https://www.postgresql.org/docs/18/sql-droptsdictionary.html
   aliases:
   - drop_text_search_dictionary
   - DROP TEXT SEARCH DICTIONARY
@@ -48,7 +48,7 @@ coverage_scope:
   target_object_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#object_kinds.all_object_kinds
     required_object_kinds:
     - text_search_dictionary
     - text_search_configuration
@@ -58,7 +58,7 @@ coverage_scope:
   target_relation_coverage:
     required: false
     coverage_mode: not_applicable
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#relation_kinds.all_relation_kinds
     decision_reason: DROP TEXT SEARCH DICTIONARY names text search catalog objects, not pg_class relations. Tables, indexes,
       views, sequences, materialized views, and foreign tables are outside this statement target surface.
   table_coverage:
@@ -70,7 +70,7 @@ coverage_scope:
     required: false
     coverage_mode: not_applicable
     decision_reason: The statement changes text search dictionary metadata, template bindings, and dictionary options. It
-      does not create, alter, scan, or validate table columns, so PG16 table column types are not an applicability axis.
+      does not create, alter, scan, or validate table columns, so PG18.4 table column types are not an applicability axis.
 factor_contract:
   source_reference_must_define_all_factors: true
   matrix_must_cover_required_factor_values: true

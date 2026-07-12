@@ -6,7 +6,7 @@ statement:
   category: ddl
   domain: type
   source_reference: references/statements/ddl/type/drop_type.md
-  official_source: https://www.postgresql.org/docs/16/sql-droptype.html
+  official_source: https://www.postgresql.org/docs/18/sql-droptype.html
 execution_contract:
   required_matrix_is_baseline: true
   no_inference_before_required_coverage_passes: true
@@ -43,7 +43,7 @@ coverage_scope:
   target_object_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#object_kinds.all_object_kinds
     required_object_kinds:
     - type
     - composite_type
@@ -52,7 +52,7 @@ coverage_scope:
   target_relation_coverage:
     required: false
     coverage_mode: conditional
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#relation_kinds.all_relation_kinds
     decision_reason: DROP TYPE does not target relations directly. Relation effects are conditional through dependency_state, especially table-column and typed-table dependents under CASCADE or RESTRICT.
   table_coverage:
     required: false
@@ -61,7 +61,7 @@ coverage_scope:
   column_type_coverage:
     required: false
     coverage_mode: not_applicable
-    decision_reason: DROP TYPE deletes the type object and checks dependencies. It does not validate table-column type semantics or require expansion over all PG16 column types.
+    decision_reason: DROP TYPE deletes the type object and checks dependencies. It does not validate table-column type semantics or require expansion over all PG18.4 column types.
 factor_contract:
   source_reference_must_define_all_factors: true
   matrix_must_cover_required_factor_values: true

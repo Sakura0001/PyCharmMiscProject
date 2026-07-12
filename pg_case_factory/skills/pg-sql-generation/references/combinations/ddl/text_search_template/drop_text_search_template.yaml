@@ -6,7 +6,7 @@ statement:
   category: ddl
   domain: text_search_template
   source_reference: references/statements/ddl/text_search_template/drop_text_search_template.md
-  official_source: https://www.postgresql.org/docs/16/sql-droptstemplate.html
+  official_source: https://www.postgresql.org/docs/18/sql-droptstemplate.html
   aliases:
   - drop_text_search_template
   - DROP TEXT SEARCH TEMPLATE
@@ -48,7 +48,7 @@ coverage_scope:
   target_object_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#object_kinds.all_object_kinds
     required_object_kinds:
     - text_search_template
     - text_search_dictionary
@@ -58,7 +58,7 @@ coverage_scope:
   target_relation_coverage:
     required: false
     coverage_mode: not_applicable
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#relation_kinds.all_relation_kinds
     decision_reason: DROP TEXT SEARCH TEMPLATE names text search catalog objects, not pg_class relations. Tables, indexes,
       views, sequences, materialized views, and foreign tables are outside this statement target surface.
   table_coverage:
@@ -70,7 +70,7 @@ coverage_scope:
     required: false
     coverage_mode: not_applicable
     decision_reason: The statement manages template catalog metadata and template support functions. It does not operate on
-      table columns or column type semantics, so PG16 table column_type_coverage is not applicable.
+      table columns or column type semantics, so PG18.4 table column_type_coverage is not applicable.
 factor_contract:
   source_reference_must_define_all_factors: true
   matrix_must_cover_required_factor_values: true

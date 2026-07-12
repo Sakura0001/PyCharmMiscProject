@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-alterrole.html
+来源：https://www.postgresql.org/docs/18/sql-alterrole.html
 
 ```sql
 ALTER ROLE role_specification [ WITH ] option [ ... ]
@@ -131,7 +131,11 @@ structured_config:
   category: ddl
   domain: role
   skill_name: alter_role
-  official_source: https://www.postgresql.org/docs/16/sql-alterrole.html
+  official_source: https://www.postgresql.org/docs/18/sql-alterrole.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-alterrole.html
+    review_status: semantic_reviewed
   statement:
     key: alter_role
     name: ALTER ROLE
@@ -352,6 +356,7 @@ structured_config:
       - createrole_altering_superuser
       - createrole_without_admin_option
       - ordinary_role_altering_other_role_config
+      - bootstrap_superuser_property_change
     invalid_config_parameter:
       label: 非法配置参数
       importance: non_important

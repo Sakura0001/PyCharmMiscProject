@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-createeventtrigger.html
+来源：https://www.postgresql.org/docs/18/sql-createeventtrigger.html
 
 ```sql
 CREATE EVENT TRIGGER name
@@ -11,7 +11,7 @@ CREATE EVENT TRIGGER name
     EXECUTE { FUNCTION | PROCEDURE } function_name()
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - 只有 superuser 才能创建 event trigger
 - event trigger 名称在数据库内必须唯一
 - 支持的 event 类型：ddl_command_start、ddl_command_end、table_rewrite
@@ -112,7 +112,11 @@ structured_config:
   category: ddl
   domain: event_trigger
   skill_name: create_event_trigger
-  official_source: https://www.postgresql.org/docs/16/sql-createeventtrigger.html
+  official_source: https://www.postgresql.org/docs/18/sql-createeventtrigger.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-createeventtrigger.html
+    review_status: semantic_reviewed
   statement:
     key: create_event_trigger
     name: CREATE EVENT TRIGGER
@@ -268,6 +272,7 @@ structured_config:
       values:
       - normal_mode
       - single_user_mode_disabled
+      - allow_event_triggers_off
     duplicate_trigger_name:
       label: 同数据库内重名冲突
       importance: non_important

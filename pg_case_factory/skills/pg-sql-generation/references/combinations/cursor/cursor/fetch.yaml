@@ -6,7 +6,7 @@ statement:
   category: cursor
   domain: cursor
   source_reference: references/statements/cursor/cursor/fetch.md
-  official_source: https://www.postgresql.org/docs/16/sql-fetch.html
+  official_source: https://www.postgresql.org/docs/18/sql-fetch.html
 execution_contract:
   required_matrix_is_baseline: true
   no_inference_before_required_coverage_passes: true
@@ -41,21 +41,21 @@ coverage_scope:
   target_object_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#object_kinds.all_object_kinds
     required_object_kinds:
     - cursor
     decision_reason: cursor/cursor statement coverage is tracked by its explicit runtime or catalog object kind.
   target_relation_coverage:
     required: true
     coverage_mode: representative
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#relation_kinds.all_relation_kinds
     required_relation_kinds:
     - regular_table
     decision_reason: cursor/cursor statements can operate against table-backed targets in representative workflows.
   table_coverage:
     required: true
     coverage_mode: representative
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#table_kinds.all_table_kinds
     required_table_kinds:
     - regular_table
     decision_reason: cursor/cursor behavior is validated against representative table objects when applicable.

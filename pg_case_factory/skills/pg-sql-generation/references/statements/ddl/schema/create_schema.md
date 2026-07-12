@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-createschema.html
+来源：https://www.postgresql.org/docs/18/sql-createschema.html
 
 ### Synopsis 形式 1：命名 Schema +可选 Owner +可选内容
 
@@ -145,7 +145,7 @@ structured_config:
   category: ddl
   domain: schema
   skill_name: create_schema
-  official_source: https://www.postgresql.org/docs/16/sql-createschema.html
+  official_source: https://www.postgresql.org/docs/18/sql-createschema.html
   statement:
     key: create_schema
     name: CREATE SCHEMA

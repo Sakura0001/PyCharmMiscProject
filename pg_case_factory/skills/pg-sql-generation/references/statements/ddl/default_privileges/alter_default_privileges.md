@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-alterdefaultprivileges.html
+来源：https://www.postgresql.org/docs/18/sql-alterdefaultprivileges.html
 
 ```sql
 ALTER DEFAULT PRIVILEGES
@@ -69,7 +69,7 @@ REVOKE [ GRANT OPTION FOR ]
     [ CASCADE | RESTRICT ]
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - ALTER DEFAULT PRIVILEGES 仅影响将来创建的对象权限，不影响已存在对象的权限
 - 当前角色决定新对象的默认权限；新对象权限仅受当前角色的默认权限影响，不受角色成员关系继承
 - per-schema 默认权限是加法性的（additive only），仅添加到全局默认之上
@@ -182,7 +182,11 @@ structured_config:
   category: ddl
   domain: default_privileges
   skill_name: alter_default_privileges
-  official_source: https://www.postgresql.org/docs/16/sql-alterdefaultprivileges.html
+  official_source: https://www.postgresql.org/docs/18/sql-alterdefaultprivileges.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-alterdefaultprivileges.html
+    review_status: synopsis_adapted
   statement:
     key: alter_default_privileges
     name: ALTER DEFAULT PRIVILEGES
@@ -298,6 +302,7 @@ structured_config:
       - ROUTINES
       - TYPES
       - SCHEMAS
+      - LARGE_OBJECTS
     expected_status:
       label: 预期结果
       importance: important
@@ -330,6 +335,8 @@ structured_config:
       - multiple_privileges
       - all_privileges
       - public
+      - maintain_privilege
+      - large_object_select_update
     grant_option:
       label: WITH GRANT OPTION（仅 GRANT）
       importance: non_important

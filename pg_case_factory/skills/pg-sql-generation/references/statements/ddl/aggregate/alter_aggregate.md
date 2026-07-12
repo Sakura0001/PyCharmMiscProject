@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-alteraggregate.html
+来源：https://www.postgresql.org/docs/18/sql-alteraggregate.html
 
 ```sql
 ALTER AGGREGATE name ( aggregate_signature ) RENAME TO new_name
@@ -122,7 +122,7 @@ structured_config:
   category: ddl
   domain: aggregate
   skill_name: alter_aggregate
-  official_source: https://www.postgresql.org/docs/16/sql-alteraggregate.html
+  official_source: https://www.postgresql.org/docs/18/sql-alteraggregate.html
   statement:
     key: alter_aggregate
     name: ALTER AGGREGATE

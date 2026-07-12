@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-altertype.html
+来源：https://www.postgresql.org/docs/18/sql-altertype.html
 
 ### Synopsis 形式 1：更改 Owner
 
@@ -186,7 +186,7 @@ structured_config:
   category: ddl
   domain: type
   skill_name: alter_type
-  official_source: https://www.postgresql.org/docs/16/sql-altertype.html
+  official_source: https://www.postgresql.org/docs/18/sql-altertype.html
   statement:
     key: alter_type
     name: ALTER TYPE

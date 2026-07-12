@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-set-constraints.html
+来源：https://www.postgresql.org/docs/18/sql-set-constraints.html
 
 ```sql
 SET CONSTRAINTS { ALL | name [, ...] } { DEFERRED | IMMEDIATE }
@@ -77,7 +77,7 @@ structured_config:
   category: session
   domain: constraint_mode
   skill_name: set_constraints
-  official_source: https://www.postgresql.org/docs/16/sql-set-constraints.html
+  official_source: https://www.postgresql.org/docs/18/sql-set-constraints.html
   statement:
     key: set_constraints
     name: SET CONSTRAINTS

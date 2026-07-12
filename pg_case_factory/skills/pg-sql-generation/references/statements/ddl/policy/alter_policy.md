@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-alterpolicy.html
+来源：https://www.postgresql.org/docs/18/sql-alterpolicy.html
 
 ```sql
 ALTER POLICY name ON table_name RENAME TO new_name
@@ -13,7 +13,7 @@ ALTER POLICY name ON table_name
     [ WITH CHECK ( check_expression ) ]
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - ALTER POLICY 只有两种形式：RENAME 和修改角色/表达式
 - 第二种形式中，TO / USING / WITH CHECK 是独立替换的：省略的子句保持原值不变
 - ALTER POLICY 不能修改 policy 的命令类型（FOR）或策略类型（AS PERMISSIVE/RESTRICTIVE），要改变这些必须先 DROP 再 CREATE
@@ -106,7 +106,7 @@ structured_config:
   category: ddl
   domain: policy
   skill_name: alter_policy
-  official_source: https://www.postgresql.org/docs/16/sql-alterpolicy.html
+  official_source: https://www.postgresql.org/docs/18/sql-alterpolicy.html
   statement:
     key: alter_policy
     name: ALTER POLICY

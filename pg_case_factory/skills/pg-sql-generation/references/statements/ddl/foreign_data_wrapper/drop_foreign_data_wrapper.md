@@ -2,13 +2,13 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-dropforeigndatawrapper.html
+来源：https://www.postgresql.org/docs/18/sql-dropforeigndatawrapper.html
 
 ```sql
 DROP FOREIGN DATA WRAPPER [ IF EXISTS ] name [, ...] [ CASCADE | RESTRICT ]
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - 当前用户必须是 FDW 的 **owner** 才能执行 DROP FOREIGN DATA WRAPPER。
 - CASCADE：自动删除依赖该 FDW 的对象（如外部表和外部服务器），以及依赖这些对象的所有对象。
 - RESTRICT（默认）：如果任何对象依赖该 FDW，则拒绝删除。
@@ -105,7 +105,7 @@ structured_config:
   category: ddl
   domain: foreign_data_wrapper
   skill_name: drop_foreign_data_wrapper
-  official_source: https://www.postgresql.org/docs/16/sql-dropforeigndatawrapper.html
+  official_source: https://www.postgresql.org/docs/18/sql-dropforeigndatawrapper.html
   statement:
     key: drop_foreign_data_wrapper
     name: DROP FOREIGN DATA WRAPPER

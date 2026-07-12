@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-call.html
+来源：https://www.postgresql.org/docs/18/sql-call.html
 
 ```sql
 CALL name ( [ argument ] [, ...] )
@@ -79,7 +79,7 @@ structured_config:
   category: dml
   domain: routine
   skill_name: call
-  official_source: https://www.postgresql.org/docs/16/sql-call.html
+  official_source: https://www.postgresql.org/docs/18/sql-call.html
   statement:
     key: call
     name: CALL

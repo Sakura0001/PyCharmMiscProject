@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-createview.html
+来源：https://www.postgresql.org/docs/18/sql-createview.html
 
 ```sql
 CREATE [ OR REPLACE ] [ TEMP | TEMPORARY ] [ RECURSIVE ] VIEW name [ ( column_name [, ...] ) ]
@@ -113,7 +113,11 @@ structured_config:
   category: ddl
   domain: view
   skill_name: create_view
-  official_source: https://www.postgresql.org/docs/16/sql-createview.html
+  official_source: https://www.postgresql.org/docs/18/sql-createview.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-createview.html
+    review_status: semantic_reviewed
   statement:
     key: create_view
     name: CREATE VIEW
@@ -289,6 +293,8 @@ structured_config:
         label: VALUES (...) 形式
       - key: select_with_expression
         label: SELECT with computed expressions
+      - key: merge_updatable_view
+        label: MERGE 操作自动可更新视图（PG18）
     privilege_level:
       label: 权限级别
       importance: non_important
@@ -347,6 +353,8 @@ structured_config:
         label: 查询引用不存在的表
       - key: insufficient_privilege
         label: 权限不足
+      - key: merge_view_with_rules
+        label: 对含规则的视图执行 MERGE（PG18 失败边界）
     verification_mode:
       label: 验证方式
       importance: non_important

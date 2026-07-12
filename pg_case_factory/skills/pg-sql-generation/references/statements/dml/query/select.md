@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-select.html
+来源：https://www.postgresql.org/docs/18/sql-select.html
 
 ```sql
 [ WITH [ RECURSIVE ] with_query [, ...] ]
@@ -125,7 +125,11 @@ structured_config:
   category: dml
   domain: query
   skill_name: select
-  official_source: https://www.postgresql.org/docs/16/sql-select.html
+  official_source: https://www.postgresql.org/docs/18/sql-select.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-select.html
+    review_status: synopsis_adapted
   statement:
     key: select
     name: SELECT
@@ -243,6 +247,7 @@ structured_config:
       - absent
       - non_recursive
       - recursive
+      - merge_cte
     name_shape:
       label: 对象名与别名形态
       importance: non_important
@@ -251,6 +256,7 @@ structured_config:
       - schema_qualified
       - quoted_identifier
       - alias_used
+      - row_lock_of_alias
     expression_shape:
       label: 表达式形态
       importance: non_important

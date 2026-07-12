@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-dropstatistics.html
+来源：https://www.postgresql.org/docs/18/sql-dropstatistics.html
 
 ```sql
 DROP STATISTICS [ IF EXISTS ] name [, ...] [ CASCADE | RESTRICT ]
@@ -88,7 +88,7 @@ structured_config:
   category: ddl
   domain: statistics
   skill_name: drop_statistics
-  official_source: https://www.postgresql.org/docs/16/sql-dropstatistics.html
+  official_source: https://www.postgresql.org/docs/18/sql-dropstatistics.html
   statement:
     key: drop_statistics
     name: DROP STATISTICS

@@ -6,7 +6,7 @@ statement:
   category: tcl
   domain: transaction
   source_reference: references/statements/tcl/transaction/commit.md
-  official_source: https://www.postgresql.org/docs/16/sql-commit.html
+  official_source: https://www.postgresql.org/docs/18/sql-commit.html
 execution_contract:
   required_matrix_is_baseline: true
   no_inference_before_required_coverage_passes: true
@@ -41,7 +41,7 @@ coverage_scope:
   target_object_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#object_kinds.all_object_kinds
     required_object_kinds:
     - transaction
     decision_reason: tcl/transaction statement coverage is tracked by its explicit runtime or catalog object kind.

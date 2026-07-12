@@ -1,0 +1,72 @@
+# Copy this file to work/<run-id>/feature_manifest.yaml, outside artifacts/runs/.
+# Replace every example value and validate it before `run init`; that command
+# creates the immutable run snapshot. Never hand-edit artifacts/runs/<run-id>/inputs.
+# source.path is relative to this working manifest unless the CLI receives an
+# explicit --source-root. source.sha256 is the preserved document's 64-character
+# lowercase SHA-256, and locators remain tied to that immutable copy. Never add
+# connection secrets.
+schema_version: 1
+kind: feature_manifest
+feature_id: remote-storage-read
+title: Remote storage read path
+compatibility_target: postgresql-18.4
+summary: Verify that the storage-layer change preserves PostgreSQL 18.4 observable behavior.
+source:
+  path: feature-document.md
+  sha256: replace-with-source-sha256
+  revision: replace-with-source-revision
+requirements:
+  - id: REQ-001
+    description: Committed rows remain visible through supported SQL read paths.
+    source:
+      section: "3.2"
+      locator: "paragraph 4"
+  - id: REQ-002
+    description: Rolled-back rows are not visible.
+    source:
+      section: "3.3"
+      locator: "paragraph 2"
+  - id: REQ-003
+    description: SQL command tags, rows, warnings, errors, SQLSTATEs, and catalog-visible relation metadata remain identical to PostgreSQL 18.4.
+    source:
+      section: "3.4"
+      locator: "observable compatibility boundary"
+  - id: REQ-004
+    description: Permanent, unlogged, and temporary relations preserve PostgreSQL 18.4 behavior across WAL flush, checkpoint, clean restart, crash, and redo boundaries.
+    source:
+      section: "4.1"
+      locator: "durability and recovery"
+  - id: REQ-005
+    description: Inline, compressed, and out-of-line TOAST values preserve PostgreSQL 18.4 behavior across storage strategies, compression methods, size thresholds, and mutations.
+    source:
+      section: "4.2"
+      locator: "large-value storage"
+  - id: REQ-006
+    description: MVCC visibility, blocking, deadlock, and serialization outcomes remain identical under deterministic multi-session schedules.
+    source:
+      section: "4.3"
+      locator: "concurrency and snapshots"
+  - id: REQ-007
+    description: Standalone foreign tables and foreign partitions preserve PostgreSQL 18.4 routing, pruning, DML, truncation, and statistics behavior through an equivalent postgres_fdw harness.
+    source:
+      section: "4.4"
+      locator: "foreign and partitioned storage integration"
+  - id: REQ-008
+    description: COPY FROM/TO preserves PostgreSQL 18.4 row effects, command tags, SQLSTATEs, and notices for FORCE_QUOTE/FORCE_NOT_NULL/FORCE_NULL column-list and wildcard selectors, ON_ERROR stop/ignore, REJECT_LIMIT boundaries, and LOG_VERBOSITY default/verbose/silent.
+    source:
+      section: "4.5"
+      locator: "COPY protocol ingestion and PostgreSQL 18.4 option parity"
+metadata:
+  assumptions:
+    - Both endpoints expose the same non-storage PostgreSQL 18.4 configuration and extensions.
+  # These are deliberate template prompts, not approved defaults. The user must
+  # decide every applicable item, record the decision elsewhere, and replace
+  # this whole list with [] before run init. Plan validation may continue while
+  # questions remain; formal run initialization fails closed.
+  unresolved_questions:
+    - Which extension table access method and trusted base type should the external harness provision?
+    - Are both endpoints built with LZ4, deterministic fault injection, and crash/restart control?
+    - Which equivalent postgres_fdw server and user-mapping fixtures should be used on both endpoints?
+    - Which isolated superuser, CREATEDB/CREATEROLE, extension-file, logical-replication, and COPY harness fixtures are approved for privileged lifecycle cases?
+  observable_boundary: sql-and-user-visible-output
+  storage_diagnostics_owner: user

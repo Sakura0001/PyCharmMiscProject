@@ -2,18 +2,18 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-droptablespace.html
+来源：https://www.postgresql.org/docs/18/sql-droptablespace.html
 
 ```sql
 DROP TABLESPACE [ IF EXISTS ] name
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - 只有 tablespace 的 **owner** 或 **superuser** 才能执行 DROP TABLESPACE
 - tablespace 必须**为空**（当前数据库及所有其他数据库中均无对象驻留）才能被删除
 - 如果任何活跃 session 的 `temp_tablespaces` 配置引用了该 tablespace，DROP 可能因临时文件驻留而失败
 - DROP TABLESPACE **不能在事务块内执行**
-- PG16 不支持 CASCADE/RESTRICT 子句
+- PG18.4 不支持 CASCADE/RESTRICT 子句
 
 ## 语句作用
 
@@ -98,7 +98,7 @@ structured_config:
   category: ddl
   domain: tablespace
   skill_name: drop_tablespace
-  official_source: https://www.postgresql.org/docs/16/sql-droptablespace.html
+  official_source: https://www.postgresql.org/docs/18/sql-droptablespace.html
   statement:
     key: drop_tablespace
     name: DROP TABLESPACE

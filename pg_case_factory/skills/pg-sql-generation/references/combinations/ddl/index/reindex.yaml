@@ -6,7 +6,7 @@ statement:
   category: ddl
   domain: index
   source_reference: references/statements/ddl/index/reindex.md
-  official_source: https://www.postgresql.org/docs/16/sql-reindex.html
+  official_source: https://www.postgresql.org/docs/18/sql-reindex.html
 execution_contract:
   required_matrix_is_baseline: true
   no_inference_before_required_coverage_passes: true
@@ -44,7 +44,7 @@ coverage_scope:
   target_object_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#object_kinds.all_object_kinds
     required_object_kinds: [index, partitioned_index, regular_table, partitioned_table_parent, schema, database]
     decision_reason: >
       REINDEX targets indexes directly and can also target tables, schemas,
@@ -53,7 +53,7 @@ coverage_scope:
   target_relation_coverage:
     required: true
     coverage_mode: conditional
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#relation_kinds.all_relation_kinds
     required_relation_kinds:
     - regular_table
     - unlogged_table
@@ -72,7 +72,7 @@ coverage_scope:
   table_coverage:
     required: true
     coverage_mode: conditional
-    inventory_source: coverage_scope.target_relation_coverage.required_relation_kinds
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#table_kinds.all_table_kinds
     required_table_kinds:
     - regular_table
     - unlogged_table
@@ -88,8 +88,8 @@ coverage_scope:
   column_type_coverage:
     required: true
     coverage_mode: conditional
-    inventory_source: references/common/pg16_type_catalog.md
-    required_type_set: all_pg16_column_types
+    inventory_source: references/common/pg18_type_catalog.md
+    required_type_set: all_pg18_column_types
     expansion_mode: method_representative_existing_indexes
     require_each_type_success_or_failure: false
     decision_reason: >
@@ -146,7 +146,7 @@ factor_contract:
     permission:
       tier: T2
       coverage_role: permission_axis
-      required_values: [owner, non_owner, superuser, insufficient_privilege]
+      required_values: [owner, non_owner, superuser, insufficient_privilege, maintain_privilege, pg_maintain_role]
       coverage_requirement: all_values
     name_shape:
       tier: T3
@@ -181,7 +181,7 @@ factor_contract:
     concurrent_failure:
       tier: T5
       coverage_role: negative_axis
-      required_values: [none, invalid_index_leftover, ccnew_suffix, ccold_suffix]
+      required_values: [none, invalid_index_leftover, ccnew_suffix, ccold_suffix, suffixed_numeric_disambiguator, underscore_ccnew_suffix, underscore_ccold_suffix]
       coverage_requirement: all_values
     syntax_error:
       tier: T5
@@ -196,7 +196,7 @@ factor_contract:
     verification_mode:
       tier: T6
       coverage_role: verification_axis
-      required_values: [catalog_validity_check, invalid_index_detection, verbose_output_check]
+      required_values: [catalog_validity_check, invalid_index_detection, verbose_output_check, search_path_sandbox]
       coverage_requirement: all_values
     cleanup_mode:
       tier: T6
@@ -218,7 +218,7 @@ dynamic_inputs:
     required_fields: [tablespace_name, target_tablespace, is_system_relation]
   type_catalog:
     required: true
-    path: references/common/pg16_type_catalog.md
+    path: references/common/pg18_type_catalog.md
     required_fields: [type_key, type_category, declaration_sql, index_capabilities]
 combination_groups:
 - id: reindex_index_existing_methods
@@ -633,6 +633,110 @@ combination_groups:
     required: true
     steps:
     - sql: ROLLBACK;
+- id: pg18_reindex_maintain_permission_paths
+  title: PostgreSQL 18 MAINTAIN and pg_maintain authorization paths
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  factors:
+    expected_status: success
+    permission: maintain_privilege
+  expansion:
+    permission:
+      mode: explicit
+      values: [maintain_privilege, pg_maintain_role]
+  compatibility:
+    resolver: pg18_reference_parity
+    success_when:
+    - both permission paths complete and target output matches PostgreSQL 18.4
+    failure_when:
+    - condition: either path has a different SQLSTATE or observable result
+      reason: pg18_reindex_permission_mismatch
+    default_failure_reason: pg18_reindex_permission_mismatch
+  sql_shape:
+    template: |
+      GRANT MAINTAIN ON {table_name} TO {role_name};
+      SET ROLE {role_name};
+      REINDEX TABLE {table_name};
+      RESET ROLE;
+      GRANT pg_maintain TO {second_role_name};
+      SET ROLE {second_role_name};
+      REINDEX TABLE {table_name};
+      RESET ROLE;
+  verification:
+    required: true
+    mode: catalog_validity_check
+    sql: SELECT c.relname, i.indisvalid FROM pg_class c JOIN pg_index i ON i.indexrelid = c.oid WHERE i.indrelid = '{table_name}'::regclass ORDER BY c.relname;
+  cleanup:
+    required: true
+    steps:
+    - sql: RESET ROLE;
+    - sql: REVOKE MAINTAIN ON {table_name} FROM {role_name};
+    - sql: REVOKE pg_maintain FROM {second_role_name};
+- id: pg18_reindex_search_path_sandbox
+  title: PostgreSQL 18 REINDEX search-path sandbox
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  factors:
+    expected_status: success
+    verification_mode: search_path_sandbox
+  expansion: {}
+  compatibility:
+    resolver: pg18_reference_parity
+    success_when:
+    - target catalog state and output match PostgreSQL 18.4 under the hostile search_path
+    failure_when:
+    - condition: attacker-schema objects affect REINDEX or outputs diverge
+      reason: pg18_reindex_search_path_mismatch
+    default_failure_reason: pg18_reindex_search_path_mismatch
+  sql_shape:
+    template: SET search_path TO {attacker_schema}, public; REINDEX TABLE {table_name};
+  verification:
+    required: true
+    mode: catalog_validity_check
+    sql: SELECT c.relname, i.indisvalid FROM pg_class c JOIN pg_index i ON i.indexrelid = c.oid WHERE i.indrelid = '{table_name}'::regclass ORDER BY c.relname;
+  cleanup:
+    required: true
+    steps:
+    - sql: RESET search_path;
+- id: pg18_reindex_concurrent_failure_suffixes
+  title: PostgreSQL 18 interrupted concurrent REINDEX suffix disambiguation
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - injected_concurrent_reindex_interruption
+  factors:
+    expected_status: failure
+    concurrent_failure: suffixed_numeric_disambiguator
+  expansion:
+    concurrent_failure:
+      mode: explicit
+      values: [suffixed_numeric_disambiguator, underscore_ccnew_suffix, underscore_ccold_suffix]
+  compatibility:
+    resolver: pg18_reference_parity
+    success_when:
+    - the harness-injected interruption and leftover-name pattern match PostgreSQL 18.4
+    failure_when:
+    - condition: interruption is not injected at the declared phase
+      reason: injected_concurrent_reindex_interruption
+    - condition: SQLSTATE or _ccnew/_ccold numeric disambiguation differs
+      reason: pg18_reindex_suffix_mismatch
+    default_failure_reason: injected_concurrent_reindex_interruption
+  sql_shape:
+    template: |
+      -- Harness precondition: interrupt this REINDEX CONCURRENTLY after the replacement index is named.
+      REINDEX (CONCURRENTLY true) INDEX {index_name};
+  verification:
+    required: true
+    mode: invalid_index_detection
+    sql: SELECT relname, i.indisvalid FROM pg_class c LEFT JOIN pg_index i ON i.indexrelid = c.oid WHERE c.relname LIKE '{index_name}\_%cc%' ESCAPE '\' ORDER BY relname;
+  cleanup:
+    required: true
+    steps:
+    - sql: REINDEX (CONCURRENTLY true) INDEX {index_name};
+    - sql: DROP INDEX IF EXISTS {leftover_index_name};
 audit_rules:
   require_all_required_top_level_keys: true
   require_declared_coverage_scope: true
@@ -641,3 +745,74 @@ audit_rules:
   require_post_coverage_extension_policy: true
   forbid_extension_before_required_coverage_passes: true
   forbid_extension_counting_toward_required_coverage: true
+pg18_compatibility:
+  target_version: '18.4'
+  synopsis_change: unchanged
+  document_change: changed
+  test_points:
+  - id: PG18-REINDEX-MAINTAIN
+    affected_factors:
+    - permission
+    affected_values:
+      permission:
+      - maintain_privilege
+    sql: >-
+      GRANT MAINTAIN ON {table_name} TO {role_name}; SET ROLE {role_name}; REINDEX TABLE {table_name};
+    oracle: reference_parity
+    covers: direct MAINTAIN table privilege
+  - id: PG18-REINDEX-PG-MAINTAIN-ROLE
+    affected_factors:
+    - permission
+    affected_values:
+      permission:
+      - pg_maintain_role
+    sql: >-
+      GRANT pg_maintain TO {role_name}; SET ROLE {role_name}; REINDEX SCHEMA {schema_name};
+    oracle: reference_parity
+    covers: predefined pg_maintain role permits schema reindex
+  - id: PG18-REINDEX-SEARCH-PATH
+    affected_factors:
+    - verification_mode
+    affected_values:
+      verification_mode:
+      - search_path_sandbox
+    sql: >-
+      SET search_path TO {attacker_schema}, public; REINDEX TABLE {table_name};
+    oracle: reference_parity
+    covers: temporary pg_catalog,pg_temp search_path
+  - id: PG18-REINDEX-FAILURE-SUFFIX
+    affected_factors:
+    - concurrent_failure
+    affected_values:
+      concurrent_failure:
+      - underscore_ccnew_suffix
+    sql: >-
+      REINDEX (CONCURRENTLY true) INDEX {index_name}; SELECT relname FROM pg_class WHERE relname LIKE '{index_name}\_ccnew%' ESCAPE '\';
+    oracle: reference_parity
+    preconditions:
+    - harness injects a concurrent-build failure that leaves the transient replacement index
+    covers: _ccnew suffix after an injected concurrent-build failure
+  - id: PG18-REINDEX-FAILURE-SUFFIX-CCOLD
+    affected_factors:
+    - concurrent_failure
+    affected_values:
+      concurrent_failure:
+      - underscore_ccold_suffix
+    sql: >-
+      REINDEX (CONCURRENTLY true) INDEX {index_name}; SELECT relname FROM pg_class WHERE relname LIKE '{index_name}\_ccold%' ESCAPE '\';
+    oracle: reference_parity
+    preconditions:
+    - harness injects a post-swap failure that prevents removal of the original index
+    covers: _ccold suffix after an injected post-swap failure
+  - id: PG18-REINDEX-FAILURE-SUFFIX-NUMERIC
+    affected_factors:
+    - concurrent_failure
+    affected_values:
+      concurrent_failure:
+      - suffixed_numeric_disambiguator
+    sql: >-
+      REINDEX (CONCURRENTLY true) INDEX {index_name}; SELECT relname FROM pg_class WHERE relname ~ ('^' || '{index_name}' || '_cc(new|old)[1-9][0-9]*$');
+    oracle: reference_parity
+    preconditions:
+    - harness pre-creates a conflicting suffix and injects the matching concurrent failure phase
+    covers: nonzero numeric disambiguator appended to _ccnew or _ccold

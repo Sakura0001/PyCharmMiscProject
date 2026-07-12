@@ -2,7 +2,7 @@
 
 ## 官方语法范围
 
-来源：https://www.postgresql.org/docs/16/sql-alterfunction.html
+来源：https://www.postgresql.org/docs/18/sql-alterfunction.html
 
 ### Synopsis 形式 1：属性修改 (action)
 
@@ -160,7 +160,7 @@ structured_config:
   category: ddl
   domain: function
   skill_name: alter_function
-  official_source: https://www.postgresql.org/docs/16/sql-alterfunction.html
+  official_source: https://www.postgresql.org/docs/18/sql-alterfunction.html
   statement:
     key: alter_function
     name: ALTER FUNCTION

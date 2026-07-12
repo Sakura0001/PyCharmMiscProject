@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-dropgroup.html
+来源：https://www.postgresql.org/docs/18/sql-dropgroup.html
 
 ```sql
 DROP GROUP [ IF EXISTS ] name [, ...]
@@ -111,7 +111,7 @@ structured_config:
   category: ddl
   domain: group
   skill_name: drop_group
-  official_source: https://www.postgresql.org/docs/16/sql-dropgroup.html
+  official_source: https://www.postgresql.org/docs/18/sql-dropgroup.html
   statement:
     key: drop_group
     name: DROP GROUP

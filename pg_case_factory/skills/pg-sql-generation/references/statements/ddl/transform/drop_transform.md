@@ -2,13 +2,13 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-droptransform.html
+来源：https://www.postgresql.org/docs/18/sql-droptransform.html
 
 ```sql
 DROP TRANSFORM [ IF EXISTS ] FOR type_name LANGUAGE lang_name [ CASCADE | RESTRICT ]
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - DROP TRANSFORM 要求执行者同时拥有 type 和 language（与 CREATE TRANSFORM 权限要求一致）
 - RESTRICT（默认）：如果有对象依赖该 transform，拒绝删除
 - CASCADE：自动删除依赖该 transform 的所有对象
@@ -94,7 +94,7 @@ structured_config:
   category: ddl
   domain: transform
   skill_name: drop_transform
-  official_source: https://www.postgresql.org/docs/16/sql-droptransform.html
+  official_source: https://www.postgresql.org/docs/18/sql-droptransform.html
   statement:
     key: drop_transform
     name: DROP TRANSFORM

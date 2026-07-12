@@ -6,7 +6,7 @@ statement:
   category: ddl
   domain: text_search_configuration
   source_reference: references/statements/ddl/text_search_configuration/create_text_search_configuration.md
-  official_source: https://www.postgresql.org/docs/16/sql-createtsconfiguration.html
+  official_source: https://www.postgresql.org/docs/18/sql-createtsconfiguration.html
   aliases:
   - create_text_search_configuration
   - CREATE TEXT SEARCH CONFIGURATION
@@ -48,7 +48,7 @@ coverage_scope:
   target_object_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#object_kinds.all_object_kinds
     required_object_kinds:
     - text_search_configuration
     - text_search_parser
@@ -57,7 +57,7 @@ coverage_scope:
   target_relation_coverage:
     required: false
     coverage_mode: not_applicable
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#relation_kinds.all_relation_kinds
     decision_reason: CREATE TEXT SEARCH CONFIGURATION names text search catalog objects, not pg_class relations. Tables, indexes,
       views, sequences, materialized views, and foreign tables are outside this statement target surface.
   table_coverage:
@@ -69,7 +69,7 @@ coverage_scope:
     required: false
     coverage_mode: not_applicable
     decision_reason: The statement changes text search configuration metadata and token-to-dictionary mappings, not table
-      columns. SQL validity and verification do not vary by PG16 table column data type.
+      columns. SQL validity and verification do not vary by PG18.4 table column data type.
 factor_contract:
   source_reference_must_define_all_factors: true
   matrix_must_cover_required_factor_values: true

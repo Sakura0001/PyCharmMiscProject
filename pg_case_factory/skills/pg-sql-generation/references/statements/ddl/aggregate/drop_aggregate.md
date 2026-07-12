@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-dropaggregate.html
+来源：https://www.postgresql.org/docs/18/sql-dropaggregate.html
 
 ```sql
 DROP AGGREGATE [ IF EXISTS ] name ( aggregate_signature ) [, ...] [ CASCADE | RESTRICT ]
@@ -114,7 +114,7 @@ structured_config:
   category: ddl
   domain: aggregate
   skill_name: drop_aggregate
-  official_source: https://www.postgresql.org/docs/16/sql-dropaggregate.html
+  official_source: https://www.postgresql.org/docs/18/sql-dropaggregate.html
   statement:
     key: drop_aggregate
     name: DROP AGGREGATE

@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-createtable.html
+来源：https://www.postgresql.org/docs/18/sql-createtable.html
 
 ### Synopsis 形式 1：常规 / 临时 / 无日志表
 
@@ -182,7 +182,7 @@ CREATE TABLE 是 PostgreSQL 中最复杂的 DDL 语句之一，涉及三种 syno
 
 - 必须覆盖所有三种 CREATE TABLE 语法分支（常规表、类型化表、分区表）。
 - 必须覆盖所有基表模板中的列数据类型组合。
-- **必须覆盖列数据类型：CREATE TABLE 是列数据类型选择的核心语句，所有 PostgreSQL 16 支持的数据类型类别必须至少有一个代表性列定义。**
+- **必须覆盖列数据类型：CREATE TABLE 是列数据类型选择的核心语句，所有 PostgreSQL 18.4 支持的数据类型类别必须至少有一个代表性列定义。**
 - 必须覆盖所有表类型（permanent、temporary、unlogged）。
 - T1 因子做笛卡尔积覆盖；如分支之间存在互斥前置条件，应先按语法分支拆分再做局部笛卡尔积。
 - T2 因子按规模控制策略参与组合：
@@ -243,7 +243,11 @@ structured_config:
   category: ddl
   domain: table
   skill_name: create_table
-  official_source: https://www.postgresql.org/docs/16/sql-createtable.html
+  official_source: https://www.postgresql.org/docs/18/sql-createtable.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-createtable.html
+    review_status: synopsis_adapted
   statement:
     key: create_table
     name: CREATE TABLE
@@ -424,6 +428,20 @@ structured_config:
         label: DEFAULT 约束
       - key: GENERATED_ALWAYS_STORED
         label: GENERATED ALWAYS AS (expr) STORED
+      - key: GENERATED_ALWAYS_VIRTUAL
+        label: GENERATED ALWAYS AS (expr) VIRTUAL（PG18）
+      - key: NOT_NULL_NO_INHERIT
+        label: NOT NULL NO INHERIT（PG18）
+      - key: NOT_ENFORCED
+        label: NOT ENFORCED（PG18）
+      - key: TABLE_NOT_NULL
+        label: 表级 NOT NULL（PG18）
+      - key: UNIQUE_WITHOUT_OVERLAPS
+        label: UNIQUE ... WITHOUT OVERLAPS（PG18）
+      - key: PRIMARY_KEY_WITHOUT_OVERLAPS
+        label: PRIMARY KEY ... WITHOUT OVERLAPS（PG18）
+      - key: PERIOD_FOREIGN_KEY
+        label: PERIOD 外键（PG18）
       - key: GENERATED_IDENTITY
         label: GENERATED { ALWAYS | BY DEFAULT } AS IDENTITY
     partition_clause:
@@ -683,6 +701,8 @@ structured_config:
       values:
       - key: GENERATED_ALWAYS_AS_STORED
         label: GENERATED ALWAYS AS (expression) STORED
+      - key: GENERATED_ALWAYS_AS_VIRTUAL
+        label: GENERATED ALWAYS AS (expression) VIRTUAL（PG18）
       - key: GENERATED_ALWAYS_AS_IDENTITY
         label: GENERATED ALWAYS AS IDENTITY
       - key: GENERATED_BY_DEFAULT_AS_IDENTITY

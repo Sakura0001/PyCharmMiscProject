@@ -6,7 +6,7 @@ statement:
   category: ddl
   domain: language
   source_reference: references/statements/ddl/language/drop_language.md
-  official_source: https://www.postgresql.org/docs/16/sql-droplanguage.html
+  official_source: https://www.postgresql.org/docs/18/sql-droplanguage.html
   aliases:
   - DROP LANGUAGE
   - drop language
@@ -46,7 +46,7 @@ coverage_scope:
   target_object_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#object_kinds.all_object_kinds
     required_object_kinds: [language]
     decision_reason: >
       DROP LANGUAGE directly removes a procedural language object. Required coverage is scoped to language existence,
@@ -54,7 +54,7 @@ coverage_scope:
   target_relation_coverage:
     required: false
     coverage_mode: not_applicable
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#relation_kinds.all_relation_kinds
     decision_reason: >
       DROP LANGUAGE does not directly target pg_class relations. Objects depending on the language are dependency fixtures
       represented by dependency_state and cascade_behavior rather than relation-kind coverage.
@@ -69,7 +69,7 @@ coverage_scope:
     coverage_mode: not_applicable
     decision_reason: >
       DROP LANGUAGE success or failure is independent of table column types. Dependency behavior is captured by language
-      dependents and cascade/restrict factors, not PG16 column-type coverage.
+      dependents and cascade/restrict factors, not PG18.4 column-type coverage.
 factor_contract:
   source_reference_must_define_all_factors: true
   matrix_must_cover_required_factor_values: true

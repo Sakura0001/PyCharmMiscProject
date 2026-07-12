@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-altersequence.html
+来源：https://www.postgresql.org/docs/18/sql-altersequence.html
 
 ### Synopsis 形式 1：修改序列参数
 
@@ -160,7 +160,11 @@ structured_config:
   category: ddl
   domain: sequence
   skill_name: alter_sequence
-  official_source: https://www.postgresql.org/docs/16/sql-altersequence.html
+  official_source: https://www.postgresql.org/docs/18/sql-altersequence.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-altersequence.html
+    review_status: synopsis_adapted
   statement:
     key: alter_sequence
     name: ALTER SEQUENCE

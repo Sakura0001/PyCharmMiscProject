@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-alterdomain.html
+来源：https://www.postgresql.org/docs/18/sql-alterdomain.html
 
 ```sql
 ALTER DOMAIN name
@@ -38,7 +38,7 @@ where domain_constraint is:
 { NOT NULL | CHECK (expression) }
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - 必须拥有 domain 才能使用 ALTER DOMAIN
 - SET SCHEMA 还需要 CREATE 权限于新 schema
 - OWNER TO 需要能够 SET ROLE 到新拥有角色，且该角色必须有 CREATE 权限于 domain 的 schema
@@ -146,7 +146,11 @@ structured_config:
   category: ddl
   domain: domain
   skill_name: alter_domain
-  official_source: https://www.postgresql.org/docs/16/sql-alterdomain.html
+  official_source: https://www.postgresql.org/docs/18/sql-alterdomain.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-alterdomain.html
+    review_status: synopsis_adapted
   statement:
     key: alter_domain
     name: ALTER DOMAIN

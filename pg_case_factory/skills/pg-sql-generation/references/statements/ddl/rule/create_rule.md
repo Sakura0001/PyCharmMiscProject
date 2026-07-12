@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-createrule.html
+来源：https://www.postgresql.org/docs/18/sql-createrule.html
 
 ```sql
 CREATE [ OR REPLACE ] RULE name AS ON event
@@ -14,7 +14,7 @@ where event can be one of:
     SELECT | INSERT | UPDATE | DELETE
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - 必须拥有目标表才能创建规则
 - ON SELECT 规则只能附加到视图上，必须命名为 "_RETURN"，必须是无条件 INSTEAD 规则，且动作必须是单个 SELECT 命令
 - 多条规则在同一表同一事件上按名称字母顺序依次应用
@@ -114,7 +114,7 @@ structured_config:
   category: ddl
   domain: rule
   skill_name: create_rule
-  official_source: https://www.postgresql.org/docs/16/sql-createrule.html
+  official_source: https://www.postgresql.org/docs/18/sql-createrule.html
   statement:
     key: create_rule
     name: CREATE RULE

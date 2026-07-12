@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-alterforeigndatawrapper.html
+来源：https://www.postgresql.org/docs/18/sql-alterforeigndatawrapper.html
 
 ```sql
 ALTER FOREIGN DATA WRAPPER name
@@ -13,7 +13,7 @@ ALTER FOREIGN DATA WRAPPER name OWNER TO { new_owner | CURRENT_ROLE | CURRENT_US
 ALTER FOREIGN DATA WRAPPER name RENAME TO new_name
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - **只有 superuser 可以修改 foreign-data wrapper**，也只有 superuser 可以成为 FDW 的 owner。
 - 修改 VALIDATOR 时，已有的 FDW 及其依赖服务器、用户映射、外部表的选项**可能在新 validator 下变得无效**。PostgreSQL 不检查此情况——由用户负责验证正确性。但同一 ALTER 命令内指定的选项会被新 validator 检查。
 - NO HANDLER 会导致使用该 FDW 的外部表不可访问。
@@ -123,7 +123,7 @@ structured_config:
   category: ddl
   domain: foreign_data_wrapper
   skill_name: alter_foreign_data_wrapper
-  official_source: https://www.postgresql.org/docs/16/sql-alterforeigndatawrapper.html
+  official_source: https://www.postgresql.org/docs/18/sql-alterforeigndatawrapper.html
   statement:
     key: alter_foreign_data_wrapper
     name: ALTER FOREIGN DATA WRAPPER

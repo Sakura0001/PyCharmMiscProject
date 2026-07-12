@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-altergroup.html
+来源：https://www.postgresql.org/docs/18/sql-altergroup.html
 
 ```sql
 ALTER GROUP role_specification ADD USER user_name [, ... ]
@@ -131,7 +131,7 @@ structured_config:
   category: ddl
   domain: group
   skill_name: alter_group
-  official_source: https://www.postgresql.org/docs/16/sql-altergroup.html
+  official_source: https://www.postgresql.org/docs/18/sql-altergroup.html
   statement:
     key: alter_group
     name: ALTER GROUP

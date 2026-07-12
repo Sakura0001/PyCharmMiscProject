@@ -19,6 +19,8 @@
 - FE号码，根据输入FE生成，如果未输入，则置为空。
 - 如果是相似语句，例如删除表，执行多次插入数据，此时行与行之间不需要有空行，否则语句与语句之间应该有空行，
 - 生成的表名使用 `tab_*` 前缀，索引名使用 `idx_*` 前缀，函数名使用 `func_*` 前缀，存储过程名使用 `proc_*` 前缀。名称必须保持 ASCII、小写、语义清晰，并在同一批用例内唯一且不冲突。
+- SQL 文件必须仅使用 PostgreSQL 18.4 语法；禁止混入 `AUTO_INCREMENT`、`DEFAULT CHARSET`、`optimizer_switch` 等其他数据库方言。
+- 禁止使用 `\!` 或其他 psql 宿主机命令。需要多会话、进程控制或输出规范化时，由受控 runner 在 SQL 文件外完成。
 
 
 示例：
@@ -28,55 +30,54 @@
 -- --
 -- author       : codex
 -- create at    : 2026-03-15
--- description  : 场景1（查询包含GROUP BY或DISTINCT，且无聚合函数；若仅有DISTINCT则不应含窗口函数），基础功能测试。
+-- description  : PostgreSQL 18.4 普通表写入、连接查询与聚合的确定性基础用例。
 -- FE           :
 -- ++
 -- --------------------------------------------------------
 
-SET optimizer_switch='left_join_elimination=on';
+SET TIME ZONE 'UTC';
+SET statement_timeout = '30s';
 
-DROP TABLE IF EXISTS tab_left_join_elimination_004_001;
-DROP TABLE IF EXISTS tab_left_join_elimination_004_002;
+DROP TABLE IF EXISTS tab_order_item_001;
+DROP TABLE IF EXISTS tab_order_001;
 
-CREATE TABLE tab_left_join_elimination_004_001 (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    a  INT,
-    b  VARCHAR(20)
-) DEFAULT CHARSET = utf8mb4;
+CREATE TABLE tab_order_001 (
+    id integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    customer_name text NOT NULL
+);
 
-CREATE TABLE tab_left_join_elimination_004_002 (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    a  INT,
-    b  VARCHAR(20)
-) DEFAULT CHARSET = utf8mb4;
+CREATE TABLE tab_order_item_001 (
+    order_id integer NOT NULL REFERENCES tab_order_001(id),
+    item_no integer NOT NULL,
+    amount numeric(12, 2) NOT NULL,
+    PRIMARY KEY (order_id, item_no)
+);
 
--- t2中a=1存在两条记录，用于验证消除后不产生重复行
-INSERT INTO tab_left_join_elimination_004_001 (a, b) VALUES (1, 'a'), (2, 'b'), (3, 'c');
-INSERT INTO tab_left_join_elimination_004_002 (a, b) VALUES (1, 'x'), (1, 'y'), (2, 'z');
+INSERT INTO tab_order_001 (customer_name) VALUES ('alice'), ('bob');
+INSERT INTO tab_order_item_001 (order_id, item_no, amount)
+VALUES (1, 1, 10.00), (1, 2, 15.50), (2, 1, 7.25);
 
--- 正例：GROUP BY无聚合函数，t2应被消除，预期返回3行
-SELECT t1.a FROM tab_left_join_elimination_004_001 t1 LEFT JOIN tab_left_join_elimination_004_002 t2 ON t1.a = t2.a GROUP BY t1.a ORDER BY 1;
+-- 结果查询显式排序，预期为 alice/25.50、bob/7.25。
+SELECT o.customer_name, sum(i.amount) AS total_amount
+FROM tab_order_001 AS o
+JOIN tab_order_item_001 AS i ON i.order_id = o.id
+GROUP BY o.customer_name
+ORDER BY o.customer_name;
 
--- 正例：DISTINCT无窗口函数，t2应被消除，预期返回3行
-SELECT DISTINCT t1.a FROM tab_left_join_elimination_004_001 t1 LEFT JOIN tab_left_join_elimination_004_002 t2 ON t1.a = t2.a ORDER BY 1;
+-- 使用稳定目录字段验证主键，避免输出 OID、路径或耗时等易变值。
+SELECT c.relname, i.indisprimary, i.indisvalid
+FROM pg_catalog.pg_class AS c
+JOIN pg_catalog.pg_index AS i ON i.indexrelid = c.oid
+JOIN pg_catalog.pg_class AS t ON t.oid = i.indrelid
+WHERE t.relname IN ('tab_order_001', 'tab_order_item_001')
+  AND i.indisprimary
+ORDER BY t.relname, c.relname;
 
--- 反例：GROUP BY含聚合函数COUNT(*)，t2不应被消除（a=1消除前COUNT=2，消除后COUNT=1）
-SELECT t1.a, COUNT(*) FROM tab_left_join_elimination_004_001 t1 LEFT JOIN tab_left_join_elimination_004_002 t2 ON t1.a = t2.a GROUP BY t1.a ORDER BY 1;
+DROP TABLE IF EXISTS tab_order_item_001;
+DROP TABLE IF EXISTS tab_order_001;
 
--- 反例：DISTINCT含窗口函数ROW_NUMBER()，t2不应被消除（消除前4行，消除后3行）
-SELECT DISTINCT t1.a, ROW_NUMBER() OVER (ORDER BY t1.a) AS rn FROM tab_left_join_elimination_004_001 t1 LEFT JOIN tab_left_join_elimination_004_002 t2 ON t1.a = t2.a ORDER BY 1, 2;
-
--- EXPLAIN验证：DISTINCT无窗口函数，执行计划中t2应被消除
-\! bash -c 'awk -f <(printf "BEGIN{FS=OFS=\x22\x7c\x22}\n/^[\x7c]/{NF=4\nprint \x240 \x22\x7c\x22\nnext}\n{print}\n") <(sh commonScript/execute_sql_with_root.sh master test "EXPLAIN SELECT DISTINCT t1.a FROM tab_left_join_elimination_004_001 t1 LEFT JOIN tab_left_join_elimination_004_002 t2 ON t1.a = t2.a")'
-
--- EXPLAIN验证：GROUP BY含COUNT(*)，执行计划中t2不应被消除
-\! bash -c 'awk -f <(printf "BEGIN{FS=OFS=\x22\x7c\x22}\n/^[\x7c]/{NF=4\nprint \x240 \x22\x7c\x22\nnext}\n{print}\n") <(sh commonScript/execute_sql_with_root.sh master test "EXPLAIN SELECT t1.a, COUNT(*) FROM tab_left_join_elimination_004_001 t1 LEFT JOIN tab_left_join_elimination_004_002 t2 ON t1.a = t2.a GROUP BY t1.a")'
-
--- EXPLAIN验证：DISTINCT含ROW_NUMBER()，执行计划中t2不应被消除
-\! bash -c 'awk -f <(printf "BEGIN{FS=OFS=\x22\x7c\x22}\n/^[\x7c]/{NF=4\nprint \x240 \x22\x7c\x22\nnext}\n{print}\n") <(sh commonScript/execute_sql_with_root.sh master test "EXPLAIN SELECT DISTINCT t1.a, ROW_NUMBER() OVER (ORDER BY t1.a) AS rn FROM tab_left_join_elimination_004_001 t1 LEFT JOIN tab_left_join_elimination_004_002 t2 ON t1.a = t2.a")'
-
-DROP TABLE IF EXISTS tab_left_join_elimination_004_001;
-DROP TABLE IF EXISTS tab_left_join_elimination_004_002;
+RESET statement_timeout;
+RESET timezone;
 
 ```yaml
 structured_config:

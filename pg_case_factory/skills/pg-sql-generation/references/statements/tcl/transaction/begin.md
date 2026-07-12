@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-begin.html
+来源：https://www.postgresql.org/docs/18/sql-begin.html
 
 ```sql
 BEGIN [ WORK | TRANSACTION ] [ transaction_mode [, ...] ]
@@ -83,7 +83,7 @@ structured_config:
   category: tcl
   domain: transaction
   skill_name: begin
-  official_source: https://www.postgresql.org/docs/16/sql-begin.html
+  official_source: https://www.postgresql.org/docs/18/sql-begin.html
   statement:
     key: begin
     name: BEGIN

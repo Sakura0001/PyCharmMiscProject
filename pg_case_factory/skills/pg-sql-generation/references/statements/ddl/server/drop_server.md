@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-dropserver.html
+来源：https://www.postgresql.org/docs/18/sql-dropserver.html
 
 ```sql
 DROP SERVER [ IF EXISTS ] name [, ...] [ CASCADE | RESTRICT ]
@@ -92,7 +92,7 @@ structured_config:
   category: ddl
   domain: server
   skill_name: drop_server
-  official_source: https://www.postgresql.org/docs/16/sql-dropserver.html
+  official_source: https://www.postgresql.org/docs/18/sql-dropserver.html
   statement:
     key: drop_server
     name: DROP SERVER

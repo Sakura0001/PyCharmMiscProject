@@ -6,7 +6,7 @@ statement:
   category: ddl
   domain: subscription
   source_reference: references/statements/ddl/subscription/drop_subscription.md
-  official_source: https://www.postgresql.org/docs/16/sql-dropsubscription.html
+  official_source: https://www.postgresql.org/docs/18/sql-dropsubscription.html
 execution_contract:
   required_matrix_is_baseline: true
   no_inference_before_required_coverage_passes: true
@@ -41,7 +41,7 @@ coverage_scope:
   target_object_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#object_kinds.all_object_kinds
     required_object_kinds:
     - subscription
     decision_reason: subscription statement coverage is tracked by explicit PostgreSQL object kind.
@@ -273,3 +273,18 @@ audit_rules:
   require_post_coverage_extension_policy: true
   forbid_extension_before_required_coverage_passes: true
   forbid_extension_counting_toward_required_coverage: true
+pg18_compatibility:
+  target_version: '18.4'
+  synopsis_change: unchanged
+  document_change: changed
+  test_points:
+  - id: PG18-DROP-SUBSCRIPTION-IF-EXISTS
+    affected_factors:
+    - if_exists_clause
+    affected_values:
+      if_exists_clause:
+      - with_if_exists
+    sql: >-
+      DROP SUBSCRIPTION IF EXISTS {missing_subscription};
+    oracle: reference_parity
+    covers: documented IF EXISTS notice behavior

@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-alterdatabase.html
+来源：https://www.postgresql.org/docs/18/sql-alterdatabase.html
 
 ```sql
 ALTER DATABASE name [ [ WITH ] option [ ... ] ]
@@ -26,7 +26,7 @@ ALTER DATABASE name RESET configuration_parameter
 ALTER DATABASE name RESET ALL
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - WITH 选项（ALLOW_CONNECTIONS/CONNECTION LIMIT/IS_TEMPLATE）：需要 database owner 或 superuser
 - RENAME TO：需要 database owner 或 superuser；非 superuser owner 还必须有 CREATEDB 权限；不能重命名当前连接的数据库
 - OWNER TO：必须能 SET ROLE 到新拥有角色且必须有 CREATEDB 权限（superuser 自动满足）
@@ -148,7 +148,11 @@ structured_config:
   category: ddl
   domain: database
   skill_name: alter_database
-  official_source: https://www.postgresql.org/docs/16/sql-alterdatabase.html
+  official_source: https://www.postgresql.org/docs/18/sql-alterdatabase.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-alterdatabase.html
+    review_status: semantic_reviewed
   statement:
     key: alter_database
     name: ALTER DATABASE
@@ -296,6 +300,8 @@ structured_config:
       - superuser_only_parameter
       - search_path
       - enable_indexscan
+      - file_copy_method_copy
+      - file_copy_method_clone
     database_name_shape:
       label: database 名称形态
       importance: non_important
@@ -484,7 +490,7 @@ structured_config:
     preserve_axes_first:
     - statement_branch
   factor_catalog_mapping:
-    source_catalog: references/common/pg16_factor_catalog.md
+    source_catalog: references/common/pg18_factor_catalog.md
     object_domain: database
     imported_factors:
     - catalog_factor: database.naming.name_shape

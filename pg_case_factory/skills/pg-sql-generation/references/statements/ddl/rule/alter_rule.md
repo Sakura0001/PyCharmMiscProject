@@ -2,13 +2,13 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-alterrule.html
+来源：https://www.postgresql.org/docs/18/sql-alterrule.html
 
 ```sql
 ALTER RULE name ON table_name RENAME TO new_name
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - ALTER RULE 当前仅支持 RENAME 操作，不支持修改规则体、条件或其他属性
 - 必须拥有目标表/视图才能 ALTER RULE（不要求拥有规则本身）
 - ENABLE/DISABLE RULE 不属于 ALTER RULE 命令，而是 ALTER TABLE 的子命令：
@@ -100,7 +100,7 @@ structured_config:
   category: ddl
   domain: rule
   skill_name: alter_rule
-  official_source: https://www.postgresql.org/docs/16/sql-alterrule.html
+  official_source: https://www.postgresql.org/docs/18/sql-alterrule.html
   statement:
     key: alter_rule
     name: ALTER RULE

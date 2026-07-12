@@ -6,7 +6,7 @@ statement:
   category: ddl
   domain: operator
   source_reference: references/statements/ddl/operator/drop_operator.md
-  official_source: https://www.postgresql.org/docs/16/sql-dropoperator.html
+  official_source: https://www.postgresql.org/docs/18/sql-dropoperator.html
   aliases:
   - drop operator
   - DROP OPERATOR
@@ -45,7 +45,7 @@ coverage_scope:
   target_object_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#object_kinds.all_object_kinds
     required_object_kinds:
     - operator
     - type
@@ -54,7 +54,7 @@ coverage_scope:
   target_relation_coverage:
     required: false
     coverage_mode: not_applicable
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#relation_kinds.all_relation_kinds
     decision_reason: DROP OPERATOR removes operator catalog entries and does not directly target pg_class relation kinds.
   table_coverage:
     required: false
@@ -63,7 +63,7 @@ coverage_scope:
   column_type_coverage:
     required: false
     coverage_mode: representative
-    inventory_source: references/common/pg16_type_catalog.md
+    inventory_source: references/common/pg18_type_catalog.md
     decision_reason: Exhaustive table-column type coverage is not applicable because DROP OPERATOR uses operand data types
       only as object identity keys. Representative operand_data_type values and the type_binding_manifest cover the needed
       signature coverage.

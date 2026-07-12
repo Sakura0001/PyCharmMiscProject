@@ -6,7 +6,7 @@ statement:
   category: ddl
   domain: rule
   source_reference: references/statements/ddl/rule/drop_rule.md
-  official_source: https://www.postgresql.org/docs/16/sql-droprule.html
+  official_source: https://www.postgresql.org/docs/18/sql-droprule.html
 execution_contract:
   required_matrix_is_baseline: true
   no_inference_before_required_coverage_passes: true
@@ -41,7 +41,7 @@ coverage_scope:
   target_object_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#object_kinds.all_object_kinds
     required_object_kinds:
     - rule
     decision_reason: rule statements operate on PostgreSQL rule objects; object coverage is explicit for create, alter, and
@@ -49,7 +49,7 @@ coverage_scope:
   target_relation_coverage:
     required: true
     coverage_mode: representative
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#relation_kinds.all_relation_kinds
     required_relation_kinds:
     - regular_table
     - partitioned_table_parent
@@ -57,7 +57,7 @@ coverage_scope:
   table_coverage:
     required: true
     coverage_mode: representative
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#table_kinds.all_table_kinds
     required_table_kinds:
     - regular_table
     - partitioned_table_parent
@@ -65,8 +65,8 @@ coverage_scope:
   column_type_coverage:
     required: true
     coverage_mode: conditional
-    inventory_source: references/common/pg16_type_catalog.md
-    required_type_set: all_pg16_column_types
+    inventory_source: references/common/pg18_type_catalog.md
+    required_type_set: all_pg18_column_types
     expansion_mode: predicate_or_expression_columns
     require_each_type_success_or_failure: true
     decision_reason: rule behavior can reference table columns in predicates or expressions; coverage is conditional on expression-bearing

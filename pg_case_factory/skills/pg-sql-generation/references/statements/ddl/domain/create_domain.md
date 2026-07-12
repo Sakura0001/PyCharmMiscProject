@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-createdomain.html
+来源：https://www.postgresql.org/docs/18/sql-createdomain.html
 
 ```sql
 CREATE DOMAIN name [ AS ] data_type
@@ -16,7 +16,7 @@ where constraint is:
 { NOT NULL | NULL | CHECK (expression) }
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - CREATE DOMAIN 必须指定底层基类型（data_type），域值基于该类型
 - NOT NULL 约束仅在值转换为域类型时检查，名义上的域类型列仍可能读取为 null（例如外连接、空标量子 SELECT）
 - CHECK 约束中只能引用 VALUE 关键字，不能包含子查询或变量
@@ -119,7 +119,11 @@ structured_config:
   category: ddl
   domain: domain
   skill_name: create_domain
-  official_source: https://www.postgresql.org/docs/16/sql-createdomain.html
+  official_source: https://www.postgresql.org/docs/18/sql-createdomain.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-createdomain.html
+    review_status: synopsis_adapted
   statement:
     key: create_domain
     name: CREATE DOMAIN

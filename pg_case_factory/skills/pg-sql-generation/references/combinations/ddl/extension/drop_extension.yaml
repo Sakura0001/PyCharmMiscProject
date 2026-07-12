@@ -6,7 +6,7 @@ statement:
   category: ddl
   domain: extension
   source_reference: references/statements/ddl/extension/drop_extension.md
-  official_source: https://www.postgresql.org/docs/16/sql-dropextension.html
+  official_source: https://www.postgresql.org/docs/18/sql-dropextension.html
   aliases:
   - DROP EXTENSION
   - drop extension
@@ -48,7 +48,7 @@ coverage_scope:
   target_object_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#object_kinds.all_object_kinds
     required_object_kinds:
     - extension
     decision_reason: DROP_EXTENSION directly targets PostgreSQL extension objects and extension catalog metadata; baseline
@@ -56,7 +56,7 @@ coverage_scope:
   target_relation_coverage:
     required: false
     coverage_mode: not_applicable
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#relation_kinds.all_relation_kinds
     decision_reason: DROP_EXTENSION names an extension object rather than a pg_class relation. Member objects such as tables,
       functions, types, views, or sequences are dependency fixtures represented by declared extension factors, not required
       relation-kind coverage.

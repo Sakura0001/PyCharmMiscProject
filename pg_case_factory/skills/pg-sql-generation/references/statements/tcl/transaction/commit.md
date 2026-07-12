@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-commit.html
+来源：https://www.postgresql.org/docs/18/sql-commit.html
 
 ```sql
 COMMIT [ WORK | TRANSACTION ] [ AND [ NO ] CHAIN ]
@@ -77,7 +77,7 @@ structured_config:
   category: tcl
   domain: transaction
   skill_name: commit
-  official_source: https://www.postgresql.org/docs/16/sql-commit.html
+  official_source: https://www.postgresql.org/docs/18/sql-commit.html
   statement:
     key: commit
     name: COMMIT

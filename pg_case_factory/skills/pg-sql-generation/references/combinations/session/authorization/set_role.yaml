@@ -6,7 +6,7 @@ statement:
   category: session
   domain: authorization
   source_reference: references/statements/session/authorization/set_role.md
-  official_source: https://www.postgresql.org/docs/16/sql-set-role.html
+  official_source: https://www.postgresql.org/docs/18/sql-set-role.html
 execution_contract:
   required_matrix_is_baseline: true
   no_inference_before_required_coverage_passes: true
@@ -41,7 +41,7 @@ coverage_scope:
   target_object_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#object_kinds.all_object_kinds
     required_object_kinds:
     - role_setting
     decision_reason: session/authorization statement coverage is tracked by its explicit runtime or catalog object kind.
@@ -133,6 +133,7 @@ factor_contract:
       - owner
       - granted_role
       - insufficient_privilege
+      - authenticated_user_permission_check
       coverage_requirement: all_values
     invalid_combination:
       tier: T5
@@ -255,6 +256,38 @@ combination_groups:
     required: true
     steps:
     - sql: -- cleanup for set_role
+- id: pg18_set_role_authenticated_user_permission_check
+  title: PostgreSQL 18 SET ROLE permission remains anchored to session user
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  factors:
+    expected_status: success
+    privilege_context: authenticated_user_permission_check
+  expansion: {}
+  compatibility:
+    resolver: pg18_reference_parity
+    success_when:
+    - both role transitions and reported current/session users match PostgreSQL 18.4
+    failure_when:
+    - condition: the second SET ROLE is checked against current_role or output differs
+      reason: pg18_set_role_authenticated_user_mismatch
+    default_failure_reason: pg18_set_role_authenticated_user_mismatch
+  sql_shape:
+    template: |
+      SET ROLE {member_role};
+      SELECT current_user, session_user;
+      SET ROLE {second_role};
+      SELECT current_user, session_user;
+      RESET ROLE;
+  verification:
+    required: true
+    mode: session_identity_query
+    sql: SELECT current_user, session_user;
+  cleanup:
+    required: true
+    steps:
+    - sql: RESET ROLE;
 audit_rules:
   require_all_required_top_level_keys: true
   require_declared_coverage_scope: true
@@ -263,3 +296,18 @@ audit_rules:
   require_post_coverage_extension_policy: true
   forbid_extension_before_required_coverage_passes: true
   forbid_extension_counting_toward_required_coverage: true
+pg18_compatibility:
+  target_version: '18.4'
+  synopsis_change: unchanged
+  document_change: changed
+  test_points:
+  - id: PG18-SET-ROLE-AUTHENTICATED-USER
+    affected_factors:
+    - privilege_context
+    affected_values:
+      privilege_context:
+      - authenticated_user_permission_check
+    sql: >-
+      SET ROLE {member_role}; SET ROLE {second_role}; RESET ROLE;
+    oracle: reference_parity
+    covers: SET ROLE permission checks continue to use the current session user

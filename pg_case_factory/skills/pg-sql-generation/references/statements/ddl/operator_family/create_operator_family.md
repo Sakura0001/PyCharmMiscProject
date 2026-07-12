@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-createopfamily.html
+来源：https://www.postgresql.org/docs/18/sql-createopfamily.html
 
 ```sql
 CREATE OPERATOR FAMILY name USING index_method
@@ -82,7 +82,7 @@ structured_config:
   category: ddl
   domain: operator_family
   skill_name: create_operator_family
-  official_source: https://www.postgresql.org/docs/16/sql-createopfamily.html
+  official_source: https://www.postgresql.org/docs/18/sql-createopfamily.html
   statement:
     key: create_operator_family
     name: CREATE OPERATOR FAMILY

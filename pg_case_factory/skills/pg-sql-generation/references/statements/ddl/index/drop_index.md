@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-dropindex.html
+来源：https://www.postgresql.org/docs/18/sql-dropindex.html
 
 ```sql
 DROP INDEX [ CONCURRENTLY ] [ IF EXISTS ] name [, ...] [ CASCADE | RESTRICT ]
@@ -134,7 +134,7 @@ structured_config:
   category: ddl
   domain: index
   skill_name: drop_index
-  official_source: https://www.postgresql.org/docs/16/sql-dropindex.html
+  official_source: https://www.postgresql.org/docs/18/sql-dropindex.html
   statement:
     key: drop_index
     name: DROP INDEX

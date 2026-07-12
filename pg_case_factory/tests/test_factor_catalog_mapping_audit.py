@@ -173,6 +173,17 @@ def write_statement(path: Path, mapping_block: str) -> None:
 
 
 class FactorCatalogMappingAuditTest(unittest.TestCase):
+    def test_empty_statement_set_fails_closed(self) -> None:
+        audit = load_audit_module()
+        with TemporaryDirectory() as raw_dir:
+            catalog_path = Path(raw_dir) / "pg16_factor_catalog.md"
+            write_catalog(catalog_path)
+
+            result = audit.audit_paths(catalog_path, [])
+
+        self.assertFalse(result.passed)
+        self.assertIn("statement reference set is empty", result.errors)
+
     def test_valid_mapping_passes(self) -> None:
         audit = load_audit_module()
         with TemporaryDirectory() as raw_dir:
@@ -185,7 +196,7 @@ class FactorCatalogMappingAuditTest(unittest.TestCase):
                 textwrap.dedent(
                     """
                     factor_catalog_mapping:
-                      source_catalog: references/common/pg16_factor_catalog.md
+                      source_catalog: references/common/pg18_factor_catalog.md
                       object_domain: database
                       imported_factors:
                         - catalog_factor: database.naming.name_shape
@@ -215,6 +226,65 @@ class FactorCatalogMappingAuditTest(unittest.TestCase):
             self.assertEqual(result.mapped_count, 2)
             self.assertEqual(result.excluded_count, 1)
 
+    def test_applies_to_factor_must_be_mapped_or_excluded(self) -> None:
+        audit = load_audit_module()
+        with TemporaryDirectory() as raw_dir:
+            root = Path(raw_dir)
+            catalog_path = root / "pg16_factor_catalog.md"
+            statement_path = root / "create_database.md"
+            write_catalog(catalog_path)
+            write_statement(
+                statement_path,
+                textwrap.dedent(
+                    """
+                    factor_catalog_mapping:
+                      source_catalog: references/common/pg18_factor_catalog.md
+                      object_domain: database
+                      imported_factors:
+                        - catalog_factor: database.naming.name_shape
+                          local_factor: database_name_shape
+                          target_tier: T3
+                          coverage_role: rotate_attach
+                          value_policy: statement_specific_subset
+                          selected_values: [valid_unquoted_lower]
+                          reason: Name coverage.
+                        - catalog_factor: database.options.owner
+                          local_factor: owner_clause
+                          target_tier: T2
+                          coverage_role: representative_or_main
+                          value_policy: reuse_catalog_values
+                          reason: Owner coverage.
+                    """
+                ).strip(),
+            )
+
+            result = audit.audit_paths(catalog_path, [statement_path])
+
+        self.assertFalse(result.passed)
+        self.assertTrue(
+            any(
+                "neither mapped nor excluded: database.boundary.duplicate_name" in error
+                for error in result.errors
+            )
+        )
+
+    def test_applies_to_statement_cannot_omit_mapping_entirely(self) -> None:
+        audit = load_audit_module()
+        with TemporaryDirectory() as raw_dir:
+            root = Path(raw_dir)
+            catalog_path = root / "pg16_factor_catalog.md"
+            statement_path = root / "create_database.md"
+            write_catalog(catalog_path)
+            write_statement(statement_path, "")
+
+            result = audit.audit_paths(catalog_path, [statement_path])
+
+        self.assertFalse(result.passed)
+        self.assertEqual(
+            3,
+            sum("catalog factor required by applies_to" in error for error in result.errors),
+        )
+
     def test_missing_local_factor_fails(self) -> None:
         audit = load_audit_module()
         with TemporaryDirectory() as raw_dir:
@@ -227,7 +297,7 @@ class FactorCatalogMappingAuditTest(unittest.TestCase):
                 textwrap.dedent(
                     """
                     factor_catalog_mapping:
-                      source_catalog: references/common/pg16_factor_catalog.md
+                      source_catalog: references/common/pg18_factor_catalog.md
                       object_domain: database
                       imported_factors:
                         - catalog_factor: database.naming.name_shape
@@ -257,7 +327,7 @@ class FactorCatalogMappingAuditTest(unittest.TestCase):
                 textwrap.dedent(
                     """
                     factor_catalog_mapping:
-                      source_catalog: references/common/pg16_factor_catalog.md
+                      source_catalog: references/common/pg18_factor_catalog.md
                       object_domain: database
                       imported_factors:
                         - catalog_factor: database.naming.name_shape
@@ -286,7 +356,7 @@ class FactorCatalogMappingAuditTest(unittest.TestCase):
                 textwrap.dedent(
                     """
                     factor_catalog_mapping:
-                      source_catalog: references/common/pg16_factor_catalog.md
+                      source_catalog: references/common/pg18_factor_catalog.md
                       object_domain: database
                       imported_factors:
                         - catalog_factor: database.naming.name_shape
@@ -315,7 +385,7 @@ class FactorCatalogMappingAuditTest(unittest.TestCase):
                 textwrap.dedent(
                     """
                     factor_catalog_mapping:
-                      source_catalog: references/common/pg16_factor_catalog.md
+                      source_catalog: references/common/pg18_factor_catalog.md
                       object_domain: database
                       imported_factors:
                         - catalog_factor: database.naming.name_shape
@@ -374,7 +444,7 @@ class FactorCatalogMappingAuditTest(unittest.TestCase):
                 textwrap.dedent(
                     """
                     factor_catalog_mapping:
-                      source_catalog: references/common/pg16_factor_catalog.md
+                      source_catalog: references/common/pg18_factor_catalog.md
                       object_domain: database
                       imported_factors:
                         - catalog_factor: database.options.owner

@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-createtablespace.html
+来源：https://www.postgresql.org/docs/18/sql-createtablespace.html
 
 ```sql
 CREATE TABLESPACE tablespace_name
@@ -96,7 +96,11 @@ structured_config:
   category: ddl
   domain: tablespace
   skill_name: create_tablespace
-  official_source: https://www.postgresql.org/docs/16/sql-createtablespace.html
+  official_source: https://www.postgresql.org/docs/18/sql-createtablespace.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-createtablespace.html
+    review_status: semantic_reviewed
   statement:
     key: create_tablespace
     name: CREATE TABLESPACE

@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-dropschema.html
+来源：https://www.postgresql.org/docs/18/sql-dropschema.html
 
 ```sql
 DROP SCHEMA [ IF EXISTS ] name [, ...] [ CASCADE | RESTRICT ]
@@ -104,7 +104,7 @@ structured_config:
   category: ddl
   domain: schema
   skill_name: drop_schema
-  official_source: https://www.postgresql.org/docs/16/sql-dropschema.html
+  official_source: https://www.postgresql.org/docs/18/sql-dropschema.html
   statement:
     key: drop_schema
     name: DROP SCHEMA

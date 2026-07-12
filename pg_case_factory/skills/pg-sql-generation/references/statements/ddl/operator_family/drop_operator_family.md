@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-dropopfamily.html
+来源：https://www.postgresql.org/docs/18/sql-dropopfamily.html
 
 ```sql
 DROP OPERATOR FAMILY [ IF EXISTS ] name USING index_method [ CASCADE | RESTRICT ]
@@ -87,7 +87,7 @@ structured_config:
   category: ddl
   domain: operator_family
   skill_name: drop_operator_family
-  official_source: https://www.postgresql.org/docs/16/sql-dropopfamily.html
+  official_source: https://www.postgresql.org/docs/18/sql-dropopfamily.html
   statement:
     key: drop_operator_family
     name: DROP OPERATOR FAMILY

@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-createrole.html
+来源：https://www.postgresql.org/docs/18/sql-createrole.html
 
 ```sql
 CREATE ROLE name [ [ WITH ] option [ ... ] ]
@@ -123,15 +123,17 @@ structured_config:
   category: ddl
   domain: role
   skill_name: create_role
-  official_source: https://www.postgresql.org/docs/16/sql-createrole.html
+  official_source: https://www.postgresql.org/docs/18/sql-createrole.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-createrole.html
+    review_status: synopsis_adapted
   statement:
     key: create_role
     name: CREATE ROLE
     aliases:
     - create_role
     - CREATE ROLE
-    - create_user
-    - CREATE USER
     purpose: CREATE ROLE — define a new database role
   syntax_templates:
   - "CREATE ROLE name [ [ WITH ] option [ ... ] ]\n\nwhere option can be:\n\n      SUPERUSER | NOSUPERUSER\n    | CREATEDB | NOCREATEDB\n    | CREATEROLE | NOCREATEROLE\n    | INHERIT | NOINHERIT\n    | LOGIN | NOLOGIN\n    | REPLICATION | NOREPLICATION\n    | BYPASSRLS | NOBYPASSRLS\n    | CONNECTION LIMIT connlimit\n    | [ ENCRYPTED ] PASSWORD 'password' | PASSWORD NULL\n    | VALID UNTIL 'timestamp'\n    | IN ROLE role_name [, ...]\n    | IN GROUP role_name [, ...]\n    | ROLE role_name [, ...]\n    | ADMIN role_name [, ...]\n    | USER role_name [, ...]\n    | SYSID uid"

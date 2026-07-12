@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-alteruser.html
+来源：https://www.postgresql.org/docs/18/sql-alteruser.html
 
 ```sql
 ALTER USER role_specification [ WITH ] option [ ... ]
@@ -35,7 +35,7 @@ where role_specification can be:
   | SESSION_USER
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - **ALTER USER 是 ALTER ROLE 的已弃用别名（deprecated alias）**，行为完全一致
 - ALTER USER 选项形式要求执行者拥有 CREATEROLE 权限（修改自身密码除外）
 - ALTER USER RENAME TO 要求执行者拥有 CREATEROLE 权限
@@ -125,15 +125,13 @@ structured_config:
   category: ddl
   domain: user
   skill_name: alter_user
-  official_source: https://www.postgresql.org/docs/16/sql-alteruser.html
+  official_source: https://www.postgresql.org/docs/18/sql-alteruser.html
   statement:
     key: alter_user
     name: ALTER USER
     aliases:
     - alter_user
     - ALTER USER
-    - alter_role
-    - ALTER ROLE
     purpose: ALTER USER — change a database role (deprecated alias for ALTER ROLE)
   syntax_templates:
   - "ALTER USER role_specification [ WITH ] option [ ... ]"

@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-update.html
+来源：https://www.postgresql.org/docs/18/sql-update.html
 
 ```sql
 [ WITH [ RECURSIVE ] with_query [, ...] ]
@@ -87,7 +87,11 @@ structured_config:
   category: dml
   domain: table
   skill_name: update
-  official_source: https://www.postgresql.org/docs/16/sql-update.html
+  official_source: https://www.postgresql.org/docs/18/sql-update.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-update.html
+    review_status: synopsis_adapted
   statement:
     key: update
     name: UPDATE
@@ -180,6 +184,7 @@ structured_config:
       - returning_star
       - returning_expression
       - rowset_projection
+      - returning_old_new_aliases
     with_clause:
       label: WITH 子句
       importance: non_important

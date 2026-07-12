@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-do.html
+来源：https://www.postgresql.org/docs/18/sql-do.html
 
 ```sql
 DO [ LANGUAGE lang_name ] code
@@ -77,7 +77,7 @@ structured_config:
   category: utility
   domain: anonymous_code
   skill_name: do
-  official_source: https://www.postgresql.org/docs/16/sql-do.html
+  official_source: https://www.postgresql.org/docs/18/sql-do.html
   statement:
     key: do
     name: DO

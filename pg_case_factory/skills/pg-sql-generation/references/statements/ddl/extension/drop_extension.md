@@ -2,13 +2,13 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-dropextension.html
+来源：https://www.postgresql.org/docs/18/sql-dropextension.html
 
 ```sql
 DROP EXTENSION [ IF EXISTS ] name [, ...] [ CASCADE | RESTRICT ]
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - 必须拥有扩展才能使用 DROP EXTENSION。
 - 删除扩展时，其**成员对象**和**显式依赖的 routine**（通过 ALTER ROUTINE ... DEPENDS ON EXTENSION 注册）也会被删除。
 - RESTRICT（默认）：如果除扩展自身、其成员对象和显式依赖 routine 外还有其他对象依赖该扩展，则拒绝删除。
@@ -107,7 +107,7 @@ structured_config:
   category: ddl
   domain: extension
   skill_name: drop_extension
-  official_source: https://www.postgresql.org/docs/16/sql-dropextension.html
+  official_source: https://www.postgresql.org/docs/18/sql-dropextension.html
   statement:
     key: drop_extension
     name: DROP EXTENSION

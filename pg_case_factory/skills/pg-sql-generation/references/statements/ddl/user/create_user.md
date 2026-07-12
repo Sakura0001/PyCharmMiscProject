@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-createuser.html
+来源：https://www.postgresql.org/docs/18/sql-createuser.html
 
 ```sql
 CREATE USER name [ [ WITH ] option [ ... ] ]
@@ -27,7 +27,7 @@ where option can be:
     | SYSID uid
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - **CREATE USER 是 CREATE ROLE 的已弃用别名（deprecated alias）**，唯一行为差异是 CREATE USER 默认假定 LOGIN，而 CREATE ROLE 默认假定 NOLOGIN
 - CREATE USER / CREATE ROLE 要求执行者拥有 CREATEROLE 权限（superuser 自动拥有）
 - 该语句不涉及列类型，不需要挂靠基表列类型
@@ -115,15 +115,13 @@ structured_config:
   category: ddl
   domain: user
   skill_name: create_user
-  official_source: https://www.postgresql.org/docs/16/sql-createuser.html
+  official_source: https://www.postgresql.org/docs/18/sql-createuser.html
   statement:
     key: create_user
     name: CREATE USER
     aliases:
     - create_user
     - CREATE USER
-    - create_role
-    - CREATE ROLE
     purpose: CREATE USER — define a new database role (deprecated alias for CREATE ROLE)
   syntax_templates:
   - "CREATE USER name [ [ WITH ] option [ ... ] ]"

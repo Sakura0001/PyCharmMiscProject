@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-createforeigndatawrapper.html
+来源：https://www.postgresql.org/docs/18/sql-createforeigndatawrapper.html
 
 ```sql
 CREATE FOREIGN DATA WRAPPER name
@@ -11,7 +11,7 @@ CREATE FOREIGN DATA WRAPPER name
     [ OPTIONS ( option 'value' [, ... ] ) ]
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - **只有 superuser 可以创建 foreign-data wrapper**。创建者成为该 FDW 的 owner。
 - HANDLER：指定已注册的函数来检索外部表的执行函数。函数必须无参数且返回 `fdw_handler` 类型。无 HANDLER 的 wrapper 只能声明外部表但不能访问。
 - NO HANDLER：创建无 handler 的 wrapper（表可声明但不可访问）。
@@ -108,7 +108,7 @@ structured_config:
   category: ddl
   domain: foreign_data_wrapper
   skill_name: create_foreign_data_wrapper
-  official_source: https://www.postgresql.org/docs/16/sql-createforeigndatawrapper.html
+  official_source: https://www.postgresql.org/docs/18/sql-createforeigndatawrapper.html
   statement:
     key: create_foreign_data_wrapper
     name: CREATE FOREIGN DATA WRAPPER

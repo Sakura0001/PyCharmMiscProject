@@ -1,0 +1,484 @@
+schema_version: 1
+kind: postgresql_compatibility_profile
+baseline:
+  product: PostgreSQL
+  version: "16.4"
+  docs_base: https://www.postgresql.org/docs/16/
+  source_archive: https://ftp.postgresql.org/pub/source/v16.4/postgresql-16.4.tar.bz2
+  source_archive_sha256: 971766d645aa73e93b9ef4e3be44201b4f45b5477095b049125403f9f3386d6f
+  sgml_ref_file_count: 216
+  sgml_ref_tree_sha256: 07a2bc8f1b4a6a0a65a865a57f4b9dff36807385f71ce06e8fabf455b559f50e
+target:
+  product: PostgreSQL
+  version: "18.4"
+  major_version: 18
+  server_version_num: 180004
+  docs_base: https://www.postgresql.org/docs/18/
+  source_archive: https://ftp.postgresql.org/pub/source/v18.4/postgresql-18.4.tar.bz2
+  source_archive_sha256: 81a81ec695fb0c7901407defaa1d2f7973617154cf27ba74e3a7ab8e64436094
+  sgml_ref_file_count: 219
+  sgml_ref_tree_sha256: 28e2d6f1d4465f3b7d4cc4540601f8867aed50058c82f2e60ad8a853784076d5
+official_evidence:
+  source_tree_path: doc/src/sgml/ref
+  comparison_unit: refentry
+  synopsis_normalization: visible_text_without_sgml_markup_or_comments
+  document_normalization: visible_text_without_sgml_markup_or_comments
+  exact_source_hashes: references/common/statement_support_inventory.yaml
+policy:
+  observable_compatibility: strict
+  divergence_verdict: suspected_defect
+  differential_oracle: upstream_postgresql_18_4
+  allow_silent_exclusions: false
+  unchanged_document_inheritance: static_reviewed
+  changed_synopsis_requires_test_points: true
+  changed_body_requires_semantic_review: true
+  require_changed_statement_metadata: true
+catalogs:
+  factor_catalog: references/common/pg18_factor_catalog.md
+  type_catalog: references/common/pg18_type_catalog.md
+  statement_inventory: references/common/statement_support_inventory.yaml
+  factor_value_ledger: references/common/postgresql_18_4_factor_audit.tsv
+support_statuses:
+  - static_reviewed
+  - synopsis_adapted
+  - semantic_reviewed
+  - pending_semantic_review
+  - runtime_verified
+  - blocked
+readiness_rules:
+  - A statement whose normalized PG16.4 and PG18.4 official documents are identical can inherit its factors as static_reviewed.
+  - A changed synopsis is not ready until every declared delta has a reference-parity test point in its statement matrix.
+  - A changed statement body is pending until its semantic impact is explicitly reviewed.
+  - Runtime verification is separate from static compatibility review.
+sgml_ref_aliases:
+  sql-createtsconfiguration: create_tsconfig
+  sql-altertsconfiguration: alter_tsconfig
+  sql-droptsconfiguration: drop_tsconfig
+  sql-createaccessmethod: create_access_method
+  sql-dropaccessmethod: drop_access_method
+statement_reviews:
+  alter_default_privileges:
+    status: synopsis_adapted
+    reviewed_against: "18.4"
+    note: PG18 adds MAINTAIN for TABLES and default privileges for LARGE OBJECTS.
+    affected_factors:
+      object_class: [LARGE_OBJECTS]
+      privilege_set: [maintain_privilege, large_object_select_update]
+    required_test_points: [PG18-ADP-MAINTAIN, PG18-ADP-LARGE-OBJECTS]
+  alter_domain:
+    status: synopsis_adapted
+    reviewed_against: "18.4"
+    note: PG18 names the reusable constraint production domain_constraint; behavior is covered by an explicit named CHECK constraint.
+    affected_factors:
+      alter_action: [add_constraint]
+      constraint_type: [check_with_name]
+    required_test_points: [PG18-ALTER-DOMAIN-CONSTRAINT-GRAMMAR]
+  alter_foreign_table:
+    status: synopsis_adapted
+    reviewed_against: "18.4"
+    note: PG18 documents IF NOT EXISTS on ADD COLUMN for foreign tables.
+    affected_factors:
+      if_exists_clause: [add_column_if_not_exists_present]
+    required_test_points: [PG18-AFT-ADD-COLUMN-IF-NOT-EXISTS]
+  alter_operator:
+    status: synopsis_adapted
+    reviewed_against: "18.4"
+    note: ALTER OPERATOR SET can change COMMUTATOR, NEGATOR, HASHES, and MERGES optimizer attributes.
+    affected_factors:
+      alter_action_type: [set_commutator, set_negator, set_hashes, set_merges]
+    required_test_points: [PG18-ALTER-OPERATOR-OPTIMIZER-ATTRIBUTES]
+  alter_publication:
+    status: synopsis_adapted
+    reviewed_against: "18.4"
+    note: PG18 separates publication_drop_object from table_and_columns, so DROP and filtered ADD shapes are tested independently.
+    affected_factors:
+      add_set_drop_operation: [add_table, drop_table]
+      column_filter: [no_column_filter, single_column_filter]
+      where_clause: [no_where, simple_where_condition]
+    required_test_points: [PG18-ALTER-PUBLICATION-DROP-SHAPE, PG18-ALTER-PUBLICATION-TABLE-AND-COLUMNS]
+  alter_sequence:
+    status: synopsis_adapted
+    reviewed_against: "18.4"
+    note: The PG18 synopsis reorders CYCLE, START, and CACHE; the combined documented order is retained as a parity case.
+    affected_factors:
+      alter_parameter_type: [change_start, change_cache, change_cycle]
+    required_test_points: [PG18-ALTER-SEQUENCE-OPTION-ORDER]
+  alter_statistics:
+    status: synopsis_adapted
+    reviewed_against: "18.4"
+    note: PG18 adds DEFAULT as an explicit SET STATISTICS target.
+    affected_factors:
+      statistics_target_value: [default_keyword]
+      target_value_shape: [default_keyword]
+    required_test_points: [PG18-ALTER-STATISTICS-DEFAULT]
+  alter_table:
+    status: synopsis_adapted
+    reviewed_against: "18.4"
+    note: PG18 adds generated-expression replacement, DEFAULT targets, constraint enforcement and inheritance, virtual columns, and temporal constraints.
+    affected_factors:
+      subcommand_category: [alter_column_set_expression, alter_column_set_statistics_default, alter_constraint_enforced, alter_constraint_inherit, set_access_method_default, add_virtual_generated_column, add_temporal_constraint]
+      expression_shape: [generated_virtual_expression]
+    required_test_points: [PG18-ALTER-TABLE-SET-EXPRESSION, PG18-ALTER-TABLE-CONSTRAINT-ENFORCEMENT, PG18-ALTER-TABLE-CONSTRAINT-INHERITANCE, PG18-ALTER-TABLE-DEFAULT-TARGETS, PG18-ALTER-TABLE-TEMPORAL-CONSTRAINTS, PG18-ALTER-TABLE-VIRTUAL-GENERATED]
+  analyze:
+    status: synopsis_adapted
+    reviewed_against: "18.4"
+    note: PG18 uses the unified option-list syntax and supports ONLY plus descendant star in table_and_columns.
+    affected_factors:
+      target_name_shape: [only_relation, relation_and_descendants]
+    required_test_points: [PG18-ANALYZE-ONLY-RELATION, PG18-ANALYZE-RELATION-DESCENDANTS]
+  cluster:
+    status: synopsis_adapted
+    reviewed_against: "18.4"
+    note: PG18 consolidates CLUSTER forms into one optional option-list and optional target production.
+    affected_factors:
+      verbose_option: []
+      cluster_all: []
+      using_clause: []
+    required_test_points: [PG18-CLUSTER-UNIFIED-OPTIONS, PG18-CLUSTER-PAREN-VERBOSE-FALSE, PG18-CLUSTER-ALL-TABLES, PG18-CLUSTER-LEGACY-VERBOSE]
+  copy:
+    status: synopsis_adapted
+    reviewed_against: "18.4"
+    note: PG18 adds FORCE_* wildcard coverage, ON_ERROR, REJECT_LIMIT, and LOG_VERBOSITY.
+    affected_factors:
+      option_shape: [force_all_columns, error_handling, log_verbosity]
+    required_test_points: [PG18-COPY-FORCE-ALL, PG18-COPY-ERROR-HANDLING, PG18-COPY-LOG-VERBOSITY]
+  create_database:
+    status: synopsis_adapted
+    reviewed_against: "18.4"
+    note: PG18 adds BUILTIN_LOCALE for the builtin locale provider.
+    affected_factors:
+      locale_clause: [builtin_locale]
+    required_test_points: [PG18-CREATE-DATABASE-BUILTIN-LOCALE]
+  create_domain:
+    status: synopsis_adapted
+    reviewed_against: "18.4"
+    note: PG18 names the constraint production domain_constraint; a named CHECK domain covers the production.
+    affected_factors:
+      constraint_type: [check_only]
+      constraint_naming: [explicitly_named]
+    required_test_points: [PG18-CREATE-DOMAIN-CONSTRAINT-GRAMMAR]
+  create_foreign_table:
+    status: synopsis_adapted
+    reviewed_against: "18.4"
+    note: PG18 adds LIKE, VIRTUAL generated columns, constraint enforcement, and table-level NOT NULL syntax to foreign tables.
+    affected_factors:
+      table_form: [like_source, regular_virtual_generated, regular_table_not_null]
+    required_test_points: [PG18-CFT-LIKE, PG18-CFT-VIRTUAL-ENFORCEMENT, PG18-CFT-TABLE-NOT-NULL]
+  create_publication:
+    status: synopsis_adapted
+    reviewed_against: "18.4"
+    note: PG18 factors the TABLE publication object through table_and_columns; ONLY, column filters, and row filters are combined explicitly.
+    affected_factors:
+      for_clause_shape: [for_table_single]
+      column_filter: [single_column_filter]
+      where_clause: [simple_where_condition]
+      only_keyword: [with_only]
+    required_test_points: [PG18-CREATE-PUBLICATION-TABLE-AND-COLUMNS]
+  create_role:
+    status: synopsis_adapted
+    reviewed_against: "18.4"
+    note: IN GROUP and USER are absent from the PG18 documented synopsis, so legacy parser behavior remains a differential oracle rather than an assumed failure.
+    affected_factors:
+      membership_clause: [in_group, user_clause]
+    required_test_points: [PG18-CREATE-ROLE-IN-GROUP-LEGACY, PG18-CREATE-ROLE-USER-LEGACY]
+  create_sequence:
+    status: synopsis_adapted
+    reviewed_against: "18.4"
+    note: The PG18 synopsis reorders CYCLE, START, and CACHE; the combined documented order is covered.
+    affected_factors:
+      cycle_clause: [NO_CYCLE]
+      start_value_setting: [explicit_start]
+      cache_value: [cache_10]
+    required_test_points: [PG18-CREATE-SEQUENCE-OPTION-ORDER]
+  create_table:
+    status: synopsis_adapted
+    reviewed_against: "18.4"
+    note: PG18 adds virtual generated columns, constraint enforcement and inheritance, table NOT NULL, WITHOUT OVERLAPS, and PERIOD foreign keys.
+    affected_factors:
+      constraint_type: [GENERATED_ALWAYS_VIRTUAL, NOT_NULL_NO_INHERIT, NOT_ENFORCED, TABLE_NOT_NULL, UNIQUE_WITHOUT_OVERLAPS, PRIMARY_KEY_WITHOUT_OVERLAPS, PERIOD_FOREIGN_KEY]
+      generated_clause: [GENERATED_ALWAYS_AS_VIRTUAL]
+    required_test_points: [PG18-CREATE-TABLE-VIRTUAL, PG18-CREATE-TABLE-ENFORCEMENT, PG18-CREATE-TABLE-TABLE-NOT-NULL, PG18-CREATE-TABLE-WITHOUT-OVERLAPS, PG18-CREATE-TABLE-PRIMARY-KEY-WITHOUT-OVERLAPS, PG18-CREATE-TABLE-PERIOD-FK]
+  delete:
+    status: synopsis_adapted
+    reviewed_against: "18.4"
+    note: PG18 RETURNING supports OLD and NEW output aliases.
+    affected_factors:
+      result_shape: [returning_old_new_aliases]
+    required_test_points: [PG18-DELETE-RETURNING-ALIASES]
+  explain:
+    status: synopsis_adapted
+    reviewed_against: "18.4"
+    note: PG18 adds SERIALIZE and MEMORY options and removes the abbreviated form from the documented synopsis.
+    affected_factors:
+      option_shape: [serialize, memory]
+    required_test_points: [PG18-EXPLAIN-SERIALIZE, PG18-EXPLAIN-MEMORY]
+  grant:
+    status: synopsis_adapted
+    reviewed_against: "18.4"
+    note: PG18 adds the MAINTAIN table privilege.
+    affected_factors:
+      privilege_scope: [table_maintain]
+    required_test_points: [PG18-GRANT-MAINTAIN]
+  insert:
+    status: synopsis_adapted
+    reviewed_against: "18.4"
+    note: PG18 RETURNING supports OLD and NEW output aliases.
+    affected_factors:
+      result_shape: [returning_old_new_aliases]
+    required_test_points: [PG18-INSERT-RETURNING-ALIASES]
+  merge:
+    status: synopsis_adapted
+    reviewed_against: "18.4"
+    note: PG18 MERGE adds BY SOURCE, optional BY TARGET, and RETURNING with OLD and NEW aliases.
+    affected_factors:
+      condition_shape: [not_matched_by_source, not_matched_by_target]
+      result_shape: [returning_old_new_aliases]
+    required_test_points: [PG18-MERGE-NOT-MATCHED-BY-SOURCE, PG18-MERGE-NOT-MATCHED-BY-TARGET, PG18-MERGE-RETURNING-ALIASES]
+  revoke:
+    status: synopsis_adapted
+    reviewed_against: "18.4"
+    note: PG18 adds the MAINTAIN table privilege.
+    affected_factors:
+      privilege_scope: [table_maintain]
+    required_test_points: [PG18-REVOKE-MAINTAIN]
+  select:
+    status: synopsis_adapted
+    reviewed_against: "18.4"
+    note: PG18 permits from_reference in locking OF lists and MERGE as a WITH query.
+    affected_factors:
+      with_clause: [merge_cte]
+      name_shape: [row_lock_of_alias]
+    required_test_points: [PG18-SELECT-LOCK-OF-ALIAS, PG18-SELECT-MERGE-CTE]
+  update:
+    status: synopsis_adapted
+    reviewed_against: "18.4"
+    note: PG18 RETURNING supports OLD and NEW output aliases.
+    affected_factors:
+      result_shape: [returning_old_new_aliases]
+    required_test_points: [PG18-UPDATE-RETURNING-ALIASES]
+  vacuum:
+    status: synopsis_adapted
+    reviewed_against: "18.4"
+    note: PG18 uses the unified option-list syntax and supports ONLY plus descendant star in table_and_columns.
+    affected_factors:
+      target_name_shape: [only_relation, relation_and_descendants]
+    required_test_points: [PG18-VACUUM-ONLY-RELATION, PG18-VACUUM-RELATION-DESCENDANTS]
+  alter_database:
+    status: semantic_reviewed
+    reviewed_against: "18.4"
+    note: PG18 file_copy_method changes ALTER DATABASE SET TABLESPACE physical copying between copy and clone; both paths need SQL-level parity.
+    affected_factors:
+      config_parameter_type: [file_copy_method_copy, file_copy_method_clone]
+    required_test_points: [PG18-ALTER-DATABASE-FILE-COPY, PG18-ALTER-DATABASE-FILE-CLONE]
+  alter_index:
+    status: semantic_reviewed
+    reviewed_against: "18.4"
+    note: PG18 documents schema-qualified ATTACH PARTITION targets and revalidation when an already-attached child is named again.
+    affected_factors:
+      name_shape: [schema_qualified]
+      invalid_combination: [already_attached_partition_parent_invalid]
+    required_test_points: [PG18-ALTER-INDEX-SCHEMA-QUALIFIED-ATTACH, PG18-ALTER-INDEX-REVALIDATE-ATTACHED]
+  alter_operator_family:
+    status: semantic_reviewed
+    reviewed_against: "18.4"
+    note: The only normalized delta removes an obsolete pre-8.4 RECHECK note; PG18 syntax and behavior add no factor or test obligation.
+    affected_factors: {}
+    required_test_points: []
+  alter_role:
+    status: semantic_reviewed
+    reviewed_against: "18.4"
+    note: PG18 explicitly forbids changing the bootstrap superuser's SUPERUSER property.
+    affected_factors:
+      privilege_insufficient: [bootstrap_superuser_property_change]
+    required_test_points: [PG18-ALTER-ROLE-BOOTSTRAP-SUPERUSER]
+  alter_subscription:
+    status: semantic_reviewed
+    reviewed_against: "18.4"
+    note: PG18 makes failover and two_phase alterable, requires a disabled subscription, and adds transaction-block and prepared-transaction boundaries.
+    affected_factors:
+      subscription_parameter: [failover, two_phase]
+    required_test_points: [PG18-ALTER-SUBSCRIPTION-FAILOVER, PG18-ALTER-SUBSCRIPTION-TWO-PHASE, PG18-ALTER-SUBSCRIPTION-TRANSACTION-BOUNDARY]
+  alter_system:
+    status: semantic_reviewed
+    reviewed_against: "18.4"
+    note: PG18 adds allow_alter_system and documents the disabled-command boundary; it requires an isolated disposable cluster test.
+    affected_factors:
+      parameter_validity: [allow_alter_system_off]
+    required_test_points: [PG18-ALTER-SYSTEM-DISABLED]
+  alter_tablespace:
+    status: semantic_reviewed
+    reviewed_against: "18.4"
+    note: The text changes from prefetch wording to concurrent-I/O wording; existing effective_io_concurrency and maintenance_io_concurrency factors remain applicable and are paired explicitly.
+    affected_factors:
+      tablespace_option: [effective_io_concurrency, maintenance_io_concurrency]
+    required_test_points: [PG18-ALTER-TABLESPACE-IO-CONCURRENCY]
+  checkpoint:
+    status: semantic_reviewed
+    reviewed_against: "18.4"
+    note: The only delta replaces the pg_checkpoint documentation link with a dedicated predefined-role cross-reference; executable privileges are unchanged.
+    affected_factors: {}
+    required_test_points: []
+  comment:
+    status: semantic_reviewed
+    reviewed_against: "18.4"
+    note: PG18 explicitly documents that both NULL and an empty string remove a comment; the empty-string factor is retained as a parity point.
+    affected_factors:
+      comment_action: [remove_comment_empty]
+      comment_text_shape: [empty_string_literal]
+    required_test_points: [PG18-COMMENT-EMPTY-REMOVES]
+  create_collation:
+    status: semantic_reviewed
+    reviewed_against: "18.4"
+    note: PG18 adds the builtin provider with the finite C, C.UTF-8, and PG_UNICODE_FAST locale inventory.
+    affected_factors:
+      provider: [builtin]
+      locale_setting: [BUILTIN_C, BUILTIN_C_UTF8, BUILTIN_PG_UNICODE_FAST]
+    required_test_points: [PG18-CREATE-COLLATION-BUILTIN-C, PG18-CREATE-COLLATION-BUILTIN-C-UTF8, PG18-CREATE-COLLATION-PG-UNICODE-FAST]
+  create_event_trigger:
+    status: semantic_reviewed
+    reviewed_against: "18.4"
+    note: Event triggers are disabled not only in single-user mode but also when allow_event_triggers is false.
+    affected_factors:
+      single_user_mode: [allow_event_triggers_off]
+    required_test_points: [PG18-EVENT-TRIGGER-GUC-DISABLED]
+  create_extension:
+    status: semantic_reviewed
+    reviewed_against: "18.4"
+    note: PG18 resolves extension control files through extension_control_path instead of only SHAREDIR/extension.
+    affected_factors:
+      control_file_presence: [installed_in_extension_control_path]
+    required_test_points: [PG18-EXTENSION-CONTROL-PATH]
+  create_function:
+    status: semantic_reviewed
+    reviewed_against: "18.4"
+    note: PG18 clarifies parallel-worker and transaction-state guidance without adding syntax; all UNSAFE, RESTRICTED, SAFE, and absent labels remain covered.
+    affected_factors:
+      parallel_clause: []
+    required_test_points: [PG18-FUNCTION-PARALLEL-CONTRACT, PG18-FUNCTION-PARALLEL-UNSAFE, PG18-FUNCTION-PARALLEL-RESTRICTED, PG18-FUNCTION-PARALLEL-ABSENT]
+  create_index:
+    status: semantic_reviewed
+    reviewed_against: "18.4"
+    note: The normalized changes are editorial descriptions of existing fillfactor, buffering, fastupdate, and pending-list settings; no new value or behavior is introduced.
+    affected_factors: {}
+    required_test_points: []
+  create_materialized_view:
+    status: semantic_reviewed
+    reviewed_against: "18.4"
+    note: PG18 temporarily constrains search_path to pg_catalog,pg_temp while the materialized-view query runs.
+    affected_factors:
+      query_shape: [search_path_sandbox]
+    required_test_points: [PG18-CREATE-MATVIEW-SEARCH-PATH]
+  create_operator:
+    status: semantic_reviewed
+    reviewed_against: "18.4"
+    note: PG18 expands explanatory text for self and paired commutators; the existing commutator and dependency factors already model both present and deferred counterpart cases.
+    affected_factors:
+      commutator_clause: []
+    required_test_points: [PG18-CREATE-OPERATOR-COMMUTATOR, PG18-CREATE-OPERATOR-NO-COMMUTATOR]
+  create_operator_class:
+    status: semantic_reviewed
+    reviewed_against: "18.4"
+    note: The only delta removes the obsolete pre-8.4 RECHECK note; no PG18 factor or execution behavior changes.
+    affected_factors: {}
+    required_test_points: []
+  create_policy:
+    status: semantic_reviewed
+    reviewed_against: "18.4"
+    note: PG18 documents RLS checks for MERGE, DML RETURNING, and INSERT ON CONFLICT paths, including error rather than silent suppression.
+    affected_factors:
+      command_type: [MERGE, INSERT_ON_CONFLICT, DML_RETURNING]
+    required_test_points: [PG18-POLICY-MERGE, PG18-POLICY-ON-CONFLICT, PG18-POLICY-RETURNING]
+  create_subscription:
+    status: semantic_reviewed
+    reviewed_against: "18.4"
+    note: PG18 adds failover/two_phase slot matching guidance and changes the streaming default to parallel.
+    affected_factors:
+      with_parameter_clause: [failover_true, two_phase_true, streaming_parallel_default]
+    required_test_points: [PG18-CREATE-SUBSCRIPTION-FAILOVER, PG18-CREATE-SUBSCRIPTION-TWO-PHASE, PG18-CREATE-SUBSCRIPTION-STREAMING-DEFAULT]
+  create_tablespace:
+    status: semantic_reviewed
+    reviewed_against: "18.4"
+    note: The text changes from executor prefetch wording to concurrent-I/O wording; existing I/O concurrency WITH options remain the complete SQL factor set.
+    affected_factors:
+      with_clause: [single_option_effective_io_concurrency, single_option_maintenance_io_concurrency, multiple_options]
+    required_test_points: [PG18-CREATE-TABLESPACE-IO-CONCURRENCY, PG18-CREATE-TABLESPACE-EFFECTIVE-IO-CONCURRENCY, PG18-CREATE-TABLESPACE-MAINTENANCE-IO-CONCURRENCY]
+  create_trigger:
+    status: semantic_reviewed
+    reviewed_against: "18.4"
+    note: PG18 makes the transition-relation restriction explicit for foreign tables in addition to timing, constraint, and UPDATE OF restrictions.
+    affected_factors:
+      referencing_clause: [transition_table_on_foreign_table]
+    required_test_points: [PG18-TRIGGER-TRANSITION-FOREIGN-TABLE]
+  create_view:
+    status: semantic_reviewed
+    reviewed_against: "18.4"
+    note: PG18 extends automatically updatable views and CHECK OPTION behavior to MERGE while rejecting MERGE when the view or base relation has rules.
+    affected_factors:
+      query_shape: [merge_updatable_view]
+      error_boundary: [merge_view_with_rules]
+    required_test_points: [PG18-VIEW-MERGE-UPDATABLE, PG18-VIEW-MERGE-RULE-FAILURE]
+  drop_subscription:
+    status: semantic_reviewed
+    reviewed_against: "18.4"
+    note: PG18 adds explicit IF EXISTS parameter prose and notice behavior; the syntax already existed and is now an explicit parity point.
+    affected_factors:
+      if_exists_clause: [with_if_exists]
+    required_test_points: [PG18-DROP-SUBSCRIPTION-IF-EXISTS]
+  lock:
+    status: semantic_reviewed
+    reviewed_against: "18.4"
+    note: PG18 adds MAINTAIN to the privileges that permit every LOCK TABLE mode and removes ownership/superuser as an independent wording shortcut.
+    affected_factors:
+      privilege_context: [maintain_privilege]
+    required_test_points: [PG18-LOCK-MAINTAIN]
+  refresh_materialized_view:
+    status: semantic_reviewed
+    reviewed_against: "18.4"
+    note: PG18 replaces owner-only execution with MAINTAIN and constrains search_path while the backing query runs.
+    affected_factors:
+      privilege_context: [maintain_privilege]
+      dependency_state: [search_path_sandbox]
+    required_test_points: [PG18-REFRESH-MATVIEW-MAINTAIN, PG18-REFRESH-MATVIEW-SEARCH-PATH]
+  reindex:
+    status: semantic_reviewed
+    reviewed_against: "18.4"
+    note: PG18 uses MAINTAIN/pg_maintain permissions, constrains search_path, and documents _ccnew/_ccold suffixes with numeric disambiguators.
+    affected_factors:
+      permission: [maintain_privilege, pg_maintain_role]
+      concurrent_failure: [underscore_ccnew_suffix, underscore_ccold_suffix, suffixed_numeric_disambiguator]
+      verification_mode: [search_path_sandbox]
+    required_test_points: [PG18-REINDEX-MAINTAIN, PG18-REINDEX-PG-MAINTAIN-ROLE, PG18-REINDEX-SEARCH-PATH, PG18-REINDEX-FAILURE-SUFFIX, PG18-REINDEX-FAILURE-SUFFIX-CCOLD, PG18-REINDEX-FAILURE-SUFFIX-NUMERIC]
+  security_label:
+    status: semantic_reviewed
+    reviewed_against: "18.4"
+    note: PG18 explicitly documents database-object ownership as a prerequisite in addition to provider policy.
+    affected_factors:
+      executor_privilege: [object_owner, non_owner]
+    required_test_points: [PG18-SECURITY-LABEL-OWNER, PG18-SECURITY-LABEL-NON-OWNER]
+  set:
+    status: semantic_reviewed
+    reviewed_against: "18.4"
+    note: PG18 documents quoted SET NAMES and replaces the legacy PST8PDT example with the stable IANA America/Los_Angeles zone.
+    affected_factors:
+      value_shape: [set_names_quoted, iana_timezone]
+    required_test_points: [PG18-SET-NAMES-QUOTED, PG18-SET-IANA-TIMEZONE]
+  set_role:
+    status: semantic_reviewed
+    reviewed_against: "18.4"
+    note: PG18 clarifies that subsequent SET ROLE permission checks continue to use the current session user rather than the assumed effective role.
+    affected_factors:
+      privilege_context: [authenticated_user_permission_check]
+    required_test_points: [PG18-SET-ROLE-AUTHENTICATED-USER]
+  set_session_authorization:
+    status: semantic_reviewed
+    reviewed_against: "18.4"
+    note: The only normalized delta changes had to has for the authenticated user's superuser privilege; syntax and authorization behavior are unchanged.
+    affected_factors: {}
+    required_test_points: []
+  show:
+    status: semantic_reviewed
+    reviewed_against: "18.4"
+    note: PG18 removes special prose for LC_COLLATE and LC_CTYPE without documenting their removal as SHOW inputs; both remain explicit differential points.
+    affected_factors:
+      name_shape: [lc_collate, lc_ctype]
+    required_test_points: [PG18-SHOW-LC-COLLATE, PG18-SHOW-LC-CTYPE]

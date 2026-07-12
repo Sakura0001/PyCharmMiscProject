@@ -6,7 +6,7 @@ statement:
   category: ddl
   domain: extension
   source_reference: references/statements/ddl/extension/create_extension.md
-  official_source: https://www.postgresql.org/docs/16/sql-createextension.html
+  official_source: https://www.postgresql.org/docs/18/sql-createextension.html
   aliases:
   - CREATE EXTENSION
   - create extension
@@ -48,7 +48,7 @@ coverage_scope:
   target_object_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#object_kinds.all_object_kinds
     required_object_kinds:
     - extension
     decision_reason: CREATE_EXTENSION directly targets PostgreSQL extension objects and extension catalog metadata; baseline
@@ -56,7 +56,7 @@ coverage_scope:
   target_relation_coverage:
     required: false
     coverage_mode: not_applicable
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#relation_kinds.all_relation_kinds
     decision_reason: CREATE_EXTENSION names an extension object rather than a pg_class relation. Member objects such as tables,
       functions, types, views, or sequences are dependency fixtures represented by declared extension factors, not required
       relation-kind coverage.
@@ -187,6 +187,7 @@ factor_contract:
       required_values:
       - installed_on_system
       - not_installed_on_system
+      - installed_in_extension_control_path
       coverage_requirement: all_declared_values
     duplicate_extension_name:
       tier: T5
@@ -468,6 +469,33 @@ combination_groups:
     required: true
     steps:
     - sql: DROP EXTENSION IF EXISTS {extension_name} CASCADE;
+- id: create_extension_pg18_control_path
+  title: CREATE EXTENSION resolved through PG18 extension_control_path
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  factors:
+    expected_status: success
+    control_file_presence: installed_in_extension_control_path
+  expansion: {}
+  compatibility:
+    resolver: pg18_reference_parity_with_server_precondition
+    success_when:
+    - the control file is present only in extension_control_path and PostgreSQL 18.4 creates the extension
+    failure_when:
+    - condition: PostgreSQL 18.4 cannot resolve the control file through extension_control_path
+      reason: pg18_extension_control_path_reference_failure
+    default_failure_reason: pg18_extension_control_path_reference_failure
+  sql_shape:
+    template: CREATE EXTENSION {extension_name};
+  verification:
+    required: true
+    mode: pg_extension_catalog_query
+    sql: SELECT extname, extversion FROM pg_extension WHERE extname = '{extension_name}';
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP EXTENSION IF EXISTS {extension_name} CASCADE;
 audit_rules:
   require_all_required_top_level_keys: true
   require_declared_coverage_scope: true
@@ -476,3 +504,18 @@ audit_rules:
   require_post_coverage_extension_policy: true
   forbid_extension_before_required_coverage_passes: true
   forbid_extension_counting_toward_required_coverage: true
+pg18_compatibility:
+  target_version: '18.4'
+  synopsis_change: unchanged
+  document_change: changed
+  test_points:
+  - id: PG18-EXTENSION-CONTROL-PATH
+    affected_factors:
+    - control_file_presence
+    affected_values:
+      control_file_presence:
+      - installed_in_extension_control_path
+    sql: >-
+      CREATE EXTENSION {extension_name};
+    oracle: reference_parity
+    covers: control file found through extension_control_path

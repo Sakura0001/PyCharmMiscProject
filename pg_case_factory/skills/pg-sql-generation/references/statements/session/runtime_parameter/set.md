@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-set.html
+来源：https://www.postgresql.org/docs/18/sql-set.html
 
 ```sql
 SET [ SESSION | LOCAL ] configuration_parameter { TO | = } { value | 'value' | DEFAULT }
@@ -78,7 +78,11 @@ structured_config:
   category: session
   domain: runtime_parameter
   skill_name: set
-  official_source: https://www.postgresql.org/docs/16/sql-set.html
+  official_source: https://www.postgresql.org/docs/18/sql-set.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-set.html
+    review_status: semantic_reviewed
   statement:
     key: set
     name: SET
@@ -161,6 +165,8 @@ structured_config:
       - default_value
       - invalid_value
       - list_or_identifier_value
+      - set_names_quoted
+      - iana_timezone
     name_shape:
       label: 名称形态
       importance: non_important

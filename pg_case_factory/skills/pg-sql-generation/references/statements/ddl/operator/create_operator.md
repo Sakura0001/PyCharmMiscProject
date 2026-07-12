@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-createoperator.html
+来源：https://www.postgresql.org/docs/18/sql-createoperator.html
 
 ```sql
 CREATE OPERATOR name (
@@ -99,7 +99,11 @@ structured_config:
   category: ddl
   domain: operator
   skill_name: create_operator
-  official_source: https://www.postgresql.org/docs/16/sql-createoperator.html
+  official_source: https://www.postgresql.org/docs/18/sql-createoperator.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-createoperator.html
+    review_status: semantic_reviewed
   statement:
     key: create_operator
     name: CREATE OPERATOR

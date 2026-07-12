@@ -11,7 +11,7 @@ statement:
   - ALTER VIEW
   - alterview
   - alter view
-  official_source: https://www.postgresql.org/docs/16/sql-alterview.html
+  official_source: https://www.postgresql.org/docs/18/sql-alterview.html
 execution_contract:
   required_matrix_is_baseline: true
   no_inference_before_required_coverage_passes: true
@@ -49,7 +49,7 @@ coverage_scope:
   target_object_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#object_kinds.all_object_kinds
     required_object_kinds:
     - plain_view
     decision_reason: >-
@@ -59,7 +59,7 @@ coverage_scope:
   target_relation_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#relation_kinds.all_relation_kinds
     required_relation_kinds:
     - plain_view
     negative_relation_kinds:
@@ -79,15 +79,15 @@ coverage_scope:
   column_type_coverage:
     required: true
     coverage_mode: conditional
-    inventory_source: references/common/pg16_type_catalog.md
-    required_type_set: all_pg16_column_types
+    inventory_source: references/common/pg18_type_catalog.md
+    required_type_set: all_pg18_column_types
     expansion_mode: representative_by_statement_branch
     require_each_type_success_or_failure: false
     decision_reason: >-
       ALTER VIEW does not change view column data types, but SET DEFAULT and
       RENAME COLUMN branches touch output columns. The baseline therefore uses
       conditional representative column bindings for column-sensitive branches
-      and does not require exhaustive coverage across every PG16 type.
+      and does not require exhaustive coverage across every PG18.4 type.
 factor_contract:
   source_reference_must_define_all_factors: true
   matrix_must_cover_required_factor_values: true
@@ -249,7 +249,7 @@ dynamic_inputs:
     - default_expression
   type_catalog:
     required: true
-    path: references/common/pg16_type_catalog.md
+    path: references/common/pg18_type_catalog.md
     required_fields:
     - type_key
     - type_category

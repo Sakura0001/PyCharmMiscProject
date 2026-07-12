@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-createtransform.html
+来源：https://www.postgresql.org/docs/18/sql-createtransform.html
 
 ```sql
 CREATE [ OR REPLACE ] TRANSFORM FOR type_name LANGUAGE lang_name (
@@ -11,7 +11,7 @@ CREATE [ OR REPLACE ] TRANSFORM FOR type_name LANGUAGE lang_name (
 );
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - CREATE TRANSFORM 要求：必须拥有并具有 type 的 USAGE 权限，必须拥有 language 的 USAGE 权限，必须拥有并具有指定函数的 EXECUTE 权限
 - 不需要提供两个方向函数；只提供 FROM SQL 或只提供 TO SQL 也可以
 - 支持 OR REPLACE，可替换已有 transform 定义
@@ -106,7 +106,7 @@ structured_config:
   category: ddl
   domain: transform
   skill_name: create_transform
-  official_source: https://www.postgresql.org/docs/16/sql-createtransform.html
+  official_source: https://www.postgresql.org/docs/18/sql-createtransform.html
   statement:
     key: create_transform
     name: CREATE TRANSFORM

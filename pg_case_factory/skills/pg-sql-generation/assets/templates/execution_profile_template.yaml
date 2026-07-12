@@ -1,0 +1,44 @@
+# Copy this file to work/<run-id>/execution_profile.yaml, fill it there, and pass
+# that work-file to `run init --execution-profile`. The command validates and
+# writes the canonical immutable snapshot; never copy or edit it inside a run.
+# This is not a credential store. Configure service names in an external libpq
+# service file. The two services must differ and their database names must match
+# exactly. Replace both expected identity anchors with values collected during
+# trusted environment provisioning. Preflight requires server_version_num=180004,
+# each side's exact expected system_identifier/current_user, and different
+# system_identifier values across the pair. Provision extension
+# table-AM/base-type fixtures, equivalent postgres_fdw
+# fixtures, isolated superuser/CREATEDB/CREATEROLE object administration,
+# extension files, a logical-replication publisher, LZ4, deterministic
+# multi-session scheduling, and restart/fault-injection control before claiming
+# the corresponding template jobs executable. A missing harness blocks those
+# jobs; it must never be converted to justified N/A. The basic runner rejects
+# psql meta commands, COPY PROGRAM, and COPY FROM STDIN data mode.
+schema_version: 1
+kind: execution_profile
+compatibility_target: postgresql-18.4
+reference:
+  service: pg18_reference
+  database: regression
+  expected_system_identifier: "1111111111111111111"
+  expected_current_user: regression_user
+dut:
+  service: storage_engine_dut
+  database: regression
+  expected_system_identifier: "2222222222222222222"
+  expected_current_user: regression_user
+runner:
+  executable: psql
+  timeout_seconds: 300
+  stop_on_error: true
+comparison:
+  mode: exact_text
+  # Empty normalization means exact return-code/stdout/stderr comparison after
+  # canonicalizing CRLF/CR to LF; trailing whitespace and final newline remain.
+  normalization:
+    drop_line_patterns: []
+    replacements: []
+    strip_trailing_whitespace: false
+security:
+  credential_source: external-libpq-service
+  persist_credentials: false

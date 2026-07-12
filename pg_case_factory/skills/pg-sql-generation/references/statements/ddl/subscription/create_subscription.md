@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-createsubscription.html
+来源：https://www.postgresql.org/docs/18/sql-createsubscription.html
 
 ```sql
 CREATE SUBSCRIPTION subscription_name
@@ -107,7 +107,11 @@ structured_config:
   category: ddl
   domain: subscription
   skill_name: create_subscription
-  official_source: https://www.postgresql.org/docs/16/sql-createsubscription.html
+  official_source: https://www.postgresql.org/docs/18/sql-createsubscription.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-createsubscription.html
+    review_status: semantic_reviewed
   statement:
     key: create_subscription
     name: CREATE SUBSCRIPTION
@@ -194,6 +198,9 @@ structured_config:
       - stream_true
       - disable_on_error_true
       - run_as_owner_true
+      - failover_true
+      - two_phase_true
+      - streaming_parallel_default
       - multiple_parameters
     publication_list:
       label: PUBLICATION 列表形态

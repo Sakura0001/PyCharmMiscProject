@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-discard.html
+来源：https://www.postgresql.org/docs/18/sql-discard.html
 
 ```sql
 DISCARD { ALL | PLANS | SEQUENCES | TEMPORARY | TEMP }
@@ -77,7 +77,7 @@ structured_config:
   category: session
   domain: session_state
   skill_name: discard
-  official_source: https://www.postgresql.org/docs/16/sql-discard.html
+  official_source: https://www.postgresql.org/docs/18/sql-discard.html
   statement:
     key: discard
     name: DISCARD

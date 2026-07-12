@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-createtableas.html
+来源：https://www.postgresql.org/docs/18/sql-createtableas.html
 
 ```sql
 CREATE [ [ GLOBAL | LOCAL ] { TEMPORARY | TEMP } | UNLOGGED ] TABLE [ IF NOT EXISTS ] table_name
@@ -136,7 +136,7 @@ structured_config:
   category: ddl
   domain: table
   skill_name: create_table_as
-  official_source: https://www.postgresql.org/docs/16/sql-createtableas.html
+  official_source: https://www.postgresql.org/docs/18/sql-createtableas.html
   statement:
     key: create_table_as
     name: CREATE TABLE AS
@@ -478,7 +478,7 @@ structured_config:
     vs_materialized_view: CREATE MATERIALIZED VIEW 与 CREATE TABLE AS 相似但创建物化视图而非普通表，属于独立语句不纳入本 skill。
     on_commit_scope: ON COMMIT 子句仅适用于临时表；对永久表指定 ON COMMIT 无效或报错。
     global_local_deprecated: GLOBAL / LOCAL 关键字仅为 SQL 标准兼容性保留，在 PostgreSQL 中行为相同，已被弃用。
-    without_oids: WITHOUT OIDS 为向后兼容语法；PostgreSQL 16 不支持 WITH OIDS，所有表均不含 OID。
+    without_oids: WITHOUT OIDS 为向后兼容语法；PostgreSQL 18.4 不支持 WITH OIDS，所有表均不含 OID。
   defaults:
     expected_status: success
     table_type: permanent

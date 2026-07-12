@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-rollback.html
+来源：https://www.postgresql.org/docs/18/sql-rollback.html
 
 ```sql
 ROLLBACK [ WORK | TRANSACTION ] [ AND [ NO ] CHAIN ]
@@ -77,7 +77,7 @@ structured_config:
   category: tcl
   domain: transaction
   skill_name: rollback
-  official_source: https://www.postgresql.org/docs/16/sql-rollback.html
+  official_source: https://www.postgresql.org/docs/18/sql-rollback.html
   statement:
     key: rollback
     name: ROLLBACK

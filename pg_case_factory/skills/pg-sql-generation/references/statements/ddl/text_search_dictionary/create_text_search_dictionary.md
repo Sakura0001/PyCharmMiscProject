@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-createtsdictionary.html
+来源：https://www.postgresql.org/docs/18/sql-createtsdictionary.html
 
 ```sql
 CREATE TEXT SEARCH DICTIONARY name (
@@ -11,7 +11,7 @@ CREATE TEXT SEARCH DICTIONARY name (
 )
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - CREATE TEXT SEARCH DICTIONARY 要求执行者拥有 schema 的 CREATE 权限
 - 必须指定 TEMPLATE = template，引用已存在的 text search template
 - TEMPLATE 引用的 template 必须存在，否则失败
@@ -95,7 +95,7 @@ structured_config:
   category: ddl
   domain: text_search_dictionary
   skill_name: create_text_search_dictionary
-  official_source: https://www.postgresql.org/docs/16/sql-createtsdictionary.html
+  official_source: https://www.postgresql.org/docs/18/sql-createtsdictionary.html
   statement:
     key: create_text_search_dictionary
     name: CREATE TEXT SEARCH DICTIONARY

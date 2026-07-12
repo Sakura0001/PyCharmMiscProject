@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-droplanguage.html
+来源：https://www.postgresql.org/docs/18/sql-droplanguage.html
 
 ```sql
 DROP [ PROCEDURAL ] LANGUAGE [ IF EXISTS ] name [ CASCADE | RESTRICT ]
@@ -82,7 +82,7 @@ structured_config:
   category: ddl
   domain: language
   skill_name: drop_language
-  official_source: https://www.postgresql.org/docs/16/sql-droplanguage.html
+  official_source: https://www.postgresql.org/docs/18/sql-droplanguage.html
   statement:
     key: drop_language
     name: DROP LANGUAGE

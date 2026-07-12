@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-createopclass.html
+来源：https://www.postgresql.org/docs/18/sql-createopclass.html
 
 ```sql
 CREATE OPERATOR CLASS name [ DEFAULT ] FOR TYPE data_type
@@ -94,7 +94,11 @@ structured_config:
   category: ddl
   domain: operator_class
   skill_name: create_operator_class
-  official_source: https://www.postgresql.org/docs/16/sql-createopclass.html
+  official_source: https://www.postgresql.org/docs/18/sql-createopclass.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-createopclass.html
+    review_status: semantic_reviewed
   statement:
     key: create_operator_class
     name: CREATE OPERATOR CLASS

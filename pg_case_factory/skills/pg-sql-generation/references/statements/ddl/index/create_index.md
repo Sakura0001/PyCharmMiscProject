@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-createindex.html
+来源：https://www.postgresql.org/docs/18/sql-createindex.html
 
 ```sql
 CREATE [ UNIQUE ] INDEX [ CONCURRENTLY ] [ [ IF NOT EXISTS ] name ] ON [ ONLY ] table_name [ USING method ]
@@ -146,7 +146,11 @@ structured_config:
   category: ddl
   domain: index
   skill_name: create_index
-  official_source: https://www.postgresql.org/docs/16/sql-createindex.html
+  official_source: https://www.postgresql.org/docs/18/sql-createindex.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-createindex.html
+    review_status: semantic_reviewed
   statement:
     key: create_index
     name: CREATE INDEX

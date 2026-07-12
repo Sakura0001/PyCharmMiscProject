@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-close.html
+来源：https://www.postgresql.org/docs/18/sql-close.html
 
 ```sql
 CLOSE { name | ALL }
@@ -77,7 +77,7 @@ structured_config:
   category: cursor
   domain: cursor
   skill_name: close
-  official_source: https://www.postgresql.org/docs/16/sql-close.html
+  official_source: https://www.postgresql.org/docs/18/sql-close.html
   statement:
     key: close
     name: CLOSE

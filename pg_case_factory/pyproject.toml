@@ -4,12 +4,15 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pg-case-factory"
-version = "0.1.0"
-description = "Generate SQL-first PostgreSQL 16.4 DDL test cases."
+version = "0.2.0"
+description = "Plan, generate, and differentially verify PostgreSQL 18.4 SQL test cases."
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 authors = [{ name = "yuyu" }]
 dependencies = ["PyYAML>=6.0.2"]
+
+[project.scripts]
+pg-case = "pg_case_factory.cli:main"
 
 [tool.setuptools]
 package-dir = { "" = "src" }

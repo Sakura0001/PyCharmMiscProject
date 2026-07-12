@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-set-session-authorization.html
+来源：https://www.postgresql.org/docs/18/sql-set-session-authorization.html
 
 ```sql
 SET [ SESSION | LOCAL ] SESSION AUTHORIZATION user_name
@@ -80,7 +80,11 @@ structured_config:
   category: session
   domain: authorization
   skill_name: set_session_authorization
-  official_source: https://www.postgresql.org/docs/16/sql-set-session-authorization.html
+  official_source: https://www.postgresql.org/docs/18/sql-set-session-authorization.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-set-session-authorization.html
+    review_status: semantic_reviewed
   statement:
     key: set_session_authorization
     name: SET SESSION AUTHORIZATION

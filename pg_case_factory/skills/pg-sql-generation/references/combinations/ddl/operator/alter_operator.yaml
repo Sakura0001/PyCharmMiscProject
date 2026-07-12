@@ -6,7 +6,7 @@ statement:
   category: ddl
   domain: operator
   source_reference: references/statements/ddl/operator/alter_operator.md
-  official_source: https://www.postgresql.org/docs/16/sql-alteroperator.html
+  official_source: https://www.postgresql.org/docs/18/sql-alteroperator.html
   aliases:
   - alter operator
   - ALTER OPERATOR
@@ -45,7 +45,7 @@ coverage_scope:
   target_object_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#object_kinds.all_object_kinds
     required_object_kinds:
     - operator
     - function
@@ -56,7 +56,7 @@ coverage_scope:
   target_relation_coverage:
     required: false
     coverage_mode: not_applicable
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#relation_kinds.all_relation_kinds
     decision_reason: ALTER OPERATOR names an operator signature rather than a relation, so pg_class relation-kind coverage
       is outside this statement baseline.
   table_coverage:
@@ -67,7 +67,7 @@ coverage_scope:
   column_type_coverage:
     required: false
     coverage_mode: representative
-    inventory_source: references/common/pg16_type_catalog.md
+    inventory_source: references/common/pg18_type_catalog.md
     decision_reason: Exhaustive table-column type coverage is not applicable because ALTER OPERATOR uses operand data types
       only to identify the target operator. Representative operand_data_type values and the type_binding_manifest cover
       the required type-signature surface.
@@ -98,7 +98,7 @@ factor_contract:
     alter_action_type:
       tier: T2
       coverage_role: branch_binding_axis
-      required_values: [owner_change, set_schema, set_estimator]
+      required_values: [owner_change, set_schema, set_estimator, set_commutator, set_hashes, set_merges, set_negator]
       coverage_requirement: all_declared_values
     new_owner_shape:
       tier: T2
@@ -292,6 +292,36 @@ combination_groups:
     required: true
     steps:
     - sql: DROP OPERATOR IF EXISTS {operator_name} ({left_type}, {right_type}) CASCADE;
+- id: pg18_alter_operator_optimizer_attributes
+  title: PostgreSQL 18 ALTER OPERATOR optimizer attributes
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  factors:
+    expected_status: success
+    alter_action_type: set_commutator
+  expansion:
+    alter_action_type:
+      mode: explicit
+      values: [set_commutator, set_hashes, set_merges, set_negator]
+  compatibility:
+    resolver: pg18_reference_parity
+    success_when:
+    - operator optimizer metadata matches PostgreSQL 18.4
+    failure_when:
+    - condition: SQLSTATE or pg_operator metadata differs
+      reason: pg18_alter_operator_attribute_mismatch
+    default_failure_reason: pg18_alter_operator_attribute_mismatch
+  sql_shape:
+    template: ALTER OPERATOR {operator_name} ({left_type}, {right_type}) SET (COMMUTATOR = {commutator}, NEGATOR = {negator}, HASHES, MERGES);
+  verification:
+    required: true
+    mode: pg_operator_catalog
+    sql: SELECT oprname, oprcom::regoperator, oprnegate::regoperator, oprcanhash, oprcanmerge FROM pg_operator WHERE oid = '{operator_signature}'::regoperator;
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP OPERATOR IF EXISTS {operator_name} ({left_type}, {right_type}) CASCADE;
 audit_rules:
   require_all_required_top_level_keys: true
   require_declared_coverage_scope: true
@@ -300,3 +330,20 @@ audit_rules:
   require_post_coverage_extension_policy: true
   forbid_extension_before_required_coverage_passes: true
   forbid_extension_counting_toward_required_coverage: true
+pg18_compatibility:
+  target_version: '18.4'
+  synopsis_change: changed
+  test_points:
+  - id: PG18-ALTER-OPERATOR-OPTIMIZER-ATTRIBUTES
+    affected_factors:
+    - alter_action_type
+    affected_values:
+      alter_action_type:
+      - set_commutator
+      - set_negator
+      - set_hashes
+      - set_merges
+    sql: >-
+      ALTER OPERATOR {operator_name} ({left_type}, {right_type}) SET (COMMUTATOR = {commutator}, NEGATOR = {negator}, HASHES, MERGES);
+    oracle: reference_parity
+    covers: COMMUTATOR, NEGATOR, HASHES and MERGES

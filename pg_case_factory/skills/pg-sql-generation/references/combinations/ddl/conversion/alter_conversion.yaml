@@ -6,7 +6,7 @@ statement:
   category: ddl
   domain: conversion
   source_reference: references/statements/ddl/conversion/alter_conversion.md
-  official_source: https://www.postgresql.org/docs/16/sql-alterconversion.html
+  official_source: https://www.postgresql.org/docs/18/sql-alterconversion.html
   aliases:
   - ALTER CONVERSION
   - alter_conversion
@@ -46,7 +46,7 @@ coverage_scope:
   target_object_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#object_kinds.all_object_kinds
     required_object_kinds: [conversion]
     decision_reason: >
       ALTER CONVERSION directly changes conversion metadata through rename, owner, or schema movement. Required object
@@ -54,7 +54,7 @@ coverage_scope:
   target_relation_coverage:
     required: false
     coverage_mode: not_applicable
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#relation_kinds.all_relation_kinds
     decision_reason: >
       ALTER CONVERSION does not operate on pg_class relations. Its dependency surface is catalog metadata and roles/schemas,
       not relation kinds.

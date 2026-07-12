@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-savepoint.html
+来源：https://www.postgresql.org/docs/18/sql-savepoint.html
 
 ```sql
 SAVEPOINT savepoint_name
@@ -77,7 +77,7 @@ structured_config:
   category: tcl
   domain: savepoint
   skill_name: savepoint
-  official_source: https://www.postgresql.org/docs/16/sql-savepoint.html
+  official_source: https://www.postgresql.org/docs/18/sql-savepoint.html
   statement:
     key: savepoint
     name: SAVEPOINT

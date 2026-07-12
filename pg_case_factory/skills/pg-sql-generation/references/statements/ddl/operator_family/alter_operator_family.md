@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-alteropfamily.html
+来源：https://www.postgresql.org/docs/18/sql-alteropfamily.html
 
 ```sql
 ALTER OPERATOR FAMILY name USING index_method ADD
@@ -108,7 +108,11 @@ structured_config:
   category: ddl
   domain: operator_family
   skill_name: alter_operator_family
-  official_source: https://www.postgresql.org/docs/16/sql-alteropfamily.html
+  official_source: https://www.postgresql.org/docs/18/sql-alteropfamily.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-alteropfamily.html
+    review_status: semantic_reviewed
   statement:
     key: alter_operator_family
     name: ALTER OPERATOR FAMILY

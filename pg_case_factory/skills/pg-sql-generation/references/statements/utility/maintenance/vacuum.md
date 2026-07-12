@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-vacuum.html
+来源：https://www.postgresql.org/docs/18/sql-vacuum.html
 
 ```sql
 VACUUM [ ( option [, ...] ) ] [ table_and_columns [, ...] ]
@@ -100,7 +100,11 @@ structured_config:
   category: utility
   domain: maintenance
   skill_name: vacuum
-  official_source: https://www.postgresql.org/docs/16/sql-vacuum.html
+  official_source: https://www.postgresql.org/docs/18/sql-vacuum.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-vacuum.html
+    review_status: synopsis_adapted
   statement:
     key: vacuum
     name: VACUUM
@@ -194,6 +198,8 @@ structured_config:
       - schema_qualified
       - quoted_identifier
       - all_or_database_wide
+      - only_relation
+      - relation_and_descendants
     input_output_shape:
       label: 输入输出形态
       importance: non_important

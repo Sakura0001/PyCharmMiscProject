@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-alterlargeobject.html
+来源：https://www.postgresql.org/docs/18/sql-alterlargeobject.html
 
 ```sql
 ALTER LARGE OBJECT large_object_oid OWNER TO { new_owner | CURRENT_ROLE | CURRENT_USER | SESSION_USER }
@@ -80,7 +80,7 @@ structured_config:
   category: ddl
   domain: large_object
   skill_name: alter_large_object
-  official_source: https://www.postgresql.org/docs/16/sql-alterlargeobject.html
+  official_source: https://www.postgresql.org/docs/18/sql-alterlargeobject.html
   statement:
     key: alter_large_object
     name: ALTER LARGE OBJECT

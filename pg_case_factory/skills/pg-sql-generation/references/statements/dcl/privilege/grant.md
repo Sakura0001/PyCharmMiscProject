@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-grant.html
+来源：https://www.postgresql.org/docs/18/sql-grant.html
 
 ```sql
 GRANT { { SELECT | INSERT | UPDATE | DELETE | TRUNCATE | REFERENCES | TRIGGER }
@@ -164,7 +164,11 @@ structured_config:
   category: dcl
   domain: privilege
   skill_name: grant
-  official_source: https://www.postgresql.org/docs/16/sql-grant.html
+  official_source: https://www.postgresql.org/docs/18/sql-grant.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-grant.html
+    review_status: synopsis_adapted
   statement:
     key: grant
     name: GRANT
@@ -287,6 +291,7 @@ structured_config:
       - routine_language_type_fdw_server
       - role_membership
       - parameter_privilege
+      - table_maintain
     grantee_shape:
       label: 被授权对象
       importance: important
@@ -393,7 +398,7 @@ structured_config:
     - privilege_scope
     - grantee_shape
   rendering:
-    statement_template: GRANT { { SELECT | INSERT | UPDATE | DELETE | TRUNCATE | REFERENCES | TRIGGER }
+    statement_template: GRANT {privilege_clause} ON {object_clause} TO {grantee_clause}{grant_option_clause}{granted_by_clause}
     verification_query_template: ''
     factor_value_bindings: {}
 ```

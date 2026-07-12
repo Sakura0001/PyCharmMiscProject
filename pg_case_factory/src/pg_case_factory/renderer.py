@@ -9,6 +9,7 @@ DEFAULT_HEADER_TEMPLATE = """-- ------------------------------------------------
 -- statement : {statement_key}
 -- sequence : {sequence}
 -- --------------------------------------------------------"""
+BUILTIN_NAME_CONTEXT_FIELDS = frozenset({"enum_name", "index_name", "table_name"})
 
 
 def _stable_token(case_token: str) -> str:

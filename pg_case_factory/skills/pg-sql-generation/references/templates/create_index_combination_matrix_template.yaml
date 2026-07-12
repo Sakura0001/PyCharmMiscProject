@@ -7,7 +7,7 @@ statement:
   category: ddl
   domain: index
   source_reference: references/statements/ddl/index/create_index.md
-  official_source: https://www.postgresql.org/docs/16/sql-createindex.html
+  official_source: https://www.postgresql.org/docs/18/sql-createindex.html
 
 execution_contract:
   required_matrix_is_baseline: true
@@ -90,14 +90,14 @@ coverage_scope:
   column_type_coverage:
     required: true
     coverage_mode: exhaustive
-    inventory_source: references/common/pg16_type_catalog.md
-    required_type_set: all_pg16_column_types
+    inventory_source: references/common/pg18_type_catalog.md
+    required_type_set: all_pg18_column_types
     expansion_mode: expand_every_type
     require_each_type_success_or_failure: true
     decision_reason: >
       CREATE INDEX method compatibility, operator classes, expression indexes,
       INCLUDE columns, collation, and ordering all depend on column data type.
-      Every PostgreSQL 16 type that can be declared as a table column must be
+      Every PostgreSQL 18.4 type that can be declared as a table column must be
       exercised by at least one CREATE INDEX success or failure case.
 
 factor_contract:
@@ -139,7 +139,7 @@ factor_contract:
       coverage_role: main_axis
       required_values:
         - all_template_columns
-      coverage_requirement: all_pg16_column_types
+      coverage_requirement: all_pg18_column_types
 
     unique:
       tier: T1
@@ -347,7 +347,7 @@ dynamic_inputs:
       - columns
   type_catalog:
     required: true
-    path: references/common/pg16_type_catalog.md
+    path: references/common/pg18_type_catalog.md
     required_fields:
       - type_key
       - type_category
@@ -364,8 +364,8 @@ dynamic_inputs:
       - capabilities
 
 combination_groups:
-  - id: btree_single_column_all_pg16_column_types
-    title: B-tree single-column index over every PG16 column type
+  - id: btree_single_column_all_pg18_column_types
+    title: B-tree single-column index over every PG18.4 column type
     lifecycle_role: target_statement
     expected_status_policy: per_column_type
     default_expected_status: failure
@@ -501,8 +501,8 @@ combination_groups:
       steps:
         - sql: DROP INDEX IF EXISTS {index_name};
 
-  - id: partial_index_all_pg16_column_types
-    title: Partial index predicate over every PG16 column type
+  - id: partial_index_all_pg18_column_types
+    title: Partial index predicate over every PG18.4 column type
     lifecycle_role: target_statement
     expected_status_policy: per_column_type
     default_expected_status: failure
@@ -617,8 +617,8 @@ combination_groups:
       steps:
         - sql: DROP INDEX IF EXISTS {index_name};
 
-  - id: hash_single_column_all_pg16_column_types
-    title: Hash single-column index over every PG16 column type
+  - id: hash_single_column_all_pg18_column_types
+    title: Hash single-column index over every PG18.4 column type
     lifecycle_role: target_statement
     expected_status_policy: per_column_type
     default_expected_status: failure
@@ -1035,9 +1035,9 @@ audit_rules:
   - id: target_relation_coverage_is_exhaustive
     severity: error
     description: CREATE INDEX target relation kinds must be explicitly listed and exhausted.
-  - id: all_pg16_column_types_are_exercised
+  - id: all_pg18_column_types_are_exercised
     severity: error
-    description: Every type in pg16_type_catalog all_pg16_column_types must be emitted as success or failure.
+    description: Every type in pg18_type_catalog all_pg18_column_types must be emitted as success or failure.
   - id: failure_cases_have_declared_reason
     severity: error
     description: Every expected failure must have a stable reason.

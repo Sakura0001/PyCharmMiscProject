@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-createtsconfiguration.html
+来源：https://www.postgresql.org/docs/18/sql-createtsconfiguration.html
 
 ```sql
 CREATE TEXT SEARCH CONFIGURATION name (
@@ -11,7 +11,7 @@ CREATE TEXT SEARCH CONFIGURATION name (
 )
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - CREATE TEXT SEARCH CONFIGURATION 要求执行者拥有创建权限（非 superuser 也可执行，但需要 schema 的 CREATE 权限）
 - 如果指定 PARSER = parser_name，必须引用已存在的 text search parser（superuser 才能创建 parser）
 - 如果指定 COPY = source_config，新配置将复制源配置的映射（mapping），但不复制源配置的 parser
@@ -102,7 +102,7 @@ structured_config:
   category: ddl
   domain: text_search_configuration
   skill_name: create_text_search_configuration
-  official_source: https://www.postgresql.org/docs/16/sql-createtsconfiguration.html
+  official_source: https://www.postgresql.org/docs/18/sql-createtsconfiguration.html
   statement:
     key: create_text_search_configuration
     name: CREATE TEXT SEARCH CONFIGURATION

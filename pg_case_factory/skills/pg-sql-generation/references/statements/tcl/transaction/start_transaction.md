@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-start-transaction.html
+来源：https://www.postgresql.org/docs/18/sql-start-transaction.html
 
 ```sql
 START TRANSACTION [ transaction_mode [, ...] ]
@@ -83,7 +83,7 @@ structured_config:
   category: tcl
   domain: transaction
   skill_name: start_transaction
-  official_source: https://www.postgresql.org/docs/16/sql-start-transaction.html
+  official_source: https://www.postgresql.org/docs/18/sql-start-transaction.html
   statement:
     key: start_transaction
     name: START TRANSACTION

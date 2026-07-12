@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-createpublication.html
+来源：https://www.postgresql.org/docs/18/sql-createpublication.html
 
 ```sql
 CREATE PUBLICATION name
@@ -83,7 +83,7 @@ and table_and_columns is:
 ## 生成约束
 
 - 必须覆盖 publication 成功创建、重名冲突、权限不足与依赖对象缺失路径。
-- CREATE PUBLICATION 不支持 IF NOT EXISTS（PG16），重名路径必定失败。
+- CREATE PUBLICATION 不支持 IF NOT EXISTS（PG18.4），重名路径必定失败。
 - 需要 superuser 权限的分支，必须在生命周期计划中显式标注环境依赖。
 - FOR ALL TABLES 与 FOR TABLE / FOR TABLES IN SCHEMA 互斥冲突路径必须覆盖。
 - 每个样本必须包含明确的前置对象准备、目标 CREATE PUBLICATION 语句、验证语句与清理语句。
@@ -117,7 +117,11 @@ structured_config:
   category: ddl
   domain: publication
   skill_name: create_publication
-  official_source: https://www.postgresql.org/docs/16/sql-createpublication.html
+  official_source: https://www.postgresql.org/docs/18/sql-createpublication.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-createpublication.html
+    review_status: synopsis_adapted
   statement:
     key: create_publication
     name: CREATE PUBLICATION

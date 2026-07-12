@@ -2,13 +2,13 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-droptsconfiguration.html
+来源：https://www.postgresql.org/docs/18/sql-droptsconfiguration.html
 
 ```sql
 DROP TEXT SEARCH CONFIGURATION [ IF EXISTS ] name [ CASCADE | RESTRICT ]
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - DROP TEXT SEARCH CONFIGURATION 要求执行者是配置的 owner（superusers 自动拥有此权限）
 - RESTRICT（默认）：如果有任何对象依赖该配置，拒绝删除
 - CASCADE：自动删除依赖该配置的所有对象
@@ -88,7 +88,7 @@ structured_config:
   category: ddl
   domain: text_search_configuration
   skill_name: drop_text_search_configuration
-  official_source: https://www.postgresql.org/docs/16/sql-droptsconfiguration.html
+  official_source: https://www.postgresql.org/docs/18/sql-droptsconfiguration.html
   statement:
     key: drop_text_search_configuration
     name: DROP TEXT SEARCH CONFIGURATION

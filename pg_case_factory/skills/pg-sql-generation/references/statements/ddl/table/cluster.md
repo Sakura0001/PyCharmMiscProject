@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-cluster.html
+来源：https://www.postgresql.org/docs/18/sql-cluster.html
 
 ```sql
 CLUSTER [VERBOSE] table_name [ USING index_name ]
@@ -121,7 +121,11 @@ structured_config:
   category: ddl
   domain: table
   skill_name: cluster
-  official_source: https://www.postgresql.org/docs/16/sql-cluster.html
+  official_source: https://www.postgresql.org/docs/18/sql-cluster.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-cluster.html
+    review_status: synopsis_adapted
   statement:
     key: cluster
     name: CLUSTER

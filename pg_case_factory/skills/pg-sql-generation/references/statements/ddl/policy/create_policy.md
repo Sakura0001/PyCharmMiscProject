@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-createpolicy.html
+来源：https://www.postgresql.org/docs/18/sql-createpolicy.html
 
 ```sql
 CREATE POLICY name ON table_name
@@ -13,7 +13,7 @@ CREATE POLICY name ON table_name
     [ WITH CHECK ( check_expression ) ]
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - Policy 名称在同一个表内必须唯一，不同表可以使用相同的 policy 名称
 - 默认 deny：如果 RLS 启用但没有适用的 policy，则所有行不可见也不可修改
 - PERMISSIVE（默认）多个同类 policy 用 OR 组合；RESTRICTIVE 多个同类 policy 用 AND 组合
@@ -119,7 +119,11 @@ structured_config:
   category: ddl
   domain: policy
   skill_name: create_policy
-  official_source: https://www.postgresql.org/docs/16/sql-createpolicy.html
+  official_source: https://www.postgresql.org/docs/18/sql-createpolicy.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-createpolicy.html
+    review_status: semantic_reviewed
   statement:
     key: create_policy
     name: CREATE POLICY
@@ -199,6 +203,9 @@ structured_config:
       - INSERT
       - UPDATE
       - DELETE
+      - MERGE
+      - INSERT_ON_CONFLICT
+      - DML_RETURNING
     object_state:
       label: 目标 policy 对象状态
       importance: important

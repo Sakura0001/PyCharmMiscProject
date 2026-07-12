@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-move.html
+来源：https://www.postgresql.org/docs/18/sql-move.html
 
 ```sql
 MOVE [ direction ] [ FROM | IN ] cursor_name
@@ -94,7 +94,7 @@ structured_config:
   category: cursor
   domain: cursor
   skill_name: move
-  official_source: https://www.postgresql.org/docs/16/sql-move.html
+  official_source: https://www.postgresql.org/docs/18/sql-move.html
   statement:
     key: move
     name: MOVE

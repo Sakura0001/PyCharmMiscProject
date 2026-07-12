@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-altertable.html
+来源：https://www.postgresql.org/docs/18/sql-altertable.html
 
 ### Synopsis 形式 1：action 形式（最常用）
 
@@ -359,7 +359,11 @@ structured_config:
   category: ddl
   domain: table
   skill_name: alter_table
-  official_source: https://www.postgresql.org/docs/16/sql-altertable.html
+  official_source: https://www.postgresql.org/docs/18/sql-altertable.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-altertable.html
+    review_status: synopsis_adapted
   statement:
     key: alter_table
     name: ALTER TABLE
@@ -486,6 +490,8 @@ structured_config:
         label: ALTER [ COLUMN ] column_name { SET | DROP } NOT NULL
       - key: alter_column_drop_expression
         label: ALTER [ COLUMN ] column_name DROP EXPRESSION [ IF EXISTS ]
+      - key: alter_column_set_expression
+        label: ALTER [ COLUMN ] column_name SET EXPRESSION AS（PG18）
       - key: alter_column_add_generated_identity
         label: ALTER [ COLUMN ] column_name ADD GENERATED { ALWAYS | BY DEFAULT } AS IDENTITY
       - key: alter_column_set_generated_restart
@@ -494,6 +500,8 @@ structured_config:
         label: ALTER [ COLUMN ] column_name DROP IDENTITY [ IF EXISTS ]
       - key: alter_column_set_statistics
         label: ALTER [ COLUMN ] column_name SET STATISTICS integer
+      - key: alter_column_set_statistics_default
+        label: ALTER [ COLUMN ] column_name SET STATISTICS DEFAULT（PG18）
       - key: alter_column_set_attribute_option
         label: ALTER [ COLUMN ] column_name SET ( attribute_option = value [, ... ] )
       - key: alter_column_reset_attribute_option
@@ -508,6 +516,10 @@ structured_config:
         label: ADD table_constraint_using_index
       - key: alter_constraint
         label: ALTER CONSTRAINT constraint_name [ DEFERRABLE | NOT DEFERRABLE ]
+      - key: alter_constraint_enforced
+        label: ALTER CONSTRAINT ENFORCED / NOT ENFORCED（PG18）
+      - key: alter_constraint_inherit
+        label: ALTER CONSTRAINT INHERIT / NO INHERIT（PG18）
       - key: validate_constraint
         label: VALIDATE CONSTRAINT constraint_name
       - key: drop_constraint
@@ -544,6 +556,8 @@ structured_config:
         label: SET WITHOUT OIDS
       - key: set_access_method
         label: SET ACCESS METHOD new_access_method
+      - key: set_access_method_default
+        label: SET ACCESS METHOD DEFAULT（PG18）
       - key: set_tablespace
         label: SET TABLESPACE new_tablespace
       - key: set_logged_unlogged
@@ -564,6 +578,10 @@ structured_config:
         label: OWNER TO { new_owner | CURRENT_ROLE | CURRENT_USER | SESSION_USER }
       - key: replica_identity
         label: REPLICA IDENTITY { DEFAULT | USING INDEX index_name | FULL | NOTHING }
+      - key: add_virtual_generated_column
+        label: ADD VIRTUAL 生成列（PG18）
+      - key: add_temporal_constraint
+        label: ADD WITHOUT OVERLAPS / PERIOD 约束（PG18）
     object_state:
       label: 目标表对象状态
       importance: important
@@ -797,6 +815,8 @@ structured_config:
         label: 复杂表达式 (如 length(column_name))
       - key: invalid_expression
         label: 无效表达式 (如引用不存在的函数)
+      - key: generated_virtual_expression
+        label: VIRTUAL 生成列表达式（PG18）
     base_table_template_coverage:
       label: 基表模板覆盖
       importance: non_important

@@ -2,16 +2,16 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-altertstemplate.html
+来源：https://www.postgresql.org/docs/18/sql-altertstemplate.html
 
 ```sql
 ALTER TEXT SEARCH TEMPLATE name RENAME TO new_name
 ALTER TEXT SEARCH TEMPLATE name SET SCHEMA new_schema
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - ALTER TEXT SEARCH TEMPLATE 要求 SUPERUSER 权限
-- PG16 中 ALTER TEXT SEARCH TEMPLATE 仅支持 RENAME TO 和 SET SCHEMA 两种形式，不支持修改 template 的底层函数（INIT/LEXIZE）
+- PG18.4 中 ALTER TEXT SEARCH TEMPLATE 仅支持 RENAME TO 和 SET SCHEMA 两种形式，不支持修改 template 的底层函数（INIT/LEXIZE）
 - 这与 text search dictionary 不同，后者有更多 ALTER 形式（选项修改、OWNER TO 等）
 - 该语句不涉及列类型，不需要挂靠基表列类型
 
@@ -19,7 +19,7 @@ PG16 关键约束：
 
 官方说明：ALTER TEXT SEARCH TEMPLATE — change the definition of a text search template
 
-该 reference 关注全文搜索模板的重命名和 schema 移动，不涉及表/列/索引组合。特别注意 PG16 中仅支持 RENAME TO 和 SET SCHEMA，不支持任何其他 ALTER 形式。
+该 reference 关注全文搜索模板的重命名和 schema 移动，不涉及表/列/索引组合。特别注意 PG18.4 中仅支持 RENAME TO 和 SET SCHEMA，不支持任何其他 ALTER 形式。
 
 ## 测试因子分级
 
@@ -64,7 +64,7 @@ PG16 关键约束：
 ## 生成约束
 
 - ALTER TEXT SEARCH TEMPLATE 要求 SUPERUSER 权限；非 superuser 执行路径属于失败路径。
-- PG16 中仅支持 RENAME TO 和 SET SCHEMA 两种形式，不得伪造其他 ALTER 形式（如修改 template 函数）。
+- PG18.4 中仅支持 RENAME TO 和 SET SCHEMA 两种形式，不得伪造其他 ALTER 形式（如修改 template 函数）。
 - 必须预创建可被修改的目标 text search template，并为每个 ALTER 分支准备最小合法前置状态。
 - ALTER TEXT SEARCH TEMPLATE 不涉及 table / column 组合，不需要挂靠基表列类型。
 - 成功路径必须包含可验证的对象变更检查，并在生命周期末尾清理对象。
@@ -91,7 +91,7 @@ structured_config:
   category: ddl
   domain: text_search_template
   skill_name: alter_text_search_template
-  official_source: https://www.postgresql.org/docs/16/sql-altertstemplate.html
+  official_source: https://www.postgresql.org/docs/18/sql-altertstemplate.html
   statement:
     key: alter_text_search_template
     name: ALTER TEXT SEARCH TEMPLATE

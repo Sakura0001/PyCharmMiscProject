@@ -2,13 +2,13 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-droptsdictionary.html
+来源：https://www.postgresql.org/docs/18/sql-droptsdictionary.html
 
 ```sql
 DROP TEXT SEARCH DICTIONARY [ IF EXISTS ] name [ CASCADE | RESTRICT ]
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - DROP TEXT SEARCH DICTIONARY 要求执行者是字典的 owner（superusers 自动拥有此权限）
 - RESTRICT（默认）：如果有 text search configuration 使用该字典，拒绝删除
 - CASCADE：自动删除依赖该字典的所有 text search configuration
@@ -87,7 +87,7 @@ structured_config:
   category: ddl
   domain: text_search_dictionary
   skill_name: drop_text_search_dictionary
-  official_source: https://www.postgresql.org/docs/16/sql-droptsdictionary.html
+  official_source: https://www.postgresql.org/docs/18/sql-droptsdictionary.html
   statement:
     key: drop_text_search_dictionary
     name: DROP TEXT SEARCH DICTIONARY

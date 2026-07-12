@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-droptable.html
+来源：https://www.postgresql.org/docs/18/sql-droptable.html
 
 ```sql
 DROP TABLE [ IF EXISTS ] name [, ...] [ CASCADE | RESTRICT ]
@@ -101,7 +101,7 @@ structured_config:
   category: ddl
   domain: table
   skill_name: drop_table
-  official_source: https://www.postgresql.org/docs/16/sql-droptable.html
+  official_source: https://www.postgresql.org/docs/18/sql-droptable.html
   statement:
     key: drop_table
     name: DROP TABLE

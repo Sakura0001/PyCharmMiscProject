@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-set-role.html
+来源：https://www.postgresql.org/docs/18/sql-set-role.html
 
 ```sql
 SET [ SESSION | LOCAL ] ROLE role_name
@@ -79,7 +79,11 @@ structured_config:
   category: session
   domain: authorization
   skill_name: set_role
-  official_source: https://www.postgresql.org/docs/16/sql-set-role.html
+  official_source: https://www.postgresql.org/docs/18/sql-set-role.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-set-role.html
+    review_status: semantic_reviewed
   statement:
     key: set_role
     name: SET ROLE
@@ -192,6 +196,7 @@ structured_config:
       values:
       - owner
       - granted_role
+      - authenticated_user_permission_check
       - insufficient_privilege
     invalid_combination:
       label: 非法组合

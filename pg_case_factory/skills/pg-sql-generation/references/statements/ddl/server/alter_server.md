@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-alterserver.html
+来源：https://www.postgresql.org/docs/18/sql-alterserver.html
 
 ```sql
 ALTER SERVER name [ VERSION 'new_version' ]
@@ -104,7 +104,7 @@ structured_config:
   category: ddl
   domain: server
   skill_name: alter_server
-  official_source: https://www.postgresql.org/docs/16/sql-alterserver.html
+  official_source: https://www.postgresql.org/docs/18/sql-alterserver.html
   statement:
     key: alter_server
     name: ALTER SERVER

@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-createcast.html
+来源：https://www.postgresql.org/docs/18/sql-createcast.html
 
 ### Synopsis 形式 1：WITH FUNCTION
 
@@ -137,7 +137,7 @@ structured_config:
   category: ddl
   domain: cast
   skill_name: create_cast
-  official_source: https://www.postgresql.org/docs/16/sql-createcast.html
+  official_source: https://www.postgresql.org/docs/18/sql-createcast.html
   statement:
     key: create_cast
     name: CREATE CAST

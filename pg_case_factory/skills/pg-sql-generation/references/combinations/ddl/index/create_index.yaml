@@ -6,7 +6,7 @@ statement:
   category: ddl
   domain: index
   source_reference: references/statements/ddl/index/create_index.md
-  official_source: https://www.postgresql.org/docs/16/sql-createindex.html
+  official_source: https://www.postgresql.org/docs/18/sql-createindex.html
 execution_contract:
   required_matrix_is_baseline: true
   no_inference_before_required_coverage_passes: true
@@ -44,7 +44,7 @@ coverage_scope:
   target_object_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#object_kinds.all_object_kinds
     required_object_kinds:
     - index
     - partitioned_index
@@ -54,8 +54,8 @@ coverage_scope:
       '
   target_relation_coverage:
     required: true
-    coverage_mode: exhaustive
-    inventory_source: inline
+    coverage_mode: conditional
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#relation_kinds.all_relation_kinds
     required_relation_kinds:
     - regular_table
     - unlogged_table
@@ -76,8 +76,8 @@ coverage_scope:
       '
   table_coverage:
     required: true
-    coverage_mode: exhaustive
-    inventory_source: target_relation_coverage.required_relation_kinds
+    coverage_mode: conditional
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#table_kinds.all_table_kinds
     required_table_kinds:
     - regular_table
     - unlogged_table
@@ -93,14 +93,14 @@ coverage_scope:
       '
   column_type_coverage:
     required: true
-    coverage_mode: exhaustive
-    inventory_source: references/common/pg16_type_catalog.md
-    required_type_set: all_pg16_column_types
+    coverage_mode: conditional
+    inventory_source: references/common/pg18_type_catalog.md
+    required_type_set: canonical_executable_column_profiles
     expansion_mode: expand_every_type
     require_each_type_success_or_failure: true
     decision_reason: 'CREATE INDEX method compatibility, operator classes, expression indexes, INCLUDE columns, collation,
-      and ordering all depend on column data type. Every PostgreSQL 16 type that can be declared as a table column must be
-      exercised by at least one CREATE INDEX success or failure case.
+      and ordering all depend on column data type. This statement matrix expands all portable executable profiles; complete
+      seven-dimension PG18.4 type coverage is reconciled by the feature coverage-plan workflow.
 
       '
 factor_contract:
@@ -140,7 +140,7 @@ factor_contract:
       coverage_role: main_axis
       required_values:
       - all_template_columns
-      coverage_requirement: all_pg16_column_types
+      coverage_requirement: all_pg18_column_types
     unique:
       tier: T1
       coverage_role: main_axis
@@ -336,7 +336,7 @@ dynamic_inputs:
     - columns
   type_catalog:
     required: true
-    path: references/common/pg16_type_catalog.md
+    path: references/common/pg18_type_catalog.md
     required_fields:
     - type_key
     - type_category
@@ -352,8 +352,8 @@ dynamic_inputs:
     - type_category
     - capabilities
 combination_groups:
-- id: btree_single_column_all_pg16_column_types
-  title: B-tree single-column index over every PG16 column type
+- id: btree_single_column_all_pg18_column_types
+  title: B-tree single-column index over every PG18.4 column type
   lifecycle_role: target_statement
   expected_status_policy: per_column_type
   default_expected_status: failure
@@ -388,6 +388,9 @@ combination_groups:
     relation_kinds:
       mode: exhaustive
       source: coverage_scope.target_relation_coverage.required_relation_kinds
+    table_kinds:
+      mode: exhaustive
+      source: coverage_scope.table_coverage.required_table_kinds
     column_types:
       mode: exhaustive
       source: coverage_scope.column_type_coverage.required_type_set
@@ -517,8 +520,8 @@ combination_groups:
     required: false
     mode: expected_error
     sql: null
-- id: partial_index_all_pg16_column_types
-  title: Partial index predicate over every PG16 column type
+- id: partial_index_all_pg18_column_types
+  title: Partial index predicate over every PG18.4 column type
   lifecycle_role: target_statement
   expected_status_policy: per_column_type
   default_expected_status: failure
@@ -650,8 +653,8 @@ combination_groups:
     required: false
     mode: expected_error
     sql: null
-- id: hash_single_column_all_pg16_column_types
-  title: Hash single-column index over every PG16 column type
+- id: hash_single_column_all_pg18_column_types
+  title: Hash single-column index over every PG18.4 column type
   lifecycle_role: target_statement
   expected_status_policy: per_column_type
   default_expected_status: failure

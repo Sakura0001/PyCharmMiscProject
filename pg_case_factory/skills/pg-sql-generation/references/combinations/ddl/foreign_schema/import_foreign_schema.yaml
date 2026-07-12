@@ -6,7 +6,7 @@ statement:
   category: ddl
   domain: foreign_schema
   source_reference: references/statements/ddl/foreign_schema/import_foreign_schema.md
-  official_source: https://www.postgresql.org/docs/16/sql-importforeignschema.html
+  official_source: https://www.postgresql.org/docs/18/sql-importforeignschema.html
   aliases:
   - IMPORT FOREIGN SCHEMA
   - import foreign schema
@@ -48,7 +48,7 @@ coverage_scope:
   target_object_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#object_kinds.all_object_kinds
     required_object_kinds:
     - server
     - foreign_table
@@ -57,7 +57,7 @@ coverage_scope:
   target_relation_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#relation_kinds.all_relation_kinds
     required_relation_kinds:
     - foreign_table
     decision_reason: Successful IMPORT FOREIGN SCHEMA materializes pg_class foreign-table relations in the target schema,
@@ -65,7 +65,7 @@ coverage_scope:
   table_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#table_kinds.all_table_kinds
     required_table_kinds:
     - foreign_table
     decision_reason: The local objects produced by IMPORT FOREIGN SCHEMA are foreign tables. Filter clauses and duplicate-name

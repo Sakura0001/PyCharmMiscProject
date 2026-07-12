@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-droproutine.html
+来源：https://www.postgresql.org/docs/18/sql-droproutine.html
 
 ```sql
 DROP ROUTINE [ IF EXISTS ] name [ ( [ [ argmode ] [ argname ] argtype [, ...] ] ) ] [, ...]
@@ -103,19 +103,13 @@ structured_config:
   category: ddl
   domain: routine
   skill_name: drop_routine
-  official_source: https://www.postgresql.org/docs/16/sql-droproutine.html
+  official_source: https://www.postgresql.org/docs/18/sql-droproutine.html
   statement:
     key: drop_routine
     name: DROP ROUTINE
     aliases:
     - drop_routine
     - DROP ROUTINE
-    - drop_function
-    - DROP FUNCTION
-    - drop_procedure
-    - DROP PROCEDURE
-    - drop_aggregate
-    - DROP AGGREGATE
     purpose: DROP ROUTINE — remove a routine
   syntax_templates:
   - "DROP ROUTINE [ IF EXISTS ] name [ ( [ [ argmode ] [ argname ] argtype [, ...] ] ) ] [, ...]\n    [ CASCADE | RESTRICT ]"

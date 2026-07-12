@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-createusermapping.html
+来源：https://www.postgresql.org/docs/18/sql-createusermapping.html
 
 ```sql
 CREATE USER MAPPING [ IF NOT EXISTS ] FOR { user_name | USER | CURRENT_ROLE | CURRENT_USER | PUBLIC }
@@ -10,7 +10,7 @@ CREATE USER MAPPING [ IF NOT EXISTS ] FOR { user_name | USER | CURRENT_ROLE | CU
     [ OPTIONS ( option 'value' [ , ... ] ) ]
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - 外部服务器的 owner 可为任何用户创建 user mapping
 - 拥有外部服务器 USAGE 权限的用户可为自己的用户名创建 user mapping
 - IF NOT EXISTS：如果映射已存在，不报错而是发出通知（但不保证现有映射与指定内容一致）
@@ -97,7 +97,7 @@ structured_config:
   category: ddl
   domain: user_mapping
   skill_name: create_user_mapping
-  official_source: https://www.postgresql.org/docs/16/sql-createusermapping.html
+  official_source: https://www.postgresql.org/docs/18/sql-createusermapping.html
   statement:
     key: create_user_mapping
     name: CREATE USER MAPPING

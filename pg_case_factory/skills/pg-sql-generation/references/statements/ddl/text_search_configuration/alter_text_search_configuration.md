@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-altertsconfiguration.html
+来源：https://www.postgresql.org/docs/18/sql-altertsconfiguration.html
 
 ```sql
 ALTER TEXT SEARCH CONFIGURATION name
@@ -20,7 +20,7 @@ ALTER TEXT SEARCH CONFIGURATION name OWNER TO { new_owner | CURRENT_ROLE | CURRE
 ALTER TEXT SEARCH CONFIGURATION name SET SCHEMA new_schema
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - ALTER TEXT SEARCH CONFIGURATION 要求执行者是配置的 owner（superusers 自动拥有此权限）
 - ADD MAPPING 要求引用的 dictionary 存在
 - ALTER MAPPING REPLACE 要求 old_dictionary 在映射中存在，new_dictionary 存在
@@ -120,7 +120,7 @@ structured_config:
   category: ddl
   domain: text_search_configuration
   skill_name: alter_text_search_configuration
-  official_source: https://www.postgresql.org/docs/16/sql-altertsconfiguration.html
+  official_source: https://www.postgresql.org/docs/18/sql-altertsconfiguration.html
   statement:
     key: alter_text_search_configuration
     name: ALTER TEXT SEARCH CONFIGURATION

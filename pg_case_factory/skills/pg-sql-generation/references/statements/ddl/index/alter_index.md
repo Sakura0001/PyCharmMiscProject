@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-alterindex.html
+来源：https://www.postgresql.org/docs/18/sql-alterindex.html
 
 ```sql
 ALTER INDEX [ IF EXISTS ] name RENAME TO new_name
@@ -149,7 +149,11 @@ structured_config:
   category: ddl
   domain: index
   skill_name: alter_index
-  official_source: https://www.postgresql.org/docs/16/sql-alterindex.html
+  official_source: https://www.postgresql.org/docs/18/sql-alterindex.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-alterindex.html
+    review_status: semantic_reviewed
   statement:
     key: alter_index
     name: ALTER INDEX
@@ -331,6 +335,7 @@ structured_config:
       - system_catalog_index
       - statistics_column_out_of_range
       - none
+      - already_attached_partition_parent_invalid
     syntax_error:
       label: 语法非法组合
       importance: non_important

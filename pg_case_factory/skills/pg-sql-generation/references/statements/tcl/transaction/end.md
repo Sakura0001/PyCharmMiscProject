@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-end.html
+来源：https://www.postgresql.org/docs/18/sql-end.html
 
 ```sql
 END [ WORK | TRANSACTION ] [ AND [ NO ] CHAIN ]
@@ -77,7 +77,7 @@ structured_config:
   category: tcl
   domain: transaction
   skill_name: end
-  official_source: https://www.postgresql.org/docs/16/sql-end.html
+  official_source: https://www.postgresql.org/docs/18/sql-end.html
   statement:
     key: end
     name: END

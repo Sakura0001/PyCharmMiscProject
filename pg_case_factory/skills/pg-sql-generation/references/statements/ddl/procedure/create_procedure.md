@@ -2,7 +2,7 @@
 
 ## 官方语法范围
 
-来源：https://www.postgresql.org/docs/16/sql-createprocedure.html
+来源：https://www.postgresql.org/docs/18/sql-createprocedure.html
 
 ### Synopsis
 
@@ -70,7 +70,7 @@ CREATE PROCEDURE 是 PostgreSQL 中涉及参数数据类型的核心 DDL 语句�
 ## 覆盖策略
 
 - 必须覆盖所有 CREATE PROCEDURE 语法分支。
-- **必须覆盖参数数据类型：CREATE PROCEDURE 是参数数据类型选择的核心语句，argtype 中所有 PostgreSQL 16 支持的常用数据类型类别必须至少有一个代表性参数定义。**
+- **必须覆盖参数数据类型：CREATE PROCEDURE 是参数数据类型选择的核心语句，argtype 中所有 PostgreSQL 18.4 支持的常用数据类型类别必须至少有一个代表性参数定义。**
 - 必须覆盖所有过程体形式（sql_body_inline、AS_definition、AS_obj_file_link_symbol）。
 - T1 因子做笛卡尔积覆盖；如分支之间存在互斥前置条件，应先按语法分支拆分再做局部笛卡尔积。
 - T2 因子按规模控制策略参与组合：
@@ -126,7 +126,7 @@ structured_config:
   category: ddl
   domain: procedure
   skill_name: create_procedure
-  official_source: https://www.postgresql.org/docs/16/sql-createprocedure.html
+  official_source: https://www.postgresql.org/docs/18/sql-createprocedure.html
   statement:
     key: create_procedure
     name: CREATE PROCEDURE

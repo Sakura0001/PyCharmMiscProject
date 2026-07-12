@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-merge.html
+来源：https://www.postgresql.org/docs/18/sql-merge.html
 
 ```sql
 [ WITH with_query [, ...] ]
@@ -108,7 +108,11 @@ structured_config:
   category: dml
   domain: table
   skill_name: merge
-  official_source: https://www.postgresql.org/docs/16/sql-merge.html
+  official_source: https://www.postgresql.org/docs/18/sql-merge.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-merge.html
+    review_status: synopsis_adapted
   statement:
     key: merge
     name: MERGE
@@ -197,6 +201,8 @@ structured_config:
       - simple_predicate
       - join_or_match_condition
       - cursor_or_conflict_target
+      - not_matched_by_source
+      - not_matched_by_target
     result_shape:
       label: 结果输出形态
       importance: non_important
@@ -205,6 +211,7 @@ structured_config:
       - returning_star
       - returning_expression
       - rowset_projection
+      - returning_old_new_aliases
     with_clause:
       label: WITH 子句
       importance: non_important

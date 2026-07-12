@@ -2,7 +2,7 @@
 
 ## 官方语法范围
 
-来源：https://www.postgresql.org/docs/16/sql-droptrigger.html
+来源：https://www.postgresql.org/docs/18/sql-droptrigger.html
 
 ### Synopsis
 
@@ -104,7 +104,7 @@ structured_config:
   category: ddl
   domain: trigger
   skill_name: drop_trigger
-  official_source: https://www.postgresql.org/docs/16/sql-droptrigger.html
+  official_source: https://www.postgresql.org/docs/18/sql-droptrigger.html
   statement:
     key: drop_trigger
     name: DROP TRIGGER

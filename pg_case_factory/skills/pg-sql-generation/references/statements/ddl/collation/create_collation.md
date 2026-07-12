@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-createcollation.html
+来源：https://www.postgresql.org/docs/18/sql-createcollation.html
 
 ### Synopsis 形式 1：定义新校对规则（参数形式）
 
@@ -141,7 +141,11 @@ structured_config:
   category: ddl
   domain: collation
   skill_name: create_collation
-  official_source: https://www.postgresql.org/docs/16/sql-createcollation.html
+  official_source: https://www.postgresql.org/docs/18/sql-createcollation.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-createcollation.html
+    review_status: semantic_reviewed
   statement:
     key: create_collation
     name: CREATE COLLATION
@@ -236,6 +240,8 @@ structured_config:
         label: libc (默认provider)
       - key: icu
         label: ICU (需服务器编译时启用ICU支持)
+      - key: builtin
+        label: builtin（PG18）
     deterministic_option:
       label: 确定性选项
       importance: important
@@ -264,6 +270,12 @@ structured_config:
         label: LC_COLLATE + LC_CTYPE 分别设置
       - key: LOCALE_with_provider
         label: LOCALE + PROVIDER组合
+      - key: BUILTIN_C
+        label: builtin provider + C
+      - key: BUILTIN_C_UTF8
+        label: builtin provider + C.UTF-8
+      - key: BUILTIN_PG_UNICODE_FAST
+        label: builtin provider + PG_UNICODE_FAST
     from_collation_shape:
       label: 源校对规则形态 (仅FROM形式)
       importance: non_important

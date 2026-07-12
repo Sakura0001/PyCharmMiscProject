@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-creatematerializedview.html
+来源：https://www.postgresql.org/docs/18/sql-creatematerializedview.html
 
 ```sql
 CREATE MATERIALIZED VIEW [ IF NOT EXISTS ] table_name
@@ -94,7 +94,11 @@ structured_config:
   category: ddl
   domain: materialized_view
   skill_name: create_materialized_view
-  official_source: https://www.postgresql.org/docs/16/sql-creatematerializedview.html
+  official_source: https://www.postgresql.org/docs/18/sql-creatematerializedview.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-creatematerializedview.html
+    review_status: semantic_reviewed
   statement:
     key: create_materialized_view
     name: CREATE MATERIALIZED VIEW
@@ -167,6 +171,7 @@ structured_config:
       - explicit_values
       - select_from_table
       - cte_source
+      - search_path_sandbox
     expected_status:
       label: 预期结果
       importance: important

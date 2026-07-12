@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-altersubscription.html
+来源：https://www.postgresql.org/docs/18/sql-altersubscription.html
 
 ```sql
 ALTER SUBSCRIPTION name CONNECTION 'conninfo'
@@ -24,7 +24,7 @@ ALTER SUBSCRIPTION name RENAME TO new_name
 - REFRESH PUBLICATION 需要复制连接，属于非事务环境依赖。
 - ENABLE / DISABLE 切换订阅的启用状态。
 - SET ( subscription_parameter ) 修改订阅参数。
-- SKIP ( skip_option = value ) 设置跳过选项（PG16 新增）。
+- SKIP ( skip_option = value ) 设置跳过选项（PG16 引入，PG18.4 继续支持）。
 - OWNER TO 需要超级用户权限。
 - RENAME TO 需要超级用户权限。
 
@@ -123,7 +123,11 @@ structured_config:
   category: ddl
   domain: subscription
   skill_name: alter_subscription
-  official_source: https://www.postgresql.org/docs/16/sql-altersubscription.html
+  official_source: https://www.postgresql.org/docs/18/sql-altersubscription.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-altersubscription.html
+    review_status: semantic_reviewed
   statement:
     key: alter_subscription
     name: ALTER SUBSCRIPTION
@@ -262,6 +266,8 @@ structured_config:
       - synchronous_commit
       - binary
       - stream
+      - failover
+      - two_phase
     skip_option:
       label: SKIP ( skip_option ) 选项形态
       importance: non_important

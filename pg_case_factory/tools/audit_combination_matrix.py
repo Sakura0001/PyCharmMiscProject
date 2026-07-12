@@ -16,7 +16,16 @@ REFERENCES_ROOT = Path("skills/pg-sql-generation/references")
 STATEMENTS_ROOT = REFERENCES_ROOT / "statements"
 COMBINATIONS_ROOT = REFERENCES_ROOT / "combinations"
 SHARED_SCHEMA = COMBINATIONS_ROOT / "_shared" / "statement_combination_matrix_schema.yaml"
-TYPE_CATALOG = REFERENCES_ROOT / "common" / "pg16_type_catalog.md"
+TYPE_CATALOG = REFERENCES_ROOT / "common" / "pg18_type_catalog.md"
+COMPLETE_COLUMN_TYPE_SELECTORS = (
+    "structured_config.types",
+    "structured_config.concrete_builtin_types.values",
+    "structured_config.auto_array_types.element_types",
+    "structured_config.pseudo_types.values",
+    "structured_config.declaration_aliases.mappings",
+    "structured_config.typmod_declarations.values",
+    "structured_config.user_defined_archetypes.values",
+)
 
 
 DEFAULT_SCHEMA = {
@@ -95,6 +104,10 @@ class AuditResult:
     warnings: list[str] = field(default_factory=list)
     matrix_count: int = 0
     group_count: int = 0
+    complete_column_scope_count: int = 0
+    partial_column_scope_count: int = 0
+    exhaustive_object_relation_table_scope_count: int = 0
+    partial_object_relation_table_scope_count: int = 0
 
     @property
     def passed(self) -> bool:
@@ -105,6 +118,10 @@ class AuditResult:
         self.warnings.extend(other.warnings)
         self.matrix_count += other.matrix_count
         self.group_count += other.group_count
+        self.complete_column_scope_count += other.complete_column_scope_count
+        self.partial_column_scope_count += other.partial_column_scope_count
+        self.exhaustive_object_relation_table_scope_count += other.exhaustive_object_relation_table_scope_count
+        self.partial_object_relation_table_scope_count += other.partial_object_relation_table_scope_count
 
 
 def _load_markdown_yaml(path: Path) -> dict[str, Any]:
@@ -173,21 +190,29 @@ def _statement_key(config: Mapping[str, Any]) -> str:
     return ""
 
 
-def _load_statements(root: Path) -> tuple[dict[str, dict[str, Any]], dict[str, dict[str, Any]]]:
+def _load_statements(
+    root: Path,
+) -> tuple[
+    dict[str, dict[str, Any]],
+    dict[str, dict[str, Any]],
+    dict[str, list[Path]],
+]:
     by_key: dict[str, dict[str, Any]] = {}
     by_reference: dict[str, dict[str, Any]] = {}
+    paths_by_key: dict[str, list[Path]] = {}
     for path in _statement_paths(root):
         config = _load_markdown_yaml(path)
         key = _statement_key(config)
         if key:
             by_key[key] = config
+            paths_by_key.setdefault(key, []).append(path)
         ref = _relative_reference(root, path)
         by_reference[ref] = config
         try:
             by_reference[str(path.resolve().relative_to(root.resolve()))] = config
         except ValueError:
             pass
-    return by_key, by_reference
+    return by_key, by_reference, paths_by_key
 
 
 def _as_mapping(value: Any) -> dict[str, Any]:
@@ -196,6 +221,16 @@ def _as_mapping(value: Any) -> dict[str, Any]:
 
 def _as_sequence(value: Any) -> list[Any]:
     return list(value) if isinstance(value, list) else []
+
+
+def _resolve_selector(document: Mapping[str, Any], selector: str) -> Any:
+    selected: Any = document
+    components = selector.split(".")
+    if components and components[0] == "structured_config":
+        components = components[1:]
+    for component in components:
+        selected = _as_mapping(selected).get(component)
+    return selected
 
 
 def _text(value: Any) -> str:
@@ -313,15 +348,11 @@ def _validate_dynamic_inputs(result: AuditResult, path: Path, dynamic_inputs: Ma
 
 def _matrix_statement_config(
     matrix: Mapping[str, Any],
-    statements_by_key: Mapping[str, dict[str, Any]],
     statements_by_reference: Mapping[str, dict[str, Any]],
 ) -> dict[str, Any] | None:
     statement = _as_mapping(matrix.get("statement"))
     source_reference = _text(statement.get("source_reference"))
-    if source_reference in statements_by_reference:
-        return statements_by_reference[source_reference]
-    key = _text(statement.get("key"))
-    return statements_by_key.get(key)
+    return statements_by_reference.get(source_reference)
 
 
 def _baseline_groups(matrix: Mapping[str, Any]) -> list[dict[str, Any]]:
@@ -372,15 +403,42 @@ def _validate_factors_against_statement(
     factor_contract = _as_mapping(matrix.get("factor_contract"))
     contract_factors = _as_mapping(factor_contract.get("factors"))
 
+    if factor_contract.get("source_reference_must_define_all_factors") is not True:
+        result.errors.append(
+            f"{path}: factor_contract.source_reference_must_define_all_factors must be true"
+        )
+    if factor_contract.get("matrix_must_cover_required_factor_values") is not True:
+        result.errors.append(
+            f"{path}: factor_contract.matrix_must_cover_required_factor_values must be true"
+        )
+
+    for factor_name in sorted(statement_factors - {str(name) for name in contract_factors}):
+        result.errors.append(
+            f"{path}: factor contract missing statement factor: {factor_name}"
+        )
+
     for factor_name, factor_doc in contract_factors.items():
         factor_name = str(factor_name)
         if factor_name not in statement_factors:
             result.errors.append(f"{path}: unknown factor: {factor_name}")
             continue
-        for value in _as_sequence(_as_mapping(factor_doc).get("required_values")):
+        factor_doc = _as_mapping(factor_doc)
+        required_values = {
+            _text(value)
+            for value in _as_sequence(factor_doc.get("required_values"))
+            if _text(value)
+        }
+        for value in sorted(required_values):
             value_key = _text(value)
             if value_key and value_key not in statement_values[factor_name]:
                 result.errors.append(f"{path}: unknown factor value: {factor_name}={value_key}")
+        coverage_requirement = factor_doc.get("coverage_requirement")
+        if coverage_requirement in ("all_values", "all_declared_values"):
+            for value_key in sorted(statement_values[factor_name] - required_values):
+                result.errors.append(
+                    f"{path}: coverage_requirement={coverage_requirement} missing declared factor value: "
+                    f"{factor_name}={value_key}"
+                )
 
     covered_values: dict[str, set[str]] = {str(factor_name): set() for factor_name in contract_factors}
     for group in _baseline_groups(matrix):
@@ -397,13 +455,23 @@ def _validate_factors_against_statement(
                 covered_values[factor_name].add(value_key)
         _record_expansion_coverage(covered_values, group, statement_factors)
 
-    if factor_contract.get("matrix_must_cover_required_factor_values") is True:
-        for factor_name, factor_doc in contract_factors.items():
-            factor_name = str(factor_name)
-            required_values = {_text(value) for value in _as_sequence(_as_mapping(factor_doc).get("required_values")) if _text(value)}
-            missing = sorted(required_values - covered_values.get(factor_name, set()))
-            if missing:
-                result.errors.append(f"{path}: required factor values not covered: {factor_name}={', '.join(missing)}")
+    for factor_name, factor_doc in contract_factors.items():
+        factor_name = str(factor_name)
+        factor_doc = _as_mapping(factor_doc)
+        required_values = {
+            _text(value)
+            for value in _as_sequence(factor_doc.get("required_values"))
+            if _text(value)
+        }
+        if (
+            factor_doc.get("coverage_requirement") in ("all_values", "all_declared_values")
+            and factor_name in statement_values
+        ):
+            required_values.update(statement_values[factor_name])
+        for value_key in sorted(required_values - covered_values.get(factor_name, set())):
+            result.errors.append(
+                f"{path}: required factor value not covered: {factor_name}={value_key}"
+            )
 
 
 def _group_expected_status(group: Mapping[str, Any]) -> str:
@@ -435,8 +503,192 @@ def _validate_column_type_catalog(result: AuditResult, root: Path, path: Path, m
         return
     inventory_source = str(column_coverage.get("inventory_source") or "")
     type_catalog_path = root / TYPE_CATALOG
-    if "pg16_type_catalog" not in inventory_source or not type_catalog_path.exists():
-        result.errors.append(f"{path}: column_type_coverage requires pg16_type_catalog")
+    if inventory_source != "references/common/pg18_type_catalog.md" or not type_catalog_path.exists():
+        result.errors.append(f"{path}: column_type_coverage requires pg18_type_catalog")
+        return
+    try:
+        type_catalog = _load_markdown_yaml(type_catalog_path)
+    except (OSError, ValueError, yaml.YAMLError) as exc:
+        result.errors.append(f"{path}: cannot load pg18_type_catalog: {exc}")
+        return
+    coverage_mode = str(column_coverage.get("coverage_mode") or "")
+    if coverage_mode == "exhaustive":
+        error_count = len(result.errors)
+        required_dimensions = {
+            str(item)
+            for item in _as_sequence(column_coverage.get("required_type_dimensions"))
+        }
+        expected_dimensions = set(COMPLETE_COLUMN_TYPE_SELECTORS)
+        if required_dimensions != expected_dimensions:
+            missing = sorted(expected_dimensions - required_dimensions)
+            unexpected = sorted(required_dimensions - expected_dimensions)
+            detail = []
+            if missing:
+                detail.append("missing " + ", ".join(missing))
+            if unexpected:
+                detail.append("unexpected " + ", ".join(unexpected))
+            result.errors.append(
+                f"{path}: exhaustive column_type_coverage must declare all seven canonical dimensions"
+                + (" (" + "; ".join(detail) + ")" if detail else "")
+            )
+        for selector in sorted(required_dimensions & expected_dimensions):
+            selected = _resolve_selector(type_catalog, selector)
+            if not selected:
+                result.errors.append(
+                    f"{path}: exhaustive column dimension is empty or unresolved: {selector}"
+                )
+        if column_coverage.get("expansion_mode") not in {"exhaustive", "expand_every_type"}:
+            result.errors.append(f"{path}: exhaustive column_type_coverage must expand every type")
+        if column_coverage.get("require_each_type_success_or_failure") is not True:
+            result.errors.append(
+                f"{path}: exhaustive column_type_coverage must classify every type as success or failure"
+            )
+        expansion_sources = {
+            str(_as_mapping(axis).get("source") or "")
+            for group in _baseline_groups(matrix)
+            for axis in _as_mapping(group.get("expansion")).values()
+            if _as_mapping(axis).get("mode") == "exhaustive"
+        }
+        expected_sources = {
+            f"references/common/pg18_type_catalog.md#{selector}"
+            for selector in expected_dimensions
+        }
+        missing_sources = sorted(expected_sources - expansion_sources)
+        if missing_sources:
+            result.errors.append(
+                f"{path}: exhaustive column_type_coverage is missing direct inventory expansion(s): "
+                + ", ".join(missing_sources)
+            )
+        if len(result.errors) == error_count:
+            result.complete_column_scope_count += 1
+    elif coverage_mode in {"representative", "conditional", "explicit"}:
+        required_type_set = str(column_coverage.get("required_type_set") or "")
+        type_set = _as_mapping(
+            _as_mapping(type_catalog.get("type_sets")).get(required_type_set)
+        )
+        if not required_type_set or not type_set:
+            result.errors.append(
+                f"{path}: partial column_type_coverage must name a type set from pg18_type_catalog"
+            )
+        elif type_set.get("readiness") != "ready":
+            result.errors.append(f"{path}: column type set {required_type_set} is not ready")
+        if type_set.get("canonical") is False:
+            result.warnings.append(
+                f"{path}: deprecated non-canonical column type selector {required_type_set}"
+            )
+        result.partial_column_scope_count += 1
+        result.warnings.append(
+            f"{path}: partial column-type coverage ({coverage_mode}); it cannot satisfy an exhaustive feature-plan obligation"
+        )
+    else:
+        result.errors.append(
+            f"{path}: required column_type_coverage has incompatible coverage_mode {coverage_mode!r}"
+        )
+
+
+def _validate_object_relation_table_scope_evidence(
+    result: AuditResult,
+    root: Path,
+    path: Path,
+    matrix: Mapping[str, Any],
+) -> None:
+    coverage_scope = _as_mapping(matrix.get("coverage_scope"))
+    specifications = (
+        (
+            "target_object_coverage",
+            "required_object_kinds",
+            {"object_kinds.all_object_kinds", "sql_object_types.all_sql_object_types"},
+            "sql_object_types.all_sql_object_types",
+        ),
+        (
+            "target_relation_coverage",
+            "required_relation_kinds",
+            {"relation_kinds.all_relation_kinds", "relation_kinds.all_pg18_relkinds"},
+            "relation_kinds.all_pg18_relkinds",
+        ),
+        (
+            "table_coverage",
+            "required_table_kinds",
+            {"table_kinds.all_table_kinds"},
+            None,
+        ),
+    )
+    inventory_path = (
+        root
+        / "skills"
+        / "pg-sql-generation"
+        / "references"
+        / "combinations"
+        / "_shared"
+        / "coverage_inventory.yaml"
+    )
+    try:
+        inventory = _load_yaml_file(inventory_path)
+    except (OSError, ValueError, yaml.YAMLError) as exc:
+        result.errors.append(f"{path}: cannot load shared coverage inventory: {exc}")
+        return
+
+    for scope_name, inventory_field, accepted_selectors, canonical_selector in specifications:
+        scope = _as_mapping(coverage_scope.get(scope_name))
+        if scope.get("required") is not True:
+            continue
+        inventory_source = str(scope.get("inventory_source") or "")
+        prefix = "references/combinations/_shared/coverage_inventory.yaml#"
+        selector = inventory_source.removeprefix(prefix) if inventory_source.startswith(prefix) else ""
+        if selector not in accepted_selectors:
+            result.errors.append(
+                f"{path}: required {scope_name} inventory_source must select one of: "
+                + ", ".join(
+                    prefix + item for item in sorted(accepted_selectors)
+                )
+            )
+        values = _as_sequence(scope.get(inventory_field))
+        if not values:
+            result.errors.append(f"{path}: required {scope_name} must declare {inventory_field}")
+        selected = _resolve_selector(inventory, selector) if selector else None
+        allowed_values = {str(item) for item in _as_sequence(selected)}
+        unknown_values = sorted({str(item) for item in values} - allowed_values)
+        if unknown_values:
+            result.errors.append(
+                f"{path}: {scope_name}.{inventory_field} contains values outside canonical inventory: "
+                + ", ".join(unknown_values)
+            )
+        mode = str(scope.get("coverage_mode") or "")
+        if mode == "exhaustive":
+            error_count = len(result.errors)
+            if canonical_selector is None or selector != canonical_selector:
+                result.errors.append(
+                    f"{path}: exhaustive {scope_name} must use a canonical PostgreSQL 18.4 inventory selector"
+                )
+            declared_values = {str(item) for item in values}
+            missing_values = sorted(allowed_values - declared_values)
+            if missing_values:
+                result.errors.append(
+                    f"{path}: exhaustive {scope_name}.{inventory_field} omits canonical values: "
+                    + ", ".join(missing_values)
+                )
+            expected_source = f"coverage_scope.{scope_name}.{inventory_field}"
+            has_inventory_expansion = any(
+                _as_mapping(axis).get("mode") == "exhaustive"
+                and _as_mapping(axis).get("source") == expected_source
+                for group in _baseline_groups(matrix)
+                for axis in _as_mapping(group.get("expansion")).values()
+            )
+            if not has_inventory_expansion:
+                result.errors.append(
+                    f"{path}: exhaustive {scope_name} has no exhaustive group expansion sourced from {inventory_field}"
+                )
+            if len(result.errors) == error_count:
+                result.exhaustive_object_relation_table_scope_count += 1
+        elif mode in {"representative", "conditional"}:
+            result.partial_object_relation_table_scope_count += 1
+            result.warnings.append(
+                f"{path}: partial {scope_name} ({mode}); it cannot satisfy an exhaustive feature-plan obligation"
+            )
+        elif mode != "explicit":
+            result.errors.append(
+                f"{path}: required {scope_name} has incompatible coverage_mode {mode!r}"
+            )
 
 
 def _validate_extension_policy(result: AuditResult, path: Path, matrix: Mapping[str, Any], schema: Mapping[str, Any]) -> None:
@@ -474,8 +726,33 @@ def audit_matrices(root: Path, matrix_paths: list[Path] | None = None) -> AuditR
         raise ValueError(f"root does not exist or is not a directory: {root}")
 
     schema = _load_schema(root)
-    statements_by_key, statements_by_reference = _load_statements(root)
-    paths = [path if path.is_absolute() else root / path for path in (matrix_paths or _default_matrix_paths(root))]
+    statement_paths = _statement_paths(root)
+    statements_by_key, statements_by_reference, statement_paths_by_key = _load_statements(root)
+    auditing_complete_repository = matrix_paths is None
+    selected_matrix_paths = (
+        _default_matrix_paths(root) if matrix_paths is None else matrix_paths
+    )
+    paths = [
+        path if path.is_absolute() else root / path
+        for path in selected_matrix_paths
+    ]
+
+    if not statement_paths:
+        result.errors.append(
+            f"{root / STATEMENTS_ROOT}: statement reference directory is missing or empty"
+        )
+    if not paths:
+        result.errors.append(
+            f"{root / COMBINATIONS_ROOT}: combination matrix directory is missing or empty"
+        )
+    for key, duplicate_paths in sorted(statement_paths_by_key.items()):
+        if len(duplicate_paths) > 1:
+            result.errors.append(
+                f"duplicate statement reference key {key}: "
+                + ", ".join(str(path) for path in duplicate_paths)
+            )
+
+    matrix_paths_by_key: dict[str, list[Path]] = {}
 
     for matrix_path in paths:
         matrix_path = matrix_path.resolve()
@@ -484,14 +761,46 @@ def audit_matrices(root: Path, matrix_paths: list[Path] | None = None) -> AuditR
         matrix = _load_yaml_file(matrix_path)
         result.matrix_count += 1
         _validate_matrix_shape(result, matrix_path, matrix, schema)
-        statement_config = _matrix_statement_config(matrix, statements_by_key, statements_by_reference)
-        if statement_config is None:
-            result.errors.append(f"{matrix_path}: statement source_reference or key is not defined in statement references")
+        matrix_statement = _as_mapping(matrix.get("statement"))
+        matrix_key = _text(matrix_statement.get("key"))
+        source_reference = _text(matrix_statement.get("source_reference"))
+        if not matrix_key:
+            result.errors.append(f"{matrix_path}: statement.key must be a non-empty string")
         else:
+            matrix_paths_by_key.setdefault(matrix_key, []).append(matrix_path)
+        statement_config = _matrix_statement_config(matrix, statements_by_reference)
+        if statement_config is None:
+            result.errors.append(
+                f"{matrix_path}: statement.source_reference is not defined in statement references: "
+                f"{source_reference or '<missing>'}"
+            )
+        else:
+            source_key = _statement_key(statement_config)
+            if matrix_key != source_key:
+                result.errors.append(
+                    f"{matrix_path}: statement.key {matrix_key!r} does not match "
+                    f"source_reference statement.key {source_key!r}"
+                )
             _validate_factors_against_statement(result, matrix_path, matrix, statement_config)
         _validate_failure_reasons(result, matrix_path, matrix)
+        _validate_object_relation_table_scope_evidence(result, root, matrix_path, matrix)
         _validate_column_type_catalog(result, root, matrix_path, matrix)
         _validate_extension_policy(result, matrix_path, matrix, schema)
+
+    for key, duplicate_paths in sorted(matrix_paths_by_key.items()):
+        if len(duplicate_paths) > 1:
+            result.errors.append(
+                f"duplicate combination matrix statement key {key}: "
+                + ", ".join(str(path) for path in duplicate_paths)
+            )
+
+    if auditing_complete_repository:
+        statement_keys = set(statements_by_key)
+        matrix_keys = set(matrix_paths_by_key)
+        for key in sorted(statement_keys - matrix_keys):
+            result.errors.append(f"statement reference has no combination matrix: {key}")
+        for key in sorted(matrix_keys - statement_keys):
+            result.errors.append(f"combination matrix has no statement reference: {key}")
 
     return result
 
@@ -505,7 +814,7 @@ def audit_matrix(root: Path, matrix_path: Path) -> AuditResult:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Audit PG16 statement combination matrices.")
+    parser = argparse.ArgumentParser(description="Audit PostgreSQL 18.4 statement combination matrices.")
     parser.add_argument("--root", type=Path, default=Path.cwd(), help="pg_case_factory project root")
     parser.add_argument("matrices", nargs="*", type=Path, help="matrix files to audit; defaults to all matrices")
     args = parser.parse_args(argv)
@@ -523,7 +832,14 @@ def main(argv: list[str] | None = None) -> int:
         print(f"ERROR: {error}")
 
     if result.passed:
-        print(f"PASS combination matrix audit: matrices={result.matrix_count} groups={result.group_count}")
+        print(
+            f"PASS static declaration audit: matrices={result.matrix_count} groups={result.group_count} "
+            f"column_scopes_exhaustive_validated={result.complete_column_scope_count} "
+            f"column_scopes_partial_declared={result.partial_column_scope_count} "
+            f"other_scopes_exhaustive_validated={result.exhaustive_object_relation_table_scope_count} "
+            f"other_scopes_partial_declared={result.partial_object_relation_table_scope_count} "
+            "rendered_sql_verified=0 runtime_verified=0"
+        )
         return 0
 
     print(f"FAIL combination matrix audit: matrices={result.matrix_count} groups={result.group_count} errors={len(result.errors)}")

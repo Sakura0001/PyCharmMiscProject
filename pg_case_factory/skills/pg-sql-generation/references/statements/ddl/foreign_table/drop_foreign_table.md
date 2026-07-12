@@ -2,13 +2,13 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-dropforeigntable.html
+来源：https://www.postgresql.org/docs/18/sql-dropforeigntable.html
 
 ```sql
 DROP FOREIGN TABLE [ IF EXISTS ] name [, ...] [ CASCADE | RESTRICT ]
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - 只有外部表的 **owner** 才能删除该外部表。
 - IF EXISTS：如果外部表不存在，不报错，仅发 notice。
 - CASCADE：自动删除依赖该外部表的对象（如视图），以及依赖这些对象的所有对象。
@@ -105,7 +105,7 @@ structured_config:
   category: ddl
   domain: foreign_table
   skill_name: drop_foreign_table
-  official_source: https://www.postgresql.org/docs/16/sql-dropforeigntable.html
+  official_source: https://www.postgresql.org/docs/18/sql-dropforeigntable.html
   statement:
     key: drop_foreign_table
     name: DROP FOREIGN TABLE

@@ -2,13 +2,13 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-droptsparser.html
+来源：https://www.postgresql.org/docs/18/sql-droptsparser.html
 
 ```sql
 DROP TEXT SEARCH PARSER [ IF EXISTS ] name [ CASCADE | RESTRICT ]
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - DROP TEXT SEARCH PARSER 要求 SUPERUSER 权限
 - RESTRICT（默认）：如果有 text search configuration 使用该 parser，拒绝删除
 - CASCADE：自动删除依赖该 parser 的所有 text search configuration
@@ -87,7 +87,7 @@ structured_config:
   category: ddl
   domain: text_search_parser
   skill_name: drop_text_search_parser
-  official_source: https://www.postgresql.org/docs/16/sql-droptsparser.html
+  official_source: https://www.postgresql.org/docs/18/sql-droptsparser.html
   statement:
     key: drop_text_search_parser
     name: DROP TEXT SEARCH PARSER

@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-alterforeigntable.html
+来源：https://www.postgresql.org/docs/18/sql-alterforeigntable.html
 
 ```sql
 ALTER FOREIGN TABLE [ IF EXISTS ] [ ONLY ] name [ * ]
@@ -41,7 +41,7 @@ where action is one of:
     OPTIONS ( [ ADD | SET | DROP ] option ['value'] [, ... ])
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - 使用 ALTER FOREIGN TABLE 必须拥有该外部表。
 - SET SCHEMA 还需要 CREATE 权限于新 schema。
 - OWNER TO 还需要能够 SET ROLE 到新 owner 角色，且新 owner 需要有 CREATE 权限于表所在 schema。superuser 可以变更任何表的 owner。
@@ -165,7 +165,11 @@ structured_config:
   category: ddl
   domain: foreign_table
   skill_name: alter_foreign_table
-  official_source: https://www.postgresql.org/docs/16/sql-alterforeigntable.html
+  official_source: https://www.postgresql.org/docs/18/sql-alterforeigntable.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-alterforeigntable.html
+    review_status: synopsis_adapted
   statement:
     key: alter_foreign_table
     name: ALTER FOREIGN TABLE
@@ -306,6 +310,10 @@ structured_config:
         label: 省略 IF EXISTS
       - key: present
         label: 指定 IF EXISTS
+      - key: add_column_if_not_exists_absent
+        label: ADD COLUMN 省略 IF NOT EXISTS
+      - key: add_column_if_not_exists_present
+        label: ADD COLUMN 指定 IF NOT EXISTS（PG18）
     column_data_type:
       label: ADD COLUMN / ALTER COLUMN TYPE 的数据类型
       importance: non_important

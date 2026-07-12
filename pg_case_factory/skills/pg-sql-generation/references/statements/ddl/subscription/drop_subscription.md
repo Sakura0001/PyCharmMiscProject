@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-dropsubscription.html
+来源：https://www.postgresql.org/docs/18/sql-dropsubscription.html
 
 ```sql
 DROP SUBSCRIPTION [ IF EXISTS ] name [ CASCADE | RESTRICT ]
@@ -97,7 +97,11 @@ structured_config:
   category: ddl
   domain: subscription
   skill_name: drop_subscription
-  official_source: https://www.postgresql.org/docs/16/sql-dropsubscription.html
+  official_source: https://www.postgresql.org/docs/18/sql-dropsubscription.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-dropsubscription.html
+    review_status: semantic_reviewed
   statement:
     key: drop_subscription
     name: DROP SUBSCRIPTION

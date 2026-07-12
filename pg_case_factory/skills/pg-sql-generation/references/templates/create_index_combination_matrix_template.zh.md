@@ -82,7 +82,7 @@ negative_relation_kinds:
 
 ### 列类型覆盖
 
-`CREATE INDEX` 必须覆盖所有 PostgreSQL 16 可作为表列声明的数据类型。
+`CREATE INDEX` 必须覆盖所有 PostgreSQL 18.4 可作为表列声明的数据类型。
 
 模板中必须写成：
 
@@ -90,15 +90,15 @@ negative_relation_kinds:
 column_type_coverage:
   required: true
   coverage_mode: exhaustive
-  inventory_source: references/common/pg16_type_catalog.md
-  required_type_set: all_pg16_column_types
+  inventory_source: references/common/pg18_type_catalog.md
+  required_type_set: all_pg18_column_types
   expansion_mode: expand_every_type
   require_each_type_success_or_failure: true
 ```
 
 含义是：
 
-- 所有 PG16 列类型都必须进入测试。
+- 所有 PG18.4 列类型都必须进入测试。
 - 每个类型至少生成一个 `CREATE INDEX` 用例。
 - 支持当前索引方法的类型生成成功路径。
 - 不支持当前索引方法的类型生成失败路径。
@@ -161,7 +161,7 @@ dynamic_inputs:
 其中：
 
 - `table_manifest` 来自建表流程，提供表名、relation kind 和列清单。
-- `type_catalog` 是 PG16 类型目录，提供所有列类型、样例值、边界值和索引能力。
+- `type_catalog` 是 PG18.4 类型目录，提供所有列类型、样例值、边界值和索引能力。
 - `column_manifest` 是实际表内列的结构化清单，供组合矩阵选择列。
 
 ## 组合组写法
@@ -183,7 +183,7 @@ cleanup: 清理方式
 示例：B-tree 单列索引覆盖全部列类型。
 
 ```yaml
-- id: btree_single_column_all_pg16_column_types
+- id: btree_single_column_all_pg18_column_types
   expected_status_policy: per_column_type
   default_expected_status: failure
   factors:
@@ -208,7 +208,7 @@ cleanup: 清理方式
     template: CREATE INDEX {index_name} ON {table_name} USING btree ({key_column});
 ```
 
-这表示 runner 要遍历所有 PG16 列类型：
+这表示 runner 要遍历所有 PG18.4 列类型：
 
 - 有 btree 能力的类型生成成功 SQL。
 - 没有 btree 能力的类型也要生成失败 SQL。
@@ -255,7 +255,7 @@ cleanup: {}
 
 - 替代 `factor_contract.required_values` 的必需覆盖
 - 替代所有 relation kind 覆盖
-- 替代所有 PG16 column type 覆盖
+- 替代所有 PG18.4 column type 覆盖
 - 使用 statement reference 中不存在的因子或因子值
 - 生成没有成功/失败归因的 SQL
 
@@ -293,13 +293,13 @@ ONLY 在分区和非分区 relation 上的行为
 - 所有矩阵因子值必须存在于 `create_index.md`。
 - 所有 required factor value 必须被覆盖。
 - 目标 relation 覆盖必须显式且完整。
-- 所有 PG16 列类型必须生成 success 或 failure 用例。
+- 所有 PG18.4 列类型必须生成 success 或 failure 用例。
 - 所有失败路径必须有明确原因。
 - 所有组合必须声明清理方式。
 
 ## 后续落地顺序
 
-1. 新增 `references/common/pg16_type_catalog.md`。
+1. 新增 `references/common/pg18_type_catalog.md`。
 2. 用本模板创建正式 `references/combinations/ddl/index/create_index.yaml`。
 3. 写审计工具检查矩阵和 `create_index.md` 是否一致。
 4. 修改主流程，让 AI 选择组合矩阵，不再临时理解因子生成 SQL。

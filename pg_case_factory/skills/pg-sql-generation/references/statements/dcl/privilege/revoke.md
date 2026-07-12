@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-revoke.html
+来源：https://www.postgresql.org/docs/18/sql-revoke.html
 
 ```sql
 REVOKE [ GRANT OPTION FOR ]
@@ -193,7 +193,11 @@ structured_config:
   category: dcl
   domain: privilege
   skill_name: revoke
-  official_source: https://www.postgresql.org/docs/16/sql-revoke.html
+  official_source: https://www.postgresql.org/docs/18/sql-revoke.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-revoke.html
+    review_status: synopsis_adapted
   statement:
     key: revoke
     name: REVOKE
@@ -321,6 +325,7 @@ structured_config:
       - routine_language_type_fdw_server
       - role_membership
       - parameter_privilege
+      - table_maintain
     grantee_shape:
       label: 被授权对象
       importance: important

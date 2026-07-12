@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-declare.html
+来源：https://www.postgresql.org/docs/18/sql-declare.html
 
 ```sql
 DECLARE name [ BINARY ] [ ASENSITIVE | INSENSITIVE ] [ [ NO ] SCROLL ]
@@ -78,7 +78,7 @@ structured_config:
   category: cursor
   domain: cursor
   skill_name: declare
-  official_source: https://www.postgresql.org/docs/16/sql-declare.html
+  official_source: https://www.postgresql.org/docs/18/sql-declare.html
   statement:
     key: declare
     name: DECLARE

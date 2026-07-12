@@ -2,7 +2,7 @@
 
 ## 官方语法范围
 
-来源：https://www.postgresql.org/docs/16/sql-altertrigger.html
+来源：https://www.postgresql.org/docs/18/sql-altertrigger.html
 
 ### Synopsis 形式 1：重命名 (RENAME TO)
 
@@ -113,7 +113,7 @@ structured_config:
   category: ddl
   domain: trigger
   skill_name: alter_trigger
-  official_source: https://www.postgresql.org/docs/16/sql-altertrigger.html
+  official_source: https://www.postgresql.org/docs/18/sql-altertrigger.html
   statement:
     key: alter_trigger
     name: ALTER TRIGGER

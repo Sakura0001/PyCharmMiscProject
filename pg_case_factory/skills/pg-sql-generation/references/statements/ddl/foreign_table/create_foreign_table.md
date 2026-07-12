@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-createforeigntable.html
+来源：https://www.postgresql.org/docs/18/sql-createforeigntable.html
 
 ### 形式 1：常规外部表
 
@@ -58,7 +58,7 @@ FROM ( { partition_bound_expr | MINVALUE | MAXVALUE } [, …] )
 WITH ( MODULUS numeric_literal, REMAINDER numeric_literal )
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - 创建外部表需要 **USAGE** 权限于外部服务器和 **USAGE** 权限于所有列数据类型。
 - 约束（NOT NULL、CHECK）**不被 PostgreSQL 核心强制执行**——仅被假设为真。应代表远程服务器实际强制的约束。
 - 如果声明约束与实际不符，查询可能产生错误或不正确的结果。
@@ -179,7 +179,11 @@ structured_config:
   category: ddl
   domain: foreign_table
   skill_name: create_foreign_table
-  official_source: https://www.postgresql.org/docs/16/sql-createforeigntable.html
+  official_source: https://www.postgresql.org/docs/18/sql-createforeigntable.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-createforeigntable.html
+    review_status: synopsis_adapted
   statement:
     key: create_foreign_table
     name: CREATE FOREIGN TABLE
@@ -280,6 +284,12 @@ structured_config:
         label: 常规外部表
       - key: partition_of
         label: 分区外部表 (PARTITION OF)
+      - key: like_source
+        label: LIKE 源表（PG18）
+      - key: regular_virtual_generated
+        label: 含 VIRTUAL 生成列（PG18）
+      - key: regular_table_not_null
+        label: 含表级 NOT NULL / NO INHERIT（PG18）
     if_not_exists_clause:
       label: IF NOT EXISTS 子句开关
       importance: important

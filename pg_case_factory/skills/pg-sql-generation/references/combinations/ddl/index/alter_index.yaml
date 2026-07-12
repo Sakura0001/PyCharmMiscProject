@@ -6,7 +6,7 @@ statement:
   category: ddl
   domain: index
   source_reference: references/statements/ddl/index/alter_index.md
-  official_source: https://www.postgresql.org/docs/16/sql-alterindex.html
+  official_source: https://www.postgresql.org/docs/18/sql-alterindex.html
 execution_contract:
   required_matrix_is_baseline: true
   no_inference_before_required_coverage_passes: true
@@ -44,7 +44,7 @@ coverage_scope:
   target_object_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#object_kinds.all_object_kinds
     required_object_kinds: [index, partitioned_index]
     decision_reason: >
       ALTER INDEX mutates index relation metadata. The baseline explicitly covers
@@ -52,7 +52,7 @@ coverage_scope:
   target_relation_coverage:
     required: true
     coverage_mode: conditional
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#relation_kinds.all_relation_kinds
     required_relation_kinds:
     - regular_table
     - unlogged_table
@@ -69,7 +69,7 @@ coverage_scope:
   table_coverage:
     required: true
     coverage_mode: conditional
-    inventory_source: coverage_scope.target_relation_coverage.required_relation_kinds
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#table_kinds.all_table_kinds
     required_table_kinds:
     - regular_table
     - unlogged_table
@@ -85,8 +85,8 @@ coverage_scope:
   column_type_coverage:
     required: true
     coverage_mode: conditional
-    inventory_source: references/common/pg16_type_catalog.md
-    required_type_set: all_pg16_column_types
+    inventory_source: references/common/pg18_type_catalog.md
+    required_type_set: all_pg18_column_types
     expansion_mode: branch_scoped_representative_types
     require_each_type_success_or_failure: false
     decision_reason: >
@@ -173,7 +173,8 @@ factor_contract:
     invalid_combination:
       tier: T5
       coverage_role: negative_axis
-      required_values: [nonexistent_index_no_if_exists, attach_partition_definition_mismatch, system_catalog_index, statistics_column_out_of_range, none]
+      required_values: [nonexistent_index_no_if_exists, attach_partition_definition_mismatch, system_catalog_index, statistics_column_out_of_range, none,
+        already_attached_partition_parent_invalid]
       coverage_requirement: all_values
     syntax_error:
       tier: T5
@@ -210,7 +211,7 @@ dynamic_inputs:
     required_fields: [source_tablespace, new_tablespace, role_names]
   type_catalog:
     required: true
-    path: references/common/pg16_type_catalog.md
+    path: references/common/pg18_type_catalog.md
     required_fields: [type_key, type_category, declaration_sql, index_capabilities]
 combination_groups:
 - id: rename_and_set_tablespace_existing_index_success
@@ -634,6 +635,36 @@ combination_groups:
     sql: null
   cleanup:
     required: false
+- id: alter_index_pg18_revalidate_already_attached_partition
+  title: ALTER INDEX PG18 revalidates an already attached partition against its parent
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  factors:
+    expected_status: success
+    statement_branch: attach_partition
+    invalid_combination: already_attached_partition_parent_invalid
+  expansion: {}
+  compatibility:
+    resolver: pg18_reference_parity_with_catalog_precondition
+    success_when:
+    - child index is already attached and repaired while the parent index is invalid before execution
+    - PostgreSQL 18.4 silently accepts repeated ATTACH PARTITION and revalidates the parent index
+    failure_when:
+    - condition: PostgreSQL 18.4 rejects repeated ATTACH PARTITION under the same catalog precondition
+      reason: pg18_revalidate_attached_parent_reference_failure
+    default_failure_reason: pg18_revalidate_attached_parent_reference_failure
+  sql_shape:
+    template: ALTER INDEX {parent_index} ATTACH PARTITION {child_index}; ALTER INDEX {parent_index} ATTACH PARTITION {child_index};
+  verification:
+    required: true
+    mode: pg_index_validity_query
+    sql: SELECT indexrelid::regclass, indisvalid FROM pg_index WHERE indexrelid = '{parent_index}'::regclass;
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP INDEX IF EXISTS {parent_index} CASCADE;
+    - sql: DROP INDEX IF EXISTS {child_index};
 audit_rules:
   require_all_required_top_level_keys: true
   require_declared_coverage_scope: true
@@ -642,3 +673,28 @@ audit_rules:
   require_post_coverage_extension_policy: true
   forbid_extension_before_required_coverage_passes: true
   forbid_extension_counting_toward_required_coverage: true
+pg18_compatibility:
+  target_version: '18.4'
+  synopsis_change: unchanged
+  document_change: changed
+  test_points:
+  - id: PG18-ALTER-INDEX-SCHEMA-QUALIFIED-ATTACH
+    affected_factors:
+    - name_shape
+    affected_values:
+      name_shape:
+      - schema_qualified
+    sql: >-
+      ALTER INDEX {parent_index} ATTACH PARTITION {schema_name}.{child_index};
+    oracle: reference_parity
+    covers: schema-qualified attached index
+  - id: PG18-ALTER-INDEX-REVALIDATE-ATTACHED
+    affected_factors:
+    - invalid_combination
+    affected_values:
+      invalid_combination:
+      - already_attached_partition_parent_invalid
+    sql: >-
+      ALTER INDEX {parent_index} ATTACH PARTITION {child_index}; ALTER INDEX {parent_index} ATTACH PARTITION {child_index};
+    oracle: reference_parity
+    covers: already attached child attempts invalid-parent validation

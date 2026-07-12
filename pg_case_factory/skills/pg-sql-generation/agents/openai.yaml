@@ -1,6 +1,6 @@
 interface:
   display_name: "PG SQL Generation"
-  short_description: "PostgreSQL SQL test generation skill"
-  default_prompt: "Use $pg-sql-generation to design PostgreSQL SQL generation coverage, lifecycle plans, and SQL cases with bundled base-object templates."
+  short_description: "PostgreSQL 18.4 全量覆盖、SQL 生成与差分回归测试"
+  default_prompt: "Use $pg-sql-generation to turn a feature document into traceable, exhaustive PostgreSQL 18.4 SQL coverage and differential regression artifacts."
 policy:
   allow_implicit_invocation: true

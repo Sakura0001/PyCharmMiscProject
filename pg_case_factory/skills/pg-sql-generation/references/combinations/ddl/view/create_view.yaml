@@ -11,7 +11,7 @@ statement:
   - CREATE VIEW
   - createview
   - create view
-  official_source: https://www.postgresql.org/docs/16/sql-createview.html
+  official_source: https://www.postgresql.org/docs/18/sql-createview.html
 execution_contract:
   required_matrix_is_baseline: true
   no_inference_before_required_coverage_passes: true
@@ -49,7 +49,7 @@ coverage_scope:
   target_object_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#object_kinds.all_object_kinds
     required_object_kinds:
     - plain_view
     decision_reason: >-
@@ -59,7 +59,7 @@ coverage_scope:
   target_relation_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#relation_kinds.all_relation_kinds
     required_relation_kinds:
     - plain_view
     negative_relation_kinds:
@@ -73,7 +73,7 @@ coverage_scope:
   table_coverage:
     required: true
     coverage_mode: representative
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#table_kinds.all_table_kinds
     required_table_kinds:
     - regular_table
     - temporary_table
@@ -85,13 +85,13 @@ coverage_scope:
   column_type_coverage:
     required: true
     coverage_mode: representative
-    inventory_source: references/common/pg16_type_catalog.md
-    required_type_set: all_pg16_column_types
+    inventory_source: references/common/pg18_type_catalog.md
+    required_type_set: all_pg18_column_types
     expansion_mode: representative_base_table_type_sets
     require_each_type_success_or_failure: false
     decision_reason: >-
       CREATE VIEW output column types are inferred from the query expression.
-      Exhaustive coverage of every PG16 column type is not required for view
+      Exhaustive coverage of every PG18.4 column type is not required for view
       definition semantics; the baseline covers representative integer, string,
       datetime, numeric, JSON, and boolean base-table categories declared by the
       statement reference, with post-audit extensions allowed for additional
@@ -199,6 +199,7 @@ factor_contract:
       - select_with_aggregate
       - values_clause
       - select_with_expression
+      - merge_updatable_view
       coverage_requirement: all_values
     privilege_level:
       tier: T4
@@ -240,6 +241,7 @@ factor_contract:
       - check_option_on_recursive
       - base_table_not_exists
       - insufficient_privilege
+      - merge_view_with_rules
       coverage_requirement: all_values
     verification_mode:
       tier: T6
@@ -275,7 +277,7 @@ dynamic_inputs:
     - dependencies
   type_catalog:
     required: true
-    path: references/common/pg16_type_catalog.md
+    path: references/common/pg18_type_catalog.md
     required_fields:
     - type_key
     - type_category
@@ -588,6 +590,62 @@ combination_groups:
     required: true
     steps:
     - sql: DROP VIEW IF EXISTS {view_name} CASCADE;
+- id: pg18_merge_on_updatable_view
+  title: PostgreSQL 18 MERGE on automatically updatable view
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  factors:
+    expected_status: success
+    query_shape: merge_updatable_view
+  expansion: {}
+  compatibility:
+    resolver: pg18_reference_parity
+    success_when:
+    - MERGE row counts, table state, and view metadata match PostgreSQL 18.4
+    failure_when:
+    - condition: SQLSTATE, affected rows, or resulting data differs
+      reason: pg18_merge_updatable_view_mismatch
+    default_failure_reason: pg18_merge_updatable_view_mismatch
+  sql_shape:
+    template: CREATE VIEW {view_name} AS SELECT * FROM {table_name} WHERE {predicate} WITH CASCADED CHECK OPTION; MERGE INTO {view_name} v USING {source_table} s ON {join_condition} WHEN MATCHED THEN UPDATE SET {column_name} = s.{column_name};
+  verification:
+    required: true
+    mode: catalog_and_effect_query
+    sql: SELECT relname, relkind FROM pg_class WHERE oid = '{view_name}'::regclass; SELECT * FROM {table_name} ORDER BY 1;
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP VIEW IF EXISTS {view_name} CASCADE;
+- id: pg18_merge_view_with_rules_rejection
+  title: PostgreSQL 18 MERGE rejection for a view with rules
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - merge_target_view_has_rules
+  factors:
+    expected_status: failure
+    error_boundary: merge_view_with_rules
+  expansion: {}
+  compatibility:
+    resolver: pg18_reference_parity
+    success_when:
+    - both engines reject MERGE with identical SQLSTATE and preserve base-table rows
+    failure_when:
+    - condition: MERGE succeeds or SQLSTATE/base-table state differs
+      reason: merge_target_view_has_rules
+    default_failure_reason: merge_target_view_has_rules
+  sql_shape:
+    template: CREATE VIEW {view_name} AS SELECT * FROM {table_name}; CREATE RULE {rule_name} AS ON UPDATE TO {view_name} DO INSTEAD NOTHING; MERGE INTO {view_name} v USING {source_table} s ON {join_condition} WHEN MATCHED THEN DO NOTHING;
+  verification:
+    required: true
+    mode: expected_error_and_effect_query
+    sql: SELECT * FROM {table_name} ORDER BY 1; SELECT rulename FROM pg_rules WHERE schemaname = current_schema() AND tablename = '{view_name}' ORDER BY rulename;
+  cleanup:
+    required: true
+    steps:
+    - sql: DROP VIEW IF EXISTS {view_name} CASCADE;
 audit_rules:
   require_all_required_top_level_keys: true
   require_declared_coverage_scope: true
@@ -596,3 +654,28 @@ audit_rules:
   require_post_coverage_extension_policy: true
   forbid_extension_before_required_coverage_passes: true
   forbid_extension_counting_toward_required_coverage: true
+pg18_compatibility:
+  target_version: '18.4'
+  synopsis_change: unchanged
+  document_change: changed
+  test_points:
+  - id: PG18-VIEW-MERGE-UPDATABLE
+    affected_factors:
+    - query_shape
+    affected_values:
+      query_shape:
+      - merge_updatable_view
+    sql: >-
+      CREATE VIEW {view_name} AS SELECT * FROM {table_name} WHERE {predicate} WITH CASCADED CHECK OPTION; MERGE INTO {view_name} v USING {source_table} s ON {join_condition} WHEN MATCHED THEN UPDATE SET {column_name} = s.{column_name};
+    oracle: reference_parity
+    covers: MERGE on automatically updatable view
+  - id: PG18-VIEW-MERGE-RULE-FAILURE
+    affected_factors:
+    - error_boundary
+    affected_values:
+      error_boundary:
+      - merge_view_with_rules
+    sql: >-
+      CREATE VIEW {view_name} AS SELECT * FROM {table_name}; CREATE RULE {rule_name} AS ON UPDATE TO {view_name} DO INSTEAD NOTHING; MERGE INTO {view_name} v USING {source_table} s ON {join_condition} WHEN MATCHED THEN DO NOTHING;
+    oracle: reference_parity
+    covers: MERGE rejected for view or base relation with rules

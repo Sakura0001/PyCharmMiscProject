@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-alteropclass.html
+来源：https://www.postgresql.org/docs/18/sql-alteropclass.html
 
 ```sql
 ALTER OPERATOR CLASS name USING index_method
@@ -92,7 +92,7 @@ structured_config:
   category: ddl
   domain: operator_class
   skill_name: alter_operator_class
-  official_source: https://www.postgresql.org/docs/16/sql-alteropclass.html
+  official_source: https://www.postgresql.org/docs/18/sql-alteropclass.html
   statement:
     key: alter_operator_class
     name: ALTER OPERATOR CLASS

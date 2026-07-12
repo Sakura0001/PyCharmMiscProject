@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-security-label.html
+来源：https://www.postgresql.org/docs/18/sql-security-label.html
 
 ```sql
 SECURITY LABEL [ FOR provider ] ON
@@ -134,7 +134,11 @@ structured_config:
   category: ddl
   domain: security_label
   skill_name: security_label
-  official_source: https://www.postgresql.org/docs/16/sql-security-label.html
+  official_source: https://www.postgresql.org/docs/18/sql-security-label.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-security-label.html
+    review_status: semantic_reviewed
   statement:
     key: security_label
     name: SECURITY LABEL
@@ -339,6 +343,8 @@ structured_config:
       importance: non_important
       values:
       - superuser
+      - object_owner
+      - non_owner
       - non_superuser_no_provider_privilege
     provider_registration:
       label: provider 注册状态

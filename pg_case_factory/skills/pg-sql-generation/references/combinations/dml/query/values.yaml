@@ -6,7 +6,7 @@ statement:
   category: dml
   domain: query
   source_reference: references/statements/dml/query/values.md
-  official_source: https://www.postgresql.org/docs/16/sql-values.html
+  official_source: https://www.postgresql.org/docs/18/sql-values.html
 execution_contract:
   required_matrix_is_baseline: true
   no_inference_before_required_coverage_passes: true
@@ -57,13 +57,13 @@ coverage_scope:
       belongs to the embedding statement matrix.
   column_type_coverage:
     required: true
-    coverage_mode: exhaustive
-    inventory_source: references/common/pg16_type_catalog.md
-    required_type_set: all_pg16_column_types
+    coverage_mode: conditional
+    inventory_source: references/common/pg18_type_catalog.md
+    required_type_set: canonical_executable_column_profiles
     expansion_mode: expand_every_type
     require_each_type_success_or_failure: true
     decision_reason: VALUES type resolution, row constructor coercion, ORDER BY, LIMIT/OFFSET, and expression errors
-      depend on the expression data types. Each PG16 column type must be represented as a success or declared failure.
+      depend on data types. This matrix expands portable profiles; seven-dimension completeness is a feature-plan obligation.
 factor_contract:
   source_reference_must_define_all_factors: true
   matrix_must_cover_required_factor_values: true
@@ -236,6 +236,9 @@ combination_groups:
     verification_mode: effect_query
     cleanup_mode: rollback
   expansion:
+    column_types:
+      mode: exhaustive
+      source: coverage_scope.column_type_coverage.required_type_set
     data_or_query_shape:
       mode: explicit
       values:

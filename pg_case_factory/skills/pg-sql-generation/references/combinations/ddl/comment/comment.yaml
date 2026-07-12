@@ -6,7 +6,7 @@ statement:
   category: ddl
   domain: comment
   source_reference: references/statements/ddl/comment/comment.md
-  official_source: https://www.postgresql.org/docs/16/sql-comment.html
+  official_source: https://www.postgresql.org/docs/18/sql-comment.html
 execution_contract:
   required_matrix_is_baseline: true
   no_inference_before_required_coverage_passes: true
@@ -41,7 +41,7 @@ coverage_scope:
   target_object_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#object_kinds.all_object_kinds
     required_object_kinds:
     - schema
     decision_reason: comment statement coverage is tracked by explicit PostgreSQL object kind.
@@ -456,3 +456,21 @@ audit_rules:
   require_post_coverage_extension_policy: true
   forbid_extension_before_required_coverage_passes: true
   forbid_extension_counting_toward_required_coverage: true
+pg18_compatibility:
+  target_version: '18.4'
+  synopsis_change: unchanged
+  document_change: changed
+  test_points:
+  - id: PG18-COMMENT-EMPTY-REMOVES
+    affected_factors:
+    - comment_action
+    - comment_text_shape
+    affected_values:
+      comment_action:
+      - remove_comment_empty
+      comment_text_shape:
+      - empty_string_literal
+    sql: >-
+      COMMENT ON TABLE {table_name} IS '';
+    oracle: reference_parity
+    covers: empty string removes a comment

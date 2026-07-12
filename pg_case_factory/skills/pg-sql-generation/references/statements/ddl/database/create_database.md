@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-createdatabase.html
+来源：https://www.postgresql.org/docs/18/sql-createdatabase.html
 
 ```sql
 CREATE DATABASE name
@@ -24,7 +24,7 @@ CREATE DATABASE name
            [ OID [=] oid ]
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - 需要 superuser 或 CREATEDB 权限
 - 要创建由其他角色拥有的数据库，必须能够 SET ROLE 到该角色
 - 不能在事务块内执行
@@ -130,7 +130,11 @@ structured_config:
   category: ddl
   domain: database
   skill_name: create_database
-  official_source: https://www.postgresql.org/docs/16/sql-createdatabase.html
+  official_source: https://www.postgresql.org/docs/18/sql-createdatabase.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-createdatabase.html
+    review_status: synopsis_adapted
   statement:
     key: create_database
     name: CREATE DATABASE
@@ -243,6 +247,7 @@ structured_config:
       - C_locale
       - POSIX_locale
       - specific_locale
+      - builtin_locale
     strategy_clause:
       label: STRATEGY 子句形态
       importance: non_important
@@ -412,7 +417,7 @@ structured_config:
     preserve_axes_first:
     - statement_branch
   factor_catalog_mapping:
-    source_catalog: references/common/pg16_factor_catalog.md
+    source_catalog: references/common/pg18_factor_catalog.md
     object_domain: database
     imported_factors:
     - catalog_factor: database.naming.name_shape

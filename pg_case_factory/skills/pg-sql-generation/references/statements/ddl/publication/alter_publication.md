@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-alterpublication.html
+来源：https://www.postgresql.org/docs/18/sql-alterpublication.html
 
 ```sql
 ALTER PUBLICATION name ADD publication_object [, ...]
@@ -126,7 +126,11 @@ structured_config:
   category: ddl
   domain: publication
   skill_name: alter_publication
-  official_source: https://www.postgresql.org/docs/16/sql-alterpublication.html
+  official_source: https://www.postgresql.org/docs/18/sql-alterpublication.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-alterpublication.html
+    review_status: synopsis_adapted
   statement:
     key: alter_publication
     name: ALTER PUBLICATION

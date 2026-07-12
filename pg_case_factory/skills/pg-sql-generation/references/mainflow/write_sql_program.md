@@ -1,70 +1,47 @@
-# 技能：Write SQL Program
+# 为测试点生成 SQL
 
-## 作用
+## 目标
 
-根据生命周期计划 TSV、对象模板、statement reference 和公共规则，创建批量 SQL 生成程序，并由该程序输出完整 SQL 测试脚本集合。
-
-本 skill 约束生成程序的职责和 SQL 输出质量；具体 statement 因子以对应 `references/statements/<category>/<domain>/<statement>.md` 为准。
+为一个已审计 test point 的全部 executable obligations 生成 PostgreSQL 18.4 SQL 和 case manifests。把 statement 专用知识留在 statement references 与 combination matrices 中。
 
 ## 输入
 
-- `artifacts/test_plans/<task_slug>.tsv`
-- TSV 中引用的 `base_object_path`
-- TSV 中引用的 `statement_reference_path`
-- TSV notes 或 execution spec 中引用的 `combination_matrix_path`
-- TSV 中引用的 `common_rule_paths`
-- 必要时读取 `references/common/output_script_style.md`
-- 必要时读取 `references/common/factor_policy.md`
-- 必要时读取 `references/common/validation_policy.md`
-- 必要时读取 `references/common/naming_rules.md`
+- `inputs/feature_manifest.yaml`
+- `plans/coverage_plan.yaml` 和 `plans/coverage_obligations.json`
+- 当前 test point ID 及其 obligations
+- 相关 `assets/objects/**/*.sql`
+- 相关 `references/statements/**/*.md`
+- 相关 `references/combinations/**/*.yaml`
+- output、factor、validation、lifecycle、naming 公共规则
+- `assets/templates/case_manifest_template.yaml`
 
-## 生成规则
+## 生成步骤
 
-- 对 TSV 中每一行生命周期场景，生成可以批量展开该场景的程序逻辑。
-- 当存在 combination matrix 时，生成器必须先消费矩阵，再使用自由推理。
-  Required baseline coverage 来自 `combination_groups`，不得由 AI 临时补写矩阵外
-  baseline 组合。
-- 当 `tools/audit_combination_matrix.py` 报告 required baseline coverage 通过后，
-  AI 或 runner 才可以将 derived extension combinations 写入
-  `artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml`。
-  这些 extension 不得计入 required coverage。
-- 生成程序应放到 `artifacts/generated_programs/`。
-- SQL 文件应放到 `artifacts/generated_sql/<task_slug>/`。
-- 中间清单、manifest 或统计摘要应放到 `artifacts/intermediates/` 或 `artifacts/evaluations/`。
-- 生成程序必须读取相关 statement reference，遵循其中的语法范围、因子分级、覆盖策略、生成约束、挂靠规则和规模控制规则。
-- 若存在相关 combination matrix，生成程序必须以 matrix 的 `combination_groups`
-  作为 baseline SQL 组合来源，并把矩阵审计结果写入 `artifacts/evaluations/`。
-- 若 statement 涉及列类型，应覆盖对象模板中的所有相关列类型；如果某些列类型对某 method 或语法分支不合法，应保留为可归因失败路径，而不是静默跳过。
-- 每个 SQL 文件只判断一件事情；若需要在 40 个列上创建索引并验证，则生成 40 个独立 SQL 文件，而不是把所有判断塞进一个 SQL 文件。
-- 重要因子采用完整笛卡尔积；非重要因子按 `factor_policy.md` 轮转挂靠。
-- 如果生成数量超过 100 万，应重新审视重要因子和语句分支，优先保留 T1 覆盖，再裁剪附属因子。
-- 生成的 SQL 必须符合 `output_script_style.md`、`validation_policy.md` 和 `naming_rules.md`。
+1. 只处理当前 test point，创建专属 `jobs/<test-point-id>/`、`cases/sql/<test-point-id>/` 和 manifests。
+2. 先消费已审计的 matching combination matrices，再补充 marked derived extensions。自由推理不得替代 required baseline。
+3. 对每个非 `justified_na` obligation 生成独立 case manifest 和至少一个完整 SQL 文件。
+4. 从 obligation assignments 精确绑定 relation/table/object、列类型、语句分支、事务和其他轴；不使用代表对象或代表类型代替 inventory 值。
+5. 某组合在 PostgreSQL 18.4 中不合法时，保留为单一、可归因的 `expected_failure` 脚本，不要静默跳过。
+6. 每个 SQL 文件只判断一个结果，并包含固定头、前置清理、对象准备、目标操作、稳定验证和结束清理。
+7. 使用确定性排序、稳定目录字段和 session 级设置。禁止其他数据库方言、`\!` 宿主机命令、实例级持久设置和真实凭据。
+8. 运行 SQL 静态检查后，核对 obligation IDs、assignments、outcomes、SQL paths 和 cleanup/comparison metadata。
+9. 生成 test-point 摘要，列出 required、success、expected_failure、justified_na、SQL 数量、缺失数量和输出路径。
 
-## 输出要求
+可以为大量 obligations 生成辅助程序，但辅助程序只放在当前 run 的 job 目录，必须读取 contracts/inventories，且不得把 statement 特例写回常驻 Python。
 
-- SQL 必须是完整测试脚本，不是裸语句。
-- 每个 SQL 文件必须包含文件头、前置清理、对象准备、目标语句、验证、结束清理。
-- 成功路径与失败路径必须可归因。
-- 生成摘要必须说明 SQL 数量、成功/失败数量、覆盖的对象模板、覆盖的关键因子和输出目录。
+## 完成条件
+
+- 所有 executable obligations 都有且只有一个匹配 case manifest。
+- 所有 `justified_na` obligations 都保留 reason。
+- missing、unexpected 和 mismatched case 数量均为 0。
+- SQL 仍需实际在 reference 和 DUT 上执行后才能标记 executed/compared；生成成功不等于数据库验证成功。
 
 ```yaml
 structured_config:
   kind: mainflow
   skill_name: write_sql_program
-  mainflow_role: generate_program
-  inputs:
-    - artifacts/test_plans/
-    - assets/objects/**/*.sql
-    - references/statements/**/*.md
-    - references/combinations/**/*.yaml
-  outputs:
-    generated_programs: artifacts/generated_programs/
-    generated_sql: artifacts/generated_sql/
-    intermediates: artifacts/intermediates/
-    evaluations: artifacts/evaluations/
-  common_rules:
-    - references/common/output_script_style.md
-    - references/common/factor_policy.md
-    - references/common/validation_policy.md
-    - references/common/naming_rules.md
+  mainflow_role: generate_test_point_cases
+  compatibility_target: postgresql-18.4
+  case_granularity: one_manifest_per_executable_obligation
+  require_case_reconciliation: true
 ```

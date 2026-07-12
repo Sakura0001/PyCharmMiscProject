@@ -2,13 +2,13 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-dropeventtrigger.html
+来源：https://www.postgresql.org/docs/18/sql-dropeventtrigger.html
 
 ```sql
 DROP EVENT TRIGGER [ IF EXISTS ] name [ CASCADE | RESTRICT ]
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - 当前用户必须是 event trigger 的 owner 才能执行此命令
 - IF EXISTS：不抛出错误而是发出通知
 - CASCADE：自动删除依赖于该 trigger 的对象，以及依赖于那些对象的递归依赖
@@ -91,7 +91,7 @@ structured_config:
   category: ddl
   domain: event_trigger
   skill_name: drop_event_trigger
-  official_source: https://www.postgresql.org/docs/16/sql-dropeventtrigger.html
+  official_source: https://www.postgresql.org/docs/18/sql-dropeventtrigger.html
   statement:
     key: drop_event_trigger
     name: DROP EVENT TRIGGER

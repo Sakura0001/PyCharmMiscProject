@@ -6,7 +6,7 @@ statement:
   category: ddl
   domain: function
   source_reference: references/statements/ddl/function/create_function.md
-  official_source: https://www.postgresql.org/docs/16/sql-createfunction.html
+  official_source: https://www.postgresql.org/docs/18/sql-createfunction.html
   aliases:
   - CREATE FUNCTION
   - create function
@@ -50,7 +50,7 @@ coverage_scope:
   target_object_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#object_kinds.all_object_kinds
     required_object_kinds:
     - function
     decision_reason: CREATE_FUNCTION directly targets a PostgreSQL function object. Baseline coverage is scoped to routine
@@ -58,7 +58,7 @@ coverage_scope:
   target_relation_coverage:
     required: false
     coverage_mode: not_applicable
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#relation_kinds.all_relation_kinds
     decision_reason: CREATE_FUNCTION does not target a pg_class table, index, view, sequence, or materialized-view relation;
       routine catalog dependencies are represented as object and signature factors.
   table_coverage:
@@ -566,3 +566,48 @@ audit_rules:
   require_post_coverage_extension_policy: true
   forbid_extension_before_required_coverage_passes: true
   forbid_extension_counting_toward_required_coverage: true
+pg18_compatibility:
+  target_version: '18.4'
+  synopsis_change: unchanged
+  document_change: changed
+  test_points:
+  - id: PG18-FUNCTION-PARALLEL-CONTRACT
+    affected_factors:
+    - parallel_clause
+    affected_values:
+      parallel_clause:
+      - SAFE
+    sql: >-
+      CREATE FUNCTION {function_name}() RETURNS integer LANGUAGE SQL PARALLEL SAFE RETURN 1; SELECT proparallel FROM pg_proc WHERE oid = '{function_name}()'::regprocedure;
+    oracle: reference_parity
+    covers: parallel attribute contract retained after PG18 wording clarification
+  - id: PG18-FUNCTION-PARALLEL-UNSAFE
+    affected_factors:
+    - parallel_clause
+    affected_values:
+      parallel_clause:
+      - UNSAFE
+    sql: >-
+      CREATE FUNCTION {function_name}() RETURNS integer LANGUAGE SQL PARALLEL UNSAFE RETURN 1; SELECT proparallel FROM pg_proc WHERE oid = '{function_name}()'::regprocedure;
+    oracle: reference_parity
+    covers: explicit PARALLEL UNSAFE catalog contract
+  - id: PG18-FUNCTION-PARALLEL-RESTRICTED
+    affected_factors:
+    - parallel_clause
+    affected_values:
+      parallel_clause:
+      - RESTRICTED
+    sql: >-
+      CREATE FUNCTION {function_name}() RETURNS integer LANGUAGE SQL PARALLEL RESTRICTED RETURN 1; SELECT proparallel FROM pg_proc WHERE oid = '{function_name}()'::regprocedure;
+    oracle: reference_parity
+    covers: explicit PARALLEL RESTRICTED catalog contract
+  - id: PG18-FUNCTION-PARALLEL-ABSENT
+    affected_factors:
+    - parallel_clause
+    affected_values:
+      parallel_clause:
+      - absent
+    sql: >-
+      CREATE FUNCTION {function_name}() RETURNS integer LANGUAGE SQL RETURN 1; SELECT proparallel FROM pg_proc WHERE oid = '{function_name}()'::regprocedure;
+    oracle: reference_parity
+    covers: omitted PARALLEL clause retains UNSAFE default

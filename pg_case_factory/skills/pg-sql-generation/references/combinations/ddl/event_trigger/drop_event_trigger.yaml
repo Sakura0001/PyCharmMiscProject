@@ -6,7 +6,7 @@ statement:
   category: ddl
   domain: event_trigger
   source_reference: references/statements/ddl/event_trigger/drop_event_trigger.md
-  official_source: https://www.postgresql.org/docs/16/sql-dropeventtrigger.html
+  official_source: https://www.postgresql.org/docs/18/sql-dropeventtrigger.html
 execution_contract:
   required_matrix_is_baseline: true
   no_inference_before_required_coverage_passes: true
@@ -41,7 +41,7 @@ coverage_scope:
   target_object_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#object_kinds.all_object_kinds
     required_object_kinds:
     - event_trigger
     decision_reason: event_trigger statement coverage is tracked by explicit PostgreSQL object kind.

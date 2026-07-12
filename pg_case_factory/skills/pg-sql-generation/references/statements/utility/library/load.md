@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-load.html
+来源：https://www.postgresql.org/docs/18/sql-load.html
 
 ```sql
 LOAD 'filename'
@@ -78,7 +78,7 @@ structured_config:
   category: utility
   domain: library
   skill_name: load
-  official_source: https://www.postgresql.org/docs/16/sql-load.html
+  official_source: https://www.postgresql.org/docs/18/sql-load.html
   statement:
     key: load
     name: LOAD

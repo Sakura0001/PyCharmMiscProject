@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-execute.html
+来源：https://www.postgresql.org/docs/18/sql-execute.html
 
 ```sql
 EXECUTE name [ ( parameter [, ...] ) ]
@@ -77,7 +77,7 @@ structured_config:
   category: prepared
   domain: prepared_statement
   skill_name: execute
-  official_source: https://www.postgresql.org/docs/16/sql-execute.html
+  official_source: https://www.postgresql.org/docs/18/sql-execute.html
   statement:
     key: execute
     name: EXECUTE

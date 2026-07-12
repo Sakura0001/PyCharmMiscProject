@@ -2,13 +2,13 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-dropusermapping.html
+来源：https://www.postgresql.org/docs/18/sql-dropusermapping.html
 
 ```sql
 DROP USER MAPPING [ IF EXISTS ] FOR { user_name | USER | CURRENT_ROLE | CURRENT_USER | PUBLIC } SERVER server_name
 ```
 
-PG16 关键约束：
+PG18.4 关键约束：
 - 外部服务器的 owner 可删除任何用户的 user mapping
 - 拥有外部服务器 USAGE 权限的用户只能删除自己用户名的 user mapping
 - 不支持 CASCADE 或 RESTRICT 子句
@@ -92,7 +92,7 @@ structured_config:
   category: ddl
   domain: user_mapping
   skill_name: drop_user_mapping
-  official_source: https://www.postgresql.org/docs/16/sql-dropusermapping.html
+  official_source: https://www.postgresql.org/docs/18/sql-dropusermapping.html
   statement:
     key: drop_user_mapping
     name: DROP USER MAPPING

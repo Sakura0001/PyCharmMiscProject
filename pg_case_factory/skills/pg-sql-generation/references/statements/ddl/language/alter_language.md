@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-alterlanguage.html
+来源：https://www.postgresql.org/docs/18/sql-alterlanguage.html
 
 ```sql
 ALTER [ PROCEDURAL ] LANGUAGE name RENAME TO new_name
@@ -84,7 +84,7 @@ structured_config:
   category: ddl
   domain: language
   skill_name: alter_language
-  official_source: https://www.postgresql.org/docs/16/sql-alterlanguage.html
+  official_source: https://www.postgresql.org/docs/18/sql-alterlanguage.html
   statement:
     key: alter_language
     name: ALTER LANGUAGE

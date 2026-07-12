@@ -2,7 +2,7 @@
 
 ## 官方语法范围补充
 
-来源：https://www.postgresql.org/docs/16/sql-checkpoint.html
+来源：https://www.postgresql.org/docs/18/sql-checkpoint.html
 
 ```sql
 CHECKPOINT
@@ -78,7 +78,11 @@ structured_config:
   category: utility
   domain: checkpoint
   skill_name: checkpoint
-  official_source: https://www.postgresql.org/docs/16/sql-checkpoint.html
+  official_source: https://www.postgresql.org/docs/18/sql-checkpoint.html
+  pg18_compatibility:
+    target_version: "18.4"
+    official_source: https://www.postgresql.org/docs/18/sql-checkpoint.html
+    review_status: semantic_reviewed
   statement:
     key: checkpoint
     name: CHECKPOINT

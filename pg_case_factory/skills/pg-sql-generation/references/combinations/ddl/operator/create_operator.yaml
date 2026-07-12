@@ -6,7 +6,7 @@ statement:
   category: ddl
   domain: operator
   source_reference: references/statements/ddl/operator/create_operator.md
-  official_source: https://www.postgresql.org/docs/16/sql-createoperator.html
+  official_source: https://www.postgresql.org/docs/18/sql-createoperator.html
   aliases:
   - create operator
   - CREATE OPERATOR
@@ -46,7 +46,7 @@ coverage_scope:
   target_object_coverage:
     required: true
     coverage_mode: explicit
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#object_kinds.all_object_kinds
     required_object_kinds:
     - operator
     - function
@@ -56,7 +56,7 @@ coverage_scope:
   target_relation_coverage:
     required: false
     coverage_mode: not_applicable
-    inventory_source: references/combinations/_shared/coverage_inventory.yaml
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#relation_kinds.all_relation_kinds
     decision_reason: CREATE OPERATOR does not target pg_class relations. Relation use of the operator belongs to later query
       or index statements, not to operator definition coverage.
   table_coverage:
@@ -67,7 +67,7 @@ coverage_scope:
   column_type_coverage:
     required: false
     coverage_mode: representative
-    inventory_source: references/common/pg16_type_catalog.md
+    inventory_source: references/common/pg18_type_catalog.md
     decision_reason: Exhaustive table-column type coverage is not applicable because CREATE OPERATOR validates operand
       type bindings in the operator signature, not table column storage. Representative operand_data_type values and the
       type_binding_manifest cover the relevant PG type dependency surface.
@@ -339,6 +339,48 @@ combination_groups:
     required: true
     steps:
     - sql: DROP OPERATOR IF EXISTS {operator_name} ({left_type}, {right_type}) CASCADE;
+pg18_compatibility:
+  target_version: "18.4"
+  test_points:
+  - id: PG18-CREATE-OPERATOR-COMMUTATOR
+    affected_factors:
+    - commutator_clause
+    affected_values:
+      commutator_clause:
+      - present
+    oracle: reference_parity
+    sql: |
+      DROP SCHEMA IF EXISTS pg18_operator_commutator CASCADE;
+      CREATE SCHEMA pg18_operator_commutator;
+      CREATE OPERATOR pg18_operator_commutator.=== (
+        FUNCTION = pg_catalog.int4eq,
+        LEFTARG = integer,
+        RIGHTARG = integer,
+        COMMUTATOR = OPERATOR(pg18_operator_commutator.===)
+      );
+      SELECT oprname, oprcom = oid AS self_commutator
+      FROM pg_operator
+      WHERE oid = 'pg18_operator_commutator.===(integer,integer)'::regoperator;
+      DROP SCHEMA pg18_operator_commutator CASCADE;
+  - id: PG18-CREATE-OPERATOR-NO-COMMUTATOR
+    affected_factors:
+    - commutator_clause
+    affected_values:
+      commutator_clause:
+      - absent
+    oracle: reference_parity
+    sql: |
+      DROP SCHEMA IF EXISTS pg18_operator_no_commutator CASCADE;
+      CREATE SCHEMA pg18_operator_no_commutator;
+      CREATE OPERATOR pg18_operator_no_commutator.=== (
+        FUNCTION = pg_catalog.int4eq,
+        LEFTARG = integer,
+        RIGHTARG = integer
+      );
+      SELECT oprname, oprcom = 0 AS has_no_commutator
+      FROM pg_operator
+      WHERE oid = 'pg18_operator_no_commutator.===(integer,integer)'::regoperator;
+      DROP SCHEMA pg18_operator_no_commutator CASCADE;
 audit_rules:
   require_all_required_top_level_keys: true
   require_declared_coverage_scope: true
