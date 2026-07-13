@@ -33,6 +33,105 @@ missing = 0
 
 relation/table/column type、语法分支及其他适用 inventory 不允许使用 representative sampling。feature-local inline inventory 还必须写明推导方法、feature 与 PG18 双重来源定位、排除策略和审查状态，不能删值后只重算自签名 hash。确实不适用的值仍保留在 axis 中，并通过 `justified_na + reason` 核账；缺少 COPY protocol、privileged object administration、extension files、logical replication、postgres_fdw、LZ4、多会话或故障注入 harness 属于阻塞，不能伪装成 N/A。仓库中的 coverage plan 模板是一个可重复展开的 storage cross-product 基础包：当前固定为 3,175 个 obligation（2,787 success、153 expected failure、235 justified N/A、0 missing），覆盖 37 个 axes 和 25 个 test points。这个数字只证明模板已声明 axes 的分类闭包，不是任意特性计划的固定配额，也不自动证明 183 个 statement 的 9,978 个 factor-value 已完成特性适用性审计。
 
+## 交付给其他使用者
+
+建议把本项目作为“Codex Skill + Python 控制层”一起交付：
+
+- `skills.zip` 或 `skills/pg-sql-generation/` 负责指导 Agent 读取特性文档、发散完整测试计划、生成 SQL、逐点派遣和解释证据门禁。
+- `pg-case-factory` Python 包负责严格校验、覆盖核账、持久化 job、双端执行、逐字节比较和回归制品。
+
+只分发 `skills.zip` 不能执行 `pg-case` 命令，因为 ZIP 不内嵌 Python engine。只分发 Python 包则不会自动理解自然语言特性文档；这部分由安装了 Skill 的 Codex Agent 完成。
+
+### 使用者环境
+
+- Python 3.10 或更高版本。
+- `uv`。
+- PostgreSQL 18.4 客户端，至少能够调用 `psql`。
+- 如果需要自动分析自然语言特性文档，需要能够安装本项目 Skill 的 Codex 环境。
+- 如果需要正式差分执行，需要一套 upstream PostgreSQL 18.4 和一套 DUT。
+
+当前功能分支的安装方式：
+
+```bash
+git clone https://github.com/Sakura0001/PyCharmMiscProject.git
+cd PyCharmMiscProject
+git switch codex/pg18-feature-testing-foundation
+cd pg_case_factory
+
+uv sync
+uv run pg-case --help
+uv run pg-case doctor --root .
+```
+
+将项目根目录下的 `skills.zip` 导入使用者的 Codex Skill 管理界面；支持本地 Skill 目录的环境也可以安装 `skills/pg-sql-generation/`。安装后 Skill 名称为 `$pg-sql-generation`。
+
+### 最简使用提示词
+
+上传特性文档后，可直接给 Codex：
+
+```text
+使用 $pg-sql-generation 处理我上传的特性文档。
+
+兼容目标是 PostgreSQL 18.4。完整保存并读取原文，建立每条需求与原文
+位置的追溯关系。禁止代表性抽样，必须逐项审查所有相关对象类型、
+relation/table 类型、列类型、SQL statement、语法分支、生命周期、
+数据形态、TOAST、事务、分区、索引、约束、触发器、权限、维护、并发、
+重启和恢复因子。
+
+先生成完整测试计划和未确认问题，等我确认后再生成 SQL。每个 test point
+建立一个持久化 job，一次只执行一个点。执行时，每个 SQL 分别在 upstream
+PostgreSQL 18.4 和 DUT 上运行两次，先验证端内输出稳定，再进行两端逐字节
+比较。任何无法解释的不一致都生成 finding，不要自动忽略。
+```
+
+### 两种使用模式
+
+**仅生成测试计划和 SQL**
+
+这种模式不连接数据库。使用者只需提供特性文档、文档 revision，以及 LZ4、postgres_fdw、自定义 table access method、多会话、重启和故障注入等环境能力说明。Agent 会生成受控原文副本、`feature_manifest.yaml`、未确认问题、完整 applicability 审查、compiled coverage plan、test points、obligations、case manifests 和 SQL。
+
+分析期间可以保留 `metadata.unresolved_questions`，但正式 `run init` 前必须由使用者完成决议并显式改为空列表；系统不会替使用者猜测会改变语义或覆盖范围的答案。
+
+**连接两个数据库正式执行**
+
+除特性文档外，还要提供两端的 libpq service 名、相同 database、相同测试用户，以及分别从可信环境采集的不同 `system_identifier`。复制并填写执行配置：
+
+```bash
+mkdir -p work/<run-id>
+cp skills/pg-sql-generation/assets/templates/execution_profile_template.yaml \
+  work/<run-id>/execution_profile.yaml
+```
+
+典型配置只记录逻辑身份锚点，不记录连接密码：
+
+```yaml
+reference:
+  service: pg18_reference
+  database: regression
+  expected_system_identifier: "<reference-system-identifier>"
+  expected_current_user: regression_user
+dut:
+  service: storage_engine_dut
+  database: regression
+  expected_system_identifier: "<dut-system-identifier>"
+  expected_current_user: regression_user
+```
+
+service 的 host、port、user 和 SSL 等连接信息放在外部 `pg_service.conf`；密码使用 `.pgpass`、操作系统凭据存储或企业密钥系统。不要把密码、token、私钥或带凭据 URI 写入仓库、YAML、Skill 或提示词。
+
+### 使用者最终查看的结果
+
+每次正式运行都保存在 `artifacts/runs/<run-id>/`，不会清空其他 run。重点目录包括：
+
+- `plans/`：正式测试计划与完整 obligations。
+- `jobs/`：每个 test point 的状态、审计、readiness、lint 和 harness 证据。
+- `cases/manifests/` 与 `cases/sql/`：case contract 和确定性 SQL。
+- `executions/`、`replays/` 与 `comparisons/`：两端双跑结果、重放证据和 exact comparison。
+- `findings/`：无法解释的兼容性差异。
+- `regression/`：可长期保存的编号 SQL、upstream expected transcript 和 package。
+
+使用者负责提供特性语义决策、两端环境和外部 harness 授权，并观察自研存储层日志；项目和 Agent 负责上层 SQL 覆盖、执行证据与差异发现，不替代底层根因分析。
+
 ## 快速开始
 
 安装并查看命令：

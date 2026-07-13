@@ -246,3 +246,15 @@ git diff --check
 5. commit/push 后写入 commit SHA、远端分支和 push 结果。
 
 最后更新：2026-07-13（Asia/Shanghai），实现、独立验证、范围复核、主实现提交和远端推送均已完成；本文件的结果回写将作为单独收尾提交再次推送。保留给真实特性文档/真实数据库的 runtime 工作仍明确未执行。
+
+## 9. README 对外交付说明更新（2026-07-13）
+
+1. [x] 根据“给别人使用”的实际流程，补充 Skill + Python 控制层的双组件交付边界。
+2. [x] 补充 Python、uv、psql、Codex 和双数据库环境要求。
+3. [x] 补充当前 GitHub 功能分支的 clone、checkout、安装和 doctor 命令。
+4. [x] 补充 `$pg-sql-generation` 最简使用提示词。
+5. [x] 区分“仅生成计划和 SQL”与“连接两个数据库正式执行”两种模式。
+6. [x] 补充 execution profile、libpq service、身份锚点和凭据安全要求。
+7. [x] 补充 run artifacts 目录和使用者/项目职责边界。
+8. [x] `git diff --check -- pg_case_factory` 通过；README 引用的 Skill ZIP、Skill 目录和 execution profile 模板均存在；父仓库项目外状态为空。
+9. [ ] 创建仅限本项目的提交并推送当前 GitHub 分支。
