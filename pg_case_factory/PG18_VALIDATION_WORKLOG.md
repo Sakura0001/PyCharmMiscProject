@@ -257,4 +257,4 @@ git diff --check
 6. [x] 补充 execution profile、libpq service、身份锚点和凭据安全要求。
 7. [x] 补充 run artifacts 目录和使用者/项目职责边界。
 8. [x] `git diff --check -- pg_case_factory` 通过；README 引用的 Skill ZIP、Skill 目录和 execution profile 模板均存在；父仓库项目外状态为空。
-9. [ ] 创建仅限本项目的提交并推送当前 GitHub 分支。
+9. [x] 已创建提交 `8949e49`（`docs(pg-case-factory): add external user guide`）并成功推送到 `origin/codex/pg18-feature-testing-foundation`；提交只包含项目 README 和本台账。
