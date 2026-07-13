@@ -4,12 +4,20 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mysql-case-factory"
-version = "0.1.0"
-description = "Generate SQL-first MySQL 8.0.22 DDL test cases."
+version = "0.2.0"
+description = "Plan, generate, and differentially verify MySQL 8.0.22 and 8.0.41 SQL test cases."
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 authors = [{ name = "yuyu" }]
 dependencies = ["PyYAML>=6.0.2"]
+
+[project.optional-dependencies]
+test = ["pytest>=8.0"]
+
+[project.scripts]
+mysql-case = "mysql_case_factory.cli:main"
+mysql-case-8022 = "mysql_case_factory.cli:main_8022"
+mysql-case-8041 = "mysql_case_factory.cli:main_8041"
 
 [tool.setuptools]
 package-dir = { "" = "src" }

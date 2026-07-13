@@ -1,0 +1,1668 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: set_transaction
+  name: SET TRANSACTION
+  category: tcl
+  domain: transaction
+  source_reference: references/statements/tcl/transaction/set_transaction.md
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: false
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: false
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required coverage cannot be replaced by inferred combinations.
+coverage_scope:
+  target_object_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+  target_relation_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+  table_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+  column_type_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    scope:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - next_transaction
+      - session
+      - global
+      coverage_requirement: all_values
+    characteristic_shape:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - isolation_only
+      - access_mode_only
+      - isolation_and_access_mode
+      coverage_requirement: all_values
+    transaction_state:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - outside_transaction
+      - active_transaction
+      coverage_requirement: all_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - success
+      - failure
+      coverage_requirement: all_values
+    isolation_level:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - read_uncommitted
+      - read_committed
+      - repeatable_read
+      - serializable
+      coverage_requirement: all_values
+    access_mode:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - read_write
+      - read_only
+      coverage_requirement: all_values
+dynamic_inputs: {}
+combination_groups:
+- id: required__scope_next_transaction__characteristic_shape_isolation_only__transaction_state_outside_transaction__expected_status_success
+  title: SET TRANSACTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    scope: next_transaction
+    characteristic_shape: isolation_only
+    transaction_state: outside_transaction
+    expected_status: success
+    isolation_level: repeatable_read
+    access_mode: read_write
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - scope
+    - characteristic_shape
+    - transaction_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: SET{scope_sql} TRANSACTION ISOLATION LEVEL REPEATABLE READ
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__scope_next_transaction__characteristic_shape_isolation_only__transaction_state_outside_transaction__expected_status_failure
+  title: SET TRANSACTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    scope: next_transaction
+    characteristic_shape: isolation_only
+    transaction_state: outside_transaction
+    expected_status: failure
+    isolation_level: repeatable_read
+    access_mode: read_write
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - scope
+    - characteristic_shape
+    - transaction_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: SET{scope_sql} TRANSACTION ISOLATION LEVEL REPEATABLE READ
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__scope_next_transaction__characteristic_shape_isolation_only__transaction_state_active_transaction__expected_status_success
+  title: SET TRANSACTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    scope: next_transaction
+    characteristic_shape: isolation_only
+    transaction_state: active_transaction
+    expected_status: success
+    isolation_level: repeatable_read
+    access_mode: read_write
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - scope
+    - characteristic_shape
+    - transaction_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: SET{scope_sql} TRANSACTION ISOLATION LEVEL REPEATABLE READ
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__scope_next_transaction__characteristic_shape_isolation_only__transaction_state_active_transaction__expected_status_failure
+  title: SET TRANSACTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    scope: next_transaction
+    characteristic_shape: isolation_only
+    transaction_state: active_transaction
+    expected_status: failure
+    isolation_level: repeatable_read
+    access_mode: read_write
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - scope
+    - characteristic_shape
+    - transaction_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: SET{scope_sql} TRANSACTION ISOLATION LEVEL REPEATABLE READ
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__scope_next_transaction__characteristic_shape_access_mode_only__transaction_state_outside_transaction__expected_status_success
+  title: SET TRANSACTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    scope: next_transaction
+    characteristic_shape: access_mode_only
+    transaction_state: outside_transaction
+    expected_status: success
+    isolation_level: repeatable_read
+    access_mode: read_write
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - scope
+    - characteristic_shape
+    - transaction_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: SET{scope_sql} TRANSACTION ISOLATION LEVEL REPEATABLE READ
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__scope_next_transaction__characteristic_shape_access_mode_only__transaction_state_outside_transaction__expected_status_failure
+  title: SET TRANSACTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    scope: next_transaction
+    characteristic_shape: access_mode_only
+    transaction_state: outside_transaction
+    expected_status: failure
+    isolation_level: repeatable_read
+    access_mode: read_write
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - scope
+    - characteristic_shape
+    - transaction_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: SET{scope_sql} TRANSACTION ISOLATION LEVEL REPEATABLE READ
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__scope_next_transaction__characteristic_shape_access_mode_only__transaction_state_active_transaction__expected_status_success
+  title: SET TRANSACTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    scope: next_transaction
+    characteristic_shape: access_mode_only
+    transaction_state: active_transaction
+    expected_status: success
+    isolation_level: repeatable_read
+    access_mode: read_write
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - scope
+    - characteristic_shape
+    - transaction_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: SET{scope_sql} TRANSACTION ISOLATION LEVEL REPEATABLE READ
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__scope_next_transaction__characteristic_shape_access_mode_only__transaction_state_active_transaction__expected_status_failure
+  title: SET TRANSACTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    scope: next_transaction
+    characteristic_shape: access_mode_only
+    transaction_state: active_transaction
+    expected_status: failure
+    isolation_level: repeatable_read
+    access_mode: read_write
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - scope
+    - characteristic_shape
+    - transaction_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: SET{scope_sql} TRANSACTION ISOLATION LEVEL REPEATABLE READ
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__scope_next_transaction__characteristic_shape_isolation_and_access_mode__transaction_state_outside_transaction__expected_status_success
+  title: SET TRANSACTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    scope: next_transaction
+    characteristic_shape: isolation_and_access_mode
+    transaction_state: outside_transaction
+    expected_status: success
+    isolation_level: repeatable_read
+    access_mode: read_write
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - scope
+    - characteristic_shape
+    - transaction_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: SET{scope_sql} TRANSACTION ISOLATION LEVEL REPEATABLE READ
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__scope_next_transaction__characteristic_shape_isolation_and_access_mode__transaction_state_outside_transaction__expected_status_failure
+  title: SET TRANSACTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    scope: next_transaction
+    characteristic_shape: isolation_and_access_mode
+    transaction_state: outside_transaction
+    expected_status: failure
+    isolation_level: repeatable_read
+    access_mode: read_write
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - scope
+    - characteristic_shape
+    - transaction_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: SET{scope_sql} TRANSACTION ISOLATION LEVEL REPEATABLE READ
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__scope_next_transaction__characteristic_shape_isolation_and_access_mode__transaction_state_active_transaction__expected_status_success
+  title: SET TRANSACTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    scope: next_transaction
+    characteristic_shape: isolation_and_access_mode
+    transaction_state: active_transaction
+    expected_status: success
+    isolation_level: repeatable_read
+    access_mode: read_write
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - scope
+    - characteristic_shape
+    - transaction_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: SET{scope_sql} TRANSACTION ISOLATION LEVEL REPEATABLE READ
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__scope_next_transaction__characteristic_shape_isolation_and_access_mode__transaction_state_active_transaction__expected_status_failure
+  title: SET TRANSACTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    scope: next_transaction
+    characteristic_shape: isolation_and_access_mode
+    transaction_state: active_transaction
+    expected_status: failure
+    isolation_level: repeatable_read
+    access_mode: read_write
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - scope
+    - characteristic_shape
+    - transaction_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: SET{scope_sql} TRANSACTION ISOLATION LEVEL REPEATABLE READ
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__scope_session__characteristic_shape_isolation_only__transaction_state_outside_transaction__expected_status_success
+  title: SET TRANSACTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    scope: session
+    characteristic_shape: isolation_only
+    transaction_state: outside_transaction
+    expected_status: success
+    isolation_level: repeatable_read
+    access_mode: read_write
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - scope
+    - characteristic_shape
+    - transaction_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: SET{scope_sql} TRANSACTION ISOLATION LEVEL REPEATABLE READ
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__scope_session__characteristic_shape_isolation_only__transaction_state_outside_transaction__expected_status_failure
+  title: SET TRANSACTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    scope: session
+    characteristic_shape: isolation_only
+    transaction_state: outside_transaction
+    expected_status: failure
+    isolation_level: repeatable_read
+    access_mode: read_write
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - scope
+    - characteristic_shape
+    - transaction_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: SET{scope_sql} TRANSACTION ISOLATION LEVEL REPEATABLE READ
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__scope_session__characteristic_shape_isolation_only__transaction_state_active_transaction__expected_status_success
+  title: SET TRANSACTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    scope: session
+    characteristic_shape: isolation_only
+    transaction_state: active_transaction
+    expected_status: success
+    isolation_level: repeatable_read
+    access_mode: read_write
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - scope
+    - characteristic_shape
+    - transaction_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: SET{scope_sql} TRANSACTION ISOLATION LEVEL REPEATABLE READ
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__scope_session__characteristic_shape_isolation_only__transaction_state_active_transaction__expected_status_failure
+  title: SET TRANSACTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    scope: session
+    characteristic_shape: isolation_only
+    transaction_state: active_transaction
+    expected_status: failure
+    isolation_level: repeatable_read
+    access_mode: read_write
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - scope
+    - characteristic_shape
+    - transaction_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: SET{scope_sql} TRANSACTION ISOLATION LEVEL REPEATABLE READ
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__scope_session__characteristic_shape_access_mode_only__transaction_state_outside_transaction__expected_status_success
+  title: SET TRANSACTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    scope: session
+    characteristic_shape: access_mode_only
+    transaction_state: outside_transaction
+    expected_status: success
+    isolation_level: repeatable_read
+    access_mode: read_write
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - scope
+    - characteristic_shape
+    - transaction_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: SET{scope_sql} TRANSACTION ISOLATION LEVEL REPEATABLE READ
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__scope_session__characteristic_shape_access_mode_only__transaction_state_outside_transaction__expected_status_failure
+  title: SET TRANSACTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    scope: session
+    characteristic_shape: access_mode_only
+    transaction_state: outside_transaction
+    expected_status: failure
+    isolation_level: repeatable_read
+    access_mode: read_write
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - scope
+    - characteristic_shape
+    - transaction_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: SET{scope_sql} TRANSACTION ISOLATION LEVEL REPEATABLE READ
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__scope_session__characteristic_shape_access_mode_only__transaction_state_active_transaction__expected_status_success
+  title: SET TRANSACTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    scope: session
+    characteristic_shape: access_mode_only
+    transaction_state: active_transaction
+    expected_status: success
+    isolation_level: repeatable_read
+    access_mode: read_write
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - scope
+    - characteristic_shape
+    - transaction_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: SET{scope_sql} TRANSACTION ISOLATION LEVEL REPEATABLE READ
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__scope_session__characteristic_shape_access_mode_only__transaction_state_active_transaction__expected_status_failure
+  title: SET TRANSACTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    scope: session
+    characteristic_shape: access_mode_only
+    transaction_state: active_transaction
+    expected_status: failure
+    isolation_level: repeatable_read
+    access_mode: read_write
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - scope
+    - characteristic_shape
+    - transaction_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: SET{scope_sql} TRANSACTION ISOLATION LEVEL REPEATABLE READ
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__scope_session__characteristic_shape_isolation_and_access_mode__transaction_state_outside_transaction__expected_status_success
+  title: SET TRANSACTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    scope: session
+    characteristic_shape: isolation_and_access_mode
+    transaction_state: outside_transaction
+    expected_status: success
+    isolation_level: repeatable_read
+    access_mode: read_write
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - scope
+    - characteristic_shape
+    - transaction_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: SET{scope_sql} TRANSACTION ISOLATION LEVEL REPEATABLE READ
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__scope_session__characteristic_shape_isolation_and_access_mode__transaction_state_outside_transaction__expected_status_failure
+  title: SET TRANSACTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    scope: session
+    characteristic_shape: isolation_and_access_mode
+    transaction_state: outside_transaction
+    expected_status: failure
+    isolation_level: repeatable_read
+    access_mode: read_write
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - scope
+    - characteristic_shape
+    - transaction_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: SET{scope_sql} TRANSACTION ISOLATION LEVEL REPEATABLE READ
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__scope_session__characteristic_shape_isolation_and_access_mode__transaction_state_active_transaction__expected_status_success
+  title: SET TRANSACTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    scope: session
+    characteristic_shape: isolation_and_access_mode
+    transaction_state: active_transaction
+    expected_status: success
+    isolation_level: repeatable_read
+    access_mode: read_write
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - scope
+    - characteristic_shape
+    - transaction_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: SET{scope_sql} TRANSACTION ISOLATION LEVEL REPEATABLE READ
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__scope_session__characteristic_shape_isolation_and_access_mode__transaction_state_active_transaction__expected_status_failure
+  title: SET TRANSACTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    scope: session
+    characteristic_shape: isolation_and_access_mode
+    transaction_state: active_transaction
+    expected_status: failure
+    isolation_level: repeatable_read
+    access_mode: read_write
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - scope
+    - characteristic_shape
+    - transaction_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: SET{scope_sql} TRANSACTION ISOLATION LEVEL REPEATABLE READ
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__scope_global__characteristic_shape_isolation_only__transaction_state_outside_transaction__expected_status_success
+  title: SET TRANSACTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    scope: global
+    characteristic_shape: isolation_only
+    transaction_state: outside_transaction
+    expected_status: success
+    isolation_level: repeatable_read
+    access_mode: read_write
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - scope
+    - characteristic_shape
+    - transaction_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: SET{scope_sql} TRANSACTION ISOLATION LEVEL REPEATABLE READ
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__scope_global__characteristic_shape_isolation_only__transaction_state_outside_transaction__expected_status_failure
+  title: SET TRANSACTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    scope: global
+    characteristic_shape: isolation_only
+    transaction_state: outside_transaction
+    expected_status: failure
+    isolation_level: repeatable_read
+    access_mode: read_write
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - scope
+    - characteristic_shape
+    - transaction_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: SET{scope_sql} TRANSACTION ISOLATION LEVEL REPEATABLE READ
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__scope_global__characteristic_shape_isolation_only__transaction_state_active_transaction__expected_status_success
+  title: SET TRANSACTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    scope: global
+    characteristic_shape: isolation_only
+    transaction_state: active_transaction
+    expected_status: success
+    isolation_level: repeatable_read
+    access_mode: read_write
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - scope
+    - characteristic_shape
+    - transaction_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: SET{scope_sql} TRANSACTION ISOLATION LEVEL REPEATABLE READ
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__scope_global__characteristic_shape_isolation_only__transaction_state_active_transaction__expected_status_failure
+  title: SET TRANSACTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    scope: global
+    characteristic_shape: isolation_only
+    transaction_state: active_transaction
+    expected_status: failure
+    isolation_level: repeatable_read
+    access_mode: read_write
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - scope
+    - characteristic_shape
+    - transaction_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: SET{scope_sql} TRANSACTION ISOLATION LEVEL REPEATABLE READ
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__scope_global__characteristic_shape_access_mode_only__transaction_state_outside_transaction__expected_status_success
+  title: SET TRANSACTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    scope: global
+    characteristic_shape: access_mode_only
+    transaction_state: outside_transaction
+    expected_status: success
+    isolation_level: repeatable_read
+    access_mode: read_write
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - scope
+    - characteristic_shape
+    - transaction_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: SET{scope_sql} TRANSACTION ISOLATION LEVEL REPEATABLE READ
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__scope_global__characteristic_shape_access_mode_only__transaction_state_outside_transaction__expected_status_failure
+  title: SET TRANSACTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    scope: global
+    characteristic_shape: access_mode_only
+    transaction_state: outside_transaction
+    expected_status: failure
+    isolation_level: repeatable_read
+    access_mode: read_write
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - scope
+    - characteristic_shape
+    - transaction_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: SET{scope_sql} TRANSACTION ISOLATION LEVEL REPEATABLE READ
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__scope_global__characteristic_shape_access_mode_only__transaction_state_active_transaction__expected_status_success
+  title: SET TRANSACTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    scope: global
+    characteristic_shape: access_mode_only
+    transaction_state: active_transaction
+    expected_status: success
+    isolation_level: repeatable_read
+    access_mode: read_write
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - scope
+    - characteristic_shape
+    - transaction_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: SET{scope_sql} TRANSACTION ISOLATION LEVEL REPEATABLE READ
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__scope_global__characteristic_shape_access_mode_only__transaction_state_active_transaction__expected_status_failure
+  title: SET TRANSACTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    scope: global
+    characteristic_shape: access_mode_only
+    transaction_state: active_transaction
+    expected_status: failure
+    isolation_level: repeatable_read
+    access_mode: read_write
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - scope
+    - characteristic_shape
+    - transaction_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: SET{scope_sql} TRANSACTION ISOLATION LEVEL REPEATABLE READ
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__scope_global__characteristic_shape_isolation_and_access_mode__transaction_state_outside_transaction__expected_status_success
+  title: SET TRANSACTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    scope: global
+    characteristic_shape: isolation_and_access_mode
+    transaction_state: outside_transaction
+    expected_status: success
+    isolation_level: repeatable_read
+    access_mode: read_write
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - scope
+    - characteristic_shape
+    - transaction_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: SET{scope_sql} TRANSACTION ISOLATION LEVEL REPEATABLE READ
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__scope_global__characteristic_shape_isolation_and_access_mode__transaction_state_outside_transaction__expected_status_failure
+  title: SET TRANSACTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    scope: global
+    characteristic_shape: isolation_and_access_mode
+    transaction_state: outside_transaction
+    expected_status: failure
+    isolation_level: repeatable_read
+    access_mode: read_write
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - scope
+    - characteristic_shape
+    - transaction_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: SET{scope_sql} TRANSACTION ISOLATION LEVEL REPEATABLE READ
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__scope_global__characteristic_shape_isolation_and_access_mode__transaction_state_active_transaction__expected_status_success
+  title: SET TRANSACTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    scope: global
+    characteristic_shape: isolation_and_access_mode
+    transaction_state: active_transaction
+    expected_status: success
+    isolation_level: repeatable_read
+    access_mode: read_write
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - scope
+    - characteristic_shape
+    - transaction_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: SET{scope_sql} TRANSACTION ISOLATION LEVEL REPEATABLE READ
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__scope_global__characteristic_shape_isolation_and_access_mode__transaction_state_active_transaction__expected_status_failure
+  title: SET TRANSACTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    scope: global
+    characteristic_shape: isolation_and_access_mode
+    transaction_state: active_transaction
+    expected_status: failure
+    isolation_level: repeatable_read
+    access_mode: read_write
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - scope
+    - characteristic_shape
+    - transaction_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: SET{scope_sql} TRANSACTION ISOLATION LEVEL REPEATABLE READ
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__isolation_level__read_uncommitted
+  title: SET TRANSACTION supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    scope: next_transaction
+    characteristic_shape: isolation_only
+    transaction_state: outside_transaction
+    expected_status: success
+    isolation_level: read_uncommitted
+    access_mode: read_write
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - isolation_level
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: SET{scope_sql} TRANSACTION ISOLATION LEVEL REPEATABLE READ
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__isolation_level__read_committed
+  title: SET TRANSACTION supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    scope: next_transaction
+    characteristic_shape: isolation_only
+    transaction_state: outside_transaction
+    expected_status: success
+    isolation_level: read_committed
+    access_mode: read_write
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - isolation_level
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: SET{scope_sql} TRANSACTION ISOLATION LEVEL REPEATABLE READ
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__isolation_level__repeatable_read
+  title: SET TRANSACTION supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    scope: next_transaction
+    characteristic_shape: isolation_only
+    transaction_state: outside_transaction
+    expected_status: success
+    isolation_level: repeatable_read
+    access_mode: read_write
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - isolation_level
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: SET{scope_sql} TRANSACTION ISOLATION LEVEL REPEATABLE READ
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__isolation_level__serializable
+  title: SET TRANSACTION supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    scope: next_transaction
+    characteristic_shape: isolation_only
+    transaction_state: outside_transaction
+    expected_status: success
+    isolation_level: serializable
+    access_mode: read_write
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - isolation_level
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: SET{scope_sql} TRANSACTION ISOLATION LEVEL REPEATABLE READ
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__access_mode__read_write
+  title: SET TRANSACTION supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    scope: next_transaction
+    characteristic_shape: isolation_only
+    transaction_state: outside_transaction
+    expected_status: success
+    isolation_level: repeatable_read
+    access_mode: read_write
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - access_mode
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: SET{scope_sql} TRANSACTION ISOLATION LEVEL REPEATABLE READ
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__access_mode__read_only
+  title: SET TRANSACTION supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    scope: next_transaction
+    characteristic_shape: isolation_only
+    transaction_state: outside_transaction
+    expected_status: success
+    isolation_level: repeatable_read
+    access_mode: read_only
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - access_mode
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: SET{scope_sql} TRANSACTION ISOLATION LEVEL REPEATABLE READ
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

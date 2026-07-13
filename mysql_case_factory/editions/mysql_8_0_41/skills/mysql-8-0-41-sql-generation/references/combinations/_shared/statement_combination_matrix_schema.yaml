@@ -1,0 +1,11 @@
+required_top_level_keys:
+  - schema_version
+  - kind
+  - statement
+  - execution_contract
+  - post_coverage_extension_policy
+  - coverage_scope
+  - factor_contract
+  - dynamic_inputs
+  - combination_groups
+  - audit_rules

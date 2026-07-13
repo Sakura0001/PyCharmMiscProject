@@ -1,0 +1,338 @@
+schema_version: 1
+kind: coverage_plan
+plan_id: PLAN-MYSQL-8-0-22-BASELINE
+feature_id: mysql-storage-feature
+axes:
+  object_type:
+    values:
+    - database
+    - table
+    - index
+    - view
+    - trigger
+    - procedure
+    - function
+    - event
+    - user
+    - role
+    - tablespace
+    - server
+    - resource_group
+    - spatial_reference_system
+    - component
+    - plugin
+    - loadable_function
+    - prepared_statement
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#sql_object_types.all_sql_object_types
+    coverage_mode: complete
+    inventory_count: 18
+    inventory_sha256: 94e86d2f51f5832154d344b553925d68d909aa8d65b95aac5eea8bd7a8bc39f6
+  relation_kind:
+    values:
+    - base_table
+    - temporary_table
+    - view
+    - system_view
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#relation_kinds.all_mysql8022_relkinds
+    coverage_mode: complete
+    inventory_count: 4
+    inventory_sha256: 9cba8f8abeea197c914347b298268047378904b2c39a159d919dbe33751742b2
+  table_persistence:
+    values:
+    - permanent
+    - temporary
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#relation_dimensions.relpersistence.values
+    coverage_mode: complete
+    inventory_count: 2
+    inventory_sha256: 124d32a98830f86eb3293a9ce69291304ffdaa2b7a5a6058957040b789dab304
+  partition_role:
+    values:
+    - nonpartitioned
+    - partitioned
+    - partition
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#relation_dimensions.partition_role.values
+    coverage_mode: complete
+    inventory_count: 3
+    inventory_sha256: e8d2a308ca55827a1da49bd8e67a9e89bea63d3a57c594d099661c537509e199
+  partition_strategy:
+    values:
+    - none
+    - range
+    - list
+    - hash
+    - key
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#relation_dimensions.partition_strategy.values
+    coverage_mode: complete
+    inventory_count: 5
+    inventory_sha256: 74dc0f327b60fa7b34936f18c524497a1ebcbb51dc6e129b9c394dab2378d119
+  inheritance_role:
+    values:
+    - unsupported
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#relation_dimensions.inheritance_role.values
+    coverage_mode: complete
+    inventory_count: 1
+    inventory_sha256: aeb30d3540aee03dc2cb23a6b339c5a71d89a48891d804226617a4edeae9919e
+  storage_engine:
+    values:
+    - innodb
+    - memory
+    - myisam
+    inventory_source: references/combinations/_shared/coverage_inventory.yaml#relation_dimensions.table_access_method_selection.values
+    coverage_mode: complete
+    inventory_count: 3
+    inventory_sha256: acc512898516c00c1343b5e531d9a03dc6384cad370eb3e58be169ec530b674b
+  numeric_type:
+    values:
+    - tinyint
+    - smallint
+    - mediumint
+    - int
+    - bigint
+    - decimal
+    - float
+    - double
+    - bit
+    inventory_source: references/common/mysql80_type_catalog.md#structured_config.families.numeric.values
+    coverage_mode: complete
+    inventory_count: 9
+    inventory_sha256: 12f76694007f07803d05d90c9c094048a593db890c6dda98fd889b99761fbc83
+  string_type:
+    values:
+    - char
+    - varchar
+    - binary
+    - varbinary
+    - tinytext
+    - text
+    - mediumtext
+    - longtext
+    - enum
+    - set
+    inventory_source: references/common/mysql80_type_catalog.md#structured_config.families.string.values
+    coverage_mode: complete
+    inventory_count: 10
+    inventory_sha256: 4b8d3ce6762fe170951487825eff44aecd085392378b8ff90b008a565e232de6
+  temporal_type:
+    values:
+    - date
+    - time
+    - datetime
+    - timestamp
+    - year
+    inventory_source: references/common/mysql80_type_catalog.md#structured_config.families.temporal.values
+    coverage_mode: complete
+    inventory_count: 5
+    inventory_sha256: 77348ee9b812c1a0fad6dd42e826b7330bdc4d9a9e604b9cfa5e0f1a4d49ef55
+  json_type:
+    values:
+    - json
+    inventory_source: references/common/mysql80_type_catalog.md#structured_config.families.json.values
+    coverage_mode: complete
+    inventory_count: 1
+    inventory_sha256: 8b7e5172c2f7c47256cc46a90cf755d8b0de7f992db99fa6e15b6d58ed8813d5
+  spatial_type:
+    values:
+    - geometry
+    - point
+    - linestring
+    - polygon
+    inventory_source: references/common/mysql80_type_catalog.md#structured_config.families.spatial.values
+    coverage_mode: complete
+    inventory_count: 4
+    inventory_sha256: fe366ac47affdd89928b95bc1d2b661812b9814caa9095f588122b87c2977d95
+  blob_type:
+    values:
+    - tinyblob
+    - blob
+    - mediumblob
+    - longblob
+    inventory_source: references/common/mysql80_type_catalog.md#structured_config.families.blob.values
+    coverage_mode: complete
+    inventory_count: 4
+    inventory_sha256: 53b93aeddea3bb7c7d3396931fb1802cd412be2f7114be4670c857f8de4ef261
+scope_decisions:
+  object:
+    status: complete
+    axis: object_type
+  relation:
+    status: complete
+    axis: relation_kind
+  table:
+    status: complete
+    axes:
+    - table_persistence
+    - partition_role
+    - partition_strategy
+    - inheritance_role
+    - storage_engine
+  column_type:
+    status: complete
+    axes:
+    - numeric_type
+    - string_type
+    - temporal_type
+    - json_type
+    - spatial_type
+    - blob_type
+risk_decisions:
+  syntax:
+    status: covered
+    axes:
+    - object_type
+    test_points:
+    - TP-OBJECT
+  operation:
+    status: covered
+    axes:
+    - object_type
+    test_points:
+    - TP-OBJECT
+  lifecycle:
+    status: covered
+    axes:
+    - relation_kind
+    test_points:
+    - TP-RELATION
+  data_profile:
+    status: covered
+    axes:
+    - numeric_type
+    test_points:
+    - TP-TYPE-NUMERIC-TYPE
+  large_value_lob:
+    status: covered
+    axes:
+    - blob_type
+    test_points:
+    - TP-TYPE-BLOB-TYPE
+  transaction:
+    status: covered
+    axes:
+    - table_persistence
+    test_points:
+    - TP-TABLE
+  partitioning:
+    status: covered
+    axes:
+    - partition_strategy
+    test_points:
+    - TP-TABLE
+  index_constraint_trigger:
+    status: covered
+    axes:
+    - object_type
+    test_points:
+    - TP-OBJECT
+  privilege:
+    status: covered
+    axes:
+    - object_type
+    test_points:
+    - TP-OBJECT
+  maintenance:
+    status: covered
+    axes:
+    - storage_engine
+    test_points:
+    - TP-TABLE
+  concurrency:
+    status: covered
+    axes:
+    - relation_kind
+    test_points:
+    - TP-RELATION
+  restart_recovery:
+    status: covered
+    axes:
+    - storage_engine
+    test_points:
+    - TP-TABLE
+test_points:
+- id: TP-OBJECT
+  title: Every supported MySQL object type
+  requirement_ids:
+  - REQ-001
+  core_axes:
+  - object_type
+  dependencies: []
+  classification_rules: []
+  default_outcome: success
+- id: TP-RELATION
+  title: Every MySQL relation kind
+  requirement_ids:
+  - REQ-001
+  core_axes:
+  - relation_kind
+  dependencies: []
+  classification_rules: []
+  default_outcome: success
+- id: TP-TABLE
+  title: Complete MySQL table-storage cross product
+  requirement_ids:
+  - REQ-001
+  core_axes:
+  - table_persistence
+  - partition_role
+  - partition_strategy
+  - inheritance_role
+  - storage_engine
+  dependencies: []
+  classification_rules: []
+  default_outcome: success
+- id: TP-TYPE-NUMERIC-TYPE
+  title: Every numeric column type
+  requirement_ids:
+  - REQ-001
+  core_axes:
+  - numeric_type
+  dependencies: []
+  classification_rules: []
+  default_outcome: success
+- id: TP-TYPE-STRING-TYPE
+  title: Every string column type
+  requirement_ids:
+  - REQ-001
+  core_axes:
+  - string_type
+  dependencies: []
+  classification_rules: []
+  default_outcome: success
+- id: TP-TYPE-TEMPORAL-TYPE
+  title: Every temporal column type
+  requirement_ids:
+  - REQ-001
+  core_axes:
+  - temporal_type
+  dependencies: []
+  classification_rules: []
+  default_outcome: success
+- id: TP-TYPE-JSON-TYPE
+  title: Every json column type
+  requirement_ids:
+  - REQ-001
+  core_axes:
+  - json_type
+  dependencies: []
+  classification_rules: []
+  default_outcome: success
+- id: TP-TYPE-SPATIAL-TYPE
+  title: Every spatial column type
+  requirement_ids:
+  - REQ-001
+  core_axes:
+  - spatial_type
+  dependencies: []
+  classification_rules: []
+  default_outcome: success
+- id: TP-TYPE-BLOB-TYPE
+  title: Every blob column type
+  requirement_ids:
+  - REQ-001
+  core_axes:
+  - blob_type
+  dependencies: []
+  classification_rules: []
+  default_outcome: success
+metadata:
+  edition_id: mysql-community-8.0.22
+  template_obligation_count: 145

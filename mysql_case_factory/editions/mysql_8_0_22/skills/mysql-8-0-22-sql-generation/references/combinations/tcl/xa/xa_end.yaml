@@ -1,0 +1,694 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: xa_end
+  name: XA END
+  category: tcl
+  domain: xa
+  source_reference: references/statements/tcl/xa/xa_end.md
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: false
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: false
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required coverage cannot be replaced by inferred combinations.
+coverage_scope:
+  target_object_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+  target_relation_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+  table_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+  column_type_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    xid_state:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - active_xid
+      - missing_xid
+      - prepared_xid
+      coverage_requirement: all_values
+    suspend_shape:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - omitted
+      - suspend
+      - suspend_for_migrate
+      coverage_requirement: all_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - success
+      - failure
+      coverage_requirement: all_values
+dynamic_inputs: {}
+combination_groups:
+- id: required__xid_state_active_xid__suspend_shape_omitted__expected_status_success
+  title: XA END required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    xid_state: active_xid
+    suspend_shape: omitted
+    expected_status: success
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - xid_state
+    - suspend_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: XA END '{xa_xid}'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__xid_state_active_xid__suspend_shape_omitted__expected_status_failure
+  title: XA END required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    xid_state: active_xid
+    suspend_shape: omitted
+    expected_status: failure
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - xid_state
+    - suspend_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: XA END '{xa_xid}'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__xid_state_active_xid__suspend_shape_suspend__expected_status_success
+  title: XA END required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    xid_state: active_xid
+    suspend_shape: suspend
+    expected_status: success
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - xid_state
+    - suspend_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: XA END '{xa_xid}'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__xid_state_active_xid__suspend_shape_suspend__expected_status_failure
+  title: XA END required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    xid_state: active_xid
+    suspend_shape: suspend
+    expected_status: failure
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - xid_state
+    - suspend_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: XA END '{xa_xid}'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__xid_state_active_xid__suspend_shape_suspend_for_migrate__expected_status_success
+  title: XA END required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    xid_state: active_xid
+    suspend_shape: suspend_for_migrate
+    expected_status: success
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - xid_state
+    - suspend_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: XA END '{xa_xid}'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__xid_state_active_xid__suspend_shape_suspend_for_migrate__expected_status_failure
+  title: XA END required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    xid_state: active_xid
+    suspend_shape: suspend_for_migrate
+    expected_status: failure
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - xid_state
+    - suspend_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: XA END '{xa_xid}'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__xid_state_missing_xid__suspend_shape_omitted__expected_status_success
+  title: XA END required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    xid_state: missing_xid
+    suspend_shape: omitted
+    expected_status: success
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - xid_state
+    - suspend_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: XA END '{xa_xid}'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__xid_state_missing_xid__suspend_shape_omitted__expected_status_failure
+  title: XA END required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    xid_state: missing_xid
+    suspend_shape: omitted
+    expected_status: failure
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - xid_state
+    - suspend_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: XA END '{xa_xid}'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__xid_state_missing_xid__suspend_shape_suspend__expected_status_success
+  title: XA END required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    xid_state: missing_xid
+    suspend_shape: suspend
+    expected_status: success
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - xid_state
+    - suspend_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: XA END '{xa_xid}'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__xid_state_missing_xid__suspend_shape_suspend__expected_status_failure
+  title: XA END required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    xid_state: missing_xid
+    suspend_shape: suspend
+    expected_status: failure
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - xid_state
+    - suspend_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: XA END '{xa_xid}'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__xid_state_missing_xid__suspend_shape_suspend_for_migrate__expected_status_success
+  title: XA END required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    xid_state: missing_xid
+    suspend_shape: suspend_for_migrate
+    expected_status: success
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - xid_state
+    - suspend_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: XA END '{xa_xid}'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__xid_state_missing_xid__suspend_shape_suspend_for_migrate__expected_status_failure
+  title: XA END required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    xid_state: missing_xid
+    suspend_shape: suspend_for_migrate
+    expected_status: failure
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - xid_state
+    - suspend_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: XA END '{xa_xid}'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__xid_state_prepared_xid__suspend_shape_omitted__expected_status_success
+  title: XA END required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    xid_state: prepared_xid
+    suspend_shape: omitted
+    expected_status: success
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - xid_state
+    - suspend_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: XA END '{xa_xid}'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__xid_state_prepared_xid__suspend_shape_omitted__expected_status_failure
+  title: XA END required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    xid_state: prepared_xid
+    suspend_shape: omitted
+    expected_status: failure
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - xid_state
+    - suspend_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: XA END '{xa_xid}'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__xid_state_prepared_xid__suspend_shape_suspend__expected_status_success
+  title: XA END required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    xid_state: prepared_xid
+    suspend_shape: suspend
+    expected_status: success
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - xid_state
+    - suspend_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: XA END '{xa_xid}'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__xid_state_prepared_xid__suspend_shape_suspend__expected_status_failure
+  title: XA END required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    xid_state: prepared_xid
+    suspend_shape: suspend
+    expected_status: failure
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - xid_state
+    - suspend_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: XA END '{xa_xid}'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__xid_state_prepared_xid__suspend_shape_suspend_for_migrate__expected_status_success
+  title: XA END required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    xid_state: prepared_xid
+    suspend_shape: suspend_for_migrate
+    expected_status: success
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - xid_state
+    - suspend_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: XA END '{xa_xid}'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__xid_state_prepared_xid__suspend_shape_suspend_for_migrate__expected_status_failure
+  title: XA END required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    xid_state: prepared_xid
+    suspend_shape: suspend_for_migrate
+    expected_status: failure
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - xid_state
+    - suspend_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: XA END '{xa_xid}'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

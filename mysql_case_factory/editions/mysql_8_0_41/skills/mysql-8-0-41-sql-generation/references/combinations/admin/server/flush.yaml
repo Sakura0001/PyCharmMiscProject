@@ -1,0 +1,2690 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: flush
+  name: FLUSH
+  category: admin
+  domain: server
+  source_reference: references/statements/admin/server/flush.md
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: false
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: false
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required coverage cannot be replaced by inferred combinations.
+coverage_scope:
+  target_object_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+  target_relation_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+  table_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+  column_type_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    flush_option:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - binary_logs
+      - engine_logs
+      - error_logs
+      - general_logs
+      - hosts
+      - logs
+      - optimizer_costs
+      - privileges
+      - status
+      - user_resources
+      - tables
+      coverage_requirement: all_values
+    binlog_modifier:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - omitted
+      - no_write_to_binlog
+      - local
+      coverage_requirement: all_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - success
+      - failure
+      coverage_requirement: all_values
+    table_flush_shape:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - not_tables
+      - all_tables
+      - table_list
+      - with_read_lock
+      - for_export
+      coverage_requirement: all_values
+    privilege_context:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - sufficient
+      - insufficient
+      coverage_requirement: all_values
+dynamic_inputs: {}
+combination_groups:
+- id: required__flush_option_binary_logs__binlog_modifier_omitted__expected_status_success
+  title: FLUSH required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    flush_option: binary_logs
+    binlog_modifier: omitted
+    expected_status: success
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_binary_logs__binlog_modifier_omitted__expected_status_failure
+  title: FLUSH required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    flush_option: binary_logs
+    binlog_modifier: omitted
+    expected_status: failure
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_binary_logs__binlog_modifier_no_write_to_binlog__expected_status_success
+  title: FLUSH required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    flush_option: binary_logs
+    binlog_modifier: no_write_to_binlog
+    expected_status: success
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_binary_logs__binlog_modifier_no_write_to_binlog__expected_status_failure
+  title: FLUSH required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    flush_option: binary_logs
+    binlog_modifier: no_write_to_binlog
+    expected_status: failure
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_binary_logs__binlog_modifier_local__expected_status_success
+  title: FLUSH required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    flush_option: binary_logs
+    binlog_modifier: local
+    expected_status: success
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_binary_logs__binlog_modifier_local__expected_status_failure
+  title: FLUSH required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    flush_option: binary_logs
+    binlog_modifier: local
+    expected_status: failure
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_engine_logs__binlog_modifier_omitted__expected_status_success
+  title: FLUSH required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    flush_option: engine_logs
+    binlog_modifier: omitted
+    expected_status: success
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_engine_logs__binlog_modifier_omitted__expected_status_failure
+  title: FLUSH required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    flush_option: engine_logs
+    binlog_modifier: omitted
+    expected_status: failure
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_engine_logs__binlog_modifier_no_write_to_binlog__expected_status_success
+  title: FLUSH required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    flush_option: engine_logs
+    binlog_modifier: no_write_to_binlog
+    expected_status: success
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_engine_logs__binlog_modifier_no_write_to_binlog__expected_status_failure
+  title: FLUSH required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    flush_option: engine_logs
+    binlog_modifier: no_write_to_binlog
+    expected_status: failure
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_engine_logs__binlog_modifier_local__expected_status_success
+  title: FLUSH required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    flush_option: engine_logs
+    binlog_modifier: local
+    expected_status: success
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_engine_logs__binlog_modifier_local__expected_status_failure
+  title: FLUSH required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    flush_option: engine_logs
+    binlog_modifier: local
+    expected_status: failure
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_error_logs__binlog_modifier_omitted__expected_status_success
+  title: FLUSH required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    flush_option: error_logs
+    binlog_modifier: omitted
+    expected_status: success
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_error_logs__binlog_modifier_omitted__expected_status_failure
+  title: FLUSH required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    flush_option: error_logs
+    binlog_modifier: omitted
+    expected_status: failure
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_error_logs__binlog_modifier_no_write_to_binlog__expected_status_success
+  title: FLUSH required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    flush_option: error_logs
+    binlog_modifier: no_write_to_binlog
+    expected_status: success
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_error_logs__binlog_modifier_no_write_to_binlog__expected_status_failure
+  title: FLUSH required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    flush_option: error_logs
+    binlog_modifier: no_write_to_binlog
+    expected_status: failure
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_error_logs__binlog_modifier_local__expected_status_success
+  title: FLUSH required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    flush_option: error_logs
+    binlog_modifier: local
+    expected_status: success
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_error_logs__binlog_modifier_local__expected_status_failure
+  title: FLUSH required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    flush_option: error_logs
+    binlog_modifier: local
+    expected_status: failure
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_general_logs__binlog_modifier_omitted__expected_status_success
+  title: FLUSH required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    flush_option: general_logs
+    binlog_modifier: omitted
+    expected_status: success
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_general_logs__binlog_modifier_omitted__expected_status_failure
+  title: FLUSH required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    flush_option: general_logs
+    binlog_modifier: omitted
+    expected_status: failure
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_general_logs__binlog_modifier_no_write_to_binlog__expected_status_success
+  title: FLUSH required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    flush_option: general_logs
+    binlog_modifier: no_write_to_binlog
+    expected_status: success
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_general_logs__binlog_modifier_no_write_to_binlog__expected_status_failure
+  title: FLUSH required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    flush_option: general_logs
+    binlog_modifier: no_write_to_binlog
+    expected_status: failure
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_general_logs__binlog_modifier_local__expected_status_success
+  title: FLUSH required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    flush_option: general_logs
+    binlog_modifier: local
+    expected_status: success
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_general_logs__binlog_modifier_local__expected_status_failure
+  title: FLUSH required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    flush_option: general_logs
+    binlog_modifier: local
+    expected_status: failure
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_hosts__binlog_modifier_omitted__expected_status_success
+  title: FLUSH required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    flush_option: hosts
+    binlog_modifier: omitted
+    expected_status: success
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_hosts__binlog_modifier_omitted__expected_status_failure
+  title: FLUSH required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    flush_option: hosts
+    binlog_modifier: omitted
+    expected_status: failure
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_hosts__binlog_modifier_no_write_to_binlog__expected_status_success
+  title: FLUSH required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    flush_option: hosts
+    binlog_modifier: no_write_to_binlog
+    expected_status: success
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_hosts__binlog_modifier_no_write_to_binlog__expected_status_failure
+  title: FLUSH required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    flush_option: hosts
+    binlog_modifier: no_write_to_binlog
+    expected_status: failure
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_hosts__binlog_modifier_local__expected_status_success
+  title: FLUSH required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    flush_option: hosts
+    binlog_modifier: local
+    expected_status: success
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_hosts__binlog_modifier_local__expected_status_failure
+  title: FLUSH required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    flush_option: hosts
+    binlog_modifier: local
+    expected_status: failure
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_logs__binlog_modifier_omitted__expected_status_success
+  title: FLUSH required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    flush_option: logs
+    binlog_modifier: omitted
+    expected_status: success
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_logs__binlog_modifier_omitted__expected_status_failure
+  title: FLUSH required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    flush_option: logs
+    binlog_modifier: omitted
+    expected_status: failure
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_logs__binlog_modifier_no_write_to_binlog__expected_status_success
+  title: FLUSH required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    flush_option: logs
+    binlog_modifier: no_write_to_binlog
+    expected_status: success
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_logs__binlog_modifier_no_write_to_binlog__expected_status_failure
+  title: FLUSH required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    flush_option: logs
+    binlog_modifier: no_write_to_binlog
+    expected_status: failure
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_logs__binlog_modifier_local__expected_status_success
+  title: FLUSH required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    flush_option: logs
+    binlog_modifier: local
+    expected_status: success
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_logs__binlog_modifier_local__expected_status_failure
+  title: FLUSH required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    flush_option: logs
+    binlog_modifier: local
+    expected_status: failure
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_optimizer_costs__binlog_modifier_omitted__expected_status_success
+  title: FLUSH required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    flush_option: optimizer_costs
+    binlog_modifier: omitted
+    expected_status: success
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_optimizer_costs__binlog_modifier_omitted__expected_status_failure
+  title: FLUSH required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    flush_option: optimizer_costs
+    binlog_modifier: omitted
+    expected_status: failure
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_optimizer_costs__binlog_modifier_no_write_to_binlog__expected_status_success
+  title: FLUSH required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    flush_option: optimizer_costs
+    binlog_modifier: no_write_to_binlog
+    expected_status: success
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_optimizer_costs__binlog_modifier_no_write_to_binlog__expected_status_failure
+  title: FLUSH required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    flush_option: optimizer_costs
+    binlog_modifier: no_write_to_binlog
+    expected_status: failure
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_optimizer_costs__binlog_modifier_local__expected_status_success
+  title: FLUSH required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    flush_option: optimizer_costs
+    binlog_modifier: local
+    expected_status: success
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_optimizer_costs__binlog_modifier_local__expected_status_failure
+  title: FLUSH required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    flush_option: optimizer_costs
+    binlog_modifier: local
+    expected_status: failure
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_privileges__binlog_modifier_omitted__expected_status_success
+  title: FLUSH required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    flush_option: privileges
+    binlog_modifier: omitted
+    expected_status: success
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_privileges__binlog_modifier_omitted__expected_status_failure
+  title: FLUSH required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    flush_option: privileges
+    binlog_modifier: omitted
+    expected_status: failure
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_privileges__binlog_modifier_no_write_to_binlog__expected_status_success
+  title: FLUSH required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    flush_option: privileges
+    binlog_modifier: no_write_to_binlog
+    expected_status: success
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_privileges__binlog_modifier_no_write_to_binlog__expected_status_failure
+  title: FLUSH required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    flush_option: privileges
+    binlog_modifier: no_write_to_binlog
+    expected_status: failure
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_privileges__binlog_modifier_local__expected_status_success
+  title: FLUSH required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    flush_option: privileges
+    binlog_modifier: local
+    expected_status: success
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_privileges__binlog_modifier_local__expected_status_failure
+  title: FLUSH required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    flush_option: privileges
+    binlog_modifier: local
+    expected_status: failure
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_status__binlog_modifier_omitted__expected_status_success
+  title: FLUSH required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    flush_option: status
+    binlog_modifier: omitted
+    expected_status: success
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_status__binlog_modifier_omitted__expected_status_failure
+  title: FLUSH required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    flush_option: status
+    binlog_modifier: omitted
+    expected_status: failure
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_status__binlog_modifier_no_write_to_binlog__expected_status_success
+  title: FLUSH required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    flush_option: status
+    binlog_modifier: no_write_to_binlog
+    expected_status: success
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_status__binlog_modifier_no_write_to_binlog__expected_status_failure
+  title: FLUSH required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    flush_option: status
+    binlog_modifier: no_write_to_binlog
+    expected_status: failure
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_status__binlog_modifier_local__expected_status_success
+  title: FLUSH required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    flush_option: status
+    binlog_modifier: local
+    expected_status: success
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_status__binlog_modifier_local__expected_status_failure
+  title: FLUSH required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    flush_option: status
+    binlog_modifier: local
+    expected_status: failure
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_user_resources__binlog_modifier_omitted__expected_status_success
+  title: FLUSH required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    flush_option: user_resources
+    binlog_modifier: omitted
+    expected_status: success
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_user_resources__binlog_modifier_omitted__expected_status_failure
+  title: FLUSH required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    flush_option: user_resources
+    binlog_modifier: omitted
+    expected_status: failure
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_user_resources__binlog_modifier_no_write_to_binlog__expected_status_success
+  title: FLUSH required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    flush_option: user_resources
+    binlog_modifier: no_write_to_binlog
+    expected_status: success
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_user_resources__binlog_modifier_no_write_to_binlog__expected_status_failure
+  title: FLUSH required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    flush_option: user_resources
+    binlog_modifier: no_write_to_binlog
+    expected_status: failure
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_user_resources__binlog_modifier_local__expected_status_success
+  title: FLUSH required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    flush_option: user_resources
+    binlog_modifier: local
+    expected_status: success
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_user_resources__binlog_modifier_local__expected_status_failure
+  title: FLUSH required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    flush_option: user_resources
+    binlog_modifier: local
+    expected_status: failure
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_tables__binlog_modifier_omitted__expected_status_success
+  title: FLUSH required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    flush_option: tables
+    binlog_modifier: omitted
+    expected_status: success
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_tables__binlog_modifier_omitted__expected_status_failure
+  title: FLUSH required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    flush_option: tables
+    binlog_modifier: omitted
+    expected_status: failure
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_tables__binlog_modifier_no_write_to_binlog__expected_status_success
+  title: FLUSH required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    flush_option: tables
+    binlog_modifier: no_write_to_binlog
+    expected_status: success
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_tables__binlog_modifier_no_write_to_binlog__expected_status_failure
+  title: FLUSH required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    flush_option: tables
+    binlog_modifier: no_write_to_binlog
+    expected_status: failure
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_tables__binlog_modifier_local__expected_status_success
+  title: FLUSH required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    flush_option: tables
+    binlog_modifier: local
+    expected_status: success
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__flush_option_tables__binlog_modifier_local__expected_status_failure
+  title: FLUSH required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    flush_option: tables
+    binlog_modifier: local
+    expected_status: failure
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - flush_option
+    - binlog_modifier
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__table_flush_shape__not_tables
+  title: FLUSH supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    flush_option: privileges
+    binlog_modifier: omitted
+    expected_status: success
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - table_flush_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__table_flush_shape__all_tables
+  title: FLUSH supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    flush_option: privileges
+    binlog_modifier: omitted
+    expected_status: success
+    table_flush_shape: all_tables
+    privilege_context: sufficient
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - table_flush_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__table_flush_shape__table_list
+  title: FLUSH supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    flush_option: privileges
+    binlog_modifier: omitted
+    expected_status: success
+    table_flush_shape: table_list
+    privilege_context: sufficient
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - table_flush_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__table_flush_shape__with_read_lock
+  title: FLUSH supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    flush_option: privileges
+    binlog_modifier: omitted
+    expected_status: success
+    table_flush_shape: with_read_lock
+    privilege_context: sufficient
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - table_flush_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__table_flush_shape__for_export
+  title: FLUSH supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    flush_option: privileges
+    binlog_modifier: omitted
+    expected_status: success
+    table_flush_shape: for_export
+    privilege_context: sufficient
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - table_flush_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__privilege_context__sufficient
+  title: FLUSH supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    flush_option: privileges
+    binlog_modifier: omitted
+    expected_status: success
+    table_flush_shape: not_tables
+    privilege_context: sufficient
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - privilege_context
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__privilege_context__insufficient
+  title: FLUSH supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    flush_option: privileges
+    binlog_modifier: omitted
+    expected_status: success
+    table_flush_shape: not_tables
+    privilege_context: insufficient
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - privilege_context
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: FLUSH STATUS
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

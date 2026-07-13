@@ -1,0 +1,4902 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: create_function
+  name: CREATE FUNCTION
+  category: ddl
+  domain: function
+  source_reference: references/statements/ddl/function/create_function.md
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: false
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: false
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required coverage cannot be replaced by inferred combinations.
+coverage_scope:
+  target_object_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+  target_relation_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+  table_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+  column_type_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    if_not_exists:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - omitted
+      - present
+      coverage_requirement: all_values
+    parameter_shape:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - none
+      - one_parameter
+      - multiple_parameters
+      coverage_requirement: all_values
+    return_type_shape:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - int_type
+      - varchar_type
+      - json_type
+      coverage_requirement: all_values
+    body_shape:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - return_literal
+      - compound_block
+      - invalid_body
+      coverage_requirement: all_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - success
+      - failure
+      coverage_requirement: all_values
+    determinism_shape:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - omitted
+      - deterministic
+      - not_deterministic
+      coverage_requirement: all_values
+    data_access_shape:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - omitted
+      - contains_sql
+      - reads_sql_data
+      - modifies_sql_data
+      - no_sql
+      coverage_requirement: all_values
+    security_shape:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - omitted
+      - definer
+      - invoker
+      coverage_requirement: all_values
+dynamic_inputs: {}
+combination_groups:
+- id: required__if_not_exists_omitted__parameter_shape_none__return_type_shape_int_type__body_shape_return_literal__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: none
+    return_type_shape: int_type
+    body_shape: return_literal
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_none__return_type_shape_int_type__body_shape_return_literal__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: none
+    return_type_shape: int_type
+    body_shape: return_literal
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_none__return_type_shape_int_type__body_shape_compound_block__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: none
+    return_type_shape: int_type
+    body_shape: compound_block
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_none__return_type_shape_int_type__body_shape_compound_block__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: none
+    return_type_shape: int_type
+    body_shape: compound_block
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_none__return_type_shape_int_type__body_shape_invalid_body__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: none
+    return_type_shape: int_type
+    body_shape: invalid_body
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_none__return_type_shape_int_type__body_shape_invalid_body__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: none
+    return_type_shape: int_type
+    body_shape: invalid_body
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_none__return_type_shape_varchar_type__body_shape_return_literal__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: none
+    return_type_shape: varchar_type
+    body_shape: return_literal
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_none__return_type_shape_varchar_type__body_shape_return_literal__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: none
+    return_type_shape: varchar_type
+    body_shape: return_literal
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_none__return_type_shape_varchar_type__body_shape_compound_block__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: none
+    return_type_shape: varchar_type
+    body_shape: compound_block
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_none__return_type_shape_varchar_type__body_shape_compound_block__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: none
+    return_type_shape: varchar_type
+    body_shape: compound_block
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_none__return_type_shape_varchar_type__body_shape_invalid_body__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: none
+    return_type_shape: varchar_type
+    body_shape: invalid_body
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_none__return_type_shape_varchar_type__body_shape_invalid_body__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: none
+    return_type_shape: varchar_type
+    body_shape: invalid_body
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_none__return_type_shape_json_type__body_shape_return_literal__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: none
+    return_type_shape: json_type
+    body_shape: return_literal
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_none__return_type_shape_json_type__body_shape_return_literal__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: none
+    return_type_shape: json_type
+    body_shape: return_literal
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_none__return_type_shape_json_type__body_shape_compound_block__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: none
+    return_type_shape: json_type
+    body_shape: compound_block
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_none__return_type_shape_json_type__body_shape_compound_block__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: none
+    return_type_shape: json_type
+    body_shape: compound_block
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_none__return_type_shape_json_type__body_shape_invalid_body__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: none
+    return_type_shape: json_type
+    body_shape: invalid_body
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_none__return_type_shape_json_type__body_shape_invalid_body__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: none
+    return_type_shape: json_type
+    body_shape: invalid_body
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_one_parameter__return_type_shape_int_type__body_shape_return_literal__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: one_parameter
+    return_type_shape: int_type
+    body_shape: return_literal
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_one_parameter__return_type_shape_int_type__body_shape_return_literal__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: one_parameter
+    return_type_shape: int_type
+    body_shape: return_literal
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_one_parameter__return_type_shape_int_type__body_shape_compound_block__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: one_parameter
+    return_type_shape: int_type
+    body_shape: compound_block
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_one_parameter__return_type_shape_int_type__body_shape_compound_block__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: one_parameter
+    return_type_shape: int_type
+    body_shape: compound_block
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_one_parameter__return_type_shape_int_type__body_shape_invalid_body__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: one_parameter
+    return_type_shape: int_type
+    body_shape: invalid_body
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_one_parameter__return_type_shape_int_type__body_shape_invalid_body__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: one_parameter
+    return_type_shape: int_type
+    body_shape: invalid_body
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_one_parameter__return_type_shape_varchar_type__body_shape_return_literal__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: one_parameter
+    return_type_shape: varchar_type
+    body_shape: return_literal
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_one_parameter__return_type_shape_varchar_type__body_shape_return_literal__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: one_parameter
+    return_type_shape: varchar_type
+    body_shape: return_literal
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_one_parameter__return_type_shape_varchar_type__body_shape_compound_block__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: one_parameter
+    return_type_shape: varchar_type
+    body_shape: compound_block
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_one_parameter__return_type_shape_varchar_type__body_shape_compound_block__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: one_parameter
+    return_type_shape: varchar_type
+    body_shape: compound_block
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_one_parameter__return_type_shape_varchar_type__body_shape_invalid_body__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: one_parameter
+    return_type_shape: varchar_type
+    body_shape: invalid_body
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_one_parameter__return_type_shape_varchar_type__body_shape_invalid_body__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: one_parameter
+    return_type_shape: varchar_type
+    body_shape: invalid_body
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_one_parameter__return_type_shape_json_type__body_shape_return_literal__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: one_parameter
+    return_type_shape: json_type
+    body_shape: return_literal
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_one_parameter__return_type_shape_json_type__body_shape_return_literal__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: one_parameter
+    return_type_shape: json_type
+    body_shape: return_literal
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_one_parameter__return_type_shape_json_type__body_shape_compound_block__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: one_parameter
+    return_type_shape: json_type
+    body_shape: compound_block
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_one_parameter__return_type_shape_json_type__body_shape_compound_block__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: one_parameter
+    return_type_shape: json_type
+    body_shape: compound_block
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_one_parameter__return_type_shape_json_type__body_shape_invalid_body__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: one_parameter
+    return_type_shape: json_type
+    body_shape: invalid_body
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_one_parameter__return_type_shape_json_type__body_shape_invalid_body__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: one_parameter
+    return_type_shape: json_type
+    body_shape: invalid_body
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_multiple_parameters__return_type_shape_int_type__body_shape_return_literal__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: multiple_parameters
+    return_type_shape: int_type
+    body_shape: return_literal
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_multiple_parameters__return_type_shape_int_type__body_shape_return_literal__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: multiple_parameters
+    return_type_shape: int_type
+    body_shape: return_literal
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_multiple_parameters__return_type_shape_int_type__body_shape_compound_block__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: multiple_parameters
+    return_type_shape: int_type
+    body_shape: compound_block
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_multiple_parameters__return_type_shape_int_type__body_shape_compound_block__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: multiple_parameters
+    return_type_shape: int_type
+    body_shape: compound_block
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_multiple_parameters__return_type_shape_int_type__body_shape_invalid_body__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: multiple_parameters
+    return_type_shape: int_type
+    body_shape: invalid_body
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_multiple_parameters__return_type_shape_int_type__body_shape_invalid_body__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: multiple_parameters
+    return_type_shape: int_type
+    body_shape: invalid_body
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_multiple_parameters__return_type_shape_varchar_type__body_shape_return_literal__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: multiple_parameters
+    return_type_shape: varchar_type
+    body_shape: return_literal
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_multiple_parameters__return_type_shape_varchar_type__body_shape_return_literal__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: multiple_parameters
+    return_type_shape: varchar_type
+    body_shape: return_literal
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_multiple_parameters__return_type_shape_varchar_type__body_shape_compound_block__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: multiple_parameters
+    return_type_shape: varchar_type
+    body_shape: compound_block
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_multiple_parameters__return_type_shape_varchar_type__body_shape_compound_block__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: multiple_parameters
+    return_type_shape: varchar_type
+    body_shape: compound_block
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_multiple_parameters__return_type_shape_varchar_type__body_shape_invalid_body__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: multiple_parameters
+    return_type_shape: varchar_type
+    body_shape: invalid_body
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_multiple_parameters__return_type_shape_varchar_type__body_shape_invalid_body__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: multiple_parameters
+    return_type_shape: varchar_type
+    body_shape: invalid_body
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_multiple_parameters__return_type_shape_json_type__body_shape_return_literal__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: multiple_parameters
+    return_type_shape: json_type
+    body_shape: return_literal
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_multiple_parameters__return_type_shape_json_type__body_shape_return_literal__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: multiple_parameters
+    return_type_shape: json_type
+    body_shape: return_literal
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_multiple_parameters__return_type_shape_json_type__body_shape_compound_block__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: multiple_parameters
+    return_type_shape: json_type
+    body_shape: compound_block
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_multiple_parameters__return_type_shape_json_type__body_shape_compound_block__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: multiple_parameters
+    return_type_shape: json_type
+    body_shape: compound_block
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_multiple_parameters__return_type_shape_json_type__body_shape_invalid_body__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: multiple_parameters
+    return_type_shape: json_type
+    body_shape: invalid_body
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__parameter_shape_multiple_parameters__return_type_shape_json_type__body_shape_invalid_body__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: multiple_parameters
+    return_type_shape: json_type
+    body_shape: invalid_body
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_none__return_type_shape_int_type__body_shape_return_literal__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: none
+    return_type_shape: int_type
+    body_shape: return_literal
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_none__return_type_shape_int_type__body_shape_return_literal__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: none
+    return_type_shape: int_type
+    body_shape: return_literal
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_none__return_type_shape_int_type__body_shape_compound_block__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: none
+    return_type_shape: int_type
+    body_shape: compound_block
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_none__return_type_shape_int_type__body_shape_compound_block__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: none
+    return_type_shape: int_type
+    body_shape: compound_block
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_none__return_type_shape_int_type__body_shape_invalid_body__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: none
+    return_type_shape: int_type
+    body_shape: invalid_body
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_none__return_type_shape_int_type__body_shape_invalid_body__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: none
+    return_type_shape: int_type
+    body_shape: invalid_body
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_none__return_type_shape_varchar_type__body_shape_return_literal__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: none
+    return_type_shape: varchar_type
+    body_shape: return_literal
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_none__return_type_shape_varchar_type__body_shape_return_literal__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: none
+    return_type_shape: varchar_type
+    body_shape: return_literal
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_none__return_type_shape_varchar_type__body_shape_compound_block__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: none
+    return_type_shape: varchar_type
+    body_shape: compound_block
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_none__return_type_shape_varchar_type__body_shape_compound_block__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: none
+    return_type_shape: varchar_type
+    body_shape: compound_block
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_none__return_type_shape_varchar_type__body_shape_invalid_body__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: none
+    return_type_shape: varchar_type
+    body_shape: invalid_body
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_none__return_type_shape_varchar_type__body_shape_invalid_body__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: none
+    return_type_shape: varchar_type
+    body_shape: invalid_body
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_none__return_type_shape_json_type__body_shape_return_literal__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: none
+    return_type_shape: json_type
+    body_shape: return_literal
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_none__return_type_shape_json_type__body_shape_return_literal__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: none
+    return_type_shape: json_type
+    body_shape: return_literal
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_none__return_type_shape_json_type__body_shape_compound_block__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: none
+    return_type_shape: json_type
+    body_shape: compound_block
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_none__return_type_shape_json_type__body_shape_compound_block__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: none
+    return_type_shape: json_type
+    body_shape: compound_block
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_none__return_type_shape_json_type__body_shape_invalid_body__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: none
+    return_type_shape: json_type
+    body_shape: invalid_body
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_none__return_type_shape_json_type__body_shape_invalid_body__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: none
+    return_type_shape: json_type
+    body_shape: invalid_body
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_one_parameter__return_type_shape_int_type__body_shape_return_literal__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: one_parameter
+    return_type_shape: int_type
+    body_shape: return_literal
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_one_parameter__return_type_shape_int_type__body_shape_return_literal__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: one_parameter
+    return_type_shape: int_type
+    body_shape: return_literal
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_one_parameter__return_type_shape_int_type__body_shape_compound_block__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: one_parameter
+    return_type_shape: int_type
+    body_shape: compound_block
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_one_parameter__return_type_shape_int_type__body_shape_compound_block__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: one_parameter
+    return_type_shape: int_type
+    body_shape: compound_block
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_one_parameter__return_type_shape_int_type__body_shape_invalid_body__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: one_parameter
+    return_type_shape: int_type
+    body_shape: invalid_body
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_one_parameter__return_type_shape_int_type__body_shape_invalid_body__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: one_parameter
+    return_type_shape: int_type
+    body_shape: invalid_body
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_one_parameter__return_type_shape_varchar_type__body_shape_return_literal__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: one_parameter
+    return_type_shape: varchar_type
+    body_shape: return_literal
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_one_parameter__return_type_shape_varchar_type__body_shape_return_literal__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: one_parameter
+    return_type_shape: varchar_type
+    body_shape: return_literal
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_one_parameter__return_type_shape_varchar_type__body_shape_compound_block__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: one_parameter
+    return_type_shape: varchar_type
+    body_shape: compound_block
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_one_parameter__return_type_shape_varchar_type__body_shape_compound_block__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: one_parameter
+    return_type_shape: varchar_type
+    body_shape: compound_block
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_one_parameter__return_type_shape_varchar_type__body_shape_invalid_body__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: one_parameter
+    return_type_shape: varchar_type
+    body_shape: invalid_body
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_one_parameter__return_type_shape_varchar_type__body_shape_invalid_body__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: one_parameter
+    return_type_shape: varchar_type
+    body_shape: invalid_body
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_one_parameter__return_type_shape_json_type__body_shape_return_literal__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: one_parameter
+    return_type_shape: json_type
+    body_shape: return_literal
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_one_parameter__return_type_shape_json_type__body_shape_return_literal__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: one_parameter
+    return_type_shape: json_type
+    body_shape: return_literal
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_one_parameter__return_type_shape_json_type__body_shape_compound_block__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: one_parameter
+    return_type_shape: json_type
+    body_shape: compound_block
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_one_parameter__return_type_shape_json_type__body_shape_compound_block__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: one_parameter
+    return_type_shape: json_type
+    body_shape: compound_block
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_one_parameter__return_type_shape_json_type__body_shape_invalid_body__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: one_parameter
+    return_type_shape: json_type
+    body_shape: invalid_body
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_one_parameter__return_type_shape_json_type__body_shape_invalid_body__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: one_parameter
+    return_type_shape: json_type
+    body_shape: invalid_body
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_multiple_parameters__return_type_shape_int_type__body_shape_return_literal__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: multiple_parameters
+    return_type_shape: int_type
+    body_shape: return_literal
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_multiple_parameters__return_type_shape_int_type__body_shape_return_literal__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: multiple_parameters
+    return_type_shape: int_type
+    body_shape: return_literal
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_multiple_parameters__return_type_shape_int_type__body_shape_compound_block__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: multiple_parameters
+    return_type_shape: int_type
+    body_shape: compound_block
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_multiple_parameters__return_type_shape_int_type__body_shape_compound_block__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: multiple_parameters
+    return_type_shape: int_type
+    body_shape: compound_block
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_multiple_parameters__return_type_shape_int_type__body_shape_invalid_body__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: multiple_parameters
+    return_type_shape: int_type
+    body_shape: invalid_body
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_multiple_parameters__return_type_shape_int_type__body_shape_invalid_body__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: multiple_parameters
+    return_type_shape: int_type
+    body_shape: invalid_body
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_multiple_parameters__return_type_shape_varchar_type__body_shape_return_literal__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: multiple_parameters
+    return_type_shape: varchar_type
+    body_shape: return_literal
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_multiple_parameters__return_type_shape_varchar_type__body_shape_return_literal__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: multiple_parameters
+    return_type_shape: varchar_type
+    body_shape: return_literal
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_multiple_parameters__return_type_shape_varchar_type__body_shape_compound_block__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: multiple_parameters
+    return_type_shape: varchar_type
+    body_shape: compound_block
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_multiple_parameters__return_type_shape_varchar_type__body_shape_compound_block__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: multiple_parameters
+    return_type_shape: varchar_type
+    body_shape: compound_block
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_multiple_parameters__return_type_shape_varchar_type__body_shape_invalid_body__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: multiple_parameters
+    return_type_shape: varchar_type
+    body_shape: invalid_body
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_multiple_parameters__return_type_shape_varchar_type__body_shape_invalid_body__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: multiple_parameters
+    return_type_shape: varchar_type
+    body_shape: invalid_body
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_multiple_parameters__return_type_shape_json_type__body_shape_return_literal__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: multiple_parameters
+    return_type_shape: json_type
+    body_shape: return_literal
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_multiple_parameters__return_type_shape_json_type__body_shape_return_literal__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: multiple_parameters
+    return_type_shape: json_type
+    body_shape: return_literal
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_multiple_parameters__return_type_shape_json_type__body_shape_compound_block__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: multiple_parameters
+    return_type_shape: json_type
+    body_shape: compound_block
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_multiple_parameters__return_type_shape_json_type__body_shape_compound_block__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: multiple_parameters
+    return_type_shape: json_type
+    body_shape: compound_block
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_multiple_parameters__return_type_shape_json_type__body_shape_invalid_body__expected_status_success
+  title: CREATE FUNCTION required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: multiple_parameters
+    return_type_shape: json_type
+    body_shape: invalid_body
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__parameter_shape_multiple_parameters__return_type_shape_json_type__body_shape_invalid_body__expected_status_failure
+  title: CREATE FUNCTION required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    parameter_shape: multiple_parameters
+    return_type_shape: json_type
+    body_shape: invalid_body
+    expected_status: failure
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - parameter_shape
+    - return_type_shape
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__determinism_shape__omitted
+  title: CREATE FUNCTION supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: none
+    return_type_shape: int_type
+    body_shape: return_literal
+    expected_status: success
+    determinism_shape: omitted
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - determinism_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__determinism_shape__deterministic
+  title: CREATE FUNCTION supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: none
+    return_type_shape: int_type
+    body_shape: return_literal
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - determinism_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__determinism_shape__not_deterministic
+  title: CREATE FUNCTION supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: none
+    return_type_shape: int_type
+    body_shape: return_literal
+    expected_status: success
+    determinism_shape: not_deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - determinism_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__data_access_shape__omitted
+  title: CREATE FUNCTION supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: none
+    return_type_shape: int_type
+    body_shape: return_literal
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: omitted
+    security_shape: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - data_access_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__data_access_shape__contains_sql
+  title: CREATE FUNCTION supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: none
+    return_type_shape: int_type
+    body_shape: return_literal
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - data_access_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__data_access_shape__reads_sql_data
+  title: CREATE FUNCTION supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: none
+    return_type_shape: int_type
+    body_shape: return_literal
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: reads_sql_data
+    security_shape: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - data_access_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__data_access_shape__modifies_sql_data
+  title: CREATE FUNCTION supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: none
+    return_type_shape: int_type
+    body_shape: return_literal
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: modifies_sql_data
+    security_shape: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - data_access_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__data_access_shape__no_sql
+  title: CREATE FUNCTION supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: none
+    return_type_shape: int_type
+    body_shape: return_literal
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: no_sql
+    security_shape: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - data_access_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__security_shape__omitted
+  title: CREATE FUNCTION supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: none
+    return_type_shape: int_type
+    body_shape: return_literal
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - security_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__security_shape__definer
+  title: CREATE FUNCTION supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: none
+    return_type_shape: int_type
+    body_shape: return_literal
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: definer
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - security_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__security_shape__invoker
+  title: CREATE FUNCTION supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    parameter_shape: none
+    return_type_shape: int_type
+    body_shape: return_literal
+    expected_status: success
+    determinism_shape: deterministic
+    data_access_shape: contains_sql
+    security_shape: invoker
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - security_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE FUNCTION {function_name}() RETURNS INT DETERMINISTIC RETURN 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

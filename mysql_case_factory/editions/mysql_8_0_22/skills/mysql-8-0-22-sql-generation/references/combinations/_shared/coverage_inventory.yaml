@@ -1,0 +1,36 @@
+schema_version: 1
+kind: mysql_coverage_inventory
+edition: mysql-community-8.0.22
+sql_object_types:
+  all_sql_object_types:
+    - database
+    - table
+    - index
+    - view
+    - trigger
+    - procedure
+    - function
+    - event
+    - user
+    - role
+    - tablespace
+    - server
+    - resource_group
+    - spatial_reference_system
+    - component
+    - plugin
+    - loadable_function
+    - prepared_statement
+relation_kinds:
+  all_mysql8022_relkinds: [base_table, temporary_table, view, system_view]
+relation_dimensions:
+  relpersistence:
+    values: [permanent, temporary]
+  partition_role:
+    values: [nonpartitioned, partitioned, partition]
+  partition_strategy:
+    values: [none, range, list, hash, key]
+  inheritance_role:
+    values: [unsupported]
+  table_access_method_selection:
+    values: [innodb, memory, myisam]

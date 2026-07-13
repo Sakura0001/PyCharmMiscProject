@@ -1,0 +1,4555 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: revoke
+  name: REVOKE
+  category: dcl
+  domain: privilege
+  source_reference: references/statements/dcl/privilege/revoke.md
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: false
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: false
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required coverage cannot be replaced by inferred combinations.
+coverage_scope:
+  target_object_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+  target_relation_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+  table_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+  column_type_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - privilege_revoke
+      - all_privileges_revoke
+      - role_revoke
+      - proxy_revoke
+      coverage_requirement: all_values
+    privilege_scope:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - global
+      - database
+      - table
+      - column
+      - routine
+      coverage_requirement: all_values
+    grantee_shape:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - user_account
+      - role_name
+      - missing_user
+      coverage_requirement: all_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - success
+      - failure
+      coverage_requirement: all_values
+    grant_option_shape:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - omitted
+      - grant_option_only
+      coverage_requirement: all_values
+dynamic_inputs: {}
+combination_groups:
+- id: required__statement_branch_privilege_revoke__privilege_scope_global__grantee_shape_user_account__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: privilege_revoke
+    privilege_scope: global
+    grantee_shape: user_account
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_privilege_revoke__privilege_scope_global__grantee_shape_user_account__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: privilege_revoke
+    privilege_scope: global
+    grantee_shape: user_account
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_privilege_revoke__privilege_scope_global__grantee_shape_role_name__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: privilege_revoke
+    privilege_scope: global
+    grantee_shape: role_name
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_privilege_revoke__privilege_scope_global__grantee_shape_role_name__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: privilege_revoke
+    privilege_scope: global
+    grantee_shape: role_name
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_privilege_revoke__privilege_scope_global__grantee_shape_missing_user__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: privilege_revoke
+    privilege_scope: global
+    grantee_shape: missing_user
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_privilege_revoke__privilege_scope_global__grantee_shape_missing_user__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: privilege_revoke
+    privilege_scope: global
+    grantee_shape: missing_user
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_privilege_revoke__privilege_scope_database__grantee_shape_user_account__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: privilege_revoke
+    privilege_scope: database
+    grantee_shape: user_account
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_privilege_revoke__privilege_scope_database__grantee_shape_user_account__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: privilege_revoke
+    privilege_scope: database
+    grantee_shape: user_account
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_privilege_revoke__privilege_scope_database__grantee_shape_role_name__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: privilege_revoke
+    privilege_scope: database
+    grantee_shape: role_name
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_privilege_revoke__privilege_scope_database__grantee_shape_role_name__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: privilege_revoke
+    privilege_scope: database
+    grantee_shape: role_name
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_privilege_revoke__privilege_scope_database__grantee_shape_missing_user__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: privilege_revoke
+    privilege_scope: database
+    grantee_shape: missing_user
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_privilege_revoke__privilege_scope_database__grantee_shape_missing_user__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: privilege_revoke
+    privilege_scope: database
+    grantee_shape: missing_user
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_privilege_revoke__privilege_scope_table__grantee_shape_user_account__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: privilege_revoke
+    privilege_scope: table
+    grantee_shape: user_account
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_privilege_revoke__privilege_scope_table__grantee_shape_user_account__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: privilege_revoke
+    privilege_scope: table
+    grantee_shape: user_account
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_privilege_revoke__privilege_scope_table__grantee_shape_role_name__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: privilege_revoke
+    privilege_scope: table
+    grantee_shape: role_name
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_privilege_revoke__privilege_scope_table__grantee_shape_role_name__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: privilege_revoke
+    privilege_scope: table
+    grantee_shape: role_name
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_privilege_revoke__privilege_scope_table__grantee_shape_missing_user__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: privilege_revoke
+    privilege_scope: table
+    grantee_shape: missing_user
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_privilege_revoke__privilege_scope_table__grantee_shape_missing_user__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: privilege_revoke
+    privilege_scope: table
+    grantee_shape: missing_user
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_privilege_revoke__privilege_scope_column__grantee_shape_user_account__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: privilege_revoke
+    privilege_scope: column
+    grantee_shape: user_account
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_privilege_revoke__privilege_scope_column__grantee_shape_user_account__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: privilege_revoke
+    privilege_scope: column
+    grantee_shape: user_account
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_privilege_revoke__privilege_scope_column__grantee_shape_role_name__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: privilege_revoke
+    privilege_scope: column
+    grantee_shape: role_name
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_privilege_revoke__privilege_scope_column__grantee_shape_role_name__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: privilege_revoke
+    privilege_scope: column
+    grantee_shape: role_name
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_privilege_revoke__privilege_scope_column__grantee_shape_missing_user__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: privilege_revoke
+    privilege_scope: column
+    grantee_shape: missing_user
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_privilege_revoke__privilege_scope_column__grantee_shape_missing_user__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: privilege_revoke
+    privilege_scope: column
+    grantee_shape: missing_user
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_privilege_revoke__privilege_scope_routine__grantee_shape_user_account__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: privilege_revoke
+    privilege_scope: routine
+    grantee_shape: user_account
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_privilege_revoke__privilege_scope_routine__grantee_shape_user_account__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: privilege_revoke
+    privilege_scope: routine
+    grantee_shape: user_account
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_privilege_revoke__privilege_scope_routine__grantee_shape_role_name__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: privilege_revoke
+    privilege_scope: routine
+    grantee_shape: role_name
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_privilege_revoke__privilege_scope_routine__grantee_shape_role_name__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: privilege_revoke
+    privilege_scope: routine
+    grantee_shape: role_name
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_privilege_revoke__privilege_scope_routine__grantee_shape_missing_user__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: privilege_revoke
+    privilege_scope: routine
+    grantee_shape: missing_user
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_privilege_revoke__privilege_scope_routine__grantee_shape_missing_user__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: privilege_revoke
+    privilege_scope: routine
+    grantee_shape: missing_user
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_all_privileges_revoke__privilege_scope_global__grantee_shape_user_account__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: all_privileges_revoke
+    privilege_scope: global
+    grantee_shape: user_account
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_all_privileges_revoke__privilege_scope_global__grantee_shape_user_account__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: all_privileges_revoke
+    privilege_scope: global
+    grantee_shape: user_account
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_all_privileges_revoke__privilege_scope_global__grantee_shape_role_name__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: all_privileges_revoke
+    privilege_scope: global
+    grantee_shape: role_name
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_all_privileges_revoke__privilege_scope_global__grantee_shape_role_name__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: all_privileges_revoke
+    privilege_scope: global
+    grantee_shape: role_name
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_all_privileges_revoke__privilege_scope_global__grantee_shape_missing_user__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: all_privileges_revoke
+    privilege_scope: global
+    grantee_shape: missing_user
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_all_privileges_revoke__privilege_scope_global__grantee_shape_missing_user__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: all_privileges_revoke
+    privilege_scope: global
+    grantee_shape: missing_user
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_all_privileges_revoke__privilege_scope_database__grantee_shape_user_account__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: all_privileges_revoke
+    privilege_scope: database
+    grantee_shape: user_account
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_all_privileges_revoke__privilege_scope_database__grantee_shape_user_account__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: all_privileges_revoke
+    privilege_scope: database
+    grantee_shape: user_account
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_all_privileges_revoke__privilege_scope_database__grantee_shape_role_name__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: all_privileges_revoke
+    privilege_scope: database
+    grantee_shape: role_name
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_all_privileges_revoke__privilege_scope_database__grantee_shape_role_name__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: all_privileges_revoke
+    privilege_scope: database
+    grantee_shape: role_name
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_all_privileges_revoke__privilege_scope_database__grantee_shape_missing_user__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: all_privileges_revoke
+    privilege_scope: database
+    grantee_shape: missing_user
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_all_privileges_revoke__privilege_scope_database__grantee_shape_missing_user__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: all_privileges_revoke
+    privilege_scope: database
+    grantee_shape: missing_user
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_all_privileges_revoke__privilege_scope_table__grantee_shape_user_account__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: all_privileges_revoke
+    privilege_scope: table
+    grantee_shape: user_account
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_all_privileges_revoke__privilege_scope_table__grantee_shape_user_account__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: all_privileges_revoke
+    privilege_scope: table
+    grantee_shape: user_account
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_all_privileges_revoke__privilege_scope_table__grantee_shape_role_name__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: all_privileges_revoke
+    privilege_scope: table
+    grantee_shape: role_name
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_all_privileges_revoke__privilege_scope_table__grantee_shape_role_name__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: all_privileges_revoke
+    privilege_scope: table
+    grantee_shape: role_name
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_all_privileges_revoke__privilege_scope_table__grantee_shape_missing_user__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: all_privileges_revoke
+    privilege_scope: table
+    grantee_shape: missing_user
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_all_privileges_revoke__privilege_scope_table__grantee_shape_missing_user__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: all_privileges_revoke
+    privilege_scope: table
+    grantee_shape: missing_user
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_all_privileges_revoke__privilege_scope_column__grantee_shape_user_account__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: all_privileges_revoke
+    privilege_scope: column
+    grantee_shape: user_account
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_all_privileges_revoke__privilege_scope_column__grantee_shape_user_account__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: all_privileges_revoke
+    privilege_scope: column
+    grantee_shape: user_account
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_all_privileges_revoke__privilege_scope_column__grantee_shape_role_name__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: all_privileges_revoke
+    privilege_scope: column
+    grantee_shape: role_name
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_all_privileges_revoke__privilege_scope_column__grantee_shape_role_name__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: all_privileges_revoke
+    privilege_scope: column
+    grantee_shape: role_name
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_all_privileges_revoke__privilege_scope_column__grantee_shape_missing_user__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: all_privileges_revoke
+    privilege_scope: column
+    grantee_shape: missing_user
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_all_privileges_revoke__privilege_scope_column__grantee_shape_missing_user__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: all_privileges_revoke
+    privilege_scope: column
+    grantee_shape: missing_user
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_all_privileges_revoke__privilege_scope_routine__grantee_shape_user_account__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: all_privileges_revoke
+    privilege_scope: routine
+    grantee_shape: user_account
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_all_privileges_revoke__privilege_scope_routine__grantee_shape_user_account__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: all_privileges_revoke
+    privilege_scope: routine
+    grantee_shape: user_account
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_all_privileges_revoke__privilege_scope_routine__grantee_shape_role_name__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: all_privileges_revoke
+    privilege_scope: routine
+    grantee_shape: role_name
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_all_privileges_revoke__privilege_scope_routine__grantee_shape_role_name__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: all_privileges_revoke
+    privilege_scope: routine
+    grantee_shape: role_name
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_all_privileges_revoke__privilege_scope_routine__grantee_shape_missing_user__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: all_privileges_revoke
+    privilege_scope: routine
+    grantee_shape: missing_user
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_all_privileges_revoke__privilege_scope_routine__grantee_shape_missing_user__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: all_privileges_revoke
+    privilege_scope: routine
+    grantee_shape: missing_user
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_role_revoke__privilege_scope_global__grantee_shape_user_account__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: role_revoke
+    privilege_scope: global
+    grantee_shape: user_account
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_role_revoke__privilege_scope_global__grantee_shape_user_account__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: role_revoke
+    privilege_scope: global
+    grantee_shape: user_account
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_role_revoke__privilege_scope_global__grantee_shape_role_name__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: role_revoke
+    privilege_scope: global
+    grantee_shape: role_name
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_role_revoke__privilege_scope_global__grantee_shape_role_name__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: role_revoke
+    privilege_scope: global
+    grantee_shape: role_name
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_role_revoke__privilege_scope_global__grantee_shape_missing_user__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: role_revoke
+    privilege_scope: global
+    grantee_shape: missing_user
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_role_revoke__privilege_scope_global__grantee_shape_missing_user__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: role_revoke
+    privilege_scope: global
+    grantee_shape: missing_user
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_role_revoke__privilege_scope_database__grantee_shape_user_account__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: role_revoke
+    privilege_scope: database
+    grantee_shape: user_account
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_role_revoke__privilege_scope_database__grantee_shape_user_account__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: role_revoke
+    privilege_scope: database
+    grantee_shape: user_account
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_role_revoke__privilege_scope_database__grantee_shape_role_name__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: role_revoke
+    privilege_scope: database
+    grantee_shape: role_name
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_role_revoke__privilege_scope_database__grantee_shape_role_name__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: role_revoke
+    privilege_scope: database
+    grantee_shape: role_name
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_role_revoke__privilege_scope_database__grantee_shape_missing_user__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: role_revoke
+    privilege_scope: database
+    grantee_shape: missing_user
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_role_revoke__privilege_scope_database__grantee_shape_missing_user__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: role_revoke
+    privilege_scope: database
+    grantee_shape: missing_user
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_role_revoke__privilege_scope_table__grantee_shape_user_account__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: role_revoke
+    privilege_scope: table
+    grantee_shape: user_account
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_role_revoke__privilege_scope_table__grantee_shape_user_account__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: role_revoke
+    privilege_scope: table
+    grantee_shape: user_account
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_role_revoke__privilege_scope_table__grantee_shape_role_name__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: role_revoke
+    privilege_scope: table
+    grantee_shape: role_name
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_role_revoke__privilege_scope_table__grantee_shape_role_name__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: role_revoke
+    privilege_scope: table
+    grantee_shape: role_name
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_role_revoke__privilege_scope_table__grantee_shape_missing_user__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: role_revoke
+    privilege_scope: table
+    grantee_shape: missing_user
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_role_revoke__privilege_scope_table__grantee_shape_missing_user__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: role_revoke
+    privilege_scope: table
+    grantee_shape: missing_user
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_role_revoke__privilege_scope_column__grantee_shape_user_account__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: role_revoke
+    privilege_scope: column
+    grantee_shape: user_account
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_role_revoke__privilege_scope_column__grantee_shape_user_account__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: role_revoke
+    privilege_scope: column
+    grantee_shape: user_account
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_role_revoke__privilege_scope_column__grantee_shape_role_name__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: role_revoke
+    privilege_scope: column
+    grantee_shape: role_name
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_role_revoke__privilege_scope_column__grantee_shape_role_name__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: role_revoke
+    privilege_scope: column
+    grantee_shape: role_name
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_role_revoke__privilege_scope_column__grantee_shape_missing_user__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: role_revoke
+    privilege_scope: column
+    grantee_shape: missing_user
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_role_revoke__privilege_scope_column__grantee_shape_missing_user__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: role_revoke
+    privilege_scope: column
+    grantee_shape: missing_user
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_role_revoke__privilege_scope_routine__grantee_shape_user_account__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: role_revoke
+    privilege_scope: routine
+    grantee_shape: user_account
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_role_revoke__privilege_scope_routine__grantee_shape_user_account__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: role_revoke
+    privilege_scope: routine
+    grantee_shape: user_account
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_role_revoke__privilege_scope_routine__grantee_shape_role_name__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: role_revoke
+    privilege_scope: routine
+    grantee_shape: role_name
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_role_revoke__privilege_scope_routine__grantee_shape_role_name__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: role_revoke
+    privilege_scope: routine
+    grantee_shape: role_name
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_role_revoke__privilege_scope_routine__grantee_shape_missing_user__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: role_revoke
+    privilege_scope: routine
+    grantee_shape: missing_user
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_role_revoke__privilege_scope_routine__grantee_shape_missing_user__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: role_revoke
+    privilege_scope: routine
+    grantee_shape: missing_user
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_proxy_revoke__privilege_scope_global__grantee_shape_user_account__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: proxy_revoke
+    privilege_scope: global
+    grantee_shape: user_account
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_proxy_revoke__privilege_scope_global__grantee_shape_user_account__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: proxy_revoke
+    privilege_scope: global
+    grantee_shape: user_account
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_proxy_revoke__privilege_scope_global__grantee_shape_role_name__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: proxy_revoke
+    privilege_scope: global
+    grantee_shape: role_name
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_proxy_revoke__privilege_scope_global__grantee_shape_role_name__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: proxy_revoke
+    privilege_scope: global
+    grantee_shape: role_name
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_proxy_revoke__privilege_scope_global__grantee_shape_missing_user__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: proxy_revoke
+    privilege_scope: global
+    grantee_shape: missing_user
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_proxy_revoke__privilege_scope_global__grantee_shape_missing_user__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: proxy_revoke
+    privilege_scope: global
+    grantee_shape: missing_user
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_proxy_revoke__privilege_scope_database__grantee_shape_user_account__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: proxy_revoke
+    privilege_scope: database
+    grantee_shape: user_account
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_proxy_revoke__privilege_scope_database__grantee_shape_user_account__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: proxy_revoke
+    privilege_scope: database
+    grantee_shape: user_account
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_proxy_revoke__privilege_scope_database__grantee_shape_role_name__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: proxy_revoke
+    privilege_scope: database
+    grantee_shape: role_name
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_proxy_revoke__privilege_scope_database__grantee_shape_role_name__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: proxy_revoke
+    privilege_scope: database
+    grantee_shape: role_name
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_proxy_revoke__privilege_scope_database__grantee_shape_missing_user__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: proxy_revoke
+    privilege_scope: database
+    grantee_shape: missing_user
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_proxy_revoke__privilege_scope_database__grantee_shape_missing_user__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: proxy_revoke
+    privilege_scope: database
+    grantee_shape: missing_user
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_proxy_revoke__privilege_scope_table__grantee_shape_user_account__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: proxy_revoke
+    privilege_scope: table
+    grantee_shape: user_account
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_proxy_revoke__privilege_scope_table__grantee_shape_user_account__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: proxy_revoke
+    privilege_scope: table
+    grantee_shape: user_account
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_proxy_revoke__privilege_scope_table__grantee_shape_role_name__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: proxy_revoke
+    privilege_scope: table
+    grantee_shape: role_name
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_proxy_revoke__privilege_scope_table__grantee_shape_role_name__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: proxy_revoke
+    privilege_scope: table
+    grantee_shape: role_name
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_proxy_revoke__privilege_scope_table__grantee_shape_missing_user__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: proxy_revoke
+    privilege_scope: table
+    grantee_shape: missing_user
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_proxy_revoke__privilege_scope_table__grantee_shape_missing_user__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: proxy_revoke
+    privilege_scope: table
+    grantee_shape: missing_user
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_proxy_revoke__privilege_scope_column__grantee_shape_user_account__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: proxy_revoke
+    privilege_scope: column
+    grantee_shape: user_account
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_proxy_revoke__privilege_scope_column__grantee_shape_user_account__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: proxy_revoke
+    privilege_scope: column
+    grantee_shape: user_account
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_proxy_revoke__privilege_scope_column__grantee_shape_role_name__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: proxy_revoke
+    privilege_scope: column
+    grantee_shape: role_name
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_proxy_revoke__privilege_scope_column__grantee_shape_role_name__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: proxy_revoke
+    privilege_scope: column
+    grantee_shape: role_name
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_proxy_revoke__privilege_scope_column__grantee_shape_missing_user__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: proxy_revoke
+    privilege_scope: column
+    grantee_shape: missing_user
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_proxy_revoke__privilege_scope_column__grantee_shape_missing_user__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: proxy_revoke
+    privilege_scope: column
+    grantee_shape: missing_user
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_proxy_revoke__privilege_scope_routine__grantee_shape_user_account__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: proxy_revoke
+    privilege_scope: routine
+    grantee_shape: user_account
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_proxy_revoke__privilege_scope_routine__grantee_shape_user_account__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: proxy_revoke
+    privilege_scope: routine
+    grantee_shape: user_account
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_proxy_revoke__privilege_scope_routine__grantee_shape_role_name__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: proxy_revoke
+    privilege_scope: routine
+    grantee_shape: role_name
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_proxy_revoke__privilege_scope_routine__grantee_shape_role_name__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: proxy_revoke
+    privilege_scope: routine
+    grantee_shape: role_name
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_proxy_revoke__privilege_scope_routine__grantee_shape_missing_user__expected_status_success
+  title: REVOKE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: proxy_revoke
+    privilege_scope: routine
+    grantee_shape: missing_user
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_proxy_revoke__privilege_scope_routine__grantee_shape_missing_user__expected_status_failure
+  title: REVOKE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: proxy_revoke
+    privilege_scope: routine
+    grantee_shape: missing_user
+    expected_status: failure
+    grant_option_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - privilege_scope
+    - grantee_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__grant_option_shape__omitted
+  title: REVOKE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: privilege_revoke
+    privilege_scope: table
+    grantee_shape: user_account
+    expected_status: success
+    grant_option_shape: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - grant_option_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__grant_option_shape__grant_option_only
+  title: REVOKE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: privilege_revoke
+    privilege_scope: table
+    grantee_shape: user_account
+    expected_status: success
+    grant_option_shape: grant_option_only
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - grant_option_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: REVOKE SELECT ON {table_name} FROM 'case_user'@'localhost'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

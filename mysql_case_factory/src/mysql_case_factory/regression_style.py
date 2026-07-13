@@ -35,17 +35,18 @@ _HEADER_FIELD_PATTERNS = (
 )
 _CATALOG_RELATION_PATTERN = re.compile(
     r"\b(?:from|join)\s+"
-    r"(?P<relation>(?:(?:pg_catalog|information_schema)\s*\.\s*)"
-    r"(?:[A-Za-z_][A-Za-z0-9_$]*|\"(?:[^\"]|\"\")+\"))",
+    r"(?P<relation>(?:(?:information_schema|performance_schema|mysql|sys)\s*\.\s*)"
+    r"(?:[A-Za-z_][A-Za-z0-9_$]*|`(?:[^`]|``)+`))",
     re.IGNORECASE,
 )
 _UNQUALIFIED_CATALOG_PATTERN = re.compile(
-    r"\b(?:from|join)\s+(?P<relation>pg_[A-Za-z_][A-Za-z0-9_$]*)\b(?!\s*\.)",
+    r"\b(?:from|join)\s+(?P<relation>"
+    r"tables|columns|statistics|routines|triggers|events|user|db|global_variables"
+    r")\b(?!\s*\.)",
     re.IGNORECASE,
 )
 _VOLATILE_OUTPUT_PATTERN = re.compile(
-    r"\b(?:clock_timestamp|statement_timestamp|transaction_timestamp|now|random|"
-    r"gen_random_uuid|pg_backend_pid|txid_current|pg_current_wal_lsn)\s*\(",
+    r"\b(?:now|sysdate|current_timestamp|rand|uuid|uuid_short|connection_id)\s*\(",
     re.IGNORECASE,
 )
 _CREATE_TABLE_PATTERN = re.compile(
@@ -201,9 +202,9 @@ class RegressionBatchMapping:
                 )
             expected_filename = f"{prefix}{number}.sql"
             expected_object_prefix = f"{prefix.lower()}_{number}_"
-            if len(expected_object_prefix.encode("ascii")) > 63:
+            if len(expected_object_prefix) > 64:
                 raise RegressionStyleError(
-                    "numbered object prefix exceeds PostgreSQL's 63-byte identifier limit"
+                    "numbered object prefix exceeds MySQL's 64-character identifier limit"
                 )
             if case.sql_filename != expected_filename:
                 raise RegressionStyleError(
@@ -551,8 +552,7 @@ def _mask_non_code(sql: str) -> tuple[str, tuple[str, ...]]:
                         closed = True
                         break
                 elif sql[index] == "\\" and index + 1 < length:
-                    # Backslash behavior depends on standard_conforming_strings;
-                    # masking both bytes is conservative for static auditing.
+                    # MySQL strings normally interpret backslash escapes.
                     index += 2
                 else:
                     index += 1
@@ -562,12 +562,13 @@ def _mask_non_code(sql: str) -> tuple[str, tuple[str, ...]]:
                 if output[position] != "\n":
                     output[position] = " "
             continue
-        if sql[index] == '"':
+        if sql[index] in {'"', "`"}:
+            delimiter = sql[index]
             index += 1
             closed = False
             while index < length:
-                if sql[index] == '"':
-                    if index + 1 < length and sql[index + 1] == '"':
+                if sql[index] == delimiter:
+                    if index + 1 < length and sql[index + 1] == delimiter:
                         index += 2
                     else:
                         index += 1
@@ -578,24 +579,8 @@ def _mask_non_code(sql: str) -> tuple[str, tuple[str, ...]]:
                         output[index] = " "
                     index += 1
             if not closed:
-                issues.append("unterminated double-quoted identifier")
+                issues.append("unterminated quoted identifier")
             continue
-        if sql[index] == "$":
-            tag_match = re.match(r"\$(?:[A-Za-z_][A-Za-z0-9_]*)?\$", sql[index:])
-            if tag_match is not None:
-                delimiter = tag_match.group(0)
-                start = index
-                body_start = index + len(delimiter)
-                end = sql.find(delimiter, body_start)
-                if end < 0:
-                    issues.append("unterminated dollar-quoted literal")
-                    index = length
-                else:
-                    index = end + len(delimiter)
-                for position in range(start, index):
-                    if output[position] != "\n":
-                        output[position] = " "
-                continue
         index += 1
     return "".join(output), tuple(issues)
 

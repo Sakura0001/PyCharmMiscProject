@@ -1,0 +1,1061 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: kill
+  name: KILL
+  category: admin
+  domain: session
+  source_reference: references/statements/admin/session/kill.md
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: false
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: false
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required coverage cannot be replaced by inferred combinations.
+coverage_scope:
+  target_object_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+  target_relation_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+  table_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+  column_type_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    kill_modifier:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - omitted
+      - connection
+      - query
+      coverage_requirement: all_values
+    target_thread:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - own_thread
+      - other_thread
+      - system_user_thread
+      - missing_thread
+      coverage_requirement: all_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - success
+      - failure
+      coverage_requirement: all_values
+    privilege_context:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - own_only
+      - connection_admin
+      - system_user
+      - insufficient
+      coverage_requirement: all_values
+dynamic_inputs: {}
+combination_groups:
+- id: required__kill_modifier_omitted__target_thread_own_thread__expected_status_success
+  title: KILL required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    kill_modifier: omitted
+    target_thread: own_thread
+    expected_status: success
+    privilege_context: own_only
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - kill_modifier
+    - target_thread
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: KILL QUERY 999999999
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__kill_modifier_omitted__target_thread_own_thread__expected_status_failure
+  title: KILL required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    kill_modifier: omitted
+    target_thread: own_thread
+    expected_status: failure
+    privilege_context: own_only
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - kill_modifier
+    - target_thread
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: KILL QUERY 999999999
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__kill_modifier_omitted__target_thread_other_thread__expected_status_success
+  title: KILL required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    kill_modifier: omitted
+    target_thread: other_thread
+    expected_status: success
+    privilege_context: own_only
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - kill_modifier
+    - target_thread
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: KILL QUERY 999999999
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__kill_modifier_omitted__target_thread_other_thread__expected_status_failure
+  title: KILL required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    kill_modifier: omitted
+    target_thread: other_thread
+    expected_status: failure
+    privilege_context: own_only
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - kill_modifier
+    - target_thread
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: KILL QUERY 999999999
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__kill_modifier_omitted__target_thread_system_user_thread__expected_status_success
+  title: KILL required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    kill_modifier: omitted
+    target_thread: system_user_thread
+    expected_status: success
+    privilege_context: own_only
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - kill_modifier
+    - target_thread
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: KILL QUERY 999999999
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__kill_modifier_omitted__target_thread_system_user_thread__expected_status_failure
+  title: KILL required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    kill_modifier: omitted
+    target_thread: system_user_thread
+    expected_status: failure
+    privilege_context: own_only
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - kill_modifier
+    - target_thread
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: KILL QUERY 999999999
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__kill_modifier_omitted__target_thread_missing_thread__expected_status_success
+  title: KILL required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    kill_modifier: omitted
+    target_thread: missing_thread
+    expected_status: success
+    privilege_context: own_only
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - kill_modifier
+    - target_thread
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: KILL QUERY 999999999
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__kill_modifier_omitted__target_thread_missing_thread__expected_status_failure
+  title: KILL required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    kill_modifier: omitted
+    target_thread: missing_thread
+    expected_status: failure
+    privilege_context: own_only
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - kill_modifier
+    - target_thread
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: KILL QUERY 999999999
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__kill_modifier_connection__target_thread_own_thread__expected_status_success
+  title: KILL required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    kill_modifier: connection
+    target_thread: own_thread
+    expected_status: success
+    privilege_context: own_only
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - kill_modifier
+    - target_thread
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: KILL QUERY 999999999
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__kill_modifier_connection__target_thread_own_thread__expected_status_failure
+  title: KILL required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    kill_modifier: connection
+    target_thread: own_thread
+    expected_status: failure
+    privilege_context: own_only
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - kill_modifier
+    - target_thread
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: KILL QUERY 999999999
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__kill_modifier_connection__target_thread_other_thread__expected_status_success
+  title: KILL required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    kill_modifier: connection
+    target_thread: other_thread
+    expected_status: success
+    privilege_context: own_only
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - kill_modifier
+    - target_thread
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: KILL QUERY 999999999
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__kill_modifier_connection__target_thread_other_thread__expected_status_failure
+  title: KILL required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    kill_modifier: connection
+    target_thread: other_thread
+    expected_status: failure
+    privilege_context: own_only
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - kill_modifier
+    - target_thread
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: KILL QUERY 999999999
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__kill_modifier_connection__target_thread_system_user_thread__expected_status_success
+  title: KILL required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    kill_modifier: connection
+    target_thread: system_user_thread
+    expected_status: success
+    privilege_context: own_only
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - kill_modifier
+    - target_thread
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: KILL QUERY 999999999
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__kill_modifier_connection__target_thread_system_user_thread__expected_status_failure
+  title: KILL required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    kill_modifier: connection
+    target_thread: system_user_thread
+    expected_status: failure
+    privilege_context: own_only
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - kill_modifier
+    - target_thread
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: KILL QUERY 999999999
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__kill_modifier_connection__target_thread_missing_thread__expected_status_success
+  title: KILL required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    kill_modifier: connection
+    target_thread: missing_thread
+    expected_status: success
+    privilege_context: own_only
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - kill_modifier
+    - target_thread
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: KILL QUERY 999999999
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__kill_modifier_connection__target_thread_missing_thread__expected_status_failure
+  title: KILL required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    kill_modifier: connection
+    target_thread: missing_thread
+    expected_status: failure
+    privilege_context: own_only
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - kill_modifier
+    - target_thread
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: KILL QUERY 999999999
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__kill_modifier_query__target_thread_own_thread__expected_status_success
+  title: KILL required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    kill_modifier: query
+    target_thread: own_thread
+    expected_status: success
+    privilege_context: own_only
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - kill_modifier
+    - target_thread
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: KILL QUERY 999999999
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__kill_modifier_query__target_thread_own_thread__expected_status_failure
+  title: KILL required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    kill_modifier: query
+    target_thread: own_thread
+    expected_status: failure
+    privilege_context: own_only
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - kill_modifier
+    - target_thread
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: KILL QUERY 999999999
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__kill_modifier_query__target_thread_other_thread__expected_status_success
+  title: KILL required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    kill_modifier: query
+    target_thread: other_thread
+    expected_status: success
+    privilege_context: own_only
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - kill_modifier
+    - target_thread
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: KILL QUERY 999999999
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__kill_modifier_query__target_thread_other_thread__expected_status_failure
+  title: KILL required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    kill_modifier: query
+    target_thread: other_thread
+    expected_status: failure
+    privilege_context: own_only
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - kill_modifier
+    - target_thread
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: KILL QUERY 999999999
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__kill_modifier_query__target_thread_system_user_thread__expected_status_success
+  title: KILL required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    kill_modifier: query
+    target_thread: system_user_thread
+    expected_status: success
+    privilege_context: own_only
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - kill_modifier
+    - target_thread
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: KILL QUERY 999999999
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__kill_modifier_query__target_thread_system_user_thread__expected_status_failure
+  title: KILL required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    kill_modifier: query
+    target_thread: system_user_thread
+    expected_status: failure
+    privilege_context: own_only
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - kill_modifier
+    - target_thread
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: KILL QUERY 999999999
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__kill_modifier_query__target_thread_missing_thread__expected_status_success
+  title: KILL required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    kill_modifier: query
+    target_thread: missing_thread
+    expected_status: success
+    privilege_context: own_only
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - kill_modifier
+    - target_thread
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: KILL QUERY 999999999
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__kill_modifier_query__target_thread_missing_thread__expected_status_failure
+  title: KILL required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    kill_modifier: query
+    target_thread: missing_thread
+    expected_status: failure
+    privilege_context: own_only
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - kill_modifier
+    - target_thread
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: KILL QUERY 999999999
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__privilege_context__own_only
+  title: KILL supplemental factor
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    kill_modifier: query
+    target_thread: missing_thread
+    expected_status: failure
+    privilege_context: own_only
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - privilege_context
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: KILL QUERY 999999999
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__privilege_context__connection_admin
+  title: KILL supplemental factor
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    kill_modifier: query
+    target_thread: missing_thread
+    expected_status: failure
+    privilege_context: connection_admin
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - privilege_context
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: KILL QUERY 999999999
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__privilege_context__system_user
+  title: KILL supplemental factor
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    kill_modifier: query
+    target_thread: missing_thread
+    expected_status: failure
+    privilege_context: system_user
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - privilege_context
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: KILL QUERY 999999999
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__privilege_context__insufficient
+  title: KILL supplemental factor
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    kill_modifier: query
+    target_thread: missing_thread
+    expected_status: failure
+    privilege_context: insufficient
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - privilege_context
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: KILL QUERY 999999999
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

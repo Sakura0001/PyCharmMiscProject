@@ -133,7 +133,7 @@ class RegressionBatchMappingTest(unittest.TestCase):
             build_regression_batch_mapping("A", "obl-one")  # type: ignore[arg-type]
         with self.assertRaisesRegex(RegressionStyleError, "minimum_width"):
             build_regression_batch_mapping("A", ["obl-one"], minimum_width=True)
-        with self.assertRaisesRegex(RegressionStyleError, "63-byte"):
+        with self.assertRaisesRegex(RegressionStyleError, "64-character"):
             build_regression_batch_mapping("A" * 60, ["obl-one"])
 
     def test_mapping_schema_rejects_unknown_fields_and_tampered_names(self) -> None:
@@ -224,18 +224,18 @@ class HuaweiHeaderTest(unittest.TestCase):
 
 
 class CatalogObservabilityAuditTest(unittest.TestCase):
-    def test_explicit_ordered_pg_catalog_observation_is_allowed(self) -> None:
+    def test_explicit_ordered_information_schema_observation_is_allowed(self) -> None:
         report = audit_catalog_observability(
-            "SELECT c.relname, c.relkind\n"
-            "FROM pg_catalog.pg_class AS c\n"
-            "WHERE c.relname LIKE 'a_001_%'\n"
-            "ORDER BY c.relname, c.relkind;\n"
+            "SELECT t.table_name, t.table_type\n"
+            "FROM information_schema.tables AS t\n"
+            "WHERE t.table_name LIKE 'a_001_%'\n"
+            "ORDER BY t.table_name, t.table_type;\n"
         )
 
         self.assertTrue(report.passed, report.to_dict())
         self.assertEqual(1, len(report.queries))
-        self.assertEqual(("pg_catalog.pg_class",), report.queries[0].relations)
-        self.assertEqual("c.relname, c.relkind", report.queries[0].projection)
+        self.assertEqual(("information_schema.tables",), report.queries[0].relations)
+        self.assertEqual("t.table_name, t.table_type", report.queries[0].projection)
 
     def test_information_schema_and_aggregate_projection_are_not_blanket_banned(self) -> None:
         report = audit_catalog_observability(
@@ -248,7 +248,7 @@ class CatalogObservabilityAuditTest(unittest.TestCase):
         self.assertTrue(report.passed, report.to_dict())
 
     def test_wildcard_missing_order_and_unqualified_catalog_are_reported(self) -> None:
-        report = audit_catalog_observability("SELECT * FROM pg_class;\n")
+        report = audit_catalog_observability("SELECT * FROM tables;\n")
 
         self.assertFalse(report.passed)
         issues = " | ".join(report.queries[0].issues)
@@ -258,43 +258,43 @@ class CatalogObservabilityAuditTest(unittest.TestCase):
 
     def test_volatile_and_positional_ordering_are_reported(self) -> None:
         volatile = audit_catalog_observability(
-            "SELECT c.relname, clock_timestamp() AS observed_at "
-            "FROM pg_catalog.pg_class AS c ORDER BY random();\n"
+            "SELECT t.table_name, NOW() AS observed_at "
+            "FROM information_schema.tables AS t ORDER BY RAND();\n"
         )
         self.assertFalse(volatile.passed)
         self.assertIn("volatile", " ".join(volatile.queries[0].issues))
 
         positional = audit_catalog_observability(
-            "SELECT c.relname FROM pg_catalog.pg_class AS c ORDER BY 1;\n"
+            "SELECT t.table_name FROM information_schema.tables AS t ORDER BY 1;\n"
         )
         self.assertFalse(positional.passed)
         self.assertIn("ordinals", " ".join(positional.queries[0].issues))
 
     def test_comments_and_literals_do_not_create_catalog_findings(self) -> None:
         report = audit_catalog_observability(
-            "-- SELECT * FROM pg_catalog.pg_class\n"
-            "SELECT 'FROM pg_catalog.pg_class ORDER BY random()';\n"
+            "-- SELECT * FROM information_schema.tables\n"
+            "SELECT 'FROM information_schema.tables ORDER BY RAND()';\n"
         )
 
         self.assertTrue(report.passed, report.to_dict())
         self.assertEqual((), report.queries)
 
         quoted = audit_catalog_observability(
-            'SELECT c."strange--;name" FROM pg_catalog.pg_class AS c '
-            'ORDER BY c."strange--;name";\n'
+            "SELECT t.`strange--;name` FROM information_schema.tables AS t "
+            "ORDER BY t.`strange--;name`;\n"
         )
         self.assertTrue(quoted.passed, quoted.to_dict())
 
     def test_compound_and_unterminated_statements_fail_conservatively(self) -> None:
         compound = audit_catalog_observability(
-            "WITH objects AS (SELECT relname FROM pg_catalog.pg_class) "
-            "SELECT relname FROM objects ORDER BY relname;\n"
+            "WITH objects AS (SELECT table_name FROM information_schema.tables) "
+            "SELECT table_name FROM objects ORDER BY table_name;\n"
         )
         self.assertFalse(compound.passed)
         self.assertIn("manual", " ".join(compound.queries[0].issues))
 
         unterminated = audit_catalog_observability(
-            "SELECT relname FROM pg_catalog.pg_class ORDER BY relname\n"
+            "SELECT table_name FROM information_schema.tables ORDER BY table_name\n"
         )
         self.assertFalse(unterminated.passed)
         self.assertIn("semicolon", " ".join(unterminated.parser_issues))

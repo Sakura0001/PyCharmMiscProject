@@ -1,0 +1,5238 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: alter_table
+  name: ALTER TABLE
+  category: ddl
+  domain: table
+  source_reference: references/statements/ddl/table/alter_table.md
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: false
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: false
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required coverage cannot be replaced by inferred combinations.
+coverage_scope:
+  target_object_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+  target_relation_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+  table_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+  column_type_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    alter_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - add_column
+      - modify_column
+      - change_column
+      - drop_column
+      - rename_column
+      - add_index
+      - drop_index
+      - rename_index
+      - alter_index_visibility
+      - add_primary_key
+      - drop_primary_key
+      - add_foreign_key
+      - drop_foreign_key
+      - add_check
+      - drop_check
+      - table_options
+      - partition_options
+      - rename_table
+      coverage_requirement: all_values
+    table_state:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - exists
+      - missing
+      - wrong_object_type
+      coverage_requirement: all_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - success
+      - failure
+      coverage_requirement: all_values
+    algorithm_option:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - omitted
+      - default
+      - instant
+      - inplace
+      - copy
+      coverage_requirement: all_values
+    lock_option:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - omitted
+      - default
+      - none
+      - shared
+      - exclusive
+      coverage_requirement: all_values
+    validation_option:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - omitted
+      - with_validation
+      - without_validation
+      coverage_requirement: all_values
+    column_position_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values:
+      - omitted
+      - first
+      - after_column
+      coverage_requirement: all_values
+    index_visibility_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values:
+      - omitted
+      - visible
+      - invisible
+      coverage_requirement: all_values
+    invalid_combination:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values:
+      - none
+      - invisible_column_8_0_23_excluded
+      - autoextend_size_8_0_23_excluded
+      coverage_requirement: all_values
+dynamic_inputs: {}
+combination_groups:
+- id: required__alter_branch_add_column__table_state_exists__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: add_column
+    table_state: exists
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_add_column__table_state_exists__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: add_column
+    table_state: exists
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_add_column__table_state_missing__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: add_column
+    table_state: missing
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_add_column__table_state_missing__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: add_column
+    table_state: missing
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_add_column__table_state_wrong_object_type__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: add_column
+    table_state: wrong_object_type
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_add_column__table_state_wrong_object_type__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: add_column
+    table_state: wrong_object_type
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_modify_column__table_state_exists__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: modify_column
+    table_state: exists
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_modify_column__table_state_exists__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: modify_column
+    table_state: exists
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_modify_column__table_state_missing__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: modify_column
+    table_state: missing
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_modify_column__table_state_missing__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: modify_column
+    table_state: missing
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_modify_column__table_state_wrong_object_type__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: modify_column
+    table_state: wrong_object_type
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_modify_column__table_state_wrong_object_type__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: modify_column
+    table_state: wrong_object_type
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_change_column__table_state_exists__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: change_column
+    table_state: exists
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_change_column__table_state_exists__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: change_column
+    table_state: exists
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_change_column__table_state_missing__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: change_column
+    table_state: missing
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_change_column__table_state_missing__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: change_column
+    table_state: missing
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_change_column__table_state_wrong_object_type__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: change_column
+    table_state: wrong_object_type
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_change_column__table_state_wrong_object_type__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: change_column
+    table_state: wrong_object_type
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_drop_column__table_state_exists__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: drop_column
+    table_state: exists
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_drop_column__table_state_exists__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: drop_column
+    table_state: exists
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_drop_column__table_state_missing__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: drop_column
+    table_state: missing
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_drop_column__table_state_missing__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: drop_column
+    table_state: missing
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_drop_column__table_state_wrong_object_type__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: drop_column
+    table_state: wrong_object_type
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_drop_column__table_state_wrong_object_type__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: drop_column
+    table_state: wrong_object_type
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_rename_column__table_state_exists__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: rename_column
+    table_state: exists
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_rename_column__table_state_exists__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: rename_column
+    table_state: exists
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_rename_column__table_state_missing__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: rename_column
+    table_state: missing
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_rename_column__table_state_missing__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: rename_column
+    table_state: missing
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_rename_column__table_state_wrong_object_type__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: rename_column
+    table_state: wrong_object_type
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_rename_column__table_state_wrong_object_type__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: rename_column
+    table_state: wrong_object_type
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_add_index__table_state_exists__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: add_index
+    table_state: exists
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_add_index__table_state_exists__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: add_index
+    table_state: exists
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_add_index__table_state_missing__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: add_index
+    table_state: missing
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_add_index__table_state_missing__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: add_index
+    table_state: missing
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_add_index__table_state_wrong_object_type__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: add_index
+    table_state: wrong_object_type
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_add_index__table_state_wrong_object_type__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: add_index
+    table_state: wrong_object_type
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_drop_index__table_state_exists__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: drop_index
+    table_state: exists
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_drop_index__table_state_exists__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: drop_index
+    table_state: exists
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_drop_index__table_state_missing__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: drop_index
+    table_state: missing
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_drop_index__table_state_missing__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: drop_index
+    table_state: missing
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_drop_index__table_state_wrong_object_type__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: drop_index
+    table_state: wrong_object_type
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_drop_index__table_state_wrong_object_type__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: drop_index
+    table_state: wrong_object_type
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_rename_index__table_state_exists__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: rename_index
+    table_state: exists
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_rename_index__table_state_exists__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: rename_index
+    table_state: exists
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_rename_index__table_state_missing__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: rename_index
+    table_state: missing
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_rename_index__table_state_missing__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: rename_index
+    table_state: missing
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_rename_index__table_state_wrong_object_type__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: rename_index
+    table_state: wrong_object_type
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_rename_index__table_state_wrong_object_type__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: rename_index
+    table_state: wrong_object_type
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_alter_index_visibility__table_state_exists__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: alter_index_visibility
+    table_state: exists
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_alter_index_visibility__table_state_exists__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: alter_index_visibility
+    table_state: exists
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_alter_index_visibility__table_state_missing__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: alter_index_visibility
+    table_state: missing
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_alter_index_visibility__table_state_missing__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: alter_index_visibility
+    table_state: missing
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_alter_index_visibility__table_state_wrong_object_type__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: alter_index_visibility
+    table_state: wrong_object_type
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_alter_index_visibility__table_state_wrong_object_type__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: alter_index_visibility
+    table_state: wrong_object_type
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_add_primary_key__table_state_exists__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: add_primary_key
+    table_state: exists
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_add_primary_key__table_state_exists__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: add_primary_key
+    table_state: exists
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_add_primary_key__table_state_missing__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: add_primary_key
+    table_state: missing
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_add_primary_key__table_state_missing__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: add_primary_key
+    table_state: missing
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_add_primary_key__table_state_wrong_object_type__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: add_primary_key
+    table_state: wrong_object_type
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_add_primary_key__table_state_wrong_object_type__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: add_primary_key
+    table_state: wrong_object_type
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_drop_primary_key__table_state_exists__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: drop_primary_key
+    table_state: exists
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_drop_primary_key__table_state_exists__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: drop_primary_key
+    table_state: exists
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_drop_primary_key__table_state_missing__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: drop_primary_key
+    table_state: missing
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_drop_primary_key__table_state_missing__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: drop_primary_key
+    table_state: missing
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_drop_primary_key__table_state_wrong_object_type__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: drop_primary_key
+    table_state: wrong_object_type
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_drop_primary_key__table_state_wrong_object_type__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: drop_primary_key
+    table_state: wrong_object_type
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_add_foreign_key__table_state_exists__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: add_foreign_key
+    table_state: exists
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_add_foreign_key__table_state_exists__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: add_foreign_key
+    table_state: exists
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_add_foreign_key__table_state_missing__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: add_foreign_key
+    table_state: missing
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_add_foreign_key__table_state_missing__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: add_foreign_key
+    table_state: missing
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_add_foreign_key__table_state_wrong_object_type__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: add_foreign_key
+    table_state: wrong_object_type
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_add_foreign_key__table_state_wrong_object_type__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: add_foreign_key
+    table_state: wrong_object_type
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_drop_foreign_key__table_state_exists__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: drop_foreign_key
+    table_state: exists
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_drop_foreign_key__table_state_exists__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: drop_foreign_key
+    table_state: exists
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_drop_foreign_key__table_state_missing__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: drop_foreign_key
+    table_state: missing
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_drop_foreign_key__table_state_missing__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: drop_foreign_key
+    table_state: missing
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_drop_foreign_key__table_state_wrong_object_type__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: drop_foreign_key
+    table_state: wrong_object_type
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_drop_foreign_key__table_state_wrong_object_type__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: drop_foreign_key
+    table_state: wrong_object_type
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_add_check__table_state_exists__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: add_check
+    table_state: exists
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_add_check__table_state_exists__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: add_check
+    table_state: exists
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_add_check__table_state_missing__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: add_check
+    table_state: missing
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_add_check__table_state_missing__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: add_check
+    table_state: missing
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_add_check__table_state_wrong_object_type__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: add_check
+    table_state: wrong_object_type
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_add_check__table_state_wrong_object_type__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: add_check
+    table_state: wrong_object_type
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_drop_check__table_state_exists__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: drop_check
+    table_state: exists
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_drop_check__table_state_exists__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: drop_check
+    table_state: exists
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_drop_check__table_state_missing__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: drop_check
+    table_state: missing
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_drop_check__table_state_missing__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: drop_check
+    table_state: missing
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_drop_check__table_state_wrong_object_type__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: drop_check
+    table_state: wrong_object_type
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_drop_check__table_state_wrong_object_type__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: drop_check
+    table_state: wrong_object_type
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_table_options__table_state_exists__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: table_options
+    table_state: exists
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_table_options__table_state_exists__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: table_options
+    table_state: exists
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_table_options__table_state_missing__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: table_options
+    table_state: missing
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_table_options__table_state_missing__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: table_options
+    table_state: missing
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_table_options__table_state_wrong_object_type__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: table_options
+    table_state: wrong_object_type
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_table_options__table_state_wrong_object_type__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: table_options
+    table_state: wrong_object_type
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_partition_options__table_state_exists__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: partition_options
+    table_state: exists
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_partition_options__table_state_exists__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: partition_options
+    table_state: exists
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_partition_options__table_state_missing__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: partition_options
+    table_state: missing
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_partition_options__table_state_missing__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: partition_options
+    table_state: missing
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_partition_options__table_state_wrong_object_type__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: partition_options
+    table_state: wrong_object_type
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_partition_options__table_state_wrong_object_type__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: partition_options
+    table_state: wrong_object_type
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_rename_table__table_state_exists__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: rename_table
+    table_state: exists
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_rename_table__table_state_exists__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: rename_table
+    table_state: exists
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_rename_table__table_state_missing__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: rename_table
+    table_state: missing
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_rename_table__table_state_missing__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: rename_table
+    table_state: missing
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_rename_table__table_state_wrong_object_type__expected_status_success
+  title: ALTER TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: rename_table
+    table_state: wrong_object_type
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__alter_branch_rename_table__table_state_wrong_object_type__expected_status_failure
+  title: ALTER TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    alter_branch: rename_table
+    table_state: wrong_object_type
+    expected_status: failure
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - alter_branch
+    - table_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__algorithm_option__omitted
+  title: ALTER TABLE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: add_column
+    table_state: exists
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - algorithm_option
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__algorithm_option__default
+  title: ALTER TABLE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: add_column
+    table_state: exists
+    expected_status: success
+    algorithm_option: default
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - algorithm_option
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__algorithm_option__instant
+  title: ALTER TABLE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: add_column
+    table_state: exists
+    expected_status: success
+    algorithm_option: instant
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - algorithm_option
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__algorithm_option__inplace
+  title: ALTER TABLE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: add_column
+    table_state: exists
+    expected_status: success
+    algorithm_option: inplace
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - algorithm_option
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__algorithm_option__copy
+  title: ALTER TABLE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: add_column
+    table_state: exists
+    expected_status: success
+    algorithm_option: copy
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - algorithm_option
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__lock_option__omitted
+  title: ALTER TABLE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: add_column
+    table_state: exists
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - lock_option
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__lock_option__default
+  title: ALTER TABLE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: add_column
+    table_state: exists
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: default
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - lock_option
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__lock_option__none
+  title: ALTER TABLE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: add_column
+    table_state: exists
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: none
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - lock_option
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__lock_option__shared
+  title: ALTER TABLE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: add_column
+    table_state: exists
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: shared
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - lock_option
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__lock_option__exclusive
+  title: ALTER TABLE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: add_column
+    table_state: exists
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: exclusive
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - lock_option
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__validation_option__omitted
+  title: ALTER TABLE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: add_column
+    table_state: exists
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - validation_option
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__validation_option__with_validation
+  title: ALTER TABLE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: add_column
+    table_state: exists
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: with_validation
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - validation_option
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__validation_option__without_validation
+  title: ALTER TABLE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: add_column
+    table_state: exists
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: without_validation
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - validation_option
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__column_position_shape__omitted
+  title: ALTER TABLE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: add_column
+    table_state: exists
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - column_position_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__column_position_shape__first
+  title: ALTER TABLE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: add_column
+    table_state: exists
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: first
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - column_position_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__column_position_shape__after_column
+  title: ALTER TABLE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: add_column
+    table_state: exists
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: after_column
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - column_position_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__index_visibility_shape__omitted
+  title: ALTER TABLE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: add_column
+    table_state: exists
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - index_visibility_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__index_visibility_shape__visible
+  title: ALTER TABLE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: add_column
+    table_state: exists
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: visible
+    invalid_combination: none
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - index_visibility_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__index_visibility_shape__invisible
+  title: ALTER TABLE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: add_column
+    table_state: exists
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: invisible
+    invalid_combination: none
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - index_visibility_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__invalid_combination__none
+  title: ALTER TABLE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: add_column
+    table_state: exists
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: none
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - invalid_combination
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__invalid_combination__invisible_column_8_0_23_excluded
+  title: ALTER TABLE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: add_column
+    table_state: exists
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: invisible_column_8_0_23_excluded
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - invalid_combination
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__invalid_combination__autoextend_size_8_0_23_excluded
+  title: ALTER TABLE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    alter_branch: add_column
+    table_state: exists
+    expected_status: success
+    algorithm_option: omitted
+    lock_option: omitted
+    validation_option: omitted
+    column_position_shape: omitted
+    index_visibility_shape: omitted
+    invalid_combination: autoextend_size_8_0_23_excluded
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - invalid_combination
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER TABLE {table_name} ADD COLUMN added_col INT NULL
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

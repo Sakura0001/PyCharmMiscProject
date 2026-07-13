@@ -1,0 +1,2119 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: create_table
+  name: CREATE TABLE
+  category: ddl
+  domain: table
+  source_reference: references/statements/ddl/table/create_table.md
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: false
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: false
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required coverage cannot be replaced by inferred combinations.
+coverage_scope:
+  target_object_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+  target_relation_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+  table_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+  column_type_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - column_definition
+      - create_like
+      - create_select
+      coverage_requirement: all_values
+    table_kind:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - permanent
+      - temporary
+      coverage_requirement: all_values
+    if_not_exists:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - omitted
+      - present
+      coverage_requirement: all_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - success
+      - failure
+      coverage_requirement: all_values
+    constraint_shape:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - primary_key
+      - unique_key
+      - foreign_key
+      - check_enforced
+      - check_not_enforced
+      coverage_requirement: all_values
+    generated_column_shape:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - omitted
+      - virtual
+      - stored
+      coverage_requirement: all_values
+    column_visibility:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - visible
+      - invisible
+      coverage_requirement: all_values
+    table_option_shape:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - engine_innodb
+      - engine_memory
+      - charset_collate
+      - encryption
+      coverage_requirement: all_values
+    table_name_shape:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values:
+      - unquoted_lower
+      - quoted_reserved
+      coverage_requirement: all_values
+    data_type_family:
+      tier: T3
+      coverage_role: rotate_attach
+      required_values:
+      - numeric
+      - string
+      - temporal
+      - json
+      - spatial
+      coverage_requirement: all_values
+    duplicate_table_state:
+      tier: T5
+      coverage_role: rotate_attach
+      required_values:
+      - no_conflict
+      - name_already_exists
+      coverage_requirement: all_values
+dynamic_inputs: {}
+combination_groups:
+- id: required__statement_branch_column_definition__table_kind_permanent__if_not_exists_omitted__expected_status_success
+  title: CREATE TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: column_definition
+    table_kind: permanent
+    if_not_exists: omitted
+    expected_status: success
+    constraint_shape: primary_key
+    generated_column_shape: omitted
+    column_visibility: visible
+    table_option_shape: engine_innodb
+    table_name_shape: unquoted_lower
+    data_type_family: numeric
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - table_kind
+    - if_not_exists
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_column_definition__table_kind_permanent__if_not_exists_omitted__expected_status_failure
+  title: CREATE TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: column_definition
+    table_kind: permanent
+    if_not_exists: omitted
+    expected_status: failure
+    constraint_shape: primary_key
+    generated_column_shape: omitted
+    column_visibility: visible
+    table_option_shape: engine_innodb
+    table_name_shape: unquoted_lower
+    data_type_family: numeric
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - table_kind
+    - if_not_exists
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_column_definition__table_kind_permanent__if_not_exists_present__expected_status_success
+  title: CREATE TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: column_definition
+    table_kind: permanent
+    if_not_exists: present
+    expected_status: success
+    constraint_shape: primary_key
+    generated_column_shape: omitted
+    column_visibility: visible
+    table_option_shape: engine_innodb
+    table_name_shape: unquoted_lower
+    data_type_family: numeric
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - table_kind
+    - if_not_exists
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_column_definition__table_kind_permanent__if_not_exists_present__expected_status_failure
+  title: CREATE TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: column_definition
+    table_kind: permanent
+    if_not_exists: present
+    expected_status: failure
+    constraint_shape: primary_key
+    generated_column_shape: omitted
+    column_visibility: visible
+    table_option_shape: engine_innodb
+    table_name_shape: unquoted_lower
+    data_type_family: numeric
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - table_kind
+    - if_not_exists
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_column_definition__table_kind_temporary__if_not_exists_omitted__expected_status_success
+  title: CREATE TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: column_definition
+    table_kind: temporary
+    if_not_exists: omitted
+    expected_status: success
+    constraint_shape: primary_key
+    generated_column_shape: omitted
+    column_visibility: visible
+    table_option_shape: engine_innodb
+    table_name_shape: unquoted_lower
+    data_type_family: numeric
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - table_kind
+    - if_not_exists
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_column_definition__table_kind_temporary__if_not_exists_omitted__expected_status_failure
+  title: CREATE TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: column_definition
+    table_kind: temporary
+    if_not_exists: omitted
+    expected_status: failure
+    constraint_shape: primary_key
+    generated_column_shape: omitted
+    column_visibility: visible
+    table_option_shape: engine_innodb
+    table_name_shape: unquoted_lower
+    data_type_family: numeric
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - table_kind
+    - if_not_exists
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_column_definition__table_kind_temporary__if_not_exists_present__expected_status_success
+  title: CREATE TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: column_definition
+    table_kind: temporary
+    if_not_exists: present
+    expected_status: success
+    constraint_shape: primary_key
+    generated_column_shape: omitted
+    column_visibility: visible
+    table_option_shape: engine_innodb
+    table_name_shape: unquoted_lower
+    data_type_family: numeric
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - table_kind
+    - if_not_exists
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_column_definition__table_kind_temporary__if_not_exists_present__expected_status_failure
+  title: CREATE TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: column_definition
+    table_kind: temporary
+    if_not_exists: present
+    expected_status: failure
+    constraint_shape: primary_key
+    generated_column_shape: omitted
+    column_visibility: visible
+    table_option_shape: engine_innodb
+    table_name_shape: unquoted_lower
+    data_type_family: numeric
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - table_kind
+    - if_not_exists
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_create_like__table_kind_permanent__if_not_exists_omitted__expected_status_success
+  title: CREATE TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: create_like
+    table_kind: permanent
+    if_not_exists: omitted
+    expected_status: success
+    constraint_shape: primary_key
+    generated_column_shape: omitted
+    column_visibility: visible
+    table_option_shape: engine_innodb
+    table_name_shape: unquoted_lower
+    data_type_family: numeric
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - table_kind
+    - if_not_exists
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_create_like__table_kind_permanent__if_not_exists_omitted__expected_status_failure
+  title: CREATE TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: create_like
+    table_kind: permanent
+    if_not_exists: omitted
+    expected_status: failure
+    constraint_shape: primary_key
+    generated_column_shape: omitted
+    column_visibility: visible
+    table_option_shape: engine_innodb
+    table_name_shape: unquoted_lower
+    data_type_family: numeric
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - table_kind
+    - if_not_exists
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_create_like__table_kind_permanent__if_not_exists_present__expected_status_success
+  title: CREATE TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: create_like
+    table_kind: permanent
+    if_not_exists: present
+    expected_status: success
+    constraint_shape: primary_key
+    generated_column_shape: omitted
+    column_visibility: visible
+    table_option_shape: engine_innodb
+    table_name_shape: unquoted_lower
+    data_type_family: numeric
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - table_kind
+    - if_not_exists
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_create_like__table_kind_permanent__if_not_exists_present__expected_status_failure
+  title: CREATE TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: create_like
+    table_kind: permanent
+    if_not_exists: present
+    expected_status: failure
+    constraint_shape: primary_key
+    generated_column_shape: omitted
+    column_visibility: visible
+    table_option_shape: engine_innodb
+    table_name_shape: unquoted_lower
+    data_type_family: numeric
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - table_kind
+    - if_not_exists
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_create_like__table_kind_temporary__if_not_exists_omitted__expected_status_success
+  title: CREATE TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: create_like
+    table_kind: temporary
+    if_not_exists: omitted
+    expected_status: success
+    constraint_shape: primary_key
+    generated_column_shape: omitted
+    column_visibility: visible
+    table_option_shape: engine_innodb
+    table_name_shape: unquoted_lower
+    data_type_family: numeric
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - table_kind
+    - if_not_exists
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_create_like__table_kind_temporary__if_not_exists_omitted__expected_status_failure
+  title: CREATE TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: create_like
+    table_kind: temporary
+    if_not_exists: omitted
+    expected_status: failure
+    constraint_shape: primary_key
+    generated_column_shape: omitted
+    column_visibility: visible
+    table_option_shape: engine_innodb
+    table_name_shape: unquoted_lower
+    data_type_family: numeric
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - table_kind
+    - if_not_exists
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_create_like__table_kind_temporary__if_not_exists_present__expected_status_success
+  title: CREATE TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: create_like
+    table_kind: temporary
+    if_not_exists: present
+    expected_status: success
+    constraint_shape: primary_key
+    generated_column_shape: omitted
+    column_visibility: visible
+    table_option_shape: engine_innodb
+    table_name_shape: unquoted_lower
+    data_type_family: numeric
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - table_kind
+    - if_not_exists
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_create_like__table_kind_temporary__if_not_exists_present__expected_status_failure
+  title: CREATE TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: create_like
+    table_kind: temporary
+    if_not_exists: present
+    expected_status: failure
+    constraint_shape: primary_key
+    generated_column_shape: omitted
+    column_visibility: visible
+    table_option_shape: engine_innodb
+    table_name_shape: unquoted_lower
+    data_type_family: numeric
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - table_kind
+    - if_not_exists
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_create_select__table_kind_permanent__if_not_exists_omitted__expected_status_success
+  title: CREATE TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: create_select
+    table_kind: permanent
+    if_not_exists: omitted
+    expected_status: success
+    constraint_shape: primary_key
+    generated_column_shape: omitted
+    column_visibility: visible
+    table_option_shape: engine_innodb
+    table_name_shape: unquoted_lower
+    data_type_family: numeric
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - table_kind
+    - if_not_exists
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_create_select__table_kind_permanent__if_not_exists_omitted__expected_status_failure
+  title: CREATE TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: create_select
+    table_kind: permanent
+    if_not_exists: omitted
+    expected_status: failure
+    constraint_shape: primary_key
+    generated_column_shape: omitted
+    column_visibility: visible
+    table_option_shape: engine_innodb
+    table_name_shape: unquoted_lower
+    data_type_family: numeric
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - table_kind
+    - if_not_exists
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_create_select__table_kind_permanent__if_not_exists_present__expected_status_success
+  title: CREATE TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: create_select
+    table_kind: permanent
+    if_not_exists: present
+    expected_status: success
+    constraint_shape: primary_key
+    generated_column_shape: omitted
+    column_visibility: visible
+    table_option_shape: engine_innodb
+    table_name_shape: unquoted_lower
+    data_type_family: numeric
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - table_kind
+    - if_not_exists
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_create_select__table_kind_permanent__if_not_exists_present__expected_status_failure
+  title: CREATE TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: create_select
+    table_kind: permanent
+    if_not_exists: present
+    expected_status: failure
+    constraint_shape: primary_key
+    generated_column_shape: omitted
+    column_visibility: visible
+    table_option_shape: engine_innodb
+    table_name_shape: unquoted_lower
+    data_type_family: numeric
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - table_kind
+    - if_not_exists
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_create_select__table_kind_temporary__if_not_exists_omitted__expected_status_success
+  title: CREATE TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: create_select
+    table_kind: temporary
+    if_not_exists: omitted
+    expected_status: success
+    constraint_shape: primary_key
+    generated_column_shape: omitted
+    column_visibility: visible
+    table_option_shape: engine_innodb
+    table_name_shape: unquoted_lower
+    data_type_family: numeric
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - table_kind
+    - if_not_exists
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_create_select__table_kind_temporary__if_not_exists_omitted__expected_status_failure
+  title: CREATE TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: create_select
+    table_kind: temporary
+    if_not_exists: omitted
+    expected_status: failure
+    constraint_shape: primary_key
+    generated_column_shape: omitted
+    column_visibility: visible
+    table_option_shape: engine_innodb
+    table_name_shape: unquoted_lower
+    data_type_family: numeric
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - table_kind
+    - if_not_exists
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_create_select__table_kind_temporary__if_not_exists_present__expected_status_success
+  title: CREATE TABLE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: create_select
+    table_kind: temporary
+    if_not_exists: present
+    expected_status: success
+    constraint_shape: primary_key
+    generated_column_shape: omitted
+    column_visibility: visible
+    table_option_shape: engine_innodb
+    table_name_shape: unquoted_lower
+    data_type_family: numeric
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - table_kind
+    - if_not_exists
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_create_select__table_kind_temporary__if_not_exists_present__expected_status_failure
+  title: CREATE TABLE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: create_select
+    table_kind: temporary
+    if_not_exists: present
+    expected_status: failure
+    constraint_shape: primary_key
+    generated_column_shape: omitted
+    column_visibility: visible
+    table_option_shape: engine_innodb
+    table_name_shape: unquoted_lower
+    data_type_family: numeric
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - table_kind
+    - if_not_exists
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__constraint_shape__primary_key
+  title: CREATE TABLE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: column_definition
+    table_kind: permanent
+    if_not_exists: omitted
+    expected_status: success
+    constraint_shape: primary_key
+    generated_column_shape: omitted
+    column_visibility: visible
+    table_option_shape: engine_innodb
+    table_name_shape: unquoted_lower
+    data_type_family: numeric
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - constraint_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__constraint_shape__unique_key
+  title: CREATE TABLE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: column_definition
+    table_kind: permanent
+    if_not_exists: omitted
+    expected_status: success
+    constraint_shape: unique_key
+    generated_column_shape: omitted
+    column_visibility: visible
+    table_option_shape: engine_innodb
+    table_name_shape: unquoted_lower
+    data_type_family: numeric
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - constraint_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__constraint_shape__foreign_key
+  title: CREATE TABLE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: column_definition
+    table_kind: permanent
+    if_not_exists: omitted
+    expected_status: success
+    constraint_shape: foreign_key
+    generated_column_shape: omitted
+    column_visibility: visible
+    table_option_shape: engine_innodb
+    table_name_shape: unquoted_lower
+    data_type_family: numeric
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - constraint_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__constraint_shape__check_enforced
+  title: CREATE TABLE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: column_definition
+    table_kind: permanent
+    if_not_exists: omitted
+    expected_status: success
+    constraint_shape: check_enforced
+    generated_column_shape: omitted
+    column_visibility: visible
+    table_option_shape: engine_innodb
+    table_name_shape: unquoted_lower
+    data_type_family: numeric
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - constraint_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__constraint_shape__check_not_enforced
+  title: CREATE TABLE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: column_definition
+    table_kind: permanent
+    if_not_exists: omitted
+    expected_status: success
+    constraint_shape: check_not_enforced
+    generated_column_shape: omitted
+    column_visibility: visible
+    table_option_shape: engine_innodb
+    table_name_shape: unquoted_lower
+    data_type_family: numeric
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - constraint_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__generated_column_shape__omitted
+  title: CREATE TABLE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: column_definition
+    table_kind: permanent
+    if_not_exists: omitted
+    expected_status: success
+    constraint_shape: primary_key
+    generated_column_shape: omitted
+    column_visibility: visible
+    table_option_shape: engine_innodb
+    table_name_shape: unquoted_lower
+    data_type_family: numeric
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - generated_column_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__generated_column_shape__virtual
+  title: CREATE TABLE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: column_definition
+    table_kind: permanent
+    if_not_exists: omitted
+    expected_status: success
+    constraint_shape: primary_key
+    generated_column_shape: virtual
+    column_visibility: visible
+    table_option_shape: engine_innodb
+    table_name_shape: unquoted_lower
+    data_type_family: numeric
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - generated_column_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__generated_column_shape__stored
+  title: CREATE TABLE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: column_definition
+    table_kind: permanent
+    if_not_exists: omitted
+    expected_status: success
+    constraint_shape: primary_key
+    generated_column_shape: stored
+    column_visibility: visible
+    table_option_shape: engine_innodb
+    table_name_shape: unquoted_lower
+    data_type_family: numeric
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - generated_column_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__column_visibility__visible
+  title: CREATE TABLE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: column_definition
+    table_kind: permanent
+    if_not_exists: omitted
+    expected_status: success
+    constraint_shape: primary_key
+    generated_column_shape: omitted
+    column_visibility: visible
+    table_option_shape: engine_innodb
+    table_name_shape: unquoted_lower
+    data_type_family: numeric
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - column_visibility
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__column_visibility__invisible
+  title: CREATE TABLE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: column_definition
+    table_kind: permanent
+    if_not_exists: omitted
+    expected_status: success
+    constraint_shape: primary_key
+    generated_column_shape: omitted
+    column_visibility: invisible
+    table_option_shape: engine_innodb
+    table_name_shape: unquoted_lower
+    data_type_family: numeric
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - column_visibility
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__table_option_shape__engine_innodb
+  title: CREATE TABLE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: column_definition
+    table_kind: permanent
+    if_not_exists: omitted
+    expected_status: success
+    constraint_shape: primary_key
+    generated_column_shape: omitted
+    column_visibility: visible
+    table_option_shape: engine_innodb
+    table_name_shape: unquoted_lower
+    data_type_family: numeric
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - table_option_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__table_option_shape__engine_memory
+  title: CREATE TABLE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: column_definition
+    table_kind: permanent
+    if_not_exists: omitted
+    expected_status: success
+    constraint_shape: primary_key
+    generated_column_shape: omitted
+    column_visibility: visible
+    table_option_shape: engine_memory
+    table_name_shape: unquoted_lower
+    data_type_family: numeric
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - table_option_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__table_option_shape__charset_collate
+  title: CREATE TABLE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: column_definition
+    table_kind: permanent
+    if_not_exists: omitted
+    expected_status: success
+    constraint_shape: primary_key
+    generated_column_shape: omitted
+    column_visibility: visible
+    table_option_shape: charset_collate
+    table_name_shape: unquoted_lower
+    data_type_family: numeric
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - table_option_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__table_option_shape__encryption
+  title: CREATE TABLE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: column_definition
+    table_kind: permanent
+    if_not_exists: omitted
+    expected_status: success
+    constraint_shape: primary_key
+    generated_column_shape: omitted
+    column_visibility: visible
+    table_option_shape: encryption
+    table_name_shape: unquoted_lower
+    data_type_family: numeric
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - table_option_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__table_name_shape__unquoted_lower
+  title: CREATE TABLE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: column_definition
+    table_kind: permanent
+    if_not_exists: omitted
+    expected_status: success
+    constraint_shape: primary_key
+    generated_column_shape: omitted
+    column_visibility: visible
+    table_option_shape: engine_innodb
+    table_name_shape: unquoted_lower
+    data_type_family: numeric
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - table_name_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__table_name_shape__quoted_reserved
+  title: CREATE TABLE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: column_definition
+    table_kind: permanent
+    if_not_exists: omitted
+    expected_status: success
+    constraint_shape: primary_key
+    generated_column_shape: omitted
+    column_visibility: visible
+    table_option_shape: engine_innodb
+    table_name_shape: quoted_reserved
+    data_type_family: numeric
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - table_name_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__data_type_family__numeric
+  title: CREATE TABLE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: column_definition
+    table_kind: permanent
+    if_not_exists: omitted
+    expected_status: success
+    constraint_shape: primary_key
+    generated_column_shape: omitted
+    column_visibility: visible
+    table_option_shape: engine_innodb
+    table_name_shape: unquoted_lower
+    data_type_family: numeric
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - data_type_family
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__data_type_family__string
+  title: CREATE TABLE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: column_definition
+    table_kind: permanent
+    if_not_exists: omitted
+    expected_status: success
+    constraint_shape: primary_key
+    generated_column_shape: omitted
+    column_visibility: visible
+    table_option_shape: engine_innodb
+    table_name_shape: unquoted_lower
+    data_type_family: string
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - data_type_family
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__data_type_family__temporal
+  title: CREATE TABLE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: column_definition
+    table_kind: permanent
+    if_not_exists: omitted
+    expected_status: success
+    constraint_shape: primary_key
+    generated_column_shape: omitted
+    column_visibility: visible
+    table_option_shape: engine_innodb
+    table_name_shape: unquoted_lower
+    data_type_family: temporal
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - data_type_family
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__data_type_family__json
+  title: CREATE TABLE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: column_definition
+    table_kind: permanent
+    if_not_exists: omitted
+    expected_status: success
+    constraint_shape: primary_key
+    generated_column_shape: omitted
+    column_visibility: visible
+    table_option_shape: engine_innodb
+    table_name_shape: unquoted_lower
+    data_type_family: json
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - data_type_family
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__data_type_family__spatial
+  title: CREATE TABLE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: column_definition
+    table_kind: permanent
+    if_not_exists: omitted
+    expected_status: success
+    constraint_shape: primary_key
+    generated_column_shape: omitted
+    column_visibility: visible
+    table_option_shape: engine_innodb
+    table_name_shape: unquoted_lower
+    data_type_family: spatial
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - data_type_family
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__duplicate_table_state__no_conflict
+  title: CREATE TABLE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: column_definition
+    table_kind: permanent
+    if_not_exists: omitted
+    expected_status: success
+    constraint_shape: primary_key
+    generated_column_shape: omitted
+    column_visibility: visible
+    table_option_shape: engine_innodb
+    table_name_shape: unquoted_lower
+    data_type_family: numeric
+    duplicate_table_state: no_conflict
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - duplicate_table_state
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__duplicate_table_state__name_already_exists
+  title: CREATE TABLE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: column_definition
+    table_kind: permanent
+    if_not_exists: omitted
+    expected_status: success
+    constraint_shape: primary_key
+    generated_column_shape: omitted
+    column_visibility: visible
+    table_option_shape: engine_innodb
+    table_name_shape: unquoted_lower
+    data_type_family: numeric
+    duplicate_table_state: name_already_exists
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - duplicate_table_state
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: '{temporary_clause}CREATE TABLE {if_not_exists_clause}{table_name} (id BIGINT NOT NULL AUTO_INCREMENT, value_col
+      INT, label_col VARCHAR(100), PRIMARY KEY (id)) ENGINE=InnoDB'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

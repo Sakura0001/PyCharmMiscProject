@@ -347,7 +347,6 @@ def reconcile_case_manifests(
             from .sql_safety import (
                 UnsafeSqlError,
                 validate_sql_for_basic_runner,
-                validate_sql_for_external_copy_ingest,
             )
 
             for sql_file in case.sql_files:
@@ -382,8 +381,6 @@ def reconcile_case_manifests(
                     sql_content = sql_bytes.decode("utf-8")
                     if case.execution_profile == "basic_mysql":
                         validate_sql_for_basic_runner(sql_content)
-                    elif case.execution_harness == "external-copy-ingest":
-                        validate_sql_for_external_copy_ingest(sql_content)
                 except (OSError, UnicodeError, UnsafeSqlError) as exc:
                     unsafe_sql_files.append(f"{case.case_id}:{sql_file}: {exc}")
                     continue

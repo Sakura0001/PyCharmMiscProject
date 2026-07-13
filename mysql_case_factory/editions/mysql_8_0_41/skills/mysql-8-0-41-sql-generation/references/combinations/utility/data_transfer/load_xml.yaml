@@ -1,0 +1,1324 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: load_xml
+  name: LOAD XML
+  category: utility
+  domain: data_transfer
+  source_reference: references/statements/utility/data_transfer/load_xml.md
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: false
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: false
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required coverage cannot be replaced by inferred combinations.
+coverage_scope:
+  target_object_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+  target_relation_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+  table_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+  column_type_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    local_shape:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - server_file
+      - local_file
+      coverage_requirement: all_values
+    duplicate_handling:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - omitted
+      - replace
+      - ignore
+      coverage_requirement: all_values
+    row_tag_shape:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - default_row
+      - custom_tag
+      coverage_requirement: all_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - success
+      - failure
+      coverage_requirement: all_values
+    field_mapping_shape:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - omitted
+      - field_list
+      - user_variables
+      coverage_requirement: all_values
+    set_clause_shape:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - omitted
+      - transform_column
+      coverage_requirement: all_values
+    file_state:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - exists
+      - missing
+      - malformed
+      coverage_requirement: all_values
+dynamic_inputs: {}
+combination_groups:
+- id: required__local_shape_server_file__duplicate_handling_omitted__row_tag_shape_default_row__expected_status_success
+  title: LOAD XML required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    local_shape: server_file
+    duplicate_handling: omitted
+    row_tag_shape: default_row
+    expected_status: success
+    field_mapping_shape: omitted
+    set_clause_shape: omitted
+    file_state: exists
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - local_shape
+    - duplicate_handling
+    - row_tag_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: LOAD XML INFILE '/tmp/mysql_case_data.xml' INTO TABLE {table_name}
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__local_shape_server_file__duplicate_handling_omitted__row_tag_shape_default_row__expected_status_failure
+  title: LOAD XML required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    local_shape: server_file
+    duplicate_handling: omitted
+    row_tag_shape: default_row
+    expected_status: failure
+    field_mapping_shape: omitted
+    set_clause_shape: omitted
+    file_state: exists
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - local_shape
+    - duplicate_handling
+    - row_tag_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: LOAD XML INFILE '/tmp/mysql_case_data.xml' INTO TABLE {table_name}
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__local_shape_server_file__duplicate_handling_omitted__row_tag_shape_custom_tag__expected_status_success
+  title: LOAD XML required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    local_shape: server_file
+    duplicate_handling: omitted
+    row_tag_shape: custom_tag
+    expected_status: success
+    field_mapping_shape: omitted
+    set_clause_shape: omitted
+    file_state: exists
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - local_shape
+    - duplicate_handling
+    - row_tag_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: LOAD XML INFILE '/tmp/mysql_case_data.xml' INTO TABLE {table_name}
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__local_shape_server_file__duplicate_handling_omitted__row_tag_shape_custom_tag__expected_status_failure
+  title: LOAD XML required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    local_shape: server_file
+    duplicate_handling: omitted
+    row_tag_shape: custom_tag
+    expected_status: failure
+    field_mapping_shape: omitted
+    set_clause_shape: omitted
+    file_state: exists
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - local_shape
+    - duplicate_handling
+    - row_tag_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: LOAD XML INFILE '/tmp/mysql_case_data.xml' INTO TABLE {table_name}
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__local_shape_server_file__duplicate_handling_replace__row_tag_shape_default_row__expected_status_success
+  title: LOAD XML required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    local_shape: server_file
+    duplicate_handling: replace
+    row_tag_shape: default_row
+    expected_status: success
+    field_mapping_shape: omitted
+    set_clause_shape: omitted
+    file_state: exists
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - local_shape
+    - duplicate_handling
+    - row_tag_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: LOAD XML INFILE '/tmp/mysql_case_data.xml' INTO TABLE {table_name}
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__local_shape_server_file__duplicate_handling_replace__row_tag_shape_default_row__expected_status_failure
+  title: LOAD XML required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    local_shape: server_file
+    duplicate_handling: replace
+    row_tag_shape: default_row
+    expected_status: failure
+    field_mapping_shape: omitted
+    set_clause_shape: omitted
+    file_state: exists
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - local_shape
+    - duplicate_handling
+    - row_tag_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: LOAD XML INFILE '/tmp/mysql_case_data.xml' INTO TABLE {table_name}
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__local_shape_server_file__duplicate_handling_replace__row_tag_shape_custom_tag__expected_status_success
+  title: LOAD XML required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    local_shape: server_file
+    duplicate_handling: replace
+    row_tag_shape: custom_tag
+    expected_status: success
+    field_mapping_shape: omitted
+    set_clause_shape: omitted
+    file_state: exists
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - local_shape
+    - duplicate_handling
+    - row_tag_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: LOAD XML INFILE '/tmp/mysql_case_data.xml' INTO TABLE {table_name}
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__local_shape_server_file__duplicate_handling_replace__row_tag_shape_custom_tag__expected_status_failure
+  title: LOAD XML required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    local_shape: server_file
+    duplicate_handling: replace
+    row_tag_shape: custom_tag
+    expected_status: failure
+    field_mapping_shape: omitted
+    set_clause_shape: omitted
+    file_state: exists
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - local_shape
+    - duplicate_handling
+    - row_tag_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: LOAD XML INFILE '/tmp/mysql_case_data.xml' INTO TABLE {table_name}
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__local_shape_server_file__duplicate_handling_ignore__row_tag_shape_default_row__expected_status_success
+  title: LOAD XML required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    local_shape: server_file
+    duplicate_handling: ignore
+    row_tag_shape: default_row
+    expected_status: success
+    field_mapping_shape: omitted
+    set_clause_shape: omitted
+    file_state: exists
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - local_shape
+    - duplicate_handling
+    - row_tag_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: LOAD XML INFILE '/tmp/mysql_case_data.xml' INTO TABLE {table_name}
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__local_shape_server_file__duplicate_handling_ignore__row_tag_shape_default_row__expected_status_failure
+  title: LOAD XML required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    local_shape: server_file
+    duplicate_handling: ignore
+    row_tag_shape: default_row
+    expected_status: failure
+    field_mapping_shape: omitted
+    set_clause_shape: omitted
+    file_state: exists
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - local_shape
+    - duplicate_handling
+    - row_tag_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: LOAD XML INFILE '/tmp/mysql_case_data.xml' INTO TABLE {table_name}
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__local_shape_server_file__duplicate_handling_ignore__row_tag_shape_custom_tag__expected_status_success
+  title: LOAD XML required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    local_shape: server_file
+    duplicate_handling: ignore
+    row_tag_shape: custom_tag
+    expected_status: success
+    field_mapping_shape: omitted
+    set_clause_shape: omitted
+    file_state: exists
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - local_shape
+    - duplicate_handling
+    - row_tag_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: LOAD XML INFILE '/tmp/mysql_case_data.xml' INTO TABLE {table_name}
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__local_shape_server_file__duplicate_handling_ignore__row_tag_shape_custom_tag__expected_status_failure
+  title: LOAD XML required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    local_shape: server_file
+    duplicate_handling: ignore
+    row_tag_shape: custom_tag
+    expected_status: failure
+    field_mapping_shape: omitted
+    set_clause_shape: omitted
+    file_state: exists
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - local_shape
+    - duplicate_handling
+    - row_tag_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: LOAD XML INFILE '/tmp/mysql_case_data.xml' INTO TABLE {table_name}
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__local_shape_local_file__duplicate_handling_omitted__row_tag_shape_default_row__expected_status_success
+  title: LOAD XML required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    local_shape: local_file
+    duplicate_handling: omitted
+    row_tag_shape: default_row
+    expected_status: success
+    field_mapping_shape: omitted
+    set_clause_shape: omitted
+    file_state: exists
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - local_shape
+    - duplicate_handling
+    - row_tag_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: LOAD XML INFILE '/tmp/mysql_case_data.xml' INTO TABLE {table_name}
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__local_shape_local_file__duplicate_handling_omitted__row_tag_shape_default_row__expected_status_failure
+  title: LOAD XML required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    local_shape: local_file
+    duplicate_handling: omitted
+    row_tag_shape: default_row
+    expected_status: failure
+    field_mapping_shape: omitted
+    set_clause_shape: omitted
+    file_state: exists
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - local_shape
+    - duplicate_handling
+    - row_tag_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: LOAD XML INFILE '/tmp/mysql_case_data.xml' INTO TABLE {table_name}
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__local_shape_local_file__duplicate_handling_omitted__row_tag_shape_custom_tag__expected_status_success
+  title: LOAD XML required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    local_shape: local_file
+    duplicate_handling: omitted
+    row_tag_shape: custom_tag
+    expected_status: success
+    field_mapping_shape: omitted
+    set_clause_shape: omitted
+    file_state: exists
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - local_shape
+    - duplicate_handling
+    - row_tag_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: LOAD XML INFILE '/tmp/mysql_case_data.xml' INTO TABLE {table_name}
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__local_shape_local_file__duplicate_handling_omitted__row_tag_shape_custom_tag__expected_status_failure
+  title: LOAD XML required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    local_shape: local_file
+    duplicate_handling: omitted
+    row_tag_shape: custom_tag
+    expected_status: failure
+    field_mapping_shape: omitted
+    set_clause_shape: omitted
+    file_state: exists
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - local_shape
+    - duplicate_handling
+    - row_tag_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: LOAD XML INFILE '/tmp/mysql_case_data.xml' INTO TABLE {table_name}
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__local_shape_local_file__duplicate_handling_replace__row_tag_shape_default_row__expected_status_success
+  title: LOAD XML required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    local_shape: local_file
+    duplicate_handling: replace
+    row_tag_shape: default_row
+    expected_status: success
+    field_mapping_shape: omitted
+    set_clause_shape: omitted
+    file_state: exists
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - local_shape
+    - duplicate_handling
+    - row_tag_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: LOAD XML INFILE '/tmp/mysql_case_data.xml' INTO TABLE {table_name}
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__local_shape_local_file__duplicate_handling_replace__row_tag_shape_default_row__expected_status_failure
+  title: LOAD XML required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    local_shape: local_file
+    duplicate_handling: replace
+    row_tag_shape: default_row
+    expected_status: failure
+    field_mapping_shape: omitted
+    set_clause_shape: omitted
+    file_state: exists
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - local_shape
+    - duplicate_handling
+    - row_tag_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: LOAD XML INFILE '/tmp/mysql_case_data.xml' INTO TABLE {table_name}
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__local_shape_local_file__duplicate_handling_replace__row_tag_shape_custom_tag__expected_status_success
+  title: LOAD XML required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    local_shape: local_file
+    duplicate_handling: replace
+    row_tag_shape: custom_tag
+    expected_status: success
+    field_mapping_shape: omitted
+    set_clause_shape: omitted
+    file_state: exists
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - local_shape
+    - duplicate_handling
+    - row_tag_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: LOAD XML INFILE '/tmp/mysql_case_data.xml' INTO TABLE {table_name}
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__local_shape_local_file__duplicate_handling_replace__row_tag_shape_custom_tag__expected_status_failure
+  title: LOAD XML required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    local_shape: local_file
+    duplicate_handling: replace
+    row_tag_shape: custom_tag
+    expected_status: failure
+    field_mapping_shape: omitted
+    set_clause_shape: omitted
+    file_state: exists
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - local_shape
+    - duplicate_handling
+    - row_tag_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: LOAD XML INFILE '/tmp/mysql_case_data.xml' INTO TABLE {table_name}
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__local_shape_local_file__duplicate_handling_ignore__row_tag_shape_default_row__expected_status_success
+  title: LOAD XML required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    local_shape: local_file
+    duplicate_handling: ignore
+    row_tag_shape: default_row
+    expected_status: success
+    field_mapping_shape: omitted
+    set_clause_shape: omitted
+    file_state: exists
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - local_shape
+    - duplicate_handling
+    - row_tag_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: LOAD XML INFILE '/tmp/mysql_case_data.xml' INTO TABLE {table_name}
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__local_shape_local_file__duplicate_handling_ignore__row_tag_shape_default_row__expected_status_failure
+  title: LOAD XML required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    local_shape: local_file
+    duplicate_handling: ignore
+    row_tag_shape: default_row
+    expected_status: failure
+    field_mapping_shape: omitted
+    set_clause_shape: omitted
+    file_state: exists
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - local_shape
+    - duplicate_handling
+    - row_tag_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: LOAD XML INFILE '/tmp/mysql_case_data.xml' INTO TABLE {table_name}
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__local_shape_local_file__duplicate_handling_ignore__row_tag_shape_custom_tag__expected_status_success
+  title: LOAD XML required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    local_shape: local_file
+    duplicate_handling: ignore
+    row_tag_shape: custom_tag
+    expected_status: success
+    field_mapping_shape: omitted
+    set_clause_shape: omitted
+    file_state: exists
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - local_shape
+    - duplicate_handling
+    - row_tag_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: LOAD XML INFILE '/tmp/mysql_case_data.xml' INTO TABLE {table_name}
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__local_shape_local_file__duplicate_handling_ignore__row_tag_shape_custom_tag__expected_status_failure
+  title: LOAD XML required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    local_shape: local_file
+    duplicate_handling: ignore
+    row_tag_shape: custom_tag
+    expected_status: failure
+    field_mapping_shape: omitted
+    set_clause_shape: omitted
+    file_state: exists
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - local_shape
+    - duplicate_handling
+    - row_tag_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: LOAD XML INFILE '/tmp/mysql_case_data.xml' INTO TABLE {table_name}
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__field_mapping_shape__omitted
+  title: LOAD XML supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    local_shape: server_file
+    duplicate_handling: omitted
+    row_tag_shape: default_row
+    expected_status: success
+    field_mapping_shape: omitted
+    set_clause_shape: omitted
+    file_state: exists
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - field_mapping_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: LOAD XML INFILE '/tmp/mysql_case_data.xml' INTO TABLE {table_name}
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__field_mapping_shape__field_list
+  title: LOAD XML supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    local_shape: server_file
+    duplicate_handling: omitted
+    row_tag_shape: default_row
+    expected_status: success
+    field_mapping_shape: field_list
+    set_clause_shape: omitted
+    file_state: exists
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - field_mapping_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: LOAD XML INFILE '/tmp/mysql_case_data.xml' INTO TABLE {table_name}
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__field_mapping_shape__user_variables
+  title: LOAD XML supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    local_shape: server_file
+    duplicate_handling: omitted
+    row_tag_shape: default_row
+    expected_status: success
+    field_mapping_shape: user_variables
+    set_clause_shape: omitted
+    file_state: exists
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - field_mapping_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: LOAD XML INFILE '/tmp/mysql_case_data.xml' INTO TABLE {table_name}
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__set_clause_shape__omitted
+  title: LOAD XML supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    local_shape: server_file
+    duplicate_handling: omitted
+    row_tag_shape: default_row
+    expected_status: success
+    field_mapping_shape: omitted
+    set_clause_shape: omitted
+    file_state: exists
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - set_clause_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: LOAD XML INFILE '/tmp/mysql_case_data.xml' INTO TABLE {table_name}
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__set_clause_shape__transform_column
+  title: LOAD XML supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    local_shape: server_file
+    duplicate_handling: omitted
+    row_tag_shape: default_row
+    expected_status: success
+    field_mapping_shape: omitted
+    set_clause_shape: transform_column
+    file_state: exists
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - set_clause_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: LOAD XML INFILE '/tmp/mysql_case_data.xml' INTO TABLE {table_name}
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__file_state__exists
+  title: LOAD XML supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    local_shape: server_file
+    duplicate_handling: omitted
+    row_tag_shape: default_row
+    expected_status: success
+    field_mapping_shape: omitted
+    set_clause_shape: omitted
+    file_state: exists
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - file_state
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: LOAD XML INFILE '/tmp/mysql_case_data.xml' INTO TABLE {table_name}
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__file_state__missing
+  title: LOAD XML supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    local_shape: server_file
+    duplicate_handling: omitted
+    row_tag_shape: default_row
+    expected_status: success
+    field_mapping_shape: omitted
+    set_clause_shape: omitted
+    file_state: missing
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - file_state
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: LOAD XML INFILE '/tmp/mysql_case_data.xml' INTO TABLE {table_name}
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__file_state__malformed
+  title: LOAD XML supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    local_shape: server_file
+    duplicate_handling: omitted
+    row_tag_shape: default_row
+    expected_status: success
+    field_mapping_shape: omitted
+    set_clause_shape: omitted
+    file_state: malformed
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - file_state
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: LOAD XML INFILE '/tmp/mysql_case_data.xml' INTO TABLE {table_name}
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

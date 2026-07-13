@@ -230,11 +230,11 @@ class FeatureContractTest(unittest.TestCase):
             ):
                 load_case_manifest(self.write_yaml(root, "external.yaml", external))
 
-            external["execution_harness"] = "external-copy-stdin"
+            external["execution_harness"] = "external-load-data-ingest"
             loaded = load_case_manifest(
                 self.write_yaml(root, "external-valid.yaml", external)
             )
-            self.assertEqual("external-copy-stdin", loaded.execution_harness)
+            self.assertEqual("external-load-data-ingest", loaded.execution_harness)
 
             basic = self.case_document()
             basic["execution_harness"] = "must-not-be-silently-ignored"

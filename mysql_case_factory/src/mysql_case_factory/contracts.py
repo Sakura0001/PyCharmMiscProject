@@ -1,4 +1,4 @@
-"""Typed YAML contracts for feature-driven PostgreSQL test generation.
+"""Typed YAML contracts for feature-driven MySQL test generation.
 
 The contracts in this module deliberately model plans, not generated prose.  They
 are small enough to be produced by an agent, while retaining the identifiers and
@@ -30,7 +30,7 @@ REQUIRED_RISK_DECISIONS = (
     "operation",
     "lifecycle",
     "data_profile",
-    "large_value_toast",
+    "large_value_lob",
     "transaction",
     "partitioning",
     "index_constraint_trigger",
@@ -45,10 +45,8 @@ CANONICAL_SCOPE_SELECTORS = {
     "table": "#relation_dimensions.<table-dimension>.values",
     "column_type": "#structured_config.<complete-column-dimension>",
 }
-_REPO_INVENTORY = "skills/pg-sql-generation/references/combinations/_shared/coverage_inventory.yaml"
 _SKILL_INVENTORY = "references/combinations/_shared/coverage_inventory.yaml"
-_REPO_TYPE_CATALOG = "skills/pg-sql-generation/references/common/mysql8022_type_catalog.md"
-_SKILL_TYPE_CATALOG = "references/common/mysql8022_type_catalog.md"
+_SKILL_TYPE_CATALOG = "references/common/mysql80_type_catalog.md"
 _TABLE_DIMENSION_SELECTORS = (
     "relation_dimensions.relpersistence.values",
     "relation_dimensions.partition_role.values",
@@ -57,50 +55,44 @@ _TABLE_DIMENSION_SELECTORS = (
     "relation_dimensions.table_access_method_selection.values",
 )
 _COLUMN_DIMENSION_SELECTORS = (
-    "structured_config.types",
-    "structured_config.concrete_builtin_types.values",
-    "structured_config.auto_array_types.element_types",
-    "structured_config.pseudo_types.values",
-    "structured_config.declaration_aliases.mappings",
-    "structured_config.typmod_declarations.values",
-    "structured_config.user_defined_archetypes.values",
+    "structured_config.families.numeric.values",
+    "structured_config.families.string.values",
+    "structured_config.families.temporal.values",
+    "structured_config.families.json.values",
+    "structured_config.families.spatial.values",
+    "structured_config.families.blob.values",
 )
 CANONICAL_SCOPE_SOURCE_GROUPS = {
     "object": (
-        (f"{_REPO_INVENTORY}#sql_object_types.all_sql_object_types",),
         (f"{_SKILL_INVENTORY}#sql_object_types.all_sql_object_types",),
     ),
     "relation": (
-        (f"{_REPO_INVENTORY}#relation_kinds.all_mysql8022_relkinds",),
         (f"{_SKILL_INVENTORY}#relation_kinds.all_mysql8022_relkinds",),
     ),
     "table": (
-        tuple(f"{_REPO_INVENTORY}#{selector}" for selector in _TABLE_DIMENSION_SELECTORS),
         tuple(f"{_SKILL_INVENTORY}#{selector}" for selector in _TABLE_DIMENSION_SELECTORS),
     ),
     "column_type": (
-        tuple(f"{_REPO_TYPE_CATALOG}#{selector}" for selector in _COLUMN_DIMENSION_SELECTORS),
         tuple(f"{_SKILL_TYPE_CATALOG}#{selector}" for selector in _COLUMN_DIMENSION_SELECTORS),
     ),
 }
 CANONICAL_SCOPE_SNAPSHOTS = {
-    "object": ((52, "16baf7956eef9b78b8ad585d8fcbe74306d2d3d16dd3004e3cb49a8673ab1180"),),
-    "relation": ((10, "06cae15bce0029a913db85e3e8a76fec1ba50604018c532584bfd461fe20a8fa"),),
+    "object": ((18, "94e86d2f51f5832154d344b553925d68d909aa8d65b95aac5eea8bd7a8bc39f6"),),
+    "relation": ((4, "9cba8f8abeea197c914347b298268047378904b2c39a159d919dbe33751742b2"),),
     "table": (
-        (3, "a7ad60e0cd9b2016468df164068d84e23aeff305c177584bd71dfd08ede4badd"),
-        (3, "4e463abadb471cfea9bc05471c059088b52cbc08ef023929008950aff7ced22b"),
-        (4, "e2245b57c7e9b4b5fcc576120dcd7a59b42a66a3e8a315155a047dc27d273eb2"),
-        (4, "4a4fed97dd0adb6c49d00dbdb7c1f4eb52a08203dca04249b464ea013985c92e"),
-        (3, "5fb7374d7fa87741c11f03ffc9e0cc90e5e74039d8529863c13a6b5550c45d0d"),
+        (2, "124d32a98830f86eb3293a9ce69291304ffdaa2b7a5a6058957040b789dab304"),
+        (3, "e8d2a308ca55827a1da49bd8e67a9e89bea63d3a57c594d099661c537509e199"),
+        (5, "74dc0f327b60fa7b34936f18c524497a1ebcbb51dc6e129b9c394dab2378d119"),
+        (1, "aeb30d3540aee03dc2cb23a6b339c5a71d89a48891d804226617a4edeae9919e"),
+        (3, "acc512898516c00c1343b5e531d9a03dc6384cad370eb3e58be169ec530b674b"),
     ),
     "column_type": (
-        (85, "1dc7ad6615d45c4191b5f00cd1b3a54fcfc1bb9cfa4eaa79f7b9a6377970ee7d"),
-        (85, "86ab59230c92253e56d467dd54cd3fe841c1af091595344a2cc33907b948d12e"),
-        (79, "97a0c54b16e1020dc13e540fabe97fd59dff5c296c279aaebe398b06ed34c39b"),
-        (26, "e12bc3225ac03af3718b1a15b2af18c14d946ea9e79ab2ef2aabb2b9b265d0ea"),
-        (16, "6a98d14a560cfa6758796766ac3d9014eace86eebe3154d4e4185a0cfa9a9329"),
-        (60, "80d2b6ded0f70c983e554c30ec0cd9473a1988981f309f96db6e52bf06a08d34"),
-        (8, "d07ccce0cc897da904a968438d7887d7bc3ef40c47ce81d7dbd605c0ae5f08ba"),
+        (9, "12f76694007f07803d05d90c9c094048a593db890c6dda98fd889b99761fbc83"),
+        (10, "4b8d3ce6762fe170951487825eff44aecd085392378b8ff90b008a565e232de6"),
+        (5, "77348ee9b812c1a0fad6dd42e826b7330bdc4d9a9e604b9cfa5e0f1a4d49ef55"),
+        (1, "8b7e5172c2f7c47256cc46a90cf755d8b0de7f992db99fa6e15b6d58ed8813d5"),
+        (4, "fe366ac47affdd89928b95bc1d2b661812b9814caa9095f588122b87c2977d95"),
+        (4, "53b93aeddea3bb7c7d3396931fb1802cd412be2f7114be4670c857f8de4ef261"),
     ),
 }
 _SCALAR_TYPES = (str, int, float, bool, type(None))
@@ -1564,7 +1556,7 @@ class CaseManifest:
         mode = _required_string(comparison, "mode", "case_manifest.comparison")
         if mode != "exact_text":
             raise ContractValidationError(
-                "case_manifest.comparison.mode must be exact_text for formal PostgreSQL compatibility cases"
+                "case_manifest.comparison.mode must be exact_text for formal MySQL compatibility cases"
             )
         oracle = _required_string(comparison, "oracle", "case_manifest.comparison")
         if oracle not in {

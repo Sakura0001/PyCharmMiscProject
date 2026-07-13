@@ -3,11 +3,19 @@ kind: mysql_case_factory_edition
 edition_id: mysql-community-8.0.22
 target_version: 8.0.22
 target_version_num: 80022
-review_state: draft
+review_state: complete
 oracle:
   engine: mysql-community-server
   exact_patch: true
 skill:
   name: mysql-8-0-22-sql-generation
   root: skills/mysql-8-0-22-sql-generation
-inventories: []
+inventories:
+- kind: statement_support_inventory
+  path: skills/mysql-8-0-22-sql-generation/references/common/statement_support_inventory.yaml
+  sha256: e778e15bf076b086bc684c4d0adaad7c86431c25ddad58f89c322904725b8aae
+  count: 112
+- kind: statement_factor_value_audit
+  path: skills/mysql-8-0-22-sql-generation/references/common/mysql_8_0_22_factor_audit.tsv
+  sha256: 10174f2beb0480f2e7aaa0cd21eaf2684fef229184f2c9965628cbfb29053f67
+  count: 1365

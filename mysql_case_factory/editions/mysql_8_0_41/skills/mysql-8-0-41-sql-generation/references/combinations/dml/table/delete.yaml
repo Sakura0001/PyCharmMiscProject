@@ -1,0 +1,1253 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: delete
+  name: DELETE
+  category: dml
+  domain: table
+  source_reference: references/statements/dml/table/delete.md
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: false
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: false
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required coverage cannot be replaced by inferred combinations.
+coverage_scope:
+  target_object_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+  target_relation_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+  table_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+  column_type_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    statement_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - single_table
+      - multiple_table_from
+      - multiple_table_using
+      coverage_requirement: all_values
+    condition_shape:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - omitted
+      - where_filter
+      - join_filter
+      coverage_requirement: all_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - success
+      - failure
+      coverage_requirement: all_values
+    priority_modifier:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - omitted
+      - low_priority
+      coverage_requirement: all_values
+    quick_modifier:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - omitted
+      - quick
+      coverage_requirement: all_values
+    ignore_modifier:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - omitted
+      - ignore
+      coverage_requirement: all_values
+    order_limit_shape:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - omitted
+      - order_by
+      - limit
+      - order_by_limit
+      coverage_requirement: all_values
+    partition_clause:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - omitted
+      - named_partition
+      coverage_requirement: all_values
+dynamic_inputs: {}
+combination_groups:
+- id: required__statement_branch_single_table__condition_shape_omitted__expected_status_success
+  title: DELETE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: single_table
+    condition_shape: omitted
+    expected_status: success
+    priority_modifier: omitted
+    quick_modifier: omitted
+    ignore_modifier: omitted
+    order_limit_shape: omitted
+    partition_clause: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - condition_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: DELETE {ignore_sql}FROM {table_name} WHERE id_col = 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_single_table__condition_shape_omitted__expected_status_failure
+  title: DELETE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: single_table
+    condition_shape: omitted
+    expected_status: failure
+    priority_modifier: omitted
+    quick_modifier: omitted
+    ignore_modifier: omitted
+    order_limit_shape: omitted
+    partition_clause: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - condition_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: DELETE {ignore_sql}FROM {table_name} WHERE id_col = 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_single_table__condition_shape_where_filter__expected_status_success
+  title: DELETE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: single_table
+    condition_shape: where_filter
+    expected_status: success
+    priority_modifier: omitted
+    quick_modifier: omitted
+    ignore_modifier: omitted
+    order_limit_shape: omitted
+    partition_clause: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - condition_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: DELETE {ignore_sql}FROM {table_name} WHERE id_col = 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_single_table__condition_shape_where_filter__expected_status_failure
+  title: DELETE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: single_table
+    condition_shape: where_filter
+    expected_status: failure
+    priority_modifier: omitted
+    quick_modifier: omitted
+    ignore_modifier: omitted
+    order_limit_shape: omitted
+    partition_clause: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - condition_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: DELETE {ignore_sql}FROM {table_name} WHERE id_col = 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_single_table__condition_shape_join_filter__expected_status_success
+  title: DELETE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: single_table
+    condition_shape: join_filter
+    expected_status: success
+    priority_modifier: omitted
+    quick_modifier: omitted
+    ignore_modifier: omitted
+    order_limit_shape: omitted
+    partition_clause: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - condition_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: DELETE {ignore_sql}FROM {table_name} WHERE id_col = 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_single_table__condition_shape_join_filter__expected_status_failure
+  title: DELETE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: single_table
+    condition_shape: join_filter
+    expected_status: failure
+    priority_modifier: omitted
+    quick_modifier: omitted
+    ignore_modifier: omitted
+    order_limit_shape: omitted
+    partition_clause: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - condition_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: DELETE {ignore_sql}FROM {table_name} WHERE id_col = 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_multiple_table_from__condition_shape_omitted__expected_status_success
+  title: DELETE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: multiple_table_from
+    condition_shape: omitted
+    expected_status: success
+    priority_modifier: omitted
+    quick_modifier: omitted
+    ignore_modifier: omitted
+    order_limit_shape: omitted
+    partition_clause: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - condition_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: DELETE {ignore_sql}FROM {table_name} WHERE id_col = 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_multiple_table_from__condition_shape_omitted__expected_status_failure
+  title: DELETE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: multiple_table_from
+    condition_shape: omitted
+    expected_status: failure
+    priority_modifier: omitted
+    quick_modifier: omitted
+    ignore_modifier: omitted
+    order_limit_shape: omitted
+    partition_clause: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - condition_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: DELETE {ignore_sql}FROM {table_name} WHERE id_col = 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_multiple_table_from__condition_shape_where_filter__expected_status_success
+  title: DELETE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: multiple_table_from
+    condition_shape: where_filter
+    expected_status: success
+    priority_modifier: omitted
+    quick_modifier: omitted
+    ignore_modifier: omitted
+    order_limit_shape: omitted
+    partition_clause: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - condition_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: DELETE {ignore_sql}FROM {table_name} WHERE id_col = 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_multiple_table_from__condition_shape_where_filter__expected_status_failure
+  title: DELETE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: multiple_table_from
+    condition_shape: where_filter
+    expected_status: failure
+    priority_modifier: omitted
+    quick_modifier: omitted
+    ignore_modifier: omitted
+    order_limit_shape: omitted
+    partition_clause: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - condition_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: DELETE {ignore_sql}FROM {table_name} WHERE id_col = 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_multiple_table_from__condition_shape_join_filter__expected_status_success
+  title: DELETE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: multiple_table_from
+    condition_shape: join_filter
+    expected_status: success
+    priority_modifier: omitted
+    quick_modifier: omitted
+    ignore_modifier: omitted
+    order_limit_shape: omitted
+    partition_clause: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - condition_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: DELETE {ignore_sql}FROM {table_name} WHERE id_col = 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_multiple_table_from__condition_shape_join_filter__expected_status_failure
+  title: DELETE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: multiple_table_from
+    condition_shape: join_filter
+    expected_status: failure
+    priority_modifier: omitted
+    quick_modifier: omitted
+    ignore_modifier: omitted
+    order_limit_shape: omitted
+    partition_clause: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - condition_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: DELETE {ignore_sql}FROM {table_name} WHERE id_col = 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_multiple_table_using__condition_shape_omitted__expected_status_success
+  title: DELETE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: multiple_table_using
+    condition_shape: omitted
+    expected_status: success
+    priority_modifier: omitted
+    quick_modifier: omitted
+    ignore_modifier: omitted
+    order_limit_shape: omitted
+    partition_clause: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - condition_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: DELETE {ignore_sql}FROM {table_name} WHERE id_col = 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_multiple_table_using__condition_shape_omitted__expected_status_failure
+  title: DELETE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: multiple_table_using
+    condition_shape: omitted
+    expected_status: failure
+    priority_modifier: omitted
+    quick_modifier: omitted
+    ignore_modifier: omitted
+    order_limit_shape: omitted
+    partition_clause: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - condition_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: DELETE {ignore_sql}FROM {table_name} WHERE id_col = 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_multiple_table_using__condition_shape_where_filter__expected_status_success
+  title: DELETE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: multiple_table_using
+    condition_shape: where_filter
+    expected_status: success
+    priority_modifier: omitted
+    quick_modifier: omitted
+    ignore_modifier: omitted
+    order_limit_shape: omitted
+    partition_clause: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - condition_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: DELETE {ignore_sql}FROM {table_name} WHERE id_col = 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_multiple_table_using__condition_shape_where_filter__expected_status_failure
+  title: DELETE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: multiple_table_using
+    condition_shape: where_filter
+    expected_status: failure
+    priority_modifier: omitted
+    quick_modifier: omitted
+    ignore_modifier: omitted
+    order_limit_shape: omitted
+    partition_clause: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - condition_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: DELETE {ignore_sql}FROM {table_name} WHERE id_col = 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_multiple_table_using__condition_shape_join_filter__expected_status_success
+  title: DELETE required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: multiple_table_using
+    condition_shape: join_filter
+    expected_status: success
+    priority_modifier: omitted
+    quick_modifier: omitted
+    ignore_modifier: omitted
+    order_limit_shape: omitted
+    partition_clause: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - condition_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: DELETE {ignore_sql}FROM {table_name} WHERE id_col = 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__statement_branch_multiple_table_using__condition_shape_join_filter__expected_status_failure
+  title: DELETE required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    statement_branch: multiple_table_using
+    condition_shape: join_filter
+    expected_status: failure
+    priority_modifier: omitted
+    quick_modifier: omitted
+    ignore_modifier: omitted
+    order_limit_shape: omitted
+    partition_clause: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - statement_branch
+    - condition_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: DELETE {ignore_sql}FROM {table_name} WHERE id_col = 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__priority_modifier__omitted
+  title: DELETE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: single_table
+    condition_shape: where_filter
+    expected_status: success
+    priority_modifier: omitted
+    quick_modifier: omitted
+    ignore_modifier: omitted
+    order_limit_shape: omitted
+    partition_clause: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - priority_modifier
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: DELETE {ignore_sql}FROM {table_name} WHERE id_col = 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__priority_modifier__low_priority
+  title: DELETE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: single_table
+    condition_shape: where_filter
+    expected_status: success
+    priority_modifier: low_priority
+    quick_modifier: omitted
+    ignore_modifier: omitted
+    order_limit_shape: omitted
+    partition_clause: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - priority_modifier
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: DELETE {ignore_sql}FROM {table_name} WHERE id_col = 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__quick_modifier__omitted
+  title: DELETE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: single_table
+    condition_shape: where_filter
+    expected_status: success
+    priority_modifier: omitted
+    quick_modifier: omitted
+    ignore_modifier: omitted
+    order_limit_shape: omitted
+    partition_clause: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - quick_modifier
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: DELETE {ignore_sql}FROM {table_name} WHERE id_col = 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__quick_modifier__quick
+  title: DELETE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: single_table
+    condition_shape: where_filter
+    expected_status: success
+    priority_modifier: omitted
+    quick_modifier: quick
+    ignore_modifier: omitted
+    order_limit_shape: omitted
+    partition_clause: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - quick_modifier
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: DELETE {ignore_sql}FROM {table_name} WHERE id_col = 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__ignore_modifier__omitted
+  title: DELETE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: single_table
+    condition_shape: where_filter
+    expected_status: success
+    priority_modifier: omitted
+    quick_modifier: omitted
+    ignore_modifier: omitted
+    order_limit_shape: omitted
+    partition_clause: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - ignore_modifier
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: DELETE {ignore_sql}FROM {table_name} WHERE id_col = 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__ignore_modifier__ignore
+  title: DELETE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: single_table
+    condition_shape: where_filter
+    expected_status: success
+    priority_modifier: omitted
+    quick_modifier: omitted
+    ignore_modifier: ignore
+    order_limit_shape: omitted
+    partition_clause: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - ignore_modifier
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: DELETE {ignore_sql}FROM {table_name} WHERE id_col = 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__order_limit_shape__omitted
+  title: DELETE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: single_table
+    condition_shape: where_filter
+    expected_status: success
+    priority_modifier: omitted
+    quick_modifier: omitted
+    ignore_modifier: omitted
+    order_limit_shape: omitted
+    partition_clause: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - order_limit_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: DELETE {ignore_sql}FROM {table_name} WHERE id_col = 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__order_limit_shape__order_by
+  title: DELETE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: single_table
+    condition_shape: where_filter
+    expected_status: success
+    priority_modifier: omitted
+    quick_modifier: omitted
+    ignore_modifier: omitted
+    order_limit_shape: order_by
+    partition_clause: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - order_limit_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: DELETE {ignore_sql}FROM {table_name} WHERE id_col = 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__order_limit_shape__limit
+  title: DELETE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: single_table
+    condition_shape: where_filter
+    expected_status: success
+    priority_modifier: omitted
+    quick_modifier: omitted
+    ignore_modifier: omitted
+    order_limit_shape: limit
+    partition_clause: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - order_limit_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: DELETE {ignore_sql}FROM {table_name} WHERE id_col = 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__order_limit_shape__order_by_limit
+  title: DELETE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: single_table
+    condition_shape: where_filter
+    expected_status: success
+    priority_modifier: omitted
+    quick_modifier: omitted
+    ignore_modifier: omitted
+    order_limit_shape: order_by_limit
+    partition_clause: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - order_limit_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: DELETE {ignore_sql}FROM {table_name} WHERE id_col = 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__partition_clause__omitted
+  title: DELETE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: single_table
+    condition_shape: where_filter
+    expected_status: success
+    priority_modifier: omitted
+    quick_modifier: omitted
+    ignore_modifier: omitted
+    order_limit_shape: omitted
+    partition_clause: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - partition_clause
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: DELETE {ignore_sql}FROM {table_name} WHERE id_col = 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__partition_clause__named_partition
+  title: DELETE supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    statement_branch: single_table
+    condition_shape: where_filter
+    expected_status: success
+    priority_modifier: omitted
+    quick_modifier: omitted
+    ignore_modifier: omitted
+    order_limit_shape: omitted
+    partition_clause: named_partition
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - partition_clause
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: DELETE {ignore_sql}FROM {table_name} WHERE id_col = 1
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

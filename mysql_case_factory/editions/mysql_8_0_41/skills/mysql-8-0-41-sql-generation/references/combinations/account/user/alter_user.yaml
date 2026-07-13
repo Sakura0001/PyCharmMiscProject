@@ -1,0 +1,2291 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: alter_user
+  name: ALTER USER
+  category: account
+  domain: user
+  source_reference: references/statements/account/user/alter_user.md
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: false
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: false
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required coverage cannot be replaced by inferred combinations.
+coverage_scope:
+  target_object_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+  target_relation_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+  table_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+  column_type_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    if_exists:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - omitted
+      - present
+      coverage_requirement: all_values
+    account_state:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - exists
+      - missing
+      coverage_requirement: all_values
+    alter_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - authentication
+      - password_expire
+      - account_lock
+      - resource_limits
+      - comment_attribute
+      coverage_requirement: all_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - success
+      - failure
+      coverage_requirement: all_values
+    auth_shape:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - identified_by_password
+      - identified_with_plugin
+      - discard_old_password
+      - add_authentication_factor
+      - modify_authentication_factor
+      - drop_authentication_factor
+      coverage_requirement: all_values
+    password_lifecycle_shape:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - omitted
+      - password_expire
+      - password_history
+      - password_reuse_interval
+      coverage_requirement: all_values
+    account_lock_shape:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - omitted
+      - lock
+      - unlock
+      coverage_requirement: all_values
+    attribute_shape:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - omitted
+      - comment
+      - attribute_json
+      coverage_requirement: all_values
+dynamic_inputs: {}
+combination_groups:
+- id: required__if_exists_omitted__account_state_exists__alter_branch_authentication__expected_status_success
+  title: ALTER USER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_exists: omitted
+    account_state: exists
+    alter_branch: authentication
+    expected_status: success
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_exists
+    - account_state
+    - alter_branch
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_exists_omitted__account_state_exists__alter_branch_authentication__expected_status_failure
+  title: ALTER USER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_exists: omitted
+    account_state: exists
+    alter_branch: authentication
+    expected_status: failure
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_exists
+    - account_state
+    - alter_branch
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_exists_omitted__account_state_exists__alter_branch_password_expire__expected_status_success
+  title: ALTER USER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_exists: omitted
+    account_state: exists
+    alter_branch: password_expire
+    expected_status: success
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_exists
+    - account_state
+    - alter_branch
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_exists_omitted__account_state_exists__alter_branch_password_expire__expected_status_failure
+  title: ALTER USER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_exists: omitted
+    account_state: exists
+    alter_branch: password_expire
+    expected_status: failure
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_exists
+    - account_state
+    - alter_branch
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_exists_omitted__account_state_exists__alter_branch_account_lock__expected_status_success
+  title: ALTER USER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_exists: omitted
+    account_state: exists
+    alter_branch: account_lock
+    expected_status: success
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_exists
+    - account_state
+    - alter_branch
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_exists_omitted__account_state_exists__alter_branch_account_lock__expected_status_failure
+  title: ALTER USER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_exists: omitted
+    account_state: exists
+    alter_branch: account_lock
+    expected_status: failure
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_exists
+    - account_state
+    - alter_branch
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_exists_omitted__account_state_exists__alter_branch_resource_limits__expected_status_success
+  title: ALTER USER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_exists: omitted
+    account_state: exists
+    alter_branch: resource_limits
+    expected_status: success
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_exists
+    - account_state
+    - alter_branch
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_exists_omitted__account_state_exists__alter_branch_resource_limits__expected_status_failure
+  title: ALTER USER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_exists: omitted
+    account_state: exists
+    alter_branch: resource_limits
+    expected_status: failure
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_exists
+    - account_state
+    - alter_branch
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_exists_omitted__account_state_exists__alter_branch_comment_attribute__expected_status_success
+  title: ALTER USER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_exists: omitted
+    account_state: exists
+    alter_branch: comment_attribute
+    expected_status: success
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_exists
+    - account_state
+    - alter_branch
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_exists_omitted__account_state_exists__alter_branch_comment_attribute__expected_status_failure
+  title: ALTER USER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_exists: omitted
+    account_state: exists
+    alter_branch: comment_attribute
+    expected_status: failure
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_exists
+    - account_state
+    - alter_branch
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_exists_omitted__account_state_missing__alter_branch_authentication__expected_status_success
+  title: ALTER USER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_exists: omitted
+    account_state: missing
+    alter_branch: authentication
+    expected_status: success
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_exists
+    - account_state
+    - alter_branch
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_exists_omitted__account_state_missing__alter_branch_authentication__expected_status_failure
+  title: ALTER USER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_exists: omitted
+    account_state: missing
+    alter_branch: authentication
+    expected_status: failure
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_exists
+    - account_state
+    - alter_branch
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_exists_omitted__account_state_missing__alter_branch_password_expire__expected_status_success
+  title: ALTER USER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_exists: omitted
+    account_state: missing
+    alter_branch: password_expire
+    expected_status: success
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_exists
+    - account_state
+    - alter_branch
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_exists_omitted__account_state_missing__alter_branch_password_expire__expected_status_failure
+  title: ALTER USER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_exists: omitted
+    account_state: missing
+    alter_branch: password_expire
+    expected_status: failure
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_exists
+    - account_state
+    - alter_branch
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_exists_omitted__account_state_missing__alter_branch_account_lock__expected_status_success
+  title: ALTER USER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_exists: omitted
+    account_state: missing
+    alter_branch: account_lock
+    expected_status: success
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_exists
+    - account_state
+    - alter_branch
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_exists_omitted__account_state_missing__alter_branch_account_lock__expected_status_failure
+  title: ALTER USER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_exists: omitted
+    account_state: missing
+    alter_branch: account_lock
+    expected_status: failure
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_exists
+    - account_state
+    - alter_branch
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_exists_omitted__account_state_missing__alter_branch_resource_limits__expected_status_success
+  title: ALTER USER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_exists: omitted
+    account_state: missing
+    alter_branch: resource_limits
+    expected_status: success
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_exists
+    - account_state
+    - alter_branch
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_exists_omitted__account_state_missing__alter_branch_resource_limits__expected_status_failure
+  title: ALTER USER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_exists: omitted
+    account_state: missing
+    alter_branch: resource_limits
+    expected_status: failure
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_exists
+    - account_state
+    - alter_branch
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_exists_omitted__account_state_missing__alter_branch_comment_attribute__expected_status_success
+  title: ALTER USER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_exists: omitted
+    account_state: missing
+    alter_branch: comment_attribute
+    expected_status: success
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_exists
+    - account_state
+    - alter_branch
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_exists_omitted__account_state_missing__alter_branch_comment_attribute__expected_status_failure
+  title: ALTER USER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_exists: omitted
+    account_state: missing
+    alter_branch: comment_attribute
+    expected_status: failure
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_exists
+    - account_state
+    - alter_branch
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_exists_present__account_state_exists__alter_branch_authentication__expected_status_success
+  title: ALTER USER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_exists: present
+    account_state: exists
+    alter_branch: authentication
+    expected_status: success
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_exists
+    - account_state
+    - alter_branch
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_exists_present__account_state_exists__alter_branch_authentication__expected_status_failure
+  title: ALTER USER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_exists: present
+    account_state: exists
+    alter_branch: authentication
+    expected_status: failure
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_exists
+    - account_state
+    - alter_branch
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_exists_present__account_state_exists__alter_branch_password_expire__expected_status_success
+  title: ALTER USER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_exists: present
+    account_state: exists
+    alter_branch: password_expire
+    expected_status: success
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_exists
+    - account_state
+    - alter_branch
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_exists_present__account_state_exists__alter_branch_password_expire__expected_status_failure
+  title: ALTER USER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_exists: present
+    account_state: exists
+    alter_branch: password_expire
+    expected_status: failure
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_exists
+    - account_state
+    - alter_branch
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_exists_present__account_state_exists__alter_branch_account_lock__expected_status_success
+  title: ALTER USER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_exists: present
+    account_state: exists
+    alter_branch: account_lock
+    expected_status: success
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_exists
+    - account_state
+    - alter_branch
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_exists_present__account_state_exists__alter_branch_account_lock__expected_status_failure
+  title: ALTER USER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_exists: present
+    account_state: exists
+    alter_branch: account_lock
+    expected_status: failure
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_exists
+    - account_state
+    - alter_branch
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_exists_present__account_state_exists__alter_branch_resource_limits__expected_status_success
+  title: ALTER USER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_exists: present
+    account_state: exists
+    alter_branch: resource_limits
+    expected_status: success
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_exists
+    - account_state
+    - alter_branch
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_exists_present__account_state_exists__alter_branch_resource_limits__expected_status_failure
+  title: ALTER USER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_exists: present
+    account_state: exists
+    alter_branch: resource_limits
+    expected_status: failure
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_exists
+    - account_state
+    - alter_branch
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_exists_present__account_state_exists__alter_branch_comment_attribute__expected_status_success
+  title: ALTER USER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_exists: present
+    account_state: exists
+    alter_branch: comment_attribute
+    expected_status: success
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_exists
+    - account_state
+    - alter_branch
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_exists_present__account_state_exists__alter_branch_comment_attribute__expected_status_failure
+  title: ALTER USER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_exists: present
+    account_state: exists
+    alter_branch: comment_attribute
+    expected_status: failure
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_exists
+    - account_state
+    - alter_branch
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_exists_present__account_state_missing__alter_branch_authentication__expected_status_success
+  title: ALTER USER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_exists: present
+    account_state: missing
+    alter_branch: authentication
+    expected_status: success
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_exists
+    - account_state
+    - alter_branch
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_exists_present__account_state_missing__alter_branch_authentication__expected_status_failure
+  title: ALTER USER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_exists: present
+    account_state: missing
+    alter_branch: authentication
+    expected_status: failure
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_exists
+    - account_state
+    - alter_branch
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_exists_present__account_state_missing__alter_branch_password_expire__expected_status_success
+  title: ALTER USER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_exists: present
+    account_state: missing
+    alter_branch: password_expire
+    expected_status: success
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_exists
+    - account_state
+    - alter_branch
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_exists_present__account_state_missing__alter_branch_password_expire__expected_status_failure
+  title: ALTER USER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_exists: present
+    account_state: missing
+    alter_branch: password_expire
+    expected_status: failure
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_exists
+    - account_state
+    - alter_branch
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_exists_present__account_state_missing__alter_branch_account_lock__expected_status_success
+  title: ALTER USER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_exists: present
+    account_state: missing
+    alter_branch: account_lock
+    expected_status: success
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_exists
+    - account_state
+    - alter_branch
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_exists_present__account_state_missing__alter_branch_account_lock__expected_status_failure
+  title: ALTER USER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_exists: present
+    account_state: missing
+    alter_branch: account_lock
+    expected_status: failure
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_exists
+    - account_state
+    - alter_branch
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_exists_present__account_state_missing__alter_branch_resource_limits__expected_status_success
+  title: ALTER USER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_exists: present
+    account_state: missing
+    alter_branch: resource_limits
+    expected_status: success
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_exists
+    - account_state
+    - alter_branch
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_exists_present__account_state_missing__alter_branch_resource_limits__expected_status_failure
+  title: ALTER USER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_exists: present
+    account_state: missing
+    alter_branch: resource_limits
+    expected_status: failure
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_exists
+    - account_state
+    - alter_branch
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_exists_present__account_state_missing__alter_branch_comment_attribute__expected_status_success
+  title: ALTER USER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_exists: present
+    account_state: missing
+    alter_branch: comment_attribute
+    expected_status: success
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_exists
+    - account_state
+    - alter_branch
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_exists_present__account_state_missing__alter_branch_comment_attribute__expected_status_failure
+  title: ALTER USER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_exists: present
+    account_state: missing
+    alter_branch: comment_attribute
+    expected_status: failure
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_exists
+    - account_state
+    - alter_branch
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__auth_shape__identified_by_password
+  title: ALTER USER supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_exists: omitted
+    account_state: exists
+    alter_branch: authentication
+    expected_status: success
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - auth_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__auth_shape__identified_with_plugin
+  title: ALTER USER supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_exists: omitted
+    account_state: exists
+    alter_branch: authentication
+    expected_status: success
+    auth_shape: identified_with_plugin
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - auth_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__auth_shape__discard_old_password
+  title: ALTER USER supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_exists: omitted
+    account_state: exists
+    alter_branch: authentication
+    expected_status: success
+    auth_shape: discard_old_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - auth_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__auth_shape__add_authentication_factor
+  title: ALTER USER supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_exists: omitted
+    account_state: exists
+    alter_branch: authentication
+    expected_status: success
+    auth_shape: add_authentication_factor
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - auth_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__auth_shape__modify_authentication_factor
+  title: ALTER USER supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_exists: omitted
+    account_state: exists
+    alter_branch: authentication
+    expected_status: success
+    auth_shape: modify_authentication_factor
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - auth_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__auth_shape__drop_authentication_factor
+  title: ALTER USER supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_exists: omitted
+    account_state: exists
+    alter_branch: authentication
+    expected_status: success
+    auth_shape: drop_authentication_factor
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - auth_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__password_lifecycle_shape__omitted
+  title: ALTER USER supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_exists: omitted
+    account_state: exists
+    alter_branch: authentication
+    expected_status: success
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - password_lifecycle_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__password_lifecycle_shape__password_expire
+  title: ALTER USER supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_exists: omitted
+    account_state: exists
+    alter_branch: authentication
+    expected_status: success
+    auth_shape: identified_by_password
+    password_lifecycle_shape: password_expire
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - password_lifecycle_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__password_lifecycle_shape__password_history
+  title: ALTER USER supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_exists: omitted
+    account_state: exists
+    alter_branch: authentication
+    expected_status: success
+    auth_shape: identified_by_password
+    password_lifecycle_shape: password_history
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - password_lifecycle_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__password_lifecycle_shape__password_reuse_interval
+  title: ALTER USER supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_exists: omitted
+    account_state: exists
+    alter_branch: authentication
+    expected_status: success
+    auth_shape: identified_by_password
+    password_lifecycle_shape: password_reuse_interval
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - password_lifecycle_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__account_lock_shape__omitted
+  title: ALTER USER supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_exists: omitted
+    account_state: exists
+    alter_branch: authentication
+    expected_status: success
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - account_lock_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__account_lock_shape__lock
+  title: ALTER USER supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_exists: omitted
+    account_state: exists
+    alter_branch: authentication
+    expected_status: success
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: lock
+    attribute_shape: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - account_lock_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__account_lock_shape__unlock
+  title: ALTER USER supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_exists: omitted
+    account_state: exists
+    alter_branch: authentication
+    expected_status: success
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: unlock
+    attribute_shape: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - account_lock_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__attribute_shape__omitted
+  title: ALTER USER supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_exists: omitted
+    account_state: exists
+    alter_branch: authentication
+    expected_status: success
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - attribute_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__attribute_shape__comment
+  title: ALTER USER supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_exists: omitted
+    account_state: exists
+    alter_branch: authentication
+    expected_status: success
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: comment
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - attribute_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__attribute_shape__attribute_json
+  title: ALTER USER supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_exists: omitted
+    account_state: exists
+    alter_branch: authentication
+    expected_status: success
+    auth_shape: identified_by_password
+    password_lifecycle_shape: omitted
+    account_lock_shape: omitted
+    attribute_shape: attribute_json
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - attribute_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER USER {if_exists_sql}'case_user'@'localhost' IDENTIFIED BY 'case_password_456'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

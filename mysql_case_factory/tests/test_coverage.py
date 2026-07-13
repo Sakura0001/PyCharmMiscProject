@@ -136,13 +136,13 @@ class CoverageExpansionTest(unittest.TestCase):
             "status": "covered",
             "axes": ["table_kind"],
             "test_points": ["TP-READ"],
-            "execution_harness": "external-copy-stdin",
+            "execution_harness": "external-load-data-ingest",
         }
         document["test_points"][0]["execution_rules"] = [
             {
                 "when": {"table_kind": "heap"},
                 "execution_profile": "external_isolated",
-                "execution_harness": "external-copy-stdin",
+                "execution_harness": "external-load-data-ingest",
             }
         ]
         plan = CoveragePlan.from_dict(document)
@@ -152,7 +152,7 @@ class CoverageExpansionTest(unittest.TestCase):
             if item.assignments == {"table_kind": "heap", "column_type": "integer"}
         )
         self.assertEqual("external_isolated", obligation.execution_profile)
-        self.assertEqual("external-copy-stdin", obligation.execution_harness)
+        self.assertEqual("external-load-data-ingest", obligation.execution_harness)
 
         sql_content = "COPY routed_case FROM STDIN;\n1\n\\.\n"
         with tempfile.TemporaryDirectory() as tmp:
@@ -170,7 +170,7 @@ class CoverageExpansionTest(unittest.TestCase):
                 "sql_files": ["cases/sql/routed.sql"],
                 "sql_sha256": hashlib.sha256(sql_content.encode("utf-8")).hexdigest(),
                 "execution_profile": "external_isolated",
-                "execution_harness": "external-copy-stdin",
+                "execution_harness": "external-load-data-ingest",
                 "comparison": {
                     "mode": "exact_text",
                     "oracle": "upstream-mysql-community-8.0.22",
@@ -196,19 +196,19 @@ class CoverageExpansionTest(unittest.TestCase):
             self.assertFalse(basic.complete)
             self.assertIn("CASE-EXTERNAL", basic.mismatched_case_ids)
 
-    def test_external_copy_ingest_case_binds_payload_inside_its_only_sql_file(self):
+    def test_external_load_data_case_is_delegated_to_the_named_harness(self):
         document = self.plan_document()
-        document["risk_decisions"]["copy_protocol_ingest"] = {
+        document["risk_decisions"]["load_data_ingest"] = {
             "status": "covered",
             "axes": ["table_kind"],
             "test_points": ["TP-READ"],
-            "execution_harness": "external-copy-ingest",
+            "execution_harness": "external-load-data-ingest",
         }
         document["test_points"][0]["execution_rules"] = [
             {
                 "when": {"table_kind": "heap"},
                 "execution_profile": "external_isolated",
-                "execution_harness": "external-copy-ingest",
+                "execution_harness": "external-load-data-ingest",
             }
         ]
         obligation = next(
@@ -218,28 +218,26 @@ class CoverageExpansionTest(unittest.TestCase):
         )
 
         valid_sql = (
-            "CREATE TEMP TABLE copy_bound(value integer);\n"
-            "COPY copy_bound FROM STDIN;\n"
-            "1\n"
-            "\\.\n"
-            "TABLE copy_bound;\n"
+            "CREATE TEMPORARY TABLE load_bound(value integer);\n"
+            "LOAD DATA LOCAL INFILE 'payload.csv' INTO TABLE load_bound;\n"
+            "SELECT value FROM load_bound ORDER BY value;\n"
         )
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            sql_path = root / "cases" / "sql" / "copy_bound.sql"
+            sql_path = root / "cases" / "sql" / "load_bound.sql"
             sql_path.parent.mkdir(parents=True)
             sql_path.write_text(valid_sql, encoding="utf-8")
             case_document = {
                 "schema_version": 1,
                 "kind": "case_manifest",
-                "case_id": "CASE-COPY-BOUND",
+                "case_id": "CASE-LOAD-BOUND",
                 "test_point_id": obligation.test_point_id,
                 "obligation_id": obligation.obligation_id,
                 "outcome": obligation.outcome,
-                "sql_files": ["cases/sql/copy_bound.sql"],
+                "sql_files": ["cases/sql/load_bound.sql"],
                 "sql_sha256": hashlib.sha256(valid_sql.encode("utf-8")).hexdigest(),
                 "execution_profile": "external_isolated",
-                "execution_harness": "external-copy-ingest",
+                "execution_harness": "external-load-data-ingest",
                 "comparison": {
                     "mode": "exact_text",
                     "oracle": "upstream-mysql-community-8.0.22",
@@ -255,7 +253,7 @@ class CoverageExpansionTest(unittest.TestCase):
             )
             self.assertTrue(complete.complete, complete)
 
-            tampered_payload_sql = valid_sql.replace("1\n\\.\n", "2\n\\.\n")
+            tampered_payload_sql = valid_sql.replace("payload.csv", "other.csv")
             sql_path.write_text(tampered_payload_sql, encoding="utf-8")
             tampered = reconcile_case_manifests(
                 [obligation],
@@ -267,19 +265,15 @@ class CoverageExpansionTest(unittest.TestCase):
                 any("SQL SHA256 does not match" in item for item in tampered.unsafe_sql_files)
             )
 
-            external_file_sql = "COPY copy_bound FROM '/tmp/payload.csv';\n"
-            sql_path.write_text(external_file_sql, encoding="utf-8")
             case_document["sql_sha256"] = hashlib.sha256(
-                external_file_sql.encode("utf-8")
+                tampered_payload_sql.encode("utf-8")
             ).hexdigest()
-            rejected = reconcile_case_manifests(
+            delegated = reconcile_case_manifests(
                 [obligation],
                 [CaseManifest.from_dict(case_document)],
                 artifact_root=root,
             )
-            self.assertFalse(rejected.complete)
-            self.assertEqual(1, len(rejected.unsafe_sql_files))
-            self.assertIn("external payload files", rejected.unsafe_sql_files[0])
+            self.assertTrue(delegated.complete, delegated)
 
 
     def test_obligation_ids_are_stable_and_unique(self):

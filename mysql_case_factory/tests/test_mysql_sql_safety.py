@@ -37,3 +37,15 @@ def test_basic_runner_rejects_external_or_privileged_sql(sql: str) -> None:
 )
 def test_basic_runner_accepts_safe_sql_and_ignores_literals_comments(sql: str) -> None:
     validate_sql_for_basic_runner(sql)
+
+
+def test_mysql_executable_comments_cannot_hide_forbidden_capabilities() -> None:
+    with pytest.raises(SqlSafetyError, match="LOAD DATA file access"):
+        validate_sql_for_basic_runner(
+            "/*!80000 LOAD DATA LOCAL INFILE 'payload.csv' INTO TABLE t */;"
+        )
+
+
+def test_minus_arithmetic_is_not_misclassified_as_a_dash_comment() -> None:
+    with pytest.raises(SqlSafetyError, match="LOAD DATA file access"):
+        validate_sql_for_basic_runner("SELECT 3--2; LOAD DATA INFILE 'x' INTO TABLE t;")

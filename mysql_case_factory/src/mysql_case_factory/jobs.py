@@ -39,7 +39,6 @@ from .differential import (
 from .feature_plan import validate_coverage_plan
 from .sql_safety import (
     validate_sql_for_basic_runner,
-    validate_sql_for_external_copy_ingest,
 )
 from .regression_style import (
     ExecutionTranscript,
@@ -1737,9 +1736,6 @@ def _lint_checks_for_case(context: _RunCoverageContext, case: CaseManifest) -> d
     if case.execution_profile == "basic_mysql":
         validate_sql_for_basic_runner(sql_text)
         return {**common_checks, "sql_safety": "passed"}
-    if case.execution_harness == "external-copy-ingest":
-        validate_sql_for_external_copy_ingest(sql_text)
-        return {**common_checks, "external_copy_payload": "passed"}
     return {**common_checks, "external_harness_contract": "passed"}
 
 

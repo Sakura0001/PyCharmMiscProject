@@ -1,0 +1,2434 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: handler
+  name: HANDLER
+  category: dml
+  domain: table
+  source_reference: references/statements/dml/table/handler.md
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: false
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: false
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required coverage cannot be replaced by inferred combinations.
+coverage_scope:
+  target_object_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+  target_relation_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+  table_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+  column_type_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    handler_branch:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - open
+      - read_key
+      - read_first
+      - read_next
+      - read_prev
+      - read_last
+      - close
+      coverage_requirement: all_values
+    handler_state:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - closed
+      - open
+      - missing_table
+      - missing_index
+      coverage_requirement: all_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - success
+      - failure
+      coverage_requirement: all_values
+    read_direction:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - not_applicable
+      - first
+      - next
+      - prev
+      - last
+      - key_compare
+      coverage_requirement: all_values
+    where_limit_shape:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - omitted
+      - where_filter
+      - limit
+      - where_limit
+      coverage_requirement: all_values
+dynamic_inputs: {}
+combination_groups:
+- id: required__handler_branch_open__handler_state_closed__expected_status_success
+  title: HANDLER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    handler_branch: open
+    handler_state: closed
+    expected_status: success
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_open__handler_state_closed__expected_status_failure
+  title: HANDLER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    handler_branch: open
+    handler_state: closed
+    expected_status: failure
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_open__handler_state_open__expected_status_success
+  title: HANDLER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    handler_branch: open
+    handler_state: open
+    expected_status: success
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_open__handler_state_open__expected_status_failure
+  title: HANDLER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    handler_branch: open
+    handler_state: open
+    expected_status: failure
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_open__handler_state_missing_table__expected_status_success
+  title: HANDLER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    handler_branch: open
+    handler_state: missing_table
+    expected_status: success
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_open__handler_state_missing_table__expected_status_failure
+  title: HANDLER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    handler_branch: open
+    handler_state: missing_table
+    expected_status: failure
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_open__handler_state_missing_index__expected_status_success
+  title: HANDLER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    handler_branch: open
+    handler_state: missing_index
+    expected_status: success
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_open__handler_state_missing_index__expected_status_failure
+  title: HANDLER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    handler_branch: open
+    handler_state: missing_index
+    expected_status: failure
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_read_key__handler_state_closed__expected_status_success
+  title: HANDLER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    handler_branch: read_key
+    handler_state: closed
+    expected_status: success
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_read_key__handler_state_closed__expected_status_failure
+  title: HANDLER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    handler_branch: read_key
+    handler_state: closed
+    expected_status: failure
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_read_key__handler_state_open__expected_status_success
+  title: HANDLER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    handler_branch: read_key
+    handler_state: open
+    expected_status: success
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_read_key__handler_state_open__expected_status_failure
+  title: HANDLER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    handler_branch: read_key
+    handler_state: open
+    expected_status: failure
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_read_key__handler_state_missing_table__expected_status_success
+  title: HANDLER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    handler_branch: read_key
+    handler_state: missing_table
+    expected_status: success
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_read_key__handler_state_missing_table__expected_status_failure
+  title: HANDLER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    handler_branch: read_key
+    handler_state: missing_table
+    expected_status: failure
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_read_key__handler_state_missing_index__expected_status_success
+  title: HANDLER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    handler_branch: read_key
+    handler_state: missing_index
+    expected_status: success
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_read_key__handler_state_missing_index__expected_status_failure
+  title: HANDLER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    handler_branch: read_key
+    handler_state: missing_index
+    expected_status: failure
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_read_first__handler_state_closed__expected_status_success
+  title: HANDLER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    handler_branch: read_first
+    handler_state: closed
+    expected_status: success
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_read_first__handler_state_closed__expected_status_failure
+  title: HANDLER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    handler_branch: read_first
+    handler_state: closed
+    expected_status: failure
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_read_first__handler_state_open__expected_status_success
+  title: HANDLER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    handler_branch: read_first
+    handler_state: open
+    expected_status: success
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_read_first__handler_state_open__expected_status_failure
+  title: HANDLER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    handler_branch: read_first
+    handler_state: open
+    expected_status: failure
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_read_first__handler_state_missing_table__expected_status_success
+  title: HANDLER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    handler_branch: read_first
+    handler_state: missing_table
+    expected_status: success
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_read_first__handler_state_missing_table__expected_status_failure
+  title: HANDLER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    handler_branch: read_first
+    handler_state: missing_table
+    expected_status: failure
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_read_first__handler_state_missing_index__expected_status_success
+  title: HANDLER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    handler_branch: read_first
+    handler_state: missing_index
+    expected_status: success
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_read_first__handler_state_missing_index__expected_status_failure
+  title: HANDLER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    handler_branch: read_first
+    handler_state: missing_index
+    expected_status: failure
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_read_next__handler_state_closed__expected_status_success
+  title: HANDLER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    handler_branch: read_next
+    handler_state: closed
+    expected_status: success
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_read_next__handler_state_closed__expected_status_failure
+  title: HANDLER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    handler_branch: read_next
+    handler_state: closed
+    expected_status: failure
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_read_next__handler_state_open__expected_status_success
+  title: HANDLER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    handler_branch: read_next
+    handler_state: open
+    expected_status: success
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_read_next__handler_state_open__expected_status_failure
+  title: HANDLER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    handler_branch: read_next
+    handler_state: open
+    expected_status: failure
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_read_next__handler_state_missing_table__expected_status_success
+  title: HANDLER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    handler_branch: read_next
+    handler_state: missing_table
+    expected_status: success
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_read_next__handler_state_missing_table__expected_status_failure
+  title: HANDLER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    handler_branch: read_next
+    handler_state: missing_table
+    expected_status: failure
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_read_next__handler_state_missing_index__expected_status_success
+  title: HANDLER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    handler_branch: read_next
+    handler_state: missing_index
+    expected_status: success
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_read_next__handler_state_missing_index__expected_status_failure
+  title: HANDLER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    handler_branch: read_next
+    handler_state: missing_index
+    expected_status: failure
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_read_prev__handler_state_closed__expected_status_success
+  title: HANDLER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    handler_branch: read_prev
+    handler_state: closed
+    expected_status: success
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_read_prev__handler_state_closed__expected_status_failure
+  title: HANDLER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    handler_branch: read_prev
+    handler_state: closed
+    expected_status: failure
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_read_prev__handler_state_open__expected_status_success
+  title: HANDLER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    handler_branch: read_prev
+    handler_state: open
+    expected_status: success
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_read_prev__handler_state_open__expected_status_failure
+  title: HANDLER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    handler_branch: read_prev
+    handler_state: open
+    expected_status: failure
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_read_prev__handler_state_missing_table__expected_status_success
+  title: HANDLER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    handler_branch: read_prev
+    handler_state: missing_table
+    expected_status: success
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_read_prev__handler_state_missing_table__expected_status_failure
+  title: HANDLER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    handler_branch: read_prev
+    handler_state: missing_table
+    expected_status: failure
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_read_prev__handler_state_missing_index__expected_status_success
+  title: HANDLER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    handler_branch: read_prev
+    handler_state: missing_index
+    expected_status: success
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_read_prev__handler_state_missing_index__expected_status_failure
+  title: HANDLER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    handler_branch: read_prev
+    handler_state: missing_index
+    expected_status: failure
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_read_last__handler_state_closed__expected_status_success
+  title: HANDLER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    handler_branch: read_last
+    handler_state: closed
+    expected_status: success
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_read_last__handler_state_closed__expected_status_failure
+  title: HANDLER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    handler_branch: read_last
+    handler_state: closed
+    expected_status: failure
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_read_last__handler_state_open__expected_status_success
+  title: HANDLER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    handler_branch: read_last
+    handler_state: open
+    expected_status: success
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_read_last__handler_state_open__expected_status_failure
+  title: HANDLER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    handler_branch: read_last
+    handler_state: open
+    expected_status: failure
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_read_last__handler_state_missing_table__expected_status_success
+  title: HANDLER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    handler_branch: read_last
+    handler_state: missing_table
+    expected_status: success
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_read_last__handler_state_missing_table__expected_status_failure
+  title: HANDLER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    handler_branch: read_last
+    handler_state: missing_table
+    expected_status: failure
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_read_last__handler_state_missing_index__expected_status_success
+  title: HANDLER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    handler_branch: read_last
+    handler_state: missing_index
+    expected_status: success
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_read_last__handler_state_missing_index__expected_status_failure
+  title: HANDLER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    handler_branch: read_last
+    handler_state: missing_index
+    expected_status: failure
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_close__handler_state_closed__expected_status_success
+  title: HANDLER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    handler_branch: close
+    handler_state: closed
+    expected_status: success
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_close__handler_state_closed__expected_status_failure
+  title: HANDLER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    handler_branch: close
+    handler_state: closed
+    expected_status: failure
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_close__handler_state_open__expected_status_success
+  title: HANDLER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    handler_branch: close
+    handler_state: open
+    expected_status: success
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_close__handler_state_open__expected_status_failure
+  title: HANDLER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    handler_branch: close
+    handler_state: open
+    expected_status: failure
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_close__handler_state_missing_table__expected_status_success
+  title: HANDLER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    handler_branch: close
+    handler_state: missing_table
+    expected_status: success
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_close__handler_state_missing_table__expected_status_failure
+  title: HANDLER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    handler_branch: close
+    handler_state: missing_table
+    expected_status: failure
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_close__handler_state_missing_index__expected_status_success
+  title: HANDLER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    handler_branch: close
+    handler_state: missing_index
+    expected_status: success
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__handler_branch_close__handler_state_missing_index__expected_status_failure
+  title: HANDLER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    handler_branch: close
+    handler_state: missing_index
+    expected_status: failure
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - handler_branch
+    - handler_state
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__read_direction__not_applicable
+  title: HANDLER supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    handler_branch: open
+    handler_state: closed
+    expected_status: success
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - read_direction
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__read_direction__first
+  title: HANDLER supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    handler_branch: open
+    handler_state: closed
+    expected_status: success
+    read_direction: first
+    where_limit_shape: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - read_direction
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__read_direction__next
+  title: HANDLER supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    handler_branch: open
+    handler_state: closed
+    expected_status: success
+    read_direction: next
+    where_limit_shape: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - read_direction
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__read_direction__prev
+  title: HANDLER supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    handler_branch: open
+    handler_state: closed
+    expected_status: success
+    read_direction: prev
+    where_limit_shape: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - read_direction
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__read_direction__last
+  title: HANDLER supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    handler_branch: open
+    handler_state: closed
+    expected_status: success
+    read_direction: last
+    where_limit_shape: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - read_direction
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__read_direction__key_compare
+  title: HANDLER supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    handler_branch: open
+    handler_state: closed
+    expected_status: success
+    read_direction: key_compare
+    where_limit_shape: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - read_direction
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__where_limit_shape__omitted
+  title: HANDLER supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    handler_branch: open
+    handler_state: closed
+    expected_status: success
+    read_direction: not_applicable
+    where_limit_shape: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - where_limit_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__where_limit_shape__where_filter
+  title: HANDLER supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    handler_branch: open
+    handler_state: closed
+    expected_status: success
+    read_direction: not_applicable
+    where_limit_shape: where_filter
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - where_limit_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__where_limit_shape__limit
+  title: HANDLER supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    handler_branch: open
+    handler_state: closed
+    expected_status: success
+    read_direction: not_applicable
+    where_limit_shape: limit
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - where_limit_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__where_limit_shape__where_limit
+  title: HANDLER supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    handler_branch: open
+    handler_state: closed
+    expected_status: success
+    read_direction: not_applicable
+    where_limit_shape: where_limit
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - where_limit_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: HANDLER {table_name} OPEN
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

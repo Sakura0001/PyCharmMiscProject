@@ -97,16 +97,16 @@ def validate_coverage_plan(
             for locator in axis.source_locators
             if locator.startswith("feature:")
         ]
-        mysql8022_locators = [
-            locator.removeprefix("mysql8022:")
+        mysql_version_locators = [
+            locator.split(":", 1)[1]
             for locator in axis.source_locators
-            if locator.startswith("mysql8022:")
+            if locator.startswith(("mysql8022:", "mysql8041:"))
         ]
         invalid_locators = [
             locator
             for locator in axis.source_locators
             if re.fullmatch(
-                r"(?:feature:[A-Za-z0-9][A-Za-z0-9._-]*|mysql8022:[a-z0-9][a-z0-9._-]*)",
+                r"(?:feature:[A-Za-z0-9][A-Za-z0-9._-]*|mysql80(?:22|41):[a-z0-9][a-z0-9._-]*)",
                 locator,
             )
             is None
@@ -116,10 +116,10 @@ def validate_coverage_plan(
                 f"inline coverage axis {axis_id} has invalid source locator(s): "
                 + ", ".join(invalid_locators)
             )
-        if not feature_locators or not mysql8022_locators:
+        if not feature_locators or not mysql_version_locators:
             issues.append(
                 f"inline coverage axis {axis_id} requires both feature:<requirement-id> "
-                "and mysql8022:<official-topic> source locators"
+                "and mysql8022:<official-topic> or mysql8041:<official-topic> source locators"
             )
         if known_requirements is not None:
             for requirement_id in feature_locators:
@@ -164,7 +164,7 @@ def validate_coverage_plan(
             if snapshots != CANONICAL_SCOPE_SNAPSHOTS[scope_id]:
                 issues.append(
                     f"scope decision {scope_id} canonical inventory snapshot "
-                    f"does not match the pinned PostgreSQL 18.4 provenance"
+                    f"does not match the pinned MySQL edition provenance"
                 )
 
     for risk_id, decision in plan.risk_decisions.items():

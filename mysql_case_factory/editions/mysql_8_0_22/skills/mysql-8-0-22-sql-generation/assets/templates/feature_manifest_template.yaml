@@ -1,0 +1,22 @@
+schema_version: 1
+kind: feature_manifest
+feature_id: mysql-storage-feature
+title: MySQL storage compatibility feature
+compatibility_target: mysql-community-8.0.22
+summary: Verify exact MySQL 8.0.22 observable behavior on reference and DUT.
+source:
+  path: feature-document.md
+  sha256: '0000000000000000000000000000000000000000000000000000000000000000'
+  revision: user-supplied-revision
+requirements:
+- id: REQ-001
+  description: Reference and DUT preserve exact MySQL 8.0.22 SQL-visible behavior.
+  source:
+    section: scope
+    locator: observable compatibility boundary
+metadata:
+  assumptions:
+  - Both endpoints implement MySQL Community Server 8.0.22 SQL semantics.
+  unresolved_questions: []
+  observable_boundary: sql-and-user-visible-output
+  storage_diagnostics_owner: user

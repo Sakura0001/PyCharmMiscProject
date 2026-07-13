@@ -1,9 +1,9 @@
 """Preflight guards for SQL programs executed by mysql-based runners.
 
-The runner is an output-comparison primitive, not a host-command sandbox.  It
-therefore accepts ordinary MySQL SQL but refuses client commands, server-file
-access, administrative control, and topology mutation before spawning a
-process. Such tests belong in a separately isolated external harness.
+The runner is an output-comparison primitive, not a host-command sandbox. It
+accepts ordinary MySQL SQL but rejects client commands, server-file access,
+administrative control, and topology mutation before spawning a process.
+Those tests belong in a separately isolated external harness.
 """
 
 from __future__ import annotations
@@ -18,105 +18,42 @@ class UnsafeSqlError(ValueError):
 SqlSafetyError = UnsafeSqlError
 
 
-# Any unquoted backslash is outside the basic runner's SQL-only contract.  This
-# catches the full psql meta-command alphabet (including punctuation commands
-# such as ``\.``), rather than trying to maintain an incomplete allowlist.
-_PSQL_META = re.compile(r"\\")
-_TOKEN = re.compile(r"[A-Za-z_][A-Za-z0-9_]*|;")
-_STRUCTURAL_TOKEN = re.compile(r"[A-Za-z_][A-Za-z0-9_]*|[();]")
-
-
-def _identifier_start(character: str) -> bool:
-    return character == "_" or character.isalpha() or ord(character) >= 128
-
-
-def _identifier_continue(character: str) -> bool:
-    return _identifier_start(character) or character.isdigit()
-
-
-def _dollar_tag_at(content: str, index: int) -> str | None:
-    """Return a PostgreSQL dollar-quote delimiter beginning at ``index``."""
-
-    if content[index] != "$":
-        return None
-    if index and (
-        _identifier_continue(content[index - 1]) or content[index - 1] == "$"
-    ):
-        return None
-    end = content.find("$", index + 1)
-    if end < 0:
-        return None
-    tag = content[index + 1 : end]
-    if tag and (
-        not _identifier_start(tag[0])
-        or any(not _identifier_continue(character) for character in tag[1:])
-    ):
-        return None
-    return content[index : end + 1]
-
-
-def _escape_string_prefix(content: str, quote_index: int) -> bool:
-    prefix_index = quote_index - 1
-    return (
-        prefix_index >= 0
-        and content[prefix_index] in "Ee"
-        and (
-            prefix_index == 0
-            or not _identifier_continue(content[prefix_index - 1])
-        )
-    )
-
-
-def _mask_non_code(
-    content: str,
-    *,
-    standard_conforming_strings: bool,
-) -> str:
-    """Replace SQL strings/comments/quoted identifiers with spaces.
-
-    Newlines are retained so diagnostics can still report the relevant line.
-    PostgreSQL nested block comments and dollar-quoted bodies are handled.
-    """
+def _mask_non_code(content: str) -> str:
+    """Mask MySQL strings, comments, and quoted identifiers, retaining lines."""
 
     masked = ["\n" if character == "\n" else " " for character in content]
     index = 0
     length = len(content)
     while index < length:
-        if content.startswith("--", index):
-            end = content.find("\n", index + 2)
+        dash_comment = (
+            content.startswith("--", index)
+            and index + 2 < length
+            and content[index + 2].isspace()
+        )
+        if dash_comment or content.startswith("#", index):
+            end = content.find("\n", index + (2 if dash_comment else 1))
             index = length if end < 0 else end
             continue
-        if content.startswith("/*", index):
-            depth = 1
-            cursor = index + 2
-            while cursor < length and depth:
-                if content.startswith("/*", cursor):
-                    depth += 1
-                    cursor += 2
-                elif content.startswith("*/", cursor):
-                    depth -= 1
-                    cursor += 2
-                else:
-                    cursor += 1
-            index = cursor
+        if content.startswith("/*!", index) or content.startswith("/*M!", index):
+            end = content.find("*/", index + 3)
+            body_end = length if end < 0 else end
+            for cursor in range(index + 3, body_end):
+                masked[cursor] = content[cursor]
+            index = length if end < 0 else end + 2
             continue
-        character = content[index]
-        if character == "'":
-            backslash_escapes = (
-                not standard_conforming_strings
-                or _escape_string_prefix(content, index)
-            )
+        if content.startswith("/*", index):
+            end = content.find("*/", index + 2)
+            index = length if end < 0 else end + 2
+            continue
+        delimiter = content[index]
+        if delimiter in {"'", '"', "`"}:
             cursor = index + 1
             while cursor < length:
-                if (
-                    backslash_escapes
-                    and content[cursor] == "\\"
-                    and cursor + 1 < length
-                ):
+                if delimiter != "`" and content[cursor] == "\\" and cursor + 1 < length:
                     cursor += 2
                     continue
-                if content[cursor] == "'":
-                    if cursor + 1 < length and content[cursor + 1] == "'":
+                if content[cursor] == delimiter:
+                    if cursor + 1 < length and content[cursor + 1] == delimiter:
                         cursor += 2
                         continue
                     cursor += 1
@@ -124,36 +61,20 @@ def _mask_non_code(
                 cursor += 1
             index = cursor
             continue
-        if character == '"':
-            cursor = index + 1
-            while cursor < length:
-                if content[cursor] == '"':
-                    if cursor + 1 < length and content[cursor + 1] == '"':
-                        cursor += 2
-                        continue
-                    cursor += 1
-                    break
-                cursor += 1
-            index = cursor
-            continue
-        if character == "$":
-            tag = _dollar_tag_at(content, index)
-            if tag is not None:
-                opening_end = index + len(tag)
-                end = content.find(tag, opening_end)
-                index = length if end < 0 else end + len(tag)
-                continue
-        masked[index] = character
+        masked[index] = content[index]
         index += 1
     return "".join(masked)
 
 
 def validate_sql_for_basic_runner(content: str) -> None:
-    """Reject capabilities that are unsafe or nondeterministic in basic mode."""
+    """Reject capabilities unsafe or nondeterministic in the basic MySQL mode."""
 
     if not isinstance(content, str):
         raise TypeError("SQL content must be a string")
-    code = _mask_non_code(content, standard_conforming_strings=False)
+    if "\x00" in content:
+        raise SqlSafetyError("SQL must not contain NUL bytes")
+
+    code = _mask_non_code(content)
     meta = re.search(
         r"(?im)(?:^|;)\s*(?:SOURCE|SYSTEM|TEE|NOTEE|PAGER|NOPAGER|DELIMITER)\b",
         code,
@@ -161,7 +82,7 @@ def validate_sql_for_basic_runner(content: str) -> None:
     if meta is not None:
         line = content.count("\n", 0, meta.start()) + 1
         raise SqlSafetyError(f"mysql client commands are forbidden (line {line})")
-    backslash = _PSQL_META.search(code)
+    backslash = re.search(r"\\", code)
     if backslash is not None:
         line = content.count("\n", 0, backslash.start()) + 1
         raise SqlSafetyError(f"mysql client backslash commands are forbidden (line {line})")
@@ -170,10 +91,18 @@ def validate_sql_for_basic_runner(content: str) -> None:
         (r"\bINTO\s+(?:OUTFILE|DUMPFILE)\b", "server outfile access"),
         (r"\bLOAD_FILE\s*\(", "server file reads"),
         (r"\bLOAD\s+DATA(?:\s+LOCAL)?\s+INFILE\b", "LOAD DATA file access"),
-        (r"\b(?:INSTALL|UNINSTALL)\s+(?:PLUGIN|COMPONENT)\b", "plugin/component administration"),
+        (
+            r"\b(?:INSTALL|UNINSTALL)\s+(?:PLUGIN|COMPONENT)\b",
+            "plugin/component administration",
+        ),
         (r"(?:^|;)\s*(?:SHUTDOWN|RESTART)\b", "server lifecycle control"),
         (r"\bSET\s+PERSIST(?:_ONLY)?\b", "persistent server variables"),
-        (r"(?:^|;)\s*(?:CHANGE\s+REPLICATION\s+SOURCE|CHANGE\s+MASTER|START\s+REPLICA|STOP\s+REPLICA|RESET\s+REPLICA|START\s+SLAVE|STOP\s+SLAVE|RESET\s+SLAVE)\b", "replication control"),
+        (
+            r"(?:^|;)\s*(?:CHANGE\s+REPLICATION\s+SOURCE|CHANGE\s+MASTER|"
+            r"START\s+REPLICA|STOP\s+REPLICA|RESET\s+REPLICA|"
+            r"START\s+SLAVE|STOP\s+SLAVE|RESET\s+SLAVE)\b",
+            "replication control",
+        ),
         (r"(?:^|;)\s*CLONE\s+INSTANCE\b", "instance cloning"),
     )
     for pattern, capability in forbidden:
@@ -181,247 +110,9 @@ def validate_sql_for_basic_runner(content: str) -> None:
         if match is not None:
             line = content.count("\n", 0, match.start()) + 1
             raise SqlSafetyError(
-                f"{capability} is outside the basic runner; use an isolated external harness (line {line})"
+                f"{capability} is outside the basic runner; "
+                f"use an isolated external harness (line {line})"
             )
 
 
-def _find_statement_end(
-    content: str,
-    start: int,
-    *,
-    standard_conforming_strings: bool,
-) -> int | None:
-    """Find the next code-level semicolon without scanning COPY payload bytes.
-
-    The external COPY validator alternates between SQL mode and psql COPY data
-    mode.  Masking the whole file first would be incorrect because arbitrary
-    payload bytes can look like unterminated SQL strings or comments.
-    """
-
-    index = start
-    length = len(content)
-    while index < length:
-        if content.startswith("--", index):
-            end = content.find("\n", index + 2)
-            index = length if end < 0 else end + 1
-            continue
-        if content.startswith("/*", index):
-            depth = 1
-            cursor = index + 2
-            while cursor < length and depth:
-                if content.startswith("/*", cursor):
-                    depth += 1
-                    cursor += 2
-                elif content.startswith("*/", cursor):
-                    depth -= 1
-                    cursor += 2
-                else:
-                    cursor += 1
-            if depth:
-                raise UnsafeSqlError(
-                    "external-copy-ingest SQL has an unterminated block comment"
-                )
-            index = cursor
-            continue
-        character = content[index]
-        if character == "'":
-            backslash_escapes = (
-                not standard_conforming_strings
-                or _escape_string_prefix(content, index)
-            )
-            cursor = index + 1
-            while cursor < length:
-                if (
-                    backslash_escapes
-                    and content[cursor] == "\\"
-                    and cursor + 1 < length
-                ):
-                    cursor += 2
-                    continue
-                if content[cursor] == "'":
-                    if cursor + 1 < length and content[cursor + 1] == "'":
-                        cursor += 2
-                        continue
-                    cursor += 1
-                    break
-                cursor += 1
-            else:
-                raise UnsafeSqlError(
-                    "external-copy-ingest SQL has an unterminated string literal"
-                )
-            index = cursor
-            continue
-        if character == '"':
-            cursor = index + 1
-            while cursor < length:
-                if content[cursor] == '"':
-                    if cursor + 1 < length and content[cursor + 1] == '"':
-                        cursor += 2
-                        continue
-                    cursor += 1
-                    break
-                cursor += 1
-            else:
-                raise UnsafeSqlError(
-                    "external-copy-ingest SQL has an unterminated quoted identifier"
-                )
-            index = cursor
-            continue
-        if character == "$":
-            tag = _dollar_tag_at(content, index)
-            if tag is not None:
-                opening_end = index + len(tag)
-                end = content.find(tag, opening_end)
-                if end < 0:
-                    raise UnsafeSqlError(
-                        "external-copy-ingest SQL has an unterminated dollar-quoted body"
-                    )
-                index = end + len(tag)
-                continue
-        if character == ";":
-            return index
-        index += 1
-    return None
-
-
-def _statement_tokens(statement: str) -> tuple[str, ...]:
-    code_variants = (
-        _mask_non_code(statement, standard_conforming_strings=True),
-        _mask_non_code(statement, standard_conforming_strings=False),
-    )
-    token_variants = tuple(
-        tuple(match.group(0).upper() for match in _STRUCTURAL_TOKEN.finditer(code))
-        for code in code_variants
-    )
-    if token_variants[0] != token_variants[1]:
-        raise UnsafeSqlError(
-            "external-copy-ingest SQL has ambiguous string escaping"
-        )
-    for code in code_variants:
-        if _PSQL_META.search(code) is not None:
-            raise UnsafeSqlError(
-                "external-copy-ingest permits no psql meta command outside a COPY terminator"
-            )
-    return token_variants[0]
-
-
-def _copy_direction(tokens: tuple[str, ...]) -> tuple[str, str | None] | None:
-    """Return the top-level COPY direction and endpoint token, if present."""
-
-    if not tokens or tokens[0] != "COPY":
-        return None
-    depth = 0
-    for index, token in enumerate(tokens[1:], 1):
-        if token == "(":
-            depth += 1
-        elif token == ")":
-            if depth == 0:
-                raise UnsafeSqlError(
-                    "external-copy-ingest COPY statement has unbalanced parentheses"
-                )
-            depth -= 1
-        elif depth == 0 and token in {"FROM", "TO"}:
-            endpoint = tokens[index + 1] if index + 1 < len(tokens) else None
-            return token, endpoint
-    return None
-
-
-def _copy_payload_end(content: str, start: int) -> int:
-    """Validate one non-empty inline data block and return the next SQL byte."""
-
-    cursor = start
-    payload_lines = 0
-    while cursor < len(content):
-        newline = content.find("\n", cursor)
-        line_end = len(content) if newline < 0 else newline
-        line = content[cursor:line_end]
-        if line.endswith("\r"):
-            line = line[:-1]
-        if line == r"\.":
-            if payload_lines == 0:
-                raise UnsafeSqlError(
-                    "external-copy-ingest COPY FROM STDIN payload must not be empty"
-                )
-            return len(content) if newline < 0 else newline + 1
-        payload_lines += 1
-        if newline < 0:
-            break
-        cursor = newline + 1
-    raise UnsafeSqlError(
-        "external-copy-ingest COPY FROM STDIN payload is missing a standalone \\. terminator"
-    )
-
-
-def validate_sql_for_external_copy_ingest(content: str) -> None:
-    """Require a self-contained, manifest-hash-bound psql COPY program.
-
-    Every direct COPY statement in this harness must use ``FROM STDIN``.  Its
-    payload must follow in the same SQL file and end with a standalone ``\\.``
-    line.  The harness may therefore invoke ``psql -f <manifest SQL>`` without
-    an external payload file or an out-of-band stdin stream.  This is a
-    conservative structural check, not a complete PostgreSQL parser.
-    """
-
-    if "\x00" in content:
-        raise UnsafeSqlError("external-copy-ingest SQL must not contain NUL bytes")
-
-    cursor = 0
-    copy_blocks = 0
-    while cursor < len(content):
-        ends = (
-            _find_statement_end(
-                content,
-                cursor,
-                standard_conforming_strings=True,
-            ),
-            _find_statement_end(
-                content,
-                cursor,
-                standard_conforming_strings=False,
-            ),
-        )
-        if ends[0] != ends[1]:
-            raise UnsafeSqlError(
-                "external-copy-ingest SQL has ambiguous statement boundaries"
-            )
-        end = ends[0]
-        statement_end = len(content) if end is None else end + 1
-        tokens = _statement_tokens(content[cursor:statement_end])
-        direction = _copy_direction(tokens)
-        if direction is None:
-            if tokens and tokens[0] == "COPY":
-                raise UnsafeSqlError(
-                    "external-copy-ingest COPY statement has no top-level FROM STDIN direction"
-                )
-            cursor = statement_end
-            continue
-        if direction != ("FROM", "STDIN"):
-            raise UnsafeSqlError(
-                "external-copy-ingest permits only COPY ... FROM STDIN; external "
-                "payload files, PROGRAM, COPY TO, and out-of-band input are forbidden"
-            )
-        if end is None:
-            raise UnsafeSqlError(
-                "external-copy-ingest COPY FROM STDIN statement must end with a semicolon"
-            )
-
-        newline = content.find("\n", end + 1)
-        if newline < 0 or content[end + 1 : newline].strip(" \t\r"):
-            raise UnsafeSqlError(
-                "external-copy-ingest COPY FROM STDIN payload must start on the next line"
-            )
-        copy_blocks += 1
-        cursor = _copy_payload_end(content, newline + 1)
-
-    if copy_blocks == 0:
-        raise UnsafeSqlError(
-            "external-copy-ingest SQL must contain at least one inline "
-            "COPY ... FROM STDIN data block"
-        )
-
-
-__all__ = [
-    "UnsafeSqlError",
-    "validate_sql_for_basic_runner",
-    "validate_sql_for_external_copy_ingest",
-]
+__all__ = ["UnsafeSqlError", "validate_sql_for_basic_runner"]

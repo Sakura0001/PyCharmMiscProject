@@ -1,0 +1,982 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: alter_event
+  name: ALTER EVENT
+  category: ddl
+  domain: event
+  source_reference: references/statements/ddl/event/alter_event.md
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: false
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: false
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required coverage cannot be replaced by inferred combinations.
+coverage_scope:
+  target_object_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+  target_relation_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+  table_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+  column_type_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    event_state:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - exists
+      - missing
+      coverage_requirement: all_values
+    alteration_shape:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - reschedule
+      - rename
+      - enable_disable
+      - replace_body
+      - comment
+      coverage_requirement: all_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - success
+      - failure
+      coverage_requirement: all_values
+    schedule_shape:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - at_timestamp
+      - every_interval
+      coverage_requirement: all_values
+    enable_state:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - enable
+      - disable
+      - disable_on_slave
+      coverage_requirement: all_values
+dynamic_inputs: {}
+combination_groups:
+- id: required__event_state_exists__alteration_shape_reschedule__expected_status_success
+  title: ALTER EVENT required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    event_state: exists
+    alteration_shape: reschedule
+    expected_status: success
+    schedule_shape: at_timestamp
+    enable_state: disable
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - event_state
+    - alteration_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER EVENT {event_name} COMMENT 'mysql case event'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__event_state_exists__alteration_shape_reschedule__expected_status_failure
+  title: ALTER EVENT required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    event_state: exists
+    alteration_shape: reschedule
+    expected_status: failure
+    schedule_shape: at_timestamp
+    enable_state: disable
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - event_state
+    - alteration_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER EVENT {event_name} COMMENT 'mysql case event'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__event_state_exists__alteration_shape_rename__expected_status_success
+  title: ALTER EVENT required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    event_state: exists
+    alteration_shape: rename
+    expected_status: success
+    schedule_shape: at_timestamp
+    enable_state: disable
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - event_state
+    - alteration_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER EVENT {event_name} COMMENT 'mysql case event'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__event_state_exists__alteration_shape_rename__expected_status_failure
+  title: ALTER EVENT required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    event_state: exists
+    alteration_shape: rename
+    expected_status: failure
+    schedule_shape: at_timestamp
+    enable_state: disable
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - event_state
+    - alteration_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER EVENT {event_name} COMMENT 'mysql case event'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__event_state_exists__alteration_shape_enable_disable__expected_status_success
+  title: ALTER EVENT required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    event_state: exists
+    alteration_shape: enable_disable
+    expected_status: success
+    schedule_shape: at_timestamp
+    enable_state: disable
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - event_state
+    - alteration_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER EVENT {event_name} COMMENT 'mysql case event'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__event_state_exists__alteration_shape_enable_disable__expected_status_failure
+  title: ALTER EVENT required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    event_state: exists
+    alteration_shape: enable_disable
+    expected_status: failure
+    schedule_shape: at_timestamp
+    enable_state: disable
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - event_state
+    - alteration_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER EVENT {event_name} COMMENT 'mysql case event'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__event_state_exists__alteration_shape_replace_body__expected_status_success
+  title: ALTER EVENT required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    event_state: exists
+    alteration_shape: replace_body
+    expected_status: success
+    schedule_shape: at_timestamp
+    enable_state: disable
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - event_state
+    - alteration_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER EVENT {event_name} COMMENT 'mysql case event'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__event_state_exists__alteration_shape_replace_body__expected_status_failure
+  title: ALTER EVENT required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    event_state: exists
+    alteration_shape: replace_body
+    expected_status: failure
+    schedule_shape: at_timestamp
+    enable_state: disable
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - event_state
+    - alteration_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER EVENT {event_name} COMMENT 'mysql case event'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__event_state_exists__alteration_shape_comment__expected_status_success
+  title: ALTER EVENT required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    event_state: exists
+    alteration_shape: comment
+    expected_status: success
+    schedule_shape: at_timestamp
+    enable_state: disable
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - event_state
+    - alteration_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER EVENT {event_name} COMMENT 'mysql case event'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__event_state_exists__alteration_shape_comment__expected_status_failure
+  title: ALTER EVENT required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    event_state: exists
+    alteration_shape: comment
+    expected_status: failure
+    schedule_shape: at_timestamp
+    enable_state: disable
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - event_state
+    - alteration_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER EVENT {event_name} COMMENT 'mysql case event'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__event_state_missing__alteration_shape_reschedule__expected_status_success
+  title: ALTER EVENT required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    event_state: missing
+    alteration_shape: reschedule
+    expected_status: success
+    schedule_shape: at_timestamp
+    enable_state: disable
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - event_state
+    - alteration_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER EVENT {event_name} COMMENT 'mysql case event'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__event_state_missing__alteration_shape_reschedule__expected_status_failure
+  title: ALTER EVENT required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    event_state: missing
+    alteration_shape: reschedule
+    expected_status: failure
+    schedule_shape: at_timestamp
+    enable_state: disable
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - event_state
+    - alteration_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER EVENT {event_name} COMMENT 'mysql case event'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__event_state_missing__alteration_shape_rename__expected_status_success
+  title: ALTER EVENT required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    event_state: missing
+    alteration_shape: rename
+    expected_status: success
+    schedule_shape: at_timestamp
+    enable_state: disable
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - event_state
+    - alteration_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER EVENT {event_name} COMMENT 'mysql case event'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__event_state_missing__alteration_shape_rename__expected_status_failure
+  title: ALTER EVENT required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    event_state: missing
+    alteration_shape: rename
+    expected_status: failure
+    schedule_shape: at_timestamp
+    enable_state: disable
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - event_state
+    - alteration_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER EVENT {event_name} COMMENT 'mysql case event'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__event_state_missing__alteration_shape_enable_disable__expected_status_success
+  title: ALTER EVENT required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    event_state: missing
+    alteration_shape: enable_disable
+    expected_status: success
+    schedule_shape: at_timestamp
+    enable_state: disable
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - event_state
+    - alteration_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER EVENT {event_name} COMMENT 'mysql case event'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__event_state_missing__alteration_shape_enable_disable__expected_status_failure
+  title: ALTER EVENT required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    event_state: missing
+    alteration_shape: enable_disable
+    expected_status: failure
+    schedule_shape: at_timestamp
+    enable_state: disable
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - event_state
+    - alteration_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER EVENT {event_name} COMMENT 'mysql case event'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__event_state_missing__alteration_shape_replace_body__expected_status_success
+  title: ALTER EVENT required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    event_state: missing
+    alteration_shape: replace_body
+    expected_status: success
+    schedule_shape: at_timestamp
+    enable_state: disable
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - event_state
+    - alteration_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER EVENT {event_name} COMMENT 'mysql case event'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__event_state_missing__alteration_shape_replace_body__expected_status_failure
+  title: ALTER EVENT required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    event_state: missing
+    alteration_shape: replace_body
+    expected_status: failure
+    schedule_shape: at_timestamp
+    enable_state: disable
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - event_state
+    - alteration_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER EVENT {event_name} COMMENT 'mysql case event'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__event_state_missing__alteration_shape_comment__expected_status_success
+  title: ALTER EVENT required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    event_state: missing
+    alteration_shape: comment
+    expected_status: success
+    schedule_shape: at_timestamp
+    enable_state: disable
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - event_state
+    - alteration_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER EVENT {event_name} COMMENT 'mysql case event'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__event_state_missing__alteration_shape_comment__expected_status_failure
+  title: ALTER EVENT required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    event_state: missing
+    alteration_shape: comment
+    expected_status: failure
+    schedule_shape: at_timestamp
+    enable_state: disable
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - event_state
+    - alteration_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: ALTER EVENT {event_name} COMMENT 'mysql case event'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__schedule_shape__at_timestamp
+  title: ALTER EVENT supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    event_state: exists
+    alteration_shape: comment
+    expected_status: success
+    schedule_shape: at_timestamp
+    enable_state: disable
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - schedule_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER EVENT {event_name} COMMENT 'mysql case event'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__schedule_shape__every_interval
+  title: ALTER EVENT supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    event_state: exists
+    alteration_shape: comment
+    expected_status: success
+    schedule_shape: every_interval
+    enable_state: disable
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - schedule_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER EVENT {event_name} COMMENT 'mysql case event'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__enable_state__enable
+  title: ALTER EVENT supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    event_state: exists
+    alteration_shape: comment
+    expected_status: success
+    schedule_shape: at_timestamp
+    enable_state: enable
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - enable_state
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER EVENT {event_name} COMMENT 'mysql case event'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__enable_state__disable
+  title: ALTER EVENT supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    event_state: exists
+    alteration_shape: comment
+    expected_status: success
+    schedule_shape: at_timestamp
+    enable_state: disable
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - enable_state
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER EVENT {event_name} COMMENT 'mysql case event'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__enable_state__disable_on_slave
+  title: ALTER EVENT supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    event_state: exists
+    alteration_shape: comment
+    expected_status: success
+    schedule_shape: at_timestamp
+    enable_state: disable_on_slave
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - enable_state
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: ALTER EVENT {event_name} COMMENT 'mysql case event'
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true

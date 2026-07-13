@@ -1,0 +1,24 @@
+schema_version: 1
+kind: case_manifest
+case_id: CASE-TP-OBJECT-0001
+test_point_id: TP-OBJECT
+obligation_id: obl-replace-with-expanded-id
+outcome: success
+sql_files:
+- cases/sql/TP-OBJECT/case_0001.sql
+sql_sha256: b4e0497804e46e0a0b0b8c31975b062152d551bac49c3c2e80932567b4085dcd
+execution_profile: basic_mysql
+comparison:
+  mode: exact_text
+  oracle: upstream-mysql-community-8.0.22
+  require_identical: true
+cleanup:
+  required: true
+  idempotent: true
+metadata:
+  assignments:
+    object_type: table
+  requirement_ids:
+  - REQ-001
+  source_manifest: inputs/feature_manifest.yaml
+  coverage_plan: plans/coverage_plan.yaml

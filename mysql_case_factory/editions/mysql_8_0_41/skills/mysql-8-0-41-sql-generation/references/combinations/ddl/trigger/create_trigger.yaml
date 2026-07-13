@@ -1,0 +1,3253 @@
+schema_version: 1
+kind: statement_combination_matrix
+statement:
+  key: create_trigger
+  name: CREATE TRIGGER
+  category: ddl
+  domain: trigger
+  source_reference: references/statements/ddl/trigger/create_trigger.md
+execution_contract:
+  required_matrix_is_baseline: true
+  no_inference_before_required_coverage_passes: true
+  runner_must_complete_required_matrix_first: true
+  allow_post_coverage_extension_inference: false
+  extension_combinations_must_be_marked: true
+  extension_combinations_must_record_derivation: true
+  extension_combinations_must_not_replace_required_coverage: true
+  success_and_failure_both_allowed: true
+  all_success_and_failure_reasons_must_be_declared: true
+  required_coverage_sql_templates_must_come_from_combination_groups: true
+  extension_sql_templates_must_be_recorded_in_artifacts: true
+post_coverage_extension_policy:
+  enabled: false
+  allowed_after_audit_verdict: required_coverage_passed
+  output_location: artifacts/intermediates/<task_slug>/derived_extension_combinations.yaml
+  required_fields:
+  - id
+  - title
+  - derived_from_combination_group
+  - derivation_reason
+  - factors
+  - expected_status_policy
+  - compatibility
+  - sql_shape
+  - verification
+  - cleanup
+  guardrails:
+  - Required coverage cannot be replaced by inferred combinations.
+coverage_scope:
+  target_object_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+  target_relation_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+  table_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+  column_type_coverage:
+    required: false
+    coverage_mode: not_applicable
+    decision_reason: Statement matrices cover syntax factors; feature coverage plans own object inventories.
+factor_contract:
+  source_reference_must_define_all_factors: true
+  matrix_must_cover_required_factor_values: true
+  factors:
+    if_not_exists:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - omitted
+      - present
+      coverage_requirement: all_values
+    trigger_time:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - before
+      - after
+      coverage_requirement: all_values
+    trigger_event:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - insert
+      - update
+      - delete
+      coverage_requirement: all_values
+    body_shape:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - set_new_value
+      - audit_insert
+      - invalid_body
+      coverage_requirement: all_values
+    expected_status:
+      tier: T1
+      coverage_role: main_axis
+      required_values:
+      - success
+      - failure
+      coverage_requirement: all_values
+    definer_shape:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - omitted
+      - current_user
+      - explicit_user
+      coverage_requirement: all_values
+    trigger_order:
+      tier: T2
+      coverage_role: rotate_attach
+      required_values:
+      - omitted
+      - follows
+      - precedes
+      coverage_requirement: all_values
+dynamic_inputs: {}
+combination_groups:
+- id: required__if_not_exists_omitted__trigger_time_before__trigger_event_insert__body_shape_set_new_value__expected_status_success
+  title: CREATE TRIGGER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    trigger_time: before
+    trigger_event: insert
+    body_shape: set_new_value
+    expected_status: success
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__trigger_time_before__trigger_event_insert__body_shape_set_new_value__expected_status_failure
+  title: CREATE TRIGGER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    trigger_time: before
+    trigger_event: insert
+    body_shape: set_new_value
+    expected_status: failure
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__trigger_time_before__trigger_event_insert__body_shape_audit_insert__expected_status_success
+  title: CREATE TRIGGER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    trigger_time: before
+    trigger_event: insert
+    body_shape: audit_insert
+    expected_status: success
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__trigger_time_before__trigger_event_insert__body_shape_audit_insert__expected_status_failure
+  title: CREATE TRIGGER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    trigger_time: before
+    trigger_event: insert
+    body_shape: audit_insert
+    expected_status: failure
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__trigger_time_before__trigger_event_insert__body_shape_invalid_body__expected_status_success
+  title: CREATE TRIGGER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    trigger_time: before
+    trigger_event: insert
+    body_shape: invalid_body
+    expected_status: success
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__trigger_time_before__trigger_event_insert__body_shape_invalid_body__expected_status_failure
+  title: CREATE TRIGGER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    trigger_time: before
+    trigger_event: insert
+    body_shape: invalid_body
+    expected_status: failure
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__trigger_time_before__trigger_event_update__body_shape_set_new_value__expected_status_success
+  title: CREATE TRIGGER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    trigger_time: before
+    trigger_event: update
+    body_shape: set_new_value
+    expected_status: success
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__trigger_time_before__trigger_event_update__body_shape_set_new_value__expected_status_failure
+  title: CREATE TRIGGER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    trigger_time: before
+    trigger_event: update
+    body_shape: set_new_value
+    expected_status: failure
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__trigger_time_before__trigger_event_update__body_shape_audit_insert__expected_status_success
+  title: CREATE TRIGGER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    trigger_time: before
+    trigger_event: update
+    body_shape: audit_insert
+    expected_status: success
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__trigger_time_before__trigger_event_update__body_shape_audit_insert__expected_status_failure
+  title: CREATE TRIGGER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    trigger_time: before
+    trigger_event: update
+    body_shape: audit_insert
+    expected_status: failure
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__trigger_time_before__trigger_event_update__body_shape_invalid_body__expected_status_success
+  title: CREATE TRIGGER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    trigger_time: before
+    trigger_event: update
+    body_shape: invalid_body
+    expected_status: success
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__trigger_time_before__trigger_event_update__body_shape_invalid_body__expected_status_failure
+  title: CREATE TRIGGER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    trigger_time: before
+    trigger_event: update
+    body_shape: invalid_body
+    expected_status: failure
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__trigger_time_before__trigger_event_delete__body_shape_set_new_value__expected_status_success
+  title: CREATE TRIGGER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    trigger_time: before
+    trigger_event: delete
+    body_shape: set_new_value
+    expected_status: success
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__trigger_time_before__trigger_event_delete__body_shape_set_new_value__expected_status_failure
+  title: CREATE TRIGGER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    trigger_time: before
+    trigger_event: delete
+    body_shape: set_new_value
+    expected_status: failure
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__trigger_time_before__trigger_event_delete__body_shape_audit_insert__expected_status_success
+  title: CREATE TRIGGER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    trigger_time: before
+    trigger_event: delete
+    body_shape: audit_insert
+    expected_status: success
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__trigger_time_before__trigger_event_delete__body_shape_audit_insert__expected_status_failure
+  title: CREATE TRIGGER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    trigger_time: before
+    trigger_event: delete
+    body_shape: audit_insert
+    expected_status: failure
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__trigger_time_before__trigger_event_delete__body_shape_invalid_body__expected_status_success
+  title: CREATE TRIGGER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    trigger_time: before
+    trigger_event: delete
+    body_shape: invalid_body
+    expected_status: success
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__trigger_time_before__trigger_event_delete__body_shape_invalid_body__expected_status_failure
+  title: CREATE TRIGGER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    trigger_time: before
+    trigger_event: delete
+    body_shape: invalid_body
+    expected_status: failure
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__trigger_time_after__trigger_event_insert__body_shape_set_new_value__expected_status_success
+  title: CREATE TRIGGER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    trigger_time: after
+    trigger_event: insert
+    body_shape: set_new_value
+    expected_status: success
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__trigger_time_after__trigger_event_insert__body_shape_set_new_value__expected_status_failure
+  title: CREATE TRIGGER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    trigger_time: after
+    trigger_event: insert
+    body_shape: set_new_value
+    expected_status: failure
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__trigger_time_after__trigger_event_insert__body_shape_audit_insert__expected_status_success
+  title: CREATE TRIGGER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    trigger_time: after
+    trigger_event: insert
+    body_shape: audit_insert
+    expected_status: success
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__trigger_time_after__trigger_event_insert__body_shape_audit_insert__expected_status_failure
+  title: CREATE TRIGGER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    trigger_time: after
+    trigger_event: insert
+    body_shape: audit_insert
+    expected_status: failure
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__trigger_time_after__trigger_event_insert__body_shape_invalid_body__expected_status_success
+  title: CREATE TRIGGER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    trigger_time: after
+    trigger_event: insert
+    body_shape: invalid_body
+    expected_status: success
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__trigger_time_after__trigger_event_insert__body_shape_invalid_body__expected_status_failure
+  title: CREATE TRIGGER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    trigger_time: after
+    trigger_event: insert
+    body_shape: invalid_body
+    expected_status: failure
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__trigger_time_after__trigger_event_update__body_shape_set_new_value__expected_status_success
+  title: CREATE TRIGGER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    trigger_time: after
+    trigger_event: update
+    body_shape: set_new_value
+    expected_status: success
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__trigger_time_after__trigger_event_update__body_shape_set_new_value__expected_status_failure
+  title: CREATE TRIGGER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    trigger_time: after
+    trigger_event: update
+    body_shape: set_new_value
+    expected_status: failure
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__trigger_time_after__trigger_event_update__body_shape_audit_insert__expected_status_success
+  title: CREATE TRIGGER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    trigger_time: after
+    trigger_event: update
+    body_shape: audit_insert
+    expected_status: success
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__trigger_time_after__trigger_event_update__body_shape_audit_insert__expected_status_failure
+  title: CREATE TRIGGER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    trigger_time: after
+    trigger_event: update
+    body_shape: audit_insert
+    expected_status: failure
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__trigger_time_after__trigger_event_update__body_shape_invalid_body__expected_status_success
+  title: CREATE TRIGGER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    trigger_time: after
+    trigger_event: update
+    body_shape: invalid_body
+    expected_status: success
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__trigger_time_after__trigger_event_update__body_shape_invalid_body__expected_status_failure
+  title: CREATE TRIGGER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    trigger_time: after
+    trigger_event: update
+    body_shape: invalid_body
+    expected_status: failure
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__trigger_time_after__trigger_event_delete__body_shape_set_new_value__expected_status_success
+  title: CREATE TRIGGER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    trigger_time: after
+    trigger_event: delete
+    body_shape: set_new_value
+    expected_status: success
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__trigger_time_after__trigger_event_delete__body_shape_set_new_value__expected_status_failure
+  title: CREATE TRIGGER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    trigger_time: after
+    trigger_event: delete
+    body_shape: set_new_value
+    expected_status: failure
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__trigger_time_after__trigger_event_delete__body_shape_audit_insert__expected_status_success
+  title: CREATE TRIGGER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    trigger_time: after
+    trigger_event: delete
+    body_shape: audit_insert
+    expected_status: success
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__trigger_time_after__trigger_event_delete__body_shape_audit_insert__expected_status_failure
+  title: CREATE TRIGGER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    trigger_time: after
+    trigger_event: delete
+    body_shape: audit_insert
+    expected_status: failure
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__trigger_time_after__trigger_event_delete__body_shape_invalid_body__expected_status_success
+  title: CREATE TRIGGER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    trigger_time: after
+    trigger_event: delete
+    body_shape: invalid_body
+    expected_status: success
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_omitted__trigger_time_after__trigger_event_delete__body_shape_invalid_body__expected_status_failure
+  title: CREATE TRIGGER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    trigger_time: after
+    trigger_event: delete
+    body_shape: invalid_body
+    expected_status: failure
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__trigger_time_before__trigger_event_insert__body_shape_set_new_value__expected_status_success
+  title: CREATE TRIGGER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    trigger_time: before
+    trigger_event: insert
+    body_shape: set_new_value
+    expected_status: success
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__trigger_time_before__trigger_event_insert__body_shape_set_new_value__expected_status_failure
+  title: CREATE TRIGGER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    trigger_time: before
+    trigger_event: insert
+    body_shape: set_new_value
+    expected_status: failure
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__trigger_time_before__trigger_event_insert__body_shape_audit_insert__expected_status_success
+  title: CREATE TRIGGER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    trigger_time: before
+    trigger_event: insert
+    body_shape: audit_insert
+    expected_status: success
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__trigger_time_before__trigger_event_insert__body_shape_audit_insert__expected_status_failure
+  title: CREATE TRIGGER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    trigger_time: before
+    trigger_event: insert
+    body_shape: audit_insert
+    expected_status: failure
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__trigger_time_before__trigger_event_insert__body_shape_invalid_body__expected_status_success
+  title: CREATE TRIGGER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    trigger_time: before
+    trigger_event: insert
+    body_shape: invalid_body
+    expected_status: success
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__trigger_time_before__trigger_event_insert__body_shape_invalid_body__expected_status_failure
+  title: CREATE TRIGGER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    trigger_time: before
+    trigger_event: insert
+    body_shape: invalid_body
+    expected_status: failure
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__trigger_time_before__trigger_event_update__body_shape_set_new_value__expected_status_success
+  title: CREATE TRIGGER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    trigger_time: before
+    trigger_event: update
+    body_shape: set_new_value
+    expected_status: success
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__trigger_time_before__trigger_event_update__body_shape_set_new_value__expected_status_failure
+  title: CREATE TRIGGER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    trigger_time: before
+    trigger_event: update
+    body_shape: set_new_value
+    expected_status: failure
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__trigger_time_before__trigger_event_update__body_shape_audit_insert__expected_status_success
+  title: CREATE TRIGGER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    trigger_time: before
+    trigger_event: update
+    body_shape: audit_insert
+    expected_status: success
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__trigger_time_before__trigger_event_update__body_shape_audit_insert__expected_status_failure
+  title: CREATE TRIGGER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    trigger_time: before
+    trigger_event: update
+    body_shape: audit_insert
+    expected_status: failure
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__trigger_time_before__trigger_event_update__body_shape_invalid_body__expected_status_success
+  title: CREATE TRIGGER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    trigger_time: before
+    trigger_event: update
+    body_shape: invalid_body
+    expected_status: success
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__trigger_time_before__trigger_event_update__body_shape_invalid_body__expected_status_failure
+  title: CREATE TRIGGER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    trigger_time: before
+    trigger_event: update
+    body_shape: invalid_body
+    expected_status: failure
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__trigger_time_before__trigger_event_delete__body_shape_set_new_value__expected_status_success
+  title: CREATE TRIGGER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    trigger_time: before
+    trigger_event: delete
+    body_shape: set_new_value
+    expected_status: success
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__trigger_time_before__trigger_event_delete__body_shape_set_new_value__expected_status_failure
+  title: CREATE TRIGGER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    trigger_time: before
+    trigger_event: delete
+    body_shape: set_new_value
+    expected_status: failure
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__trigger_time_before__trigger_event_delete__body_shape_audit_insert__expected_status_success
+  title: CREATE TRIGGER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    trigger_time: before
+    trigger_event: delete
+    body_shape: audit_insert
+    expected_status: success
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__trigger_time_before__trigger_event_delete__body_shape_audit_insert__expected_status_failure
+  title: CREATE TRIGGER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    trigger_time: before
+    trigger_event: delete
+    body_shape: audit_insert
+    expected_status: failure
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__trigger_time_before__trigger_event_delete__body_shape_invalid_body__expected_status_success
+  title: CREATE TRIGGER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    trigger_time: before
+    trigger_event: delete
+    body_shape: invalid_body
+    expected_status: success
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__trigger_time_before__trigger_event_delete__body_shape_invalid_body__expected_status_failure
+  title: CREATE TRIGGER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    trigger_time: before
+    trigger_event: delete
+    body_shape: invalid_body
+    expected_status: failure
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__trigger_time_after__trigger_event_insert__body_shape_set_new_value__expected_status_success
+  title: CREATE TRIGGER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    trigger_time: after
+    trigger_event: insert
+    body_shape: set_new_value
+    expected_status: success
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__trigger_time_after__trigger_event_insert__body_shape_set_new_value__expected_status_failure
+  title: CREATE TRIGGER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    trigger_time: after
+    trigger_event: insert
+    body_shape: set_new_value
+    expected_status: failure
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__trigger_time_after__trigger_event_insert__body_shape_audit_insert__expected_status_success
+  title: CREATE TRIGGER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    trigger_time: after
+    trigger_event: insert
+    body_shape: audit_insert
+    expected_status: success
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__trigger_time_after__trigger_event_insert__body_shape_audit_insert__expected_status_failure
+  title: CREATE TRIGGER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    trigger_time: after
+    trigger_event: insert
+    body_shape: audit_insert
+    expected_status: failure
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__trigger_time_after__trigger_event_insert__body_shape_invalid_body__expected_status_success
+  title: CREATE TRIGGER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    trigger_time: after
+    trigger_event: insert
+    body_shape: invalid_body
+    expected_status: success
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__trigger_time_after__trigger_event_insert__body_shape_invalid_body__expected_status_failure
+  title: CREATE TRIGGER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    trigger_time: after
+    trigger_event: insert
+    body_shape: invalid_body
+    expected_status: failure
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__trigger_time_after__trigger_event_update__body_shape_set_new_value__expected_status_success
+  title: CREATE TRIGGER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    trigger_time: after
+    trigger_event: update
+    body_shape: set_new_value
+    expected_status: success
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__trigger_time_after__trigger_event_update__body_shape_set_new_value__expected_status_failure
+  title: CREATE TRIGGER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    trigger_time: after
+    trigger_event: update
+    body_shape: set_new_value
+    expected_status: failure
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__trigger_time_after__trigger_event_update__body_shape_audit_insert__expected_status_success
+  title: CREATE TRIGGER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    trigger_time: after
+    trigger_event: update
+    body_shape: audit_insert
+    expected_status: success
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__trigger_time_after__trigger_event_update__body_shape_audit_insert__expected_status_failure
+  title: CREATE TRIGGER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    trigger_time: after
+    trigger_event: update
+    body_shape: audit_insert
+    expected_status: failure
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__trigger_time_after__trigger_event_update__body_shape_invalid_body__expected_status_success
+  title: CREATE TRIGGER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    trigger_time: after
+    trigger_event: update
+    body_shape: invalid_body
+    expected_status: success
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__trigger_time_after__trigger_event_update__body_shape_invalid_body__expected_status_failure
+  title: CREATE TRIGGER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    trigger_time: after
+    trigger_event: update
+    body_shape: invalid_body
+    expected_status: failure
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__trigger_time_after__trigger_event_delete__body_shape_set_new_value__expected_status_success
+  title: CREATE TRIGGER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    trigger_time: after
+    trigger_event: delete
+    body_shape: set_new_value
+    expected_status: success
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__trigger_time_after__trigger_event_delete__body_shape_set_new_value__expected_status_failure
+  title: CREATE TRIGGER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    trigger_time: after
+    trigger_event: delete
+    body_shape: set_new_value
+    expected_status: failure
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__trigger_time_after__trigger_event_delete__body_shape_audit_insert__expected_status_success
+  title: CREATE TRIGGER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    trigger_time: after
+    trigger_event: delete
+    body_shape: audit_insert
+    expected_status: success
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__trigger_time_after__trigger_event_delete__body_shape_audit_insert__expected_status_failure
+  title: CREATE TRIGGER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    trigger_time: after
+    trigger_event: delete
+    body_shape: audit_insert
+    expected_status: failure
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__trigger_time_after__trigger_event_delete__body_shape_invalid_body__expected_status_success
+  title: CREATE TRIGGER required combination
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    trigger_time: after
+    trigger_event: delete
+    body_shape: invalid_body
+    expected_status: success
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: required__if_not_exists_present__trigger_time_after__trigger_event_delete__body_shape_invalid_body__expected_status_failure
+  title: CREATE TRIGGER required combination
+  lifecycle_role: negative_control
+  expected_status_policy: fixed
+  default_expected_status: failure
+  expected_failure_reasons:
+  - declared_expected_failure
+  derived_extension: false
+  factors:
+    if_not_exists: present
+    trigger_time: after
+    trigger_event: delete
+    body_shape: invalid_body
+    expected_status: failure
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: complete_cartesian
+    axes:
+    - if_not_exists
+    - trigger_time
+    - trigger_event
+    - body_shape
+    - expected_status
+  compatibility:
+    resolver: declared_matrix
+    success_when: []
+    failure_when:
+    - declared expected failure
+    default_failure_reason: declared_expected_failure
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__definer_shape__omitted
+  title: CREATE TRIGGER supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    trigger_time: before
+    trigger_event: insert
+    body_shape: set_new_value
+    expected_status: success
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - definer_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__definer_shape__current_user
+  title: CREATE TRIGGER supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    trigger_time: before
+    trigger_event: insert
+    body_shape: set_new_value
+    expected_status: success
+    definer_shape: current_user
+    trigger_order: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - definer_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__definer_shape__explicit_user
+  title: CREATE TRIGGER supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    trigger_time: before
+    trigger_event: insert
+    body_shape: set_new_value
+    expected_status: success
+    definer_shape: explicit_user
+    trigger_order: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - definer_shape
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__trigger_order__omitted
+  title: CREATE TRIGGER supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    trigger_time: before
+    trigger_event: insert
+    body_shape: set_new_value
+    expected_status: success
+    definer_shape: omitted
+    trigger_order: omitted
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - trigger_order
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__trigger_order__follows
+  title: CREATE TRIGGER supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    trigger_time: before
+    trigger_event: insert
+    body_shape: set_new_value
+    expected_status: success
+    definer_shape: omitted
+    trigger_order: follows
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - trigger_order
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+- id: supplemental__trigger_order__precedes
+  title: CREATE TRIGGER supplemental factor
+  lifecycle_role: target_statement
+  expected_status_policy: fixed
+  default_expected_status: success
+  expected_failure_reasons: []
+  derived_extension: false
+  factors:
+    if_not_exists: omitted
+    trigger_time: before
+    trigger_event: insert
+    body_shape: set_new_value
+    expected_status: success
+    definer_shape: omitted
+    trigger_order: precedes
+  expansion:
+    mode: one_factor_at_a_time
+    axes:
+    - trigger_order
+  compatibility:
+    resolver: declared_matrix
+    success_when:
+    - declared reference combination
+    failure_when: []
+    default_failure_reason: ''
+  sql_shape:
+    template: CREATE TRIGGER {trigger_name} BEFORE INSERT ON {table_name} FOR EACH ROW SET NEW.value_col = COALESCE(NEW.value_col,
+      0)
+  verification:
+    required: false
+    mode: statement_reference
+    sql: null
+  cleanup:
+    required: true
+    steps:
+    - sql: -- cleanup is defined by the lifecycle plan
+audit_rules:
+  require_all_required_top_level_keys: true
+  require_declared_coverage_scope: true
+  require_declared_factor_values: true
+  require_expected_failure_reasons: true
+  require_post_coverage_extension_policy: true
+  forbid_extension_before_required_coverage_passes: true
+  forbid_extension_counting_toward_required_coverage: true
