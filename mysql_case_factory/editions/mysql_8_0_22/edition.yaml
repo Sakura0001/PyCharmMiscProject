@@ -1,0 +1,13 @@
+schema_version: 1
+kind: mysql_case_factory_edition
+edition_id: mysql-community-8.0.22
+target_version: 8.0.22
+target_version_num: 80022
+review_state: draft
+oracle:
+  engine: mysql-community-server
+  exact_patch: true
+skill:
+  name: mysql-8-0-22-sql-generation
+  root: skills/mysql-8-0-22-sql-generation
+inventories: []
