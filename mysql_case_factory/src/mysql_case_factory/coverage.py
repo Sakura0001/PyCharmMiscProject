@@ -234,6 +234,42 @@ class CoverageInteractionRequirement:
         }
 
 
+def interaction_set_sha256(
+    interactions: Iterable[CoverageInteractionRequirement],
+) -> str:
+    """Hash the complete interaction manifest as an order-insensitive set.
+
+    Every field participates, including the upstream source locator and its
+    digest.  The expected digest must come from the independently frozen
+    impact/knowledge output rather than from the coverage plan being checked.
+    """
+
+    records: list[str] = []
+    for interaction in interactions:
+        if not isinstance(interaction, CoverageInteractionRequirement):
+            raise CoverageError(
+                "interaction set must contain CoverageInteractionRequirement objects"
+            )
+        records.append(
+            json.dumps(
+                interaction.to_dict(),
+                ensure_ascii=False,
+                allow_nan=False,
+                sort_keys=True,
+                separators=(",", ":"),
+            )
+        )
+    if len(records) != len(set(records)):
+        raise CoverageError("interaction set contains a duplicate full record")
+    payload = json.dumps(
+        sorted(records),
+        ensure_ascii=False,
+        allow_nan=False,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
 @dataclass(frozen=True)
 class CoverageConditionProof:
     """Exact primary-assignment proof for one frozen condition tuple."""
@@ -337,6 +373,9 @@ class CoverageCompilation:
     legacy_test_point_ids: tuple[str, ...]
     factor_owner_by_id: Mapping[str, str]
     interaction_source_sha256_by_id: Mapping[str, str]
+    expected_interaction_set_sha256: Optional[str]
+    actual_interaction_set_sha256: Optional[str]
+    interaction_manifest_reconciled: bool
 
     @property
     def proofs(self) -> tuple[CoverageContractProof, ...]:
@@ -352,6 +391,10 @@ class CoverageCompilation:
             bool(self.contract_proofs)
             and not self.legacy_test_point_ids
             and all(item.complete for item in self.contract_proofs)
+            and self.interaction_manifest_reconciled
+            and self.expected_interaction_set_sha256 is not None
+            and self.actual_interaction_set_sha256
+            == self.expected_interaction_set_sha256
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -363,6 +406,9 @@ class CoverageCompilation:
             "interaction_source_sha256_by_id": dict(
                 self.interaction_source_sha256_by_id
             ),
+            "expected_interaction_set_sha256": self.expected_interaction_set_sha256,
+            "actual_interaction_set_sha256": self.actual_interaction_set_sha256,
+            "interaction_manifest_reconciled": self.interaction_manifest_reconciled,
             "complete": self.complete,
         }
 
@@ -849,6 +895,7 @@ def compile_coverage_plan(
     obligations: Optional[Iterable[CoverageObligation]] = None,
     interaction_requirements: Sequence[CoverageInteractionRequirement]
     | Mapping[str, CoverageInteractionRequirement] = (),
+    expected_interaction_set_sha256: Optional[str] = None,
 ) -> CoverageCompilation:
     """Bind upstream interactions, factor ownership, and exact v2 proofs.
 
@@ -890,7 +937,7 @@ def compile_coverage_plan(
     decisions = _normalize_factor_decisions(factor_decisions)
     interactions = _normalize_interaction_requirements(interaction_requirements)
     if not contracted:
-        if interactions:
+        if interactions or expected_interaction_set_sha256 is not None:
             raise CoverageError(
                 "legacy coverage plan cannot consume v2 interaction requirements"
             )
@@ -900,12 +947,64 @@ def compile_coverage_plan(
             legacy_test_point_ids=legacy_ids,
             factor_owner_by_id={},
             interaction_source_sha256_by_id={},
+            expected_interaction_set_sha256=None,
+            actual_interaction_set_sha256=None,
+            interaction_manifest_reconciled=True,
         )
     if not decisions:
         raise CoverageError("contracted coverage plan requires factor decisions")
+    if not interactions or expected_interaction_set_sha256 is None:
+        raise CoverageError(
+            "contracted coverage plan requires a complete interaction manifest "
+            "and expected_interaction_set_sha256"
+        )
+    if (
+        not isinstance(expected_interaction_set_sha256, str)
+        or _SHA256.fullmatch(expected_interaction_set_sha256) is None
+    ):
+        raise CoverageError(
+            "expected_interaction_set_sha256 must be a lowercase SHA-256"
+        )
+    actual_interaction_digest = interaction_set_sha256(interactions)
+    if actual_interaction_digest != expected_interaction_set_sha256:
+        raise CoverageError(
+            "interaction manifest digest does not match expected "
+            "interaction set digest"
+        )
 
     decision_by_factor = {item.factor_id: item for item in decisions}
     contracted_by_id = {point.test_point_id: point for point in contracted}
+    suite_binding_counts: dict[str, int] = {}
+    for interaction in interactions:
+        suite_binding_counts[interaction.target_suite_id] = (
+            suite_binding_counts.get(interaction.target_suite_id, 0) + 1
+        )
+    contracted_suite_ids = set(contracted_by_id)
+    missing_suite_ids = sorted(
+        suite_id
+        for suite_id in contracted_suite_ids
+        if suite_binding_counts.get(suite_id, 0) == 0
+    )
+    extra_suite_ids = sorted(set(suite_binding_counts) - contracted_suite_ids)
+    duplicate_suite_ids = sorted(
+        suite_id
+        for suite_id, count in suite_binding_counts.items()
+        if count > 1
+    )
+    if missing_suite_ids:
+        raise CoverageError(
+            "interaction manifest missing contracted suite "
+            + ", ".join(missing_suite_ids)
+        )
+    if extra_suite_ids:
+        raise CoverageError(
+            "interaction manifest has extra suite " + ", ".join(extra_suite_ids)
+        )
+    if duplicate_suite_ids:
+        raise CoverageError(
+            "interaction manifest has duplicate suite binding "
+            + ", ".join(duplicate_suite_ids)
+        )
     axes_in_contracts = {
         axis_id
         for point in contracted
@@ -994,24 +1093,14 @@ def compile_coverage_plan(
         contract = point.coverage_contract
         assert contract is not None
         target_interactions = interactions_by_target.get(point.test_point_id, [])
-        if len(contract.primary_axes + contract.condition_axes) > 1:
-            if not target_interactions:
-                reused = [
-                    axis_id
-                    for axis_id in contract.primary_axes + contract.condition_axes
-                    if owner_by_factor.get(axis_id) != point.test_point_id
-                ]
-                if reused:
-                    raise CoverageError(
-                        f"unapproved factor reuse in suite {point.test_point_id}: "
-                        + ", ".join(reused)
-                    )
-            if len(target_interactions) != 1:
-                if target_interactions:
-                    raise CoverageError(
-                        f"suite {point.test_point_id} must match exactly one "
-                        "coverage interaction"
-                    )
+        if len(target_interactions) != 1:
+            # Reconciliation above is intentionally repeated defensively at
+            # the point of use: no contracted suite is ever proved against an
+            # implicit or ambiguous interaction record.
+            raise CoverageError(
+                f"suite {point.test_point_id} must match exactly one "
+                "coverage interaction"
+            )
         allowed_references = {
             factor_id
             for interaction in target_interactions
@@ -1100,6 +1189,9 @@ def compile_coverage_plan(
             interaction.interaction_id: interaction.source_sha256
             for interaction in interactions
         },
+        expected_interaction_set_sha256=expected_interaction_set_sha256,
+        actual_interaction_set_sha256=actual_interaction_digest,
+        interaction_manifest_reconciled=True,
     )
 
 
@@ -1403,6 +1495,7 @@ __all__ = [
     "CoverageObligation",
     "CoverageReconciliation",
     "CoverageInteractionRequirement",
+    "interaction_set_sha256",
     "CoverageConditionProof",
     "CoverageContractProof",
     "CoverageCompilation",

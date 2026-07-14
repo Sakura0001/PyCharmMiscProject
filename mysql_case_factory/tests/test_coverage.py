@@ -24,6 +24,7 @@ from mysql_case_factory.coverage import (
     assignment_set_sha256,
     compile_coverage_plan,
     expand_coverage_plan,
+    interaction_set_sha256,
     prove_coverage_contract,
     reconcile_case_manifests,
     reconcile_obligations,
@@ -553,6 +554,21 @@ class ExactCoverageContractProofTest(unittest.TestCase):
             source_sha256="d" * 64,
         )
 
+    def compile_with_manifest(
+        self,
+        plan: CoveragePlan,
+        decisions,
+        obligations,
+        interactions: tuple[CoverageInteractionRequirement, ...],
+    ) -> CoverageCompilation:
+        return compile_coverage_plan(
+            plan,
+            decisions,
+            obligations,
+            interactions,
+            expected_interaction_set_sha256=interaction_set_sha256(interactions),
+        )
+
     def factor_decision(
         self,
         plan: CoveragePlan,
@@ -621,7 +637,7 @@ class ExactCoverageContractProofTest(unittest.TestCase):
         plan = CoveragePlan.from_dict(self.plan_document())
         obligations = expand_coverage_plan(plan)
 
-        compilation = compile_coverage_plan(
+        compilation = self.compile_with_manifest(
             plan,
             self.decisions(plan),
             obligations,
@@ -646,13 +662,25 @@ class ExactCoverageContractProofTest(unittest.TestCase):
             compilation.interaction_source_sha256_by_id,
             {"interaction.table-type": "d" * 64},
         )
-        backward_compatible = compile_coverage_plan(
-            plan,
-            self.decisions(plan),
-            obligations,
+        self.assertEqual(
+            compilation.expected_interaction_set_sha256,
+            interaction_set_sha256((self.interaction(),)),
         )
-        self.assertTrue(backward_compatible.complete)
-        self.assertEqual(backward_compatible.interaction_source_sha256_by_id, {})
+        self.assertEqual(
+            compilation.actual_interaction_set_sha256,
+            compilation.expected_interaction_set_sha256,
+        )
+        self.assertFalse(
+            replace(compilation, actual_interaction_set_sha256="0" * 64).complete
+        )
+        self.assertFalse(
+            replace(compilation, interaction_manifest_reconciled=False).complete
+        )
+        with self.assertRaisesRegex(
+            CoverageError,
+            "contracted coverage plan requires a complete interaction manifest",
+        ):
+            compile_coverage_plan(plan, self.decisions(plan), obligations)
 
     def test_missing_assignment_plus_duplicate_is_rejected_even_when_count_is_unchanged(self):
         plan = CoveragePlan.from_dict(self.plan_document())
@@ -734,20 +762,40 @@ class ExactCoverageContractProofTest(unittest.TestCase):
 
         with self.assertRaisesRegex(
             CoverageError,
-            "interaction interaction.table-type.*required factors.*one target suite",
+            "interaction manifest missing contracted suite TP-TYPE",
         ):
-            compile_coverage_plan(
+            self.compile_with_manifest(
                 plan,
                 decisions,
                 expand_coverage_plan(plan),
                 (self.interaction(),),
             )
+        split_type = self.interaction(
+            interaction_id="interaction.split-type",
+            target_suite_id="TP-TYPE",
+            required_factor_ids=("column_type",),
+        )
+        with self.assertRaisesRegex(
+            CoverageError,
+            "interaction interaction.table-type.*required factors.*one target suite",
+        ):
+            self.compile_with_manifest(
+                plan,
+                decisions,
+                expand_coverage_plan(plan),
+                (self.interaction(), split_type),
+            )
+        with self.assertRaisesRegex(
+            CoverageError,
+            "contracted coverage plan requires a complete interaction manifest",
+        ):
+            compile_coverage_plan(plan, decisions, expand_coverage_plan(plan))
 
     def test_pairwise_policy_cannot_be_upgraded_to_a_completeness_proof(self):
         plan = CoveragePlan.from_dict(self.plan_document(policy="pairwise"))
 
         with self.assertRaisesRegex(CoverageError, "pairwise.*cannot prove exact completeness"):
-            compile_coverage_plan(
+            self.compile_with_manifest(
                 plan,
                 self.decisions(plan, strategy="pairwise"),
                 expand_coverage_plan(plan),
@@ -766,7 +814,7 @@ class ExactCoverageContractProofTest(unittest.TestCase):
             )
         )
         with self.assertRaisesRegex(CoverageError, "expected outcome counts"):
-            compile_coverage_plan(
+            self.compile_with_manifest(
                 forged,
                 self.decisions(forged),
                 expand_coverage_plan(forged),
@@ -950,7 +998,7 @@ class ExactCoverageContractProofTest(unittest.TestCase):
         )
         interactions = (self.interaction(), self.conditional_interaction())
 
-        compilation = compile_coverage_plan(
+        compilation = self.compile_with_manifest(
             plan,
             (table, column, algorithm),
             expand_coverage_plan(plan),
@@ -960,8 +1008,11 @@ class ExactCoverageContractProofTest(unittest.TestCase):
         self.assertEqual(compilation.factor_owner_by_id["table_kind"], "TP-READ")
         self.assertEqual(compilation.factor_owner_by_id["algorithm"], "TP-COND")
 
-        with self.assertRaisesRegex(CoverageError, "unapproved factor reuse.*table_kind"):
-            compile_coverage_plan(
+        with self.assertRaisesRegex(
+            CoverageError,
+            "interaction manifest missing contracted suite TP-COND",
+        ):
+            self.compile_with_manifest(
                 plan,
                 (table, column, algorithm),
                 expand_coverage_plan(plan),
@@ -975,7 +1026,7 @@ class ExactCoverageContractProofTest(unittest.TestCase):
             strategy="conditional_cross",
         )
         with self.assertRaisesRegex(CoverageError, "duplicate factor decision table_kind"):
-            compile_coverage_plan(
+            self.compile_with_manifest(
                 plan,
                 (table, duplicate_owner, column, algorithm),
                 expand_coverage_plan(plan),
@@ -992,7 +1043,7 @@ class ExactCoverageContractProofTest(unittest.TestCase):
             CoverageError,
             "selector/reference factor table_kind cannot be owned by target suite TP-COND",
         ):
-            compile_coverage_plan(
+            self.compile_with_manifest(
                 plan,
                 (pretending_owner, column, algorithm),
                 expand_coverage_plan(plan),
@@ -1025,11 +1076,161 @@ class ExactCoverageContractProofTest(unittest.TestCase):
             with self.assertRaisesRegex(CoverageError, message):
                 CoverageInteractionRequirement(**values)
 
+    def test_interaction_set_digest_is_full_record_and_order_independent(self):
+        first = self.interaction()
+        second = self.conditional_interaction()
+        self.assertEqual(
+            interaction_set_sha256((first, second)),
+            interaction_set_sha256((second, first)),
+        )
+        self.assertNotEqual(
+            interaction_set_sha256((first,)),
+            interaction_set_sha256(
+                (replace(first, source="knowledge/other-impact.yaml#interactions"),)
+            ),
+        )
+
+    def test_frozen_interaction_digest_rejects_coordinated_manifest_mutation(self):
+        plan = CoveragePlan.from_dict(self.plan_document())
+        original = (self.interaction(),)
+        mutated = (
+            replace(
+                original[0],
+                source="knowledge/mutated-feature-impact.yaml#interactions",
+            ),
+        )
+        with self.assertRaisesRegex(
+            CoverageError,
+            "interaction manifest digest does not match expected",
+        ):
+            compile_coverage_plan(
+                plan,
+                self.decisions(plan),
+                expand_coverage_plan(plan),
+                mutated,
+                expected_interaction_set_sha256=interaction_set_sha256(original),
+            )
+
+    def test_manifest_reconciles_every_contracted_suite_exactly_once(self):
+        plan = CoveragePlan.from_dict(self.conditional_plan_document())
+        table, column = self.decisions(plan)
+        algorithm = self.factor_decision(
+            plan,
+            "algorithm",
+            owner="TP-COND",
+            strategy="conditional_cross",
+        )
+        decisions = (table, column, algorithm)
+        obligations = expand_coverage_plan(plan)
+        only_primary = (self.interaction(),)
+        with self.assertRaisesRegex(
+            CoverageError,
+            "interaction manifest missing contracted suite TP-COND",
+        ):
+            compile_coverage_plan(
+                plan,
+                decisions,
+                obligations,
+                only_primary,
+                expected_interaction_set_sha256=interaction_set_sha256(only_primary),
+            )
+
+        primary_plan = CoveragePlan.from_dict(self.plan_document())
+        primary_decisions = self.decisions(primary_plan)
+        extra = self.interaction(
+            interaction_id="interaction.extra",
+            target_suite_id="TP-EXTRA",
+        )
+        with self.assertRaisesRegex(
+            CoverageError,
+            "interaction manifest has extra suite TP-EXTRA",
+        ):
+            manifest = (self.interaction(), extra)
+            compile_coverage_plan(
+                primary_plan,
+                primary_decisions,
+                expand_coverage_plan(primary_plan),
+                manifest,
+                expected_interaction_set_sha256=interaction_set_sha256(manifest),
+            )
+
+        duplicate = self.interaction(interaction_id="interaction.table-type-copy")
+        with self.assertRaisesRegex(
+            CoverageError,
+            "interaction manifest has duplicate suite binding TP-READ",
+        ):
+            manifest = (self.interaction(), duplicate)
+            compile_coverage_plan(
+                primary_plan,
+                primary_decisions,
+                expand_coverage_plan(primary_plan),
+                manifest,
+                expected_interaction_set_sha256=interaction_set_sha256(manifest),
+            )
+
+    def test_single_axis_v2_still_requires_one_factor_manifest_entry(self):
+        document = self.plan_document()
+        del document["axes"]["column_type"]
+        point = document["test_points"][0]
+        point["core_axes"] = ["table_kind"]
+        point["coverage_contract"] = {
+            "combination_policy": "full_cross",
+            "primary_axes": ["table_kind"],
+            "condition_axes": [],
+            "expected_counts": {
+                "total": 3,
+                "success": 1,
+                "expected_failure": 1,
+                "justified_na": 1,
+            },
+        }
+        for risk in document["risk_decisions"].values():
+            if risk["status"] == "covered":
+                risk["axes"] = ["table_kind"]
+        plan = CoveragePlan.from_dict(document)
+        decision = self.factor_decision(plan, "table_kind")
+        interaction = self.interaction(required_factor_ids=("table_kind",))
+
+        compilation = self.compile_with_manifest(
+            plan,
+            (decision,),
+            expand_coverage_plan(plan),
+            (interaction,),
+        )
+        self.assertTrue(compilation.complete)
+        with self.assertRaisesRegex(
+            CoverageError,
+            "contracted coverage plan requires a complete interaction manifest",
+        ):
+            compile_coverage_plan(plan, (decision,), expand_coverage_plan(plan))
+
+    def test_mixed_plan_manifest_binds_only_contracted_suites(self):
+        document = self.plan_document()
+        document["test_points"].append(
+            {
+                "id": "TP-LEGACY-AUX",
+                "title": "Legacy auxiliary point",
+                "requirement_ids": ["REQ-1"],
+                "core_axes": ["table_kind"],
+                "dependencies": ["TP-READ"],
+                "default_outcome": "success",
+            }
+        )
+        plan = CoveragePlan.from_dict(document)
+        compilation = self.compile_with_manifest(
+            plan,
+            self.decisions(plan),
+            expand_coverage_plan(plan),
+            (self.interaction(),),
+        )
+        self.assertEqual(compilation.legacy_test_point_ids, ("TP-LEGACY-AUX",))
+        self.assertFalse(compilation.complete)
+
     def test_duplicate_factor_decisions_wrong_ids_and_bindings_fail_closed(self):
         plan = CoveragePlan.from_dict(self.plan_document())
         table, column = self.decisions(plan)
         with self.assertRaisesRegex(CoverageError, "duplicate factor decision table_kind"):
-            compile_coverage_plan(
+            self.compile_with_manifest(
                 plan,
                 (table, table, column),
                 expand_coverage_plan(plan),
@@ -1043,7 +1244,7 @@ class ExactCoverageContractProofTest(unittest.TestCase):
 
         wrong_owner = self.factor_decision(plan, "table_kind", owner="TP-OTHER")
         with self.assertRaisesRegex(CoverageError, "owning suite TP-OTHER.*TP-READ"):
-            compile_coverage_plan(
+            self.compile_with_manifest(
                 plan,
                 (wrong_owner, column),
                 expand_coverage_plan(plan),
@@ -1054,7 +1255,7 @@ class ExactCoverageContractProofTest(unittest.TestCase):
         wrong_inventory_document["inventory_sha256"] = "d" * 64
         wrong_inventory = FactorDecision.from_dict(wrong_inventory_document)
         with self.assertRaisesRegex(CoverageError, "inventory binding"):
-            compile_coverage_plan(
+            self.compile_with_manifest(
                 plan,
                 (wrong_inventory, column),
                 expand_coverage_plan(plan),
@@ -1084,7 +1285,7 @@ class ExactCoverageContractProofTest(unittest.TestCase):
     def test_contracted_points_require_decisions_and_legacy_never_self_certifies(self):
         plan = CoveragePlan.from_dict(self.plan_document())
         with self.assertRaisesRegex(CoverageError, "requires factor decisions"):
-            compile_coverage_plan(
+            self.compile_with_manifest(
                 plan,
                 (),
                 expand_coverage_plan(plan),
