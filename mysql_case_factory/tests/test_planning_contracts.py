@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import json
+from dataclasses import fields
 from pathlib import Path
 
 import pytest
@@ -67,6 +68,34 @@ def test_artifact_bindings_are_closed_portable_and_digest_bound(tmp_path: Path) 
     path.write_text("path: a.yaml\npath: b.yaml\nsha256: " + SHA_A + "\n", encoding="utf-8")
     with pytest.raises(ContractValidationError, match="duplicate YAML key path"):
         load_planning_contract(path, ArtifactBinding)
+
+    malformed = tmp_path / "unhashable-key.yaml"
+    malformed.write_text("? [nested, key]\n: value\n", encoding="utf-8")
+    with pytest.raises(ContractValidationError, match="mapping keys must be strings"):
+        load_planning_contract(malformed, ArtifactBinding)
+
+
+@pytest.mark.parametrize(
+    "path",
+    (
+        "./planning_bundle_manifest.json",
+        "./planning_run.json",
+        "./decision/execution_decision.yaml",
+        "a//b.yaml",
+        "a/./b.yaml",
+    ),
+)
+def test_relative_path_aliases_are_rejected_before_bundle_checks(path: str) -> None:
+    with pytest.raises(ContractValidationError, match="canonical relative path"):
+        ArtifactBinding.from_dict({"path": path, "sha256": SHA_A})
+
+
+def test_canonical_json_is_recursive_and_preserves_bool_int_identity() -> None:
+    with pytest.raises(ContractValidationError, match="mapping keys must be strings"):
+        canonical_json_sha256({1: "integer-key"})
+    with pytest.raises(ContractValidationError, match="finite|supported"):
+        canonical_json_sha256({"nested": [float("nan")]})
+    assert canonical_json_sha256({"value": True}) != canonical_json_sha256({"value": 1})
 
 
 def feature_spec_document() -> dict:
@@ -258,6 +287,11 @@ def test_blueprint_requires_all_lifecycle_phases_and_exact_negative_diagnostic()
     with pytest.raises(ContractValidationError, match="sqlstate"):
         PlanCaseBlueprint.from_dict(missing_diagnostic)
 
+    nested_non_string_key = blueprint_document()
+    nested_non_string_key["setup_recipe"]["options"] = {1: "unsafe"}
+    with pytest.raises(ContractValidationError, match="mapping keys must be strings"):
+        PlanCaseBlueprint.from_dict(nested_non_string_key)
+
 
 def test_dry_render_is_non_runnable_and_contains_no_execution_route() -> None:
     document = {
@@ -366,6 +400,22 @@ def execution_brief_document() -> dict:
                 "expected_failure": 0,
                 "justified_na": 0,
             },
+            {
+                "edition": "mysql_8_0_22",
+                "suite_id": "suite.add-column-version-witness",
+                "total": 1,
+                "success": 0,
+                "expected_failure": 1,
+                "justified_na": 0,
+            },
+            {
+                "edition": "mysql_8_0_41",
+                "suite_id": "suite.add-column-version-witness",
+                "total": 1,
+                "success": 1,
+                "expected_failure": 0,
+                "justified_na": 0,
+            },
         ],
         "full_cost": {"estimated_seconds": 900, "disk_bytes": 1048576, "max_concurrency": 2},
         "partial_proposals": [
@@ -415,8 +465,24 @@ def test_execution_brief_has_exact_counts_and_partial_confidence_loss() -> None:
 
     no_partials = execution_brief_document()
     no_partials["partial_proposals"] = []
-    with pytest.raises(ContractValidationError, match="partial_proposals.*not be empty"):
-        ExecutionBrief.from_dict(no_partials)
+    assert ExecutionBrief.from_dict(no_partials).to_dict() == no_partials
+
+    unknown_suite = execution_brief_document()
+    unknown_suite["partial_proposals"][0]["selected_suite_ids"] = ["suite.missing"]
+    with pytest.raises(ContractValidationError, match="unknown selected suite"):
+        ExecutionBrief.from_dict(unknown_suite)
+
+    inconsistent_scope = execution_brief_document()
+    inconsistent_scope["counts"] = [
+        row
+        for row in inconsistent_scope["counts"]
+        if not (
+            row["suite_id"] == "suite.add-column-version-witness"
+            and row["edition"] == "mysql_8_0_41"
+        )
+    ]
+    with pytest.raises(ContractValidationError, match="edition scope"):
+        ExecutionBrief.from_dict(inconsistent_scope)
 
     for decision in ("full", "partial", "deferred", "declined"):
         missing = execution_brief_document()
@@ -550,6 +616,66 @@ def test_external_decision_and_handoff_are_outside_planning_artifact_provenance(
     }
     with pytest.raises(ContractValidationError, match="unexpected"):
         ExecutionHandoff.from_dict(handoff)
+
+
+def _direct_reconstruct(value):
+    return type(value)(**{field.name: getattr(value, field.name) for field in fields(value)})
+
+
+def test_security_contracts_require_factories_and_deep_freeze_input_state() -> None:
+    blueprint_source = blueprint_document()
+    blueprint = PlanCaseBlueprint.from_dict(blueprint_source)
+    blueprint_digest = canonical_json_sha256(blueprint.to_dict())
+    blueprint_source["assignments"]["added_column_type"] = "bigint"
+    blueprint_source["setup_recipe"]["steps"].append("tamper")
+    assert canonical_json_sha256(blueprint.to_dict()) == blueprint_digest
+    assert blueprint.assignments["added_column_type"] == "int"
+    with pytest.raises(TypeError):
+        blueprint.assignments["added_column_type"] = "text"
+    with pytest.raises(AttributeError):
+        blueprint.setup_recipe["steps"].append("tamper")
+    with pytest.raises(ContractValidationError, match="validated factory"):
+        _direct_reconstruct(blueprint)
+
+    dry_source = {
+        "schema_version": 1,
+        "kind": "dry_render_artifact",
+        "dry_render_id": "DRY-FROZEN",
+        "blueprint_id": "BP-ADD-1",
+        "edition": "mysql_8_0_22",
+        "blueprint_sha256": SHA_A,
+        "canonical_sql_ast": {"statement": "alter_table", "parts": ["add", "column"]},
+        "canonical_ast_sha256": canonical_json_sha256(
+            {"statement": "alter_table", "parts": ["add", "column"]}
+        ),
+        "normalized_identifiers": {"table": "<table>"},
+        "preview_text": "NON-RUNNABLE PREVIEW",
+        "runnable": False,
+        "provenance": provenance("deterministic_coverage_compiler"),
+    }
+    dry = DryRenderArtifact.from_dict(dry_source)
+    dry_source["canonical_sql_ast"]["parts"].append("tamper")
+    assert dry.canonical_sql_ast["parts"] == ("add", "column")
+    with pytest.raises(ContractValidationError, match="validated factory"):
+        _direct_reconstruct(dry)
+
+    decision_source = approved_decision_document()
+    decision = ExecutionDecision.from_dict(decision_source)
+    decision_source["resource_limits"]["max_concurrency"] = 999
+    assert decision.resource_limits["max_concurrency"] == 2
+    with pytest.raises(TypeError):
+        decision.resource_limits["max_concurrency"] = 3
+    with pytest.raises(ContractValidationError, match="validated factory"):
+        _direct_reconstruct(decision)
+
+    brief_source = execution_brief_document()
+    brief = ExecutionBrief.from_dict(brief_source)
+    brief_source["partial_proposals"][0]["selected_suite_ids"].append("suite.tamper")
+    assert brief.partial_proposals[0].selected_suite_ids == (
+        "suite.add-column-version-witness",
+    )
+    with pytest.raises(ContractValidationError, match="validated factory"):
+        _direct_reconstruct(brief)
 
 
 def approved_decision_document() -> dict:

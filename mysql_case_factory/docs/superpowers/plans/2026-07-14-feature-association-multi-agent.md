@@ -25,7 +25,7 @@
 
 **Step 1: Write failing contract and compatibility tests**
 
-Cover strict closed schemas for `ArtifactBinding`, `FeatureSpec`, impact nodes/edges, `FactorDecision`, `PlanCaseBlueprint`, `DryRenderArtifact`, `AuditAttestation`, `ExecutionBrief`, `PlanningBundleManifest`, `ExecutionDecision`, and `ExecutionHandoff`. `ExecutionBrief` must carry exact counts by edition/suite, full and partial cost estimates, endpoint/topology/privilege/disk/time/concurrency/harness requirements, safety blockers, known risks, and the explicit confidence lost by every partial proposal. Add `CoverageExpectedCounts` and optional `CoverageContract` to `TestPoint`. Assert that a legacy plan without `coverage_contract` serializes byte-for-byte as its fixture and produces exactly the frozen obligation IDs.
+Cover strict closed schemas for `ArtifactBinding`, `FeatureSpec`, impact nodes/edges, `FactorDecision`, `PlanCaseBlueprint`, `DryRenderArtifact`, `AuditAttestation`, `ExecutionBrief`, `PlanningBundleManifest`, `ExecutionDecision`, and `ExecutionHandoff`. `ExecutionBrief` must carry exact counts by edition/suite, full and optional partial cost estimates, endpoint/topology/privilege/disk/time/concurrency/harness requirements, safety blockers, known risks, and the explicit confidence lost by every declared partial proposal. Add `CoverageExpectedCounts` and optional `CoverageContract` to `TestPoint`. Assert that a legacy plan without `coverage_contract` serializes byte-for-byte as its fixture and produces exactly the frozen obligation IDs.
 
 **Step 2: Run RED**
 

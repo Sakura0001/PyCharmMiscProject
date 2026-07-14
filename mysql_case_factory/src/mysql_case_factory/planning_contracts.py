@@ -8,10 +8,13 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import re
+from contextvars import ContextVar
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path, PurePosixPath
+from types import MappingProxyType
 from typing import Any, Mapping, Optional, Sequence, Type, TypeVar, Union
 
 import yaml
@@ -52,17 +55,64 @@ class _UniqueKeyLoader(yaml.SafeLoader):
     def construct_mapping(self, node, deep=False):
         seen = set()
         for key_node, _ in node.value:
-            key = self.construct_object(key_node, deep=deep)
+            key = self.construct_object(key_node, deep=True)
+            if not isinstance(key, str):
+                raise ContractValidationError("contract mapping keys must be strings")
             if key in seen:
                 raise ContractValidationError(f"duplicate YAML key {key}")
             seen.add(key)
         return super().construct_mapping(node, deep=deep)
 
 
+def _validate_json_value(value: Any, location: str = "value") -> None:
+    if value is None or isinstance(value, (str, bool, int)):
+        return
+    if isinstance(value, float):
+        if not math.isfinite(value):
+            raise ContractValidationError(f"{location} must contain only finite numbers")
+        return
+    if isinstance(value, Mapping):
+        for key, item in value.items():
+            if not isinstance(key, str):
+                raise ContractValidationError(
+                    f"{location} mapping keys must be strings"
+                )
+            _validate_json_value(item, f"{location}.{key}")
+        return
+    if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
+        for index, item in enumerate(value):
+            _validate_json_value(item, f"{location}[{index}]")
+        return
+    raise ContractValidationError(
+        f"{location} contains an unsupported canonical JSON value of type "
+        f"{type(value).__name__}"
+    )
+
+
+def _deep_thaw(value: Any) -> Any:
+    if isinstance(value, Mapping):
+        return {key: _deep_thaw(item) for key, item in value.items()}
+    if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
+        return [_deep_thaw(item) for item in value]
+    return value
+
+
+def _deep_freeze(value: Any) -> Any:
+    _validate_json_value(value)
+    if isinstance(value, Mapping):
+        return MappingProxyType(
+            {key: _deep_freeze(item) for key, item in value.items()}
+        )
+    if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
+        return tuple(_deep_freeze(item) for item in value)
+    return value
+
+
 def canonical_json_bytes(value: Any) -> bytes:
+    _validate_json_value(value)
     try:
         return json.dumps(
-            value,
+            _deep_thaw(value),
             ensure_ascii=False,
             allow_nan=False,
             sort_keys=True,
@@ -79,10 +129,8 @@ def canonical_json_sha256(value: Any) -> str:
 def _mapping(value: Any, location: str) -> dict[str, Any]:
     if not isinstance(value, Mapping):
         raise ContractValidationError(f"{location} must be a mapping")
+    _validate_json_value(value, location)
     document = dict(value)
-    if any(not isinstance(key, str) for key in document):
-        raise ContractValidationError(f"{location} keys must be strings")
-    canonical_json_bytes(document)
     return document
 
 
@@ -154,6 +202,10 @@ def _relative_path(value: Any, location: str) -> str:
     path = PurePosixPath(value)
     if path.is_absolute() or ".." in path.parts:
         raise ContractValidationError(f"{location} must be relative and must not escape its root")
+    if str(path) != value or value == ".":
+        raise ContractValidationError(
+            f"{location} must be a canonical relative path without aliases"
+        )
     return value
 
 
@@ -191,12 +243,34 @@ def load_planning_contract(path: Union[str, Path], contract_type: Type[T]) -> T:
         raw = yaml.load(source.read_text(encoding="utf-8"), Loader=_UniqueKeyLoader)
     except ContractValidationError:
         raise
-    except (OSError, UnicodeError, yaml.YAMLError) as exc:
+    except (OSError, UnicodeError, yaml.YAMLError, TypeError) as exc:
         raise ContractValidationError(f"cannot load planning contract {source}: {exc}") from exc
     parser = getattr(contract_type, "from_dict", None)
     if parser is None:
         raise TypeError("contract_type must expose from_dict")
     return parser(raw)
+
+
+_VALIDATED_FACTORY_ACTIVE: ContextVar[bool] = ContextVar(
+    "mysql_case_factory_validated_contract_factory",
+    default=False,
+)
+
+
+class _FactoryOnly:
+    def __post_init__(self) -> None:
+        if not _VALIDATED_FACTORY_ACTIVE.get():
+            raise ContractValidationError(
+                f"{type(self).__name__} must be created through a validated factory"
+            )
+
+
+def _validated_construct(contract_type: Type[T], *args: Any, **kwargs: Any) -> T:
+    token = _VALIDATED_FACTORY_ACTIVE.set(True)
+    try:
+        return contract_type(*args, **kwargs)
+    finally:
+        _VALIDATED_FACTORY_ACTIVE.reset(token)
 
 
 @dataclass(frozen=True)
@@ -222,7 +296,7 @@ class ArtifactBinding:
 
 
 @dataclass(frozen=True)
-class Provenance:
+class Provenance(_FactoryOnly):
     """Common provenance carried by immutable planning artifacts.
 
     Decisions and handoffs are external authorization records, not products of
@@ -271,7 +345,8 @@ class Provenance:
         )
         if len({item.path for item in inputs}) != len(inputs):
             raise ContractValidationError(f"{location}.input_artifacts contains duplicate paths")
-        return cls(
+        return _validated_construct(
+            cls,
             producer_role=producer_role,
             input_artifacts=inputs,
             output_sha256=_digest(document.get("output_sha256"), f"{location}.output_sha256"),
@@ -291,7 +366,7 @@ class Provenance:
 
 
 @dataclass(frozen=True)
-class AtomicRequirement:
+class AtomicRequirement(_FactoryOnly):
     requirement_id: str
     description: str
     source_locator: str
@@ -300,7 +375,8 @@ class AtomicRequirement:
     def from_dict(cls, raw: Mapping[str, Any], location: str) -> "AtomicRequirement":
         document = _mapping(raw, location)
         _closed(document, {"id", "description", "source_locator"}, set(), location)
-        return cls(
+        return _validated_construct(
+            cls,
             _identifier(document.get("id"), f"{location}.id"),
             _text(document.get("description"), f"{location}.description"),
             _locator(document.get("source_locator"), f"{location}.source_locator"),
@@ -315,7 +391,7 @@ class AtomicRequirement:
 
 
 @dataclass(frozen=True)
-class UnresolvedQuestion:
+class UnresolvedQuestion(_FactoryOnly):
     question_id: str
     question: str
     coverage_impact: str
@@ -325,7 +401,8 @@ class UnresolvedQuestion:
     def from_dict(cls, raw: Mapping[str, Any], location: str) -> "UnresolvedQuestion":
         document = _mapping(raw, location)
         _closed(document, {"id", "question", "coverage_impact", "source_locator"}, set(), location)
-        return cls(
+        return _validated_construct(
+            cls,
             _identifier(document.get("id"), f"{location}.id"),
             _text(document.get("question"), f"{location}.question"),
             _text(document.get("coverage_impact"), f"{location}.coverage_impact"),
@@ -342,7 +419,7 @@ class UnresolvedQuestion:
 
 
 @dataclass(frozen=True)
-class FeatureSpec:
+class FeatureSpec(_FactoryOnly):
     feature_id: str
     operation: str
     target_objects: tuple[str, ...]
@@ -401,7 +478,8 @@ class FeatureSpec:
         source_locators = _strings(document.get("source_locators"), f"{location}.source_locators", True)
         for index, locator in enumerate(source_locators):
             _locator(locator, f"{location}.source_locators[{index}]")
-        return cls(
+        return _validated_construct(
+            cls,
             feature_id=_identifier(document.get("feature_id"), f"{location}.feature_id"),
             operation=_identifier(document.get("operation"), f"{location}.operation"),
             target_objects=_identifiers(document.get("target_objects"), f"{location}.target_objects", True),
@@ -438,7 +516,7 @@ class FeatureSpec:
 
 
 @dataclass(frozen=True)
-class ImpactNode:
+class ImpactNode(_FactoryOnly):
     node_id: str
     node_type: str
     label: str
@@ -456,7 +534,8 @@ class ImpactNode:
         if node_type not in allowed:
             raise ContractValidationError(f"{location}.type is not a supported impact node type")
         sources = _strings(document.get("sources"), f"{location}.sources", True)
-        return cls(
+        return _validated_construct(
+            cls,
             _identifier(document.get("id"), f"{location}.id"), node_type,
             _text(document.get("label"), f"{location}.label"), sources,
         )
@@ -466,7 +545,7 @@ class ImpactNode:
 
 
 @dataclass(frozen=True)
-class ImpactEdge:
+class ImpactEdge(_FactoryOnly):
     edge_id: str
     from_node: str
     to_node: str
@@ -477,7 +556,8 @@ class ImpactEdge:
     def from_dict(cls, raw: Mapping[str, Any], location: str) -> "ImpactEdge":
         document = _mapping(raw, location)
         _closed(document, {"id", "from", "to", "rule_id", "evidence"}, set(), location)
-        return cls(
+        return _validated_construct(
+            cls,
             _identifier(document.get("id"), f"{location}.id"),
             _identifier(document.get("from"), f"{location}.from"),
             _identifier(document.get("to"), f"{location}.to"),
@@ -493,7 +573,7 @@ class ImpactEdge:
 
 
 @dataclass(frozen=True)
-class FeatureImpactGraph:
+class FeatureImpactGraph(_FactoryOnly):
     feature_id: str
     nodes: tuple[ImpactNode, ...]
     edges: tuple[ImpactEdge, ...]
@@ -529,7 +609,8 @@ class FeatureImpactGraph:
         for edge in edges:
             if edge.from_node not in known or edge.to_node not in known:
                 raise ContractValidationError(f"impact edge {edge.edge_id} references an unknown node")
-        return cls(
+        return _validated_construct(
+            cls,
             _identifier(document.get("feature_id"), f"{location}.feature_id"),
             nodes,
             edges,
@@ -547,7 +628,7 @@ class FeatureImpactGraph:
 
 
 @dataclass(frozen=True)
-class FactorDecision:
+class FactorDecision(_FactoryOnly):
     factor_id: str
     domain: str
     status: str
@@ -583,7 +664,11 @@ class FactorDecision:
         strategy = _text(document.get("combination_strategy"), f"{location}.combination_strategy")
         if strategy not in COMBINATION_STRATEGIES:
             raise ContractValidationError(f"{location}.combination_strategy is unsupported")
-        applicability = _mapping(document.get("edition_applicability"), f"{location}.edition_applicability")
+        applicability_document = _mapping(
+            document.get("edition_applicability"),
+            f"{location}.edition_applicability",
+        )
+        applicability = _deep_freeze(applicability_document)
         if set(applicability) != set(TARGET_EDITIONS):
             raise ContractValidationError(f"{location}.edition_applicability must contain both target editions")
         for edition, value in applicability.items():
@@ -614,7 +699,8 @@ class FactorDecision:
         review_state = _text(document.get("review_state"), f"{location}.review_state")
         if review_state not in ("proposed", "reviewed", "blocked"):
             raise ContractValidationError(f"{location}.review_state is invalid")
-        return cls(
+        return _validated_construct(
+            cls,
             factor_id=_identifier(document.get("factor_id"), f"{location}.factor_id"),
             domain=_identifier(document.get("domain"), f"{location}.domain"),
             status=status,
@@ -639,7 +725,7 @@ class FactorDecision:
             "schema_version": self.schema_version, "kind": "factor_decision",
             "factor_id": self.factor_id, "domain": self.domain, "status": self.status,
             "trigger_path": list(self.trigger_path),
-            "edition_applicability": dict(self.edition_applicability),
+            "edition_applicability": _deep_thaw(self.edition_applicability),
             "combination_strategy": self.combination_strategy,
             "dependencies": list(self.dependencies), "exclusions": list(self.exclusions),
             "owning_suite_id": self.owning_suite_id,
@@ -656,15 +742,15 @@ class FactorDecision:
         return document
 
 
-def _nonempty_json_mapping(value: Any, location: str) -> dict[str, Any]:
+def _nonempty_json_mapping(value: Any, location: str) -> Mapping[str, Any]:
     document = _mapping(value, location)
     if not document:
         raise ContractValidationError(f"{location} must not be empty")
-    return document
+    return _deep_freeze(document)
 
 
 @dataclass(frozen=True)
-class PlanCaseBlueprint:
+class PlanCaseBlueprint(_FactoryOnly):
     blueprint_id: str
     plan_id: str
     edition: str
@@ -712,6 +798,7 @@ class PlanCaseBlueprint:
             if type(diagnostic.get("terminal_error_count")) is not int or diagnostic["terminal_error_count"] < 1:
                 raise ContractValidationError(f"{location}.diagnostic_contract.terminal_error_count must be positive")
             _text(diagnostic.get("message_pattern"), f"{location}.diagnostic_contract.message_pattern")
+            diagnostic = _deep_freeze(diagnostic)
         elif diagnostic is not None:
             raise ContractValidationError(f"{location}.diagnostic_contract is forbidden for success")
         profile = _text(document.get("execution_profile"), f"{location}.execution_profile")
@@ -722,7 +809,8 @@ class PlanCaseBlueprint:
             harness = _identifier(harness, f"{location}.execution_harness")
         elif harness is not None:
             raise ContractValidationError(f"{location}.execution_harness is forbidden for basic_mysql")
-        return cls(
+        return _validated_construct(
+            cls,
             blueprint_id=_identifier(document.get("blueprint_id"), f"{location}.blueprint_id"),
             plan_id=_identifier(document.get("plan_id"), f"{location}.plan_id"),
             edition=_edition(document.get("edition"), f"{location}.edition"),
@@ -743,22 +831,23 @@ class PlanCaseBlueprint:
         document: dict[str, Any] = {
             "schema_version": self.schema_version, "kind": "plan_case_blueprint",
             "blueprint_id": self.blueprint_id, "plan_id": self.plan_id, "edition": self.edition,
-            "obligation_id": self.obligation_id, "assignments": dict(self.assignments),
-            "setup_recipe": dict(self.setup_recipe), "target_statement": dict(self.target_statement),
-            "verification_oracle": dict(self.verification_oracle),
-            "cleanup_procedure": dict(self.cleanup_procedure),
+            "obligation_id": self.obligation_id, "assignments": _deep_thaw(self.assignments),
+            "setup_recipe": _deep_thaw(self.setup_recipe),
+            "target_statement": _deep_thaw(self.target_statement),
+            "verification_oracle": _deep_thaw(self.verification_oracle),
+            "cleanup_procedure": _deep_thaw(self.cleanup_procedure),
             "expected_outcome": self.expected_outcome, "execution_profile": self.execution_profile,
             "provenance": self.provenance.to_dict(),
         }
         if self.diagnostic_contract is not None:
-            document["diagnostic_contract"] = dict(self.diagnostic_contract)
+            document["diagnostic_contract"] = _deep_thaw(self.diagnostic_contract)
         if self.execution_harness is not None:
             document["execution_harness"] = self.execution_harness
         return document
 
 
 @dataclass(frozen=True)
-class DryRenderArtifact:
+class DryRenderArtifact(_FactoryOnly):
     dry_render_id: str
     blueprint_id: str
     edition: str
@@ -789,7 +878,8 @@ class DryRenderArtifact:
         ast_digest = _digest(document.get("canonical_ast_sha256"), f"{location}.canonical_ast_sha256")
         if ast_digest != canonical_json_sha256(ast):
             raise ContractValidationError(f"{location}.canonical_ast_sha256 does not match canonical_sql_ast")
-        return cls(
+        return _validated_construct(
+            cls,
             _identifier(document.get("dry_render_id"), f"{location}.dry_render_id"),
             _identifier(document.get("blueprint_id"), f"{location}.blueprint_id"),
             _edition(document.get("edition"), f"{location}.edition"),
@@ -806,16 +896,16 @@ class DryRenderArtifact:
             "schema_version": self.schema_version, "kind": "dry_render_artifact",
             "dry_render_id": self.dry_render_id, "blueprint_id": self.blueprint_id,
             "edition": self.edition, "blueprint_sha256": self.blueprint_sha256,
-            "canonical_sql_ast": dict(self.canonical_sql_ast),
+            "canonical_sql_ast": _deep_thaw(self.canonical_sql_ast),
             "canonical_ast_sha256": self.canonical_ast_sha256,
-            "normalized_identifiers": dict(self.normalized_identifiers),
+            "normalized_identifiers": _deep_thaw(self.normalized_identifiers),
             "preview_text": self.preview_text, "runnable": False,
             "provenance": self.provenance.to_dict(),
         }
 
 
 @dataclass(frozen=True)
-class AuditFinding:
+class AuditFinding(_FactoryOnly):
     finding_id: str
     status: str
     severity: str
@@ -841,7 +931,8 @@ class AuditFinding:
             raise ContractValidationError(f"{location}.closure_evidence is required when closed")
         if status == "open" and evidence:
             raise ContractValidationError(f"{location}.closure_evidence is forbidden when open")
-        return cls(
+        return _validated_construct(
+            cls,
             _identifier(document.get("id"), f"{location}.id"), status, severity,
             _text(document.get("description"), f"{location}.description"),
             _strings(document.get("sources"), f"{location}.sources", True), evidence,
@@ -858,7 +949,7 @@ class AuditFinding:
 
 
 @dataclass(frozen=True)
-class AuditAttestation:
+class AuditAttestation(_FactoryOnly):
     attestation_id: str
     auditor_role: str
     permitted_inputs: tuple[ArtifactBinding, ...]
@@ -916,7 +1007,8 @@ class AuditAttestation:
                 raise ContractValidationError(
                     f"{location}.sources must not be empty for {decision}"
                 )
-        return cls(
+        return _validated_construct(
+            cls,
             _identifier(document.get("attestation_id"), f"{location}.attestation_id"),
             _identifier(document.get("auditor_role"), f"{location}.auditor_role"), inputs,
             _digest(document.get("candidate_plan_sha256"), f"{location}.candidate_plan_sha256"),
@@ -950,7 +1042,7 @@ class AuditAttestation:
 
 
 @dataclass(frozen=True)
-class ExecutionCount:
+class ExecutionCount(_FactoryOnly):
     edition: str
     suite_id: str
     total: int
@@ -970,7 +1062,8 @@ class ExecutionCount:
             counts.append(value)
         if counts[0] < 1 or counts[0] != sum(counts[1:]):
             raise ContractValidationError(f"{location}.total must equal success + expected_failure + justified_na and be positive")
-        return cls(
+        return _validated_construct(
+            cls,
             _edition(document.get("edition"), f"{location}.edition"),
             _identifier(document.get("suite_id"), f"{location}.suite_id"), *counts,
         )
@@ -984,7 +1077,7 @@ class ExecutionCount:
 
 
 @dataclass(frozen=True)
-class ExecutionCost:
+class ExecutionCost(_FactoryOnly):
     estimated_seconds: int
     disk_bytes: int
     max_concurrency: int
@@ -1000,7 +1093,7 @@ class ExecutionCost:
             if type(value) is not int or value < minimum:
                 raise ContractValidationError(f"{location}.{key} must be an integer >= {minimum}")
             values.append(value)
-        return cls(*values)
+        return _validated_construct(cls, *values)
 
     def to_dict(self) -> dict[str, int]:
         return {
@@ -1011,7 +1104,7 @@ class ExecutionCost:
 
 
 @dataclass(frozen=True)
-class PartialExecutionProposal:
+class PartialExecutionProposal(_FactoryOnly):
     proposal_id: str
     selected_suite_ids: tuple[str, ...]
     cost: ExecutionCost
@@ -1021,7 +1114,8 @@ class PartialExecutionProposal:
     def from_dict(cls, raw: Mapping[str, Any], location: str) -> "PartialExecutionProposal":
         document = _mapping(raw, location)
         _closed(document, {"proposal_id", "selected_suite_ids", "cost", "confidence_lost"}, set(), location)
-        return cls(
+        return _validated_construct(
+            cls,
             _identifier(document.get("proposal_id"), f"{location}.proposal_id"),
             _identifiers(document.get("selected_suite_ids"), f"{location}.selected_suite_ids", True),
             ExecutionCost.from_dict(document.get("cost"), f"{location}.cost"),
@@ -1038,7 +1132,7 @@ class PartialExecutionProposal:
 
 
 @dataclass(frozen=True)
-class ExecutionRequirements:
+class ExecutionRequirements(_FactoryOnly):
     endpoints: tuple[str, ...]
     topology: tuple[str, ...]
     privileges: tuple[str, ...]
@@ -1055,7 +1149,8 @@ class ExecutionRequirements:
             value = document.get(key)
             if type(value) is not int or value < 1:
                 raise ContractValidationError(f"{location}.{key} must be a positive integer")
-        return cls(
+        return _validated_construct(
+            cls,
             _strings(document.get("endpoints"), f"{location}.endpoints", True),
             _strings(document.get("topology"), f"{location}.topology", True),
             _strings(document.get("privileges"), f"{location}.privileges", True),
@@ -1073,7 +1168,7 @@ class ExecutionRequirements:
 
 
 @dataclass(frozen=True)
-class DecisionConsequences:
+class DecisionConsequences(_FactoryOnly):
     full: tuple[str, ...]
     partial: tuple[str, ...]
     deferred: tuple[str, ...]
@@ -1083,7 +1178,8 @@ class DecisionConsequences:
     def from_dict(cls, raw: Mapping[str, Any], location: str) -> "DecisionConsequences":
         document = _mapping(raw, location)
         _closed(document, {"full", "partial", "deferred", "declined"}, set(), location)
-        return cls(
+        return _validated_construct(
+            cls,
             full=_strings(document.get("full"), f"{location}.full", True),
             partial=_strings(document.get("partial"), f"{location}.partial", True),
             deferred=_strings(document.get("deferred"), f"{location}.deferred", True),
@@ -1100,7 +1196,7 @@ class DecisionConsequences:
 
 
 @dataclass(frozen=True)
-class ExecutionBrief:
+class ExecutionBrief(_FactoryOnly):
     brief_id: str
     counts: tuple[ExecutionCount, ...]
     full_cost: ExecutionCost
@@ -1130,10 +1226,9 @@ class ExecutionBrief:
         if (
             not isinstance(proposals_raw, Sequence)
             or isinstance(proposals_raw, (str, bytes))
-            or not proposals_raw
         ):
             raise ContractValidationError(
-                f"{location}.partial_proposals must be a sequence and must not be empty"
+                f"{location}.partial_proposals must be a sequence"
             )
         counts = tuple(ExecutionCount.from_dict(item, f"{location}.counts[{index}]") for index, item in enumerate(counts_raw))
         keys = [(item.edition, item.suite_id) for item in counts]
@@ -1144,7 +1239,23 @@ class ExecutionBrief:
         proposals = tuple(PartialExecutionProposal.from_dict(item, f"{location}.partial_proposals[{index}]") for index, item in enumerate(proposals_raw))
         if len({item.proposal_id for item in proposals}) != len(proposals):
             raise ContractValidationError("duplicate partial proposal id")
-        return cls(
+        suite_editions: dict[str, set[str]] = {}
+        for count in counts:
+            suite_editions.setdefault(count.suite_id, set()).add(count.edition)
+        for proposal in proposals:
+            for suite_id in proposal.selected_suite_ids:
+                if suite_id not in suite_editions:
+                    raise ContractValidationError(
+                        f"{location} partial proposal {proposal.proposal_id} has "
+                        f"unknown selected suite {suite_id}"
+                    )
+                if suite_editions[suite_id] != set(TARGET_EDITIONS):
+                    raise ContractValidationError(
+                        f"{location} partial proposal {proposal.proposal_id} selected "
+                        f"suite {suite_id} has an incomplete edition scope"
+                    )
+        return _validated_construct(
+            cls,
             _identifier(document.get("brief_id"), f"{location}.brief_id"),
             counts, ExecutionCost.from_dict(document.get("full_cost"), f"{location}.full_cost"),
             proposals, ExecutionRequirements.from_dict(document.get("requirements"), f"{location}.requirements"),
@@ -1171,7 +1282,7 @@ class ExecutionBrief:
 
 
 @dataclass(frozen=True)
-class PlanningBundleManifest:
+class PlanningBundleManifest(_FactoryOnly):
     request_id: str
     request_revision: int
     entries: tuple[ArtifactBinding, ...]
@@ -1213,14 +1324,18 @@ class PlanningBundleManifest:
         policy_sha256 = _digest(policy_sha256, "planning_bundle_manifest.policy_sha256")
         created_at = _timestamp(created_at, "planning_bundle_manifest.created_at")
         digest = canonical_json_sha256(cls._payload(request_id, request_revision, entries, policy_sha256, created_at))
-        provenance = Provenance(
-            producer_role="planning_orchestrator",
-            input_artifacts=entries,
-            output_sha256=digest,
-            policy_sha256=policy_sha256,
-            created_at=created_at,
+        provenance = Provenance.from_dict(
+            {
+                "producer_role": "planning_orchestrator",
+                "input_artifacts": [item.to_dict() for item in entries],
+                "output_sha256": digest,
+                "policy_sha256": policy_sha256,
+                "created_at": created_at,
+            },
+            "planning_bundle_manifest.provenance",
         )
-        return cls(
+        return _validated_construct(
+            cls,
             request_id,
             request_revision,
             entries,
@@ -1292,7 +1407,7 @@ class PlanningBundleManifest:
 
 
 @dataclass(frozen=True)
-class ExecutionDecision:
+class ExecutionDecision(_FactoryOnly):
     decision_id: str
     status: str
     planning_bundle_sha256: str
@@ -1322,7 +1437,8 @@ class ExecutionDecision:
             unexpected = sorted(set(document) & optional)
             if unexpected:
                 raise ContractValidationError(f"{location} pending decision has unexpected authorization fields: " + ", ".join(unexpected))
-            return cls(
+            return _validated_construct(
+                cls,
                 _identifier(document.get("decision_id"), f"{location}.decision_id"), status,
                 _digest(document.get("planning_bundle_sha256"), f"{location}.planning_bundle_sha256"),
             )
@@ -1331,7 +1447,8 @@ class ExecutionDecision:
             unexpected = sorted((set(document) & optional) - allowed)
             if unexpected:
                 raise ContractValidationError(f"{location} {status} decision has unexpected authorization fields")
-            return cls(
+            return _validated_construct(
+                cls,
                 _identifier(document.get("decision_id"), f"{location}.decision_id"), status,
                 _digest(document.get("planning_bundle_sha256"), f"{location}.planning_bundle_sha256"),
                 reason=_text(document.get("reason"), f"{location}.reason"),
@@ -1349,7 +1466,10 @@ class ExecutionDecision:
         mode = _text(document.get("mode"), f"{location}.mode")
         if mode not in ("full", "partial"):
             raise ContractValidationError(f"{location}.mode must be full or partial")
-        limits = _mapping(document.get("resource_limits"), f"{location}.resource_limits")
+        limits_document = _mapping(
+            document.get("resource_limits"), f"{location}.resource_limits"
+        )
+        limits = _deep_freeze(limits_document)
         _closed(limits, {"max_concurrency", "time_seconds", "disk_bytes"}, set(), f"{location}.resource_limits")
         for key, value in limits.items():
             minimum = 0 if key == "disk_bytes" else 1
@@ -1359,7 +1479,8 @@ class ExecutionDecision:
         expires_at = _timestamp(document.get("expires_at"), f"{location}.expires_at")
         if datetime.fromisoformat(expires_at.replace("Z", "+00:00")) <= datetime.fromisoformat(valid_from.replace("Z", "+00:00")):
             raise ContractValidationError(f"{location}.expires_at must be after valid_from")
-        return cls(
+        return _validated_construct(
+            cls,
             _identifier(document.get("decision_id"), f"{location}.decision_id"), status,
             _digest(document.get("planning_bundle_sha256"), f"{location}.planning_bundle_sha256"),
             editions, _identifiers(document.get("execution_scope"), f"{location}.execution_scope", True),
@@ -1376,7 +1497,7 @@ class ExecutionDecision:
         if self.status == "approved":
             document.update({
                 "editions": list(self.editions), "execution_scope": list(self.execution_scope),
-                "mode": self.mode, "resource_limits": dict(self.resource_limits or {}),
+                "mode": self.mode, "resource_limits": _deep_thaw(self.resource_limits or {}),
                 "valid_from": self.valid_from, "expires_at": self.expires_at,
                 "approver_identity": self.approver_identity,
             })
@@ -1387,7 +1508,7 @@ class ExecutionDecision:
 
 
 @dataclass(frozen=True)
-class ExecutionHandoff:
+class ExecutionHandoff(_FactoryOnly):
     handoff_id: str
     decision_id: str
     decision_sha256: str
@@ -1421,7 +1542,8 @@ class ExecutionHandoff:
         bindings = tuple(ArtifactBinding.from_dict(item, f"{location}.plan_bindings[{index}]") for index, item in enumerate(bindings_raw))
         if len({item.path for item in bindings}) != len(bindings):
             raise ContractValidationError("duplicate execution handoff plan binding")
-        return cls(
+        return _validated_construct(
+            cls,
             _identifier(document.get("handoff_id"), f"{location}.handoff_id"),
             _identifier(document.get("decision_id"), f"{location}.decision_id"),
             _digest(document.get("decision_sha256"), f"{location}.decision_sha256"),
