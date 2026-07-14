@@ -1132,6 +1132,7 @@ class CoverageClassificationRule:
     when: Mapping[str, Any]
     outcome: str
     reason: Optional[str] = None
+    source: Optional[str] = None
 
     @classmethod
     def from_dict(
@@ -1140,7 +1141,12 @@ class CoverageClassificationRule:
         location: str = "classification_rule",
     ) -> "CoverageClassificationRule":
         document = _mapping(raw, location)
-        _require_allowed_keys(document, {"when", "outcome"}, {"reason"}, location)
+        _require_allowed_keys(
+            document,
+            {"when", "outcome"},
+            {"reason", "source"},
+            location,
+        )
         outcome = _required_string(document, "outcome", location)
         if outcome not in COVERAGE_OUTCOMES:
             raise ContractValidationError(
@@ -1160,12 +1166,15 @@ class CoverageClassificationRule:
             when=when,
             outcome=outcome,
             reason=_optional_string(document, "reason", location),
+            source=_optional_string(document, "source", location),
         )
 
     def to_dict(self) -> dict[str, Any]:
         document: dict[str, Any] = {"when": dict(self.when), "outcome": self.outcome}
         if self.reason is not None:
             document["reason"] = self.reason
+        if self.source is not None:
+            document["source"] = self.source
         return document
 
 
@@ -1460,6 +1469,7 @@ class TestPoint:
     default_execution_profile: str = "basic_mysql"
     default_execution_harness: Optional[str] = None
     coverage_contract: Optional[CoverageContract] = None
+    default_source: Optional[str] = None
 
     @classmethod
     def from_dict(cls, raw: Mapping[str, Any], location: str = "test_point") -> "TestPoint":
@@ -1472,6 +1482,7 @@ class TestPoint:
                 "execution_rules",
                 "default_outcome",
                 "default_reason",
+                "default_source",
                 "description",
                 "default_execution_profile",
                 "default_execution_harness",
@@ -1531,6 +1542,7 @@ class TestPoint:
             execution_rules=execution_rules,
             default_outcome=default_outcome,
             default_reason=_optional_string(document, "default_reason", location),
+            default_source=_optional_string(document, "default_source", location),
             description=_optional_string(document, "description", location),
             default_execution_profile=default_execution_profile,
             default_execution_harness=default_execution_harness,
@@ -1564,6 +1576,8 @@ class TestPoint:
             document["default_outcome"] = self.default_outcome
         if self.default_reason is not None:
             document["default_reason"] = self.default_reason
+        if self.default_source is not None:
+            document["default_source"] = self.default_source
         if self.description is not None:
             document["description"] = self.description
         if self.coverage_contract is not None:

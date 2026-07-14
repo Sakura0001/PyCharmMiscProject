@@ -271,6 +271,31 @@ def validate_coverage_plan(
                         f"total {contract.expected_counts.total} does not match "
                         f"Cartesian size {cartesian_size}"
                     )
+            for rule_index, rule in enumerate(point.classification_rules):
+                if rule.outcome in ("expected_failure", "justified_na"):
+                    if not rule.reason:
+                        issues.append(
+                            f"contracted test point {point.test_point_id} "
+                            f"{rule.outcome} classification rule {rule_index} "
+                            "requires a reason"
+                        )
+                    if not rule.source:
+                        issues.append(
+                            f"contracted test point {point.test_point_id} "
+                            f"{rule.outcome} classification rule {rule_index} "
+                            "requires a source"
+                        )
+            if point.default_outcome in ("expected_failure", "justified_na"):
+                if not point.default_reason:
+                    issues.append(
+                        f"contracted test point {point.test_point_id} default "
+                        f"{point.default_outcome} requires default_reason"
+                    )
+                if not point.default_source:
+                    issues.append(
+                        f"contracted test point {point.test_point_id} default "
+                        f"{point.default_outcome} requires default_source"
+                    )
 
         for rule_index, rule in enumerate(point.classification_rules):
             for axis_id, criterion in rule.when.items():

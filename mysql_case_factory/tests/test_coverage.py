@@ -20,6 +20,7 @@ from mysql_case_factory.coverage import (
     CoverageConditionProof,
     CoverageContractProof,
     CoverageError,
+    CoverageInteractionRequirement,
     assignment_set_sha256,
     compile_coverage_plan,
     expand_coverage_plan,
@@ -507,6 +508,12 @@ class ExactCoverageContractProofTest(unittest.TestCase):
         expected_counts: dict | None = None,
     ) -> dict:
         document = CoverageExpansionTest().plan_document()
+        document["test_points"][0]["classification_rules"][0]["source"] = (
+            "knowledge/mysql/error/unsupported-foreign"
+        )
+        document["test_points"][0]["classification_rules"][1]["source"] = (
+            "knowledge/mysql/scope/external-storage"
+        )
         document["test_points"][0]["coverage_contract"] = {
             "combination_policy": policy,
             "primary_axes": (
@@ -524,6 +531,27 @@ class ExactCoverageContractProofTest(unittest.TestCase):
             },
         }
         return document
+
+    def interaction(
+        self,
+        *,
+        interaction_id: str = "interaction.table-type",
+        target_suite_id: str = "TP-READ",
+        required_factor_ids: tuple[str, ...] = ("table_kind", "column_type"),
+        selector_factor_ids: tuple[str, ...] = (),
+        reference_factor_ids: tuple[str, ...] = (),
+        policy: str = "full_cross",
+    ) -> CoverageInteractionRequirement:
+        return CoverageInteractionRequirement(
+            interaction_id=interaction_id,
+            target_suite_id=target_suite_id,
+            required_factor_ids=required_factor_ids,
+            selector_factor_ids=selector_factor_ids,
+            reference_factor_ids=reference_factor_ids,
+            combination_policy=policy,
+            source="knowledge/feature-impact.yaml#interactions",
+            source_sha256="d" * 64,
+        )
 
     def factor_decision(
         self,
@@ -593,7 +621,12 @@ class ExactCoverageContractProofTest(unittest.TestCase):
         plan = CoveragePlan.from_dict(self.plan_document())
         obligations = expand_coverage_plan(plan)
 
-        compilation = compile_coverage_plan(plan, self.decisions(plan), obligations)
+        compilation = compile_coverage_plan(
+            plan,
+            self.decisions(plan),
+            obligations,
+            (self.interaction(),),
+        )
 
         self.assertIsInstance(compilation, CoverageCompilation)
         self.assertTrue(compilation.complete)
@@ -609,6 +642,17 @@ class ExactCoverageContractProofTest(unittest.TestCase):
         self.assertEqual(len(proof.condition_proofs), 1)
         self.assertIsInstance(proof.condition_proofs[0], CoverageConditionProof)
         self.assertEqual(proof.condition_proofs[0].condition_assignment, {})
+        self.assertEqual(
+            compilation.interaction_source_sha256_by_id,
+            {"interaction.table-type": "d" * 64},
+        )
+        backward_compatible = compile_coverage_plan(
+            plan,
+            self.decisions(plan),
+            obligations,
+        )
+        self.assertTrue(backward_compatible.complete)
+        self.assertEqual(backward_compatible.interaction_source_sha256_by_id, {})
 
     def test_missing_assignment_plus_duplicate_is_rejected_even_when_count_is_unchanged(self):
         plan = CoveragePlan.from_dict(self.plan_document())
@@ -633,13 +677,12 @@ class ExactCoverageContractProofTest(unittest.TestCase):
         with self.assertRaisesRegex(CoverageError, "unknown value.*replacement"):
             prove_coverage_contract(plan, plan.test_points[0], obligations)
 
-    def test_split_full_cross_axes_are_rejected_by_dependency_ownership(self):
+    def test_external_interaction_rejects_coordinated_axis_split_without_dependencies(self):
         document = self.plan_document()
         original = document["test_points"][0]
         document["test_points"] = [
             {
                 **original,
-                "id": "TP-TABLE",
                 "title": "Table shapes",
                 "core_axes": ["table_kind"],
                 "classification_rules": original["classification_rules"],
@@ -677,20 +720,28 @@ class ExactCoverageContractProofTest(unittest.TestCase):
         ]
         for risk in document["risk_decisions"].values():
             if risk["status"] == "covered":
-                risk["test_points"] = ["TP-TABLE", "TP-TYPE"]
+                risk["test_points"] = ["TP-READ", "TP-TYPE"]
         plan = CoveragePlan.from_dict(document)
         decisions = (
-            self.factor_decision(plan, "table_kind", owner="TP-TABLE"),
+            self.factor_decision(plan, "table_kind", owner="TP-READ"),
             self.factor_decision(
                 plan,
                 "column_type",
                 owner="TP-TYPE",
-                dependencies=["table_kind"],
+                dependencies=[],
             ),
         )
 
-        with self.assertRaisesRegex(CoverageError, "dependent full_cross factors.*same owning suite"):
-            compile_coverage_plan(plan, decisions, expand_coverage_plan(plan))
+        with self.assertRaisesRegex(
+            CoverageError,
+            "interaction interaction.table-type.*required factors.*one target suite",
+        ):
+            compile_coverage_plan(
+                plan,
+                decisions,
+                expand_coverage_plan(plan),
+                (self.interaction(),),
+            )
 
     def test_pairwise_policy_cannot_be_upgraded_to_a_completeness_proof(self):
         plan = CoveragePlan.from_dict(self.plan_document(policy="pairwise"))
@@ -700,6 +751,7 @@ class ExactCoverageContractProofTest(unittest.TestCase):
                 plan,
                 self.decisions(plan, strategy="pairwise"),
                 expand_coverage_plan(plan),
+                (self.interaction(policy="pairwise"),),
             )
 
     def test_forged_expected_counts_and_outcomes_are_rejected(self):
@@ -718,6 +770,7 @@ class ExactCoverageContractProofTest(unittest.TestCase):
                 forged,
                 self.decisions(forged),
                 expand_coverage_plan(forged),
+                (self.interaction(),),
             )
 
         document = self.plan_document()
@@ -738,7 +791,7 @@ class ExactCoverageContractProofTest(unittest.TestCase):
             outcome="expected_failure",
             reason="Forged outcome.",
         )
-        with self.assertRaisesRegex(CoverageError, "outcome/reason does not match"):
+        with self.assertRaisesRegex(CoverageError, "outcome/reason/source does not match"):
             prove_coverage_contract(plan, plan.test_points[0], obligations)
 
     def test_conditional_cross_proves_each_condition_tuple_without_offsets(self):
@@ -760,6 +813,218 @@ class ExactCoverageContractProofTest(unittest.TestCase):
         with self.assertRaisesRegex(CoverageError, "condition.*integer.*missing 1"):
             prove_coverage_contract(plan, plan.test_points[0], obligations)
 
+    def test_contracted_non_success_classifications_require_and_propagate_sources(self):
+        document = self.plan_document()
+        del document["test_points"][0]["classification_rules"][0]["source"]
+        missing_rule_source = CoveragePlan.from_dict(document)
+        with self.assertRaisesRegex(
+            ContractValidationError,
+            "contracted.*expected_failure.*source",
+        ):
+            validate_coverage_plan(missing_rule_source)
+
+        plan = CoveragePlan.from_dict(self.plan_document())
+        foreign = next(
+            item
+            for item in expand_coverage_plan(plan)
+            if item.assignments["table_kind"] == "foreign"
+        )
+        self.assertEqual(
+            foreign.source,
+            "knowledge/mysql/error/unsupported-foreign",
+        )
+        self.assertEqual(
+            foreign.to_dict()["source"],
+            "knowledge/mysql/error/unsupported-foreign",
+        )
+        forged = [
+            replace(item, source="knowledge/forged") if item == foreign else item
+            for item in expand_coverage_plan(plan)
+        ]
+        with self.assertRaisesRegex(
+            CoverageError,
+            "outcome/reason/source does not match",
+        ):
+            prove_coverage_contract(plan, plan.test_points[0], forged)
+
+        default_document = self.plan_document()
+        point = default_document["test_points"][0]
+        point["classification_rules"] = []
+        point["default_outcome"] = "justified_na"
+        point["default_reason"] = "The contracted fixture is intentionally excluded."
+        point["coverage_contract"]["expected_counts"] = {
+            "total": 6,
+            "success": 0,
+            "expected_failure": 0,
+            "justified_na": 6,
+        }
+        missing_default_source = CoveragePlan.from_dict(default_document)
+        with self.assertRaisesRegex(
+            ContractValidationError,
+            "default justified_na.*default_source",
+        ):
+            validate_coverage_plan(missing_default_source)
+        default_document["test_points"][0]["default_source"] = (
+            "knowledge/mysql/scope/default-exclusion"
+        )
+        sourced_default = CoveragePlan.from_dict(default_document)
+        self.assertTrue(
+            all(
+                item.source == "knowledge/mysql/scope/default-exclusion"
+                for item in expand_coverage_plan(sourced_default)
+            )
+        )
+
+    def test_legacy_non_success_without_source_keeps_v1_shape_and_ids(self):
+        legacy = CoveragePlan.from_dict(CoverageExpansionTest().plan_document())
+        obligations = expand_coverage_plan(legacy)
+        non_success = next(item for item in obligations if item.outcome == "expected_failure")
+        self.assertIsNone(non_success.source)
+        self.assertNotIn("source", non_success.to_dict())
+        self.assertNotIn(
+            "source",
+            legacy.to_dict()["test_points"][0]["classification_rules"][0],
+        )
+        self.assertEqual(
+            non_success.obligation_id,
+            stable_obligation_id(
+                non_success.test_point_id,
+                non_success.assignments,
+                plan_id=legacy.plan_id,
+            ),
+        )
+
+    def conditional_plan_document(self) -> dict:
+        document = self.plan_document()
+        algorithm_values = ["instant", "inplace"]
+        document["axes"]["algorithm"] = {
+            "values": algorithm_values,
+            "inventory_source": (
+                "skills/mysql-8-0-22-sql-generation/references/combinations/"
+                "_shared/coverage_inventory.yaml#algorithms"
+            ),
+            "coverage_mode": "complete",
+            "inventory_count": len(algorithm_values),
+            "inventory_sha256": inventory_values_sha256(algorithm_values),
+        }
+        document["test_points"].append(
+            {
+                "id": "TP-COND",
+                "title": "Algorithm by selected table shape",
+                "requirement_ids": ["REQ-1"],
+                "core_axes": ["algorithm", "table_kind"],
+                "dependencies": ["TP-READ"],
+                "default_outcome": "success",
+                "coverage_contract": {
+                    "combination_policy": "conditional_cross",
+                    "primary_axes": ["algorithm"],
+                    "condition_axes": ["table_kind"],
+                    "expected_counts": {
+                        "total": 6,
+                        "success": 6,
+                        "expected_failure": 0,
+                        "justified_na": 0,
+                    },
+                },
+            }
+        )
+        return document
+
+    def conditional_interaction(self) -> CoverageInteractionRequirement:
+        return self.interaction(
+            interaction_id="interaction.algorithm-by-table",
+            target_suite_id="TP-COND",
+            required_factor_ids=("algorithm",),
+            selector_factor_ids=("table_kind",),
+            policy="conditional_cross",
+        )
+
+    def test_conditional_suite_reuses_owned_factor_only_as_bound_selector(self):
+        plan = CoveragePlan.from_dict(self.conditional_plan_document())
+        table, column = self.decisions(plan)
+        algorithm = self.factor_decision(
+            plan,
+            "algorithm",
+            owner="TP-COND",
+            strategy="conditional_cross",
+        )
+        interactions = (self.interaction(), self.conditional_interaction())
+
+        compilation = compile_coverage_plan(
+            plan,
+            (table, column, algorithm),
+            expand_coverage_plan(plan),
+            interactions,
+        )
+        self.assertTrue(compilation.complete)
+        self.assertEqual(compilation.factor_owner_by_id["table_kind"], "TP-READ")
+        self.assertEqual(compilation.factor_owner_by_id["algorithm"], "TP-COND")
+
+        with self.assertRaisesRegex(CoverageError, "unapproved factor reuse.*table_kind"):
+            compile_coverage_plan(
+                plan,
+                (table, column, algorithm),
+                expand_coverage_plan(plan),
+                (self.interaction(),),
+            )
+
+        duplicate_owner = self.factor_decision(
+            plan,
+            "table_kind",
+            owner="TP-COND",
+            strategy="conditional_cross",
+        )
+        with self.assertRaisesRegex(CoverageError, "duplicate factor decision table_kind"):
+            compile_coverage_plan(
+                plan,
+                (table, duplicate_owner, column, algorithm),
+                expand_coverage_plan(plan),
+                interactions,
+            )
+
+        pretending_owner = self.factor_decision(
+            plan,
+            "table_kind",
+            owner="TP-COND",
+            strategy="conditional_cross",
+        )
+        with self.assertRaisesRegex(
+            CoverageError,
+            "selector/reference factor table_kind cannot be owned by target suite TP-COND",
+        ):
+            compile_coverage_plan(
+                plan,
+                (pretending_owner, column, algorithm),
+                expand_coverage_plan(plan),
+                (self.conditional_interaction(), self.interaction()),
+            )
+
+    def test_interaction_contract_is_strict_and_digest_bound(self):
+        interaction = self.interaction()
+        self.assertEqual(
+            CoverageInteractionRequirement.from_dict(interaction.to_dict()),
+            interaction,
+        )
+        for changes, message in (
+            ({"interaction_id": "bad id"}, "stable"),
+            ({"source": ""}, "source"),
+            ({"source_sha256": "a" * 63}, "source_sha256"),
+            ({"selector_factor_ids": ("table_kind",)}, "overlap"),
+        ):
+            values = {
+                "interaction_id": interaction.interaction_id,
+                "target_suite_id": interaction.target_suite_id,
+                "required_factor_ids": interaction.required_factor_ids,
+                "selector_factor_ids": interaction.selector_factor_ids,
+                "reference_factor_ids": interaction.reference_factor_ids,
+                "combination_policy": interaction.combination_policy,
+                "source": interaction.source,
+                "source_sha256": interaction.source_sha256,
+                **changes,
+            }
+            with self.assertRaisesRegex(CoverageError, message):
+                CoverageInteractionRequirement(**values)
+
     def test_duplicate_factor_decisions_wrong_ids_and_bindings_fail_closed(self):
         plan = CoveragePlan.from_dict(self.plan_document())
         table, column = self.decisions(plan)
@@ -768,6 +1033,7 @@ class ExactCoverageContractProofTest(unittest.TestCase):
                 plan,
                 (table, table, column),
                 expand_coverage_plan(plan),
+                (self.interaction(),),
             )
 
         obligations = list(expand_coverage_plan(plan))
@@ -781,6 +1047,7 @@ class ExactCoverageContractProofTest(unittest.TestCase):
                 plan,
                 (wrong_owner, column),
                 expand_coverage_plan(plan),
+                (self.interaction(),),
             )
 
         wrong_inventory_document = table.to_dict()
@@ -791,6 +1058,7 @@ class ExactCoverageContractProofTest(unittest.TestCase):
                 plan,
                 (wrong_inventory, column),
                 expand_coverage_plan(plan),
+                (self.interaction(),),
             )
 
     def test_contract_axes_must_exactly_match_core_axes(self):
@@ -816,7 +1084,12 @@ class ExactCoverageContractProofTest(unittest.TestCase):
     def test_contracted_points_require_decisions_and_legacy_never_self_certifies(self):
         plan = CoveragePlan.from_dict(self.plan_document())
         with self.assertRaisesRegex(CoverageError, "requires factor decisions"):
-            compile_coverage_plan(plan, (), expand_coverage_plan(plan))
+            compile_coverage_plan(
+                plan,
+                (),
+                expand_coverage_plan(plan),
+                (self.interaction(),),
+            )
 
         legacy = CoveragePlan.from_dict(CoverageExpansionTest().plan_document())
         compilation = compile_coverage_plan(legacy, (), expand_coverage_plan(legacy))

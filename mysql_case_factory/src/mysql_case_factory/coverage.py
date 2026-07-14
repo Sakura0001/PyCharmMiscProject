@@ -35,6 +35,7 @@ class CoverageObligation:
     reason: Optional[str] = None
     execution_profile: str = "basic_mysql"
     execution_harness: Optional[str] = None
+    source: Optional[str] = None
 
     def to_dict(self) -> dict[str, Any]:
         document: dict[str, Any] = {
@@ -47,6 +48,8 @@ class CoverageObligation:
         }
         if self.reason is not None:
             document["reason"] = self.reason
+        if self.source is not None:
+            document["source"] = self.source
         if self.execution_harness is not None:
             document["execution_harness"] = self.execution_harness
         return document
@@ -81,6 +84,153 @@ class CoverageReconciliation:
             "missing": self.missing,
             "complete": self.complete,
             "missing_obligation_ids": list(self.missing_obligation_ids),
+        }
+
+
+_STABLE_COVERAGE_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
+_SHA256 = re.compile(r"^[0-9a-f]{64}$")
+
+
+@dataclass(frozen=True)
+class CoverageInteractionRequirement:
+    """Upstream, digest-bound assertion that factors must interact in one suite.
+
+    The requirement is deliberately supplied independently from the coverage
+    plan.  ``source_sha256`` binds the impact/knowledge artifact that owns the
+    complete interaction list, so editing the plan and factor decisions
+    together cannot erase a required cross without changing upstream evidence.
+    Required factors are owned by the target suite.  Selector/reference
+    factors are owned elsewhere and may only be reused by this explicit grant.
+    """
+
+    interaction_id: str
+    target_suite_id: str
+    required_factor_ids: tuple[str, ...]
+    selector_factor_ids: tuple[str, ...]
+    reference_factor_ids: tuple[str, ...]
+    combination_policy: str
+    source: str
+    source_sha256: str
+
+    def __post_init__(self) -> None:
+        for value, location in (
+            (self.interaction_id, "interaction_id"),
+            (self.target_suite_id, "target_suite_id"),
+        ):
+            if not isinstance(value, str) or _STABLE_COVERAGE_ID.fullmatch(value) is None:
+                raise CoverageError(
+                    f"coverage interaction {location} must be a stable identifier"
+                )
+        for values, location, required in (
+            (self.required_factor_ids, "required_factor_ids", True),
+            (self.selector_factor_ids, "selector_factor_ids", False),
+            (self.reference_factor_ids, "reference_factor_ids", False),
+        ):
+            if type(values) is not tuple or (required and not values):
+                qualifier = "a non-empty tuple" if required else "a tuple"
+                raise CoverageError(
+                    f"coverage interaction {location} must be {qualifier}"
+                )
+            if len(values) != len(set(values)):
+                raise CoverageError(
+                    f"coverage interaction {location} contains duplicates"
+                )
+            for factor_id in values:
+                if (
+                    not isinstance(factor_id, str)
+                    or _STABLE_COVERAGE_ID.fullmatch(factor_id) is None
+                ):
+                    raise CoverageError(
+                        f"coverage interaction {location} must contain stable factor ids"
+                    )
+        groups = (
+            set(self.required_factor_ids),
+            set(self.selector_factor_ids),
+            set(self.reference_factor_ids),
+        )
+        if groups[0] & groups[1] or groups[0] & groups[2] or groups[1] & groups[2]:
+            raise CoverageError(
+                "coverage interaction factor roles overlap"
+            )
+        if self.combination_policy not in {
+            "full_cross",
+            "conditional_cross",
+            "boundary",
+            "negative",
+            "representative",
+            "pairwise",
+        }:
+            raise CoverageError(
+                "coverage interaction combination_policy is unsupported"
+            )
+        if not isinstance(self.source, str) or not self.source.strip():
+            raise CoverageError("coverage interaction source must be non-empty")
+        if (
+            not isinstance(self.source_sha256, str)
+            or _SHA256.fullmatch(self.source_sha256) is None
+        ):
+            raise CoverageError(
+                "coverage interaction source_sha256 must be a lowercase SHA-256"
+            )
+
+    @classmethod
+    def from_dict(
+        cls,
+        raw: Mapping[str, Any],
+    ) -> "CoverageInteractionRequirement":
+        if not isinstance(raw, Mapping):
+            raise CoverageError("coverage interaction must be a mapping")
+        expected = {
+            "interaction_id",
+            "target_suite_id",
+            "required_factor_ids",
+            "selector_factor_ids",
+            "reference_factor_ids",
+            "combination_policy",
+            "source",
+            "source_sha256",
+        }
+        missing = sorted(expected - set(raw))
+        extra = sorted(str(key) for key in set(raw) - expected)
+        if missing or extra:
+            raise CoverageError(
+                f"coverage interaction keys mismatch; missing={missing!r}, extra={extra!r}"
+            )
+        factor_lists: dict[str, tuple[str, ...]] = {}
+        for key in (
+            "required_factor_ids",
+            "selector_factor_ids",
+            "reference_factor_ids",
+        ):
+            value = raw[key]
+            if not isinstance(value, Sequence) or isinstance(
+                value, (str, bytes, bytearray)
+            ):
+                raise CoverageError(
+                    f"coverage interaction {key} must be a sequence"
+                )
+            factor_lists[key] = tuple(value)
+        return cls(
+            interaction_id=raw["interaction_id"],
+            target_suite_id=raw["target_suite_id"],
+            required_factor_ids=factor_lists["required_factor_ids"],
+            selector_factor_ids=factor_lists["selector_factor_ids"],
+            reference_factor_ids=factor_lists["reference_factor_ids"],
+            combination_policy=raw["combination_policy"],
+            source=raw["source"],
+            source_sha256=raw["source_sha256"],
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "interaction_id": self.interaction_id,
+            "target_suite_id": self.target_suite_id,
+            "required_factor_ids": list(self.required_factor_ids),
+            "selector_factor_ids": list(self.selector_factor_ids),
+            "reference_factor_ids": list(self.reference_factor_ids),
+            "combination_policy": self.combination_policy,
+            "source": self.source,
+            "source_sha256": self.source_sha256,
         }
 
 
@@ -186,6 +336,7 @@ class CoverageCompilation:
     contract_proofs: tuple[CoverageContractProof, ...]
     legacy_test_point_ids: tuple[str, ...]
     factor_owner_by_id: Mapping[str, str]
+    interaction_source_sha256_by_id: Mapping[str, str]
 
     @property
     def proofs(self) -> tuple[CoverageContractProof, ...]:
@@ -209,6 +360,9 @@ class CoverageCompilation:
             "contract_proofs": [item.to_dict() for item in self.contract_proofs],
             "legacy_test_point_ids": list(self.legacy_test_point_ids),
             "factor_owner_by_id": dict(self.factor_owner_by_id),
+            "interaction_source_sha256_by_id": dict(
+                self.interaction_source_sha256_by_id
+            ),
             "complete": self.complete,
         }
 
@@ -471,10 +625,16 @@ def prove_coverage_contract(
             )
         seen_obligation_ids.add(obligation.obligation_id)
 
-        expected_outcome, expected_reason = _classify(point, obligation.assignments)
-        if obligation.outcome != expected_outcome or obligation.reason != expected_reason:
+        expected_outcome, expected_reason, expected_source = _classify(
+            point, obligation.assignments
+        )
+        if (
+            obligation.outcome != expected_outcome
+            or obligation.reason != expected_reason
+            or obligation.source != expected_source
+        ):
             raise CoverageError(
-                f"obligation {obligation.obligation_id} outcome/reason does not match "
+                f"obligation {obligation.obligation_id} outcome/reason/source does not match "
                 "the plan classification"
             )
         expected_profile, expected_harness = _execution_route(
@@ -641,12 +801,62 @@ def _normalize_factor_decisions(
     return decisions
 
 
+def _normalize_interaction_requirements(
+    interaction_requirements: Sequence[CoverageInteractionRequirement]
+    | Mapping[str, CoverageInteractionRequirement],
+) -> tuple[CoverageInteractionRequirement, ...]:
+    if isinstance(interaction_requirements, Mapping):
+        interactions = tuple(interaction_requirements.values())
+        mismatched_keys = sorted(
+            str(key)
+            for key, interaction in interaction_requirements.items()
+            if not isinstance(interaction, CoverageInteractionRequirement)
+            or key != interaction.interaction_id
+        )
+        if mismatched_keys:
+            raise CoverageError(
+                "interaction requirement mapping keys must equal interaction_id: "
+                + ", ".join(mismatched_keys)
+            )
+    elif isinstance(interaction_requirements, Sequence) and not isinstance(
+        interaction_requirements, (str, bytes, bytearray)
+    ):
+        interactions = tuple(interaction_requirements)
+    else:
+        raise CoverageError(
+            "interaction_requirements must be a sequence or mapping"
+        )
+    if any(
+        not isinstance(item, CoverageInteractionRequirement)
+        for item in interactions
+    ):
+        raise CoverageError(
+            "interaction_requirements must contain CoverageInteractionRequirement objects"
+        )
+    seen: set[str] = set()
+    for interaction in interactions:
+        if interaction.interaction_id in seen:
+            raise CoverageError(
+                f"duplicate coverage interaction {interaction.interaction_id}"
+            )
+        seen.add(interaction.interaction_id)
+    return interactions
+
+
 def compile_coverage_plan(
     plan: CoveragePlan,
     factor_decisions: Sequence[FactorDecision] | Mapping[str, FactorDecision],
     obligations: Optional[Iterable[CoverageObligation]] = None,
+    interaction_requirements: Sequence[CoverageInteractionRequirement]
+    | Mapping[str, CoverageInteractionRequirement] = (),
 ) -> CoverageCompilation:
-    """Bind factor ownership and compile exact proofs for every v2 point."""
+    """Bind upstream interactions, factor ownership, and exact v2 proofs.
+
+    Interaction requirements come from the independently digest-bound impact
+    or knowledge artifact.  The coverage plan is only a consumer of that list;
+    it cannot make a required multi-factor interaction disappear by editing its
+    own suites and factor dependencies in concert.
+    """
 
     validate_coverage_plan(plan)
     actual = (
@@ -678,51 +888,169 @@ def compile_coverage_plan(
         if point.coverage_contract is None
     )
     decisions = _normalize_factor_decisions(factor_decisions)
+    interactions = _normalize_interaction_requirements(interaction_requirements)
     if not contracted:
-        return CoverageCompilation(actual, (), legacy_ids, {})
+        if interactions:
+            raise CoverageError(
+                "legacy coverage plan cannot consume v2 interaction requirements"
+            )
+        return CoverageCompilation(
+            obligations=actual,
+            contract_proofs=(),
+            legacy_test_point_ids=legacy_ids,
+            factor_owner_by_id={},
+            interaction_source_sha256_by_id={},
+        )
     if not decisions:
         raise CoverageError("contracted coverage plan requires factor decisions")
 
     decision_by_factor = {item.factor_id: item for item in decisions}
-    owner_by_factor: dict[str, str] = {}
-    axes_in_contracts: set[str] = set()
+    contracted_by_id = {point.test_point_id: point for point in contracted}
+    axes_in_contracts = {
+        axis_id
+        for point in contracted
+        for axis_id in (
+            point.coverage_contract.primary_axes
+            + point.coverage_contract.condition_axes
+        )
+    }
+    for axis_id in sorted(axes_in_contracts):
+        decision = decision_by_factor.get(axis_id)
+        if decision is None:
+            raise CoverageError(f"contracted factor {axis_id} has no factor decision")
+        if decision.status != "covered" or decision.review_state != "reviewed":
+            raise CoverageError(
+                f"contracted factor {axis_id} requires a reviewed covered decision"
+            )
+        axis = plan.axes[axis_id]
+        if (
+            decision.inventory_source != axis.inventory_source
+            or decision.inventory_sha256 != axis.inventory_sha256
+        ):
+            raise CoverageError(
+                f"factor {axis_id} inventory binding does not match coverage axis"
+            )
+
+    owner_by_factor = {
+        decision.factor_id: decision.owning_suite_id
+        for decision in decisions
+        if decision.status == "covered"
+    }
+    interactions_by_target: dict[str, list[CoverageInteractionRequirement]] = {}
+    for interaction in interactions:
+        point = contracted_by_id.get(interaction.target_suite_id)
+        if point is None:
+            raise CoverageError(
+                f"interaction {interaction.interaction_id} target suite "
+                f"{interaction.target_suite_id} is not a contracted suite"
+            )
+        contract = point.coverage_contract
+        assert contract is not None
+        if interaction.combination_policy != contract.combination_policy:
+            raise CoverageError(
+                f"interaction {interaction.interaction_id} policy "
+                f"{interaction.combination_policy} does not match target suite "
+                f"policy {contract.combination_policy}"
+            )
+        non_owners = (
+            interaction.selector_factor_ids + interaction.reference_factor_ids
+        )
+        if (
+            interaction.required_factor_ids != contract.primary_axes
+            or non_owners != contract.condition_axes
+        ):
+            raise CoverageError(
+                f"interaction {interaction.interaction_id} required factors and "
+                "selector/reference factors must match one target suite contract"
+            )
+        for factor_id in interaction.required_factor_ids + non_owners:
+            decision = decision_by_factor.get(factor_id)
+            if decision is None:
+                raise CoverageError(
+                    f"interaction {interaction.interaction_id} references factor "
+                    f"{factor_id} without a factor decision"
+                )
+        for factor_id in interaction.required_factor_ids:
+            owner = owner_by_factor.get(factor_id)
+            if owner != interaction.target_suite_id:
+                raise CoverageError(
+                    f"factor {factor_id} owning suite {owner} does not match "
+                    f"contracted suite {interaction.target_suite_id}; interaction "
+                    f"{interaction.interaction_id} required factors must be owned "
+                    "by one target suite"
+                )
+        for factor_id in non_owners:
+            if owner_by_factor.get(factor_id) == interaction.target_suite_id:
+                raise CoverageError(
+                    f"selector/reference factor {factor_id} cannot be owned by "
+                    f"target suite {interaction.target_suite_id}"
+                )
+        interactions_by_target.setdefault(point.test_point_id, []).append(interaction)
+
+    # Ownership credit comes only from FactorDecision.owning_suite_id.  An
+    # occurrence in another suite is legal only as a separately authorized
+    # selector/reference and never changes the owner map.
     for point in contracted:
         contract = point.coverage_contract
         assert contract is not None
+        target_interactions = interactions_by_target.get(point.test_point_id, [])
+        if len(contract.primary_axes + contract.condition_axes) > 1:
+            if not target_interactions:
+                reused = [
+                    axis_id
+                    for axis_id in contract.primary_axes + contract.condition_axes
+                    if owner_by_factor.get(axis_id) != point.test_point_id
+                ]
+                if reused:
+                    raise CoverageError(
+                        f"unapproved factor reuse in suite {point.test_point_id}: "
+                        + ", ".join(reused)
+                    )
+            if len(target_interactions) != 1:
+                if target_interactions:
+                    raise CoverageError(
+                        f"suite {point.test_point_id} must match exactly one "
+                        "coverage interaction"
+                    )
+        allowed_references = {
+            factor_id
+            for interaction in target_interactions
+            for factor_id in (
+                interaction.selector_factor_ids
+                + interaction.reference_factor_ids
+            )
+        }
         for axis_id in contract.primary_axes + contract.condition_axes:
-            if axis_id in axes_in_contracts:
+            owner = owner_by_factor.get(axis_id)
+            if owner != point.test_point_id and axis_id not in allowed_references:
                 raise CoverageError(
-                    f"factor {axis_id} has two owning suites in the coverage plan"
+                    f"unapproved factor reuse in suite {point.test_point_id}: {axis_id}"
                 )
-            axes_in_contracts.add(axis_id)
-            decision = decision_by_factor.get(axis_id)
-            if decision is None:
-                raise CoverageError(
-                    f"contracted factor {axis_id} has no factor decision"
-                )
-            if decision.status != "covered" or decision.review_state != "reviewed":
-                raise CoverageError(
-                    f"contracted factor {axis_id} requires a reviewed covered decision"
-                )
-            if decision.owning_suite_id != point.test_point_id:
-                raise CoverageError(
-                    f"factor {axis_id} owning suite {decision.owning_suite_id} "
-                    f"does not match contracted suite {point.test_point_id}"
-                )
-            if decision.combination_strategy != contract.combination_policy:
-                raise CoverageError(
-                    f"factor {axis_id} policy {decision.combination_strategy} does not "
-                    f"match suite policy {contract.combination_policy}"
-                )
-            axis = plan.axes[axis_id]
-            if (
-                decision.inventory_source != axis.inventory_source
-                or decision.inventory_sha256 != axis.inventory_sha256
-            ):
-                raise CoverageError(
-                    f"factor {axis_id} inventory binding does not match coverage axis"
-                )
-            owner_by_factor[axis_id] = point.test_point_id
+
+    # Every covered decision owns exactly one factor in the primary axes of its
+    # declared suite.  Merely appearing as a selector cannot confer ownership.
+    for decision in decisions:
+        if decision.status != "covered":
+            continue
+        owner_point = contracted_by_id.get(decision.owning_suite_id)
+        if owner_point is None:
+            raise CoverageError(
+                f"factor {decision.factor_id} owning suite "
+                f"{decision.owning_suite_id} is not a contracted suite"
+            )
+        owner_contract = owner_point.coverage_contract
+        assert owner_contract is not None
+        if decision.factor_id not in owner_contract.primary_axes:
+            raise CoverageError(
+                f"factor {decision.factor_id} cannot claim ownership in suite "
+                f"{decision.owning_suite_id}; it is not a required primary factor"
+            )
+        if decision.combination_strategy != owner_contract.combination_policy:
+            raise CoverageError(
+                f"factor {decision.factor_id} policy {decision.combination_strategy} "
+                f"does not match owner suite policy "
+                f"{owner_contract.combination_policy}"
+            )
 
     extra_covered = [
         item.factor_id
@@ -768,6 +1096,10 @@ def compile_coverage_plan(
         contract_proofs=proofs,
         legacy_test_point_ids=legacy_ids,
         factor_owner_by_id=owner_by_factor,
+        interaction_source_sha256_by_id={
+            interaction.interaction_id: interaction.source_sha256
+            for interaction in interactions
+        },
     )
 
 
@@ -785,10 +1117,12 @@ def _matches(assignments: Mapping[str, Any], criteria: Mapping[str, Any]) -> boo
 def _classify(
     point: TestPoint,
     assignments: Mapping[str, Any],
-) -> tuple[Optional[str], Optional[str]]:
+) -> tuple[Optional[str], Optional[str], Optional[str]]:
     matching = [rule for rule in point.classification_rules if _matches(assignments, rule.when)]
     if len(matching) > 1:
-        classifications = {(rule.outcome, rule.reason) for rule in matching}
+        classifications = {
+            (rule.outcome, rule.reason, rule.source) for rule in matching
+        }
         if len(classifications) > 1:
             raise CoverageError(
                 f"test point {point.test_point_id} assignment {dict(assignments)!r} "
@@ -797,9 +1131,11 @@ def _classify(
     if matching:
         outcome = matching[0].outcome
         reason = matching[0].reason
+        source = matching[0].source
     else:
         outcome = point.default_outcome
         reason = point.default_reason
+        source = point.default_source
 
     if outcome is not None and outcome not in COVERAGE_OUTCOMES:
         raise CoverageError(
@@ -807,7 +1143,15 @@ def _classify(
         )
     if outcome in ("expected_failure", "justified_na") and not reason:
         raise CoverageError(f"{outcome} classification requires a reason")
-    return outcome, reason
+    if (
+        point.coverage_contract is not None
+        and outcome in ("expected_failure", "justified_na")
+        and not source
+    ):
+        raise CoverageError(
+            f"contracted {outcome} classification requires a source"
+        )
+    return outcome, reason, source
 
 
 def _execution_route(
@@ -840,7 +1184,7 @@ def expand_test_point(plan: CoveragePlan, point: TestPoint) -> tuple[CoverageObl
             axis_id: value
             for (axis_id, _), value in zip(axes, values)
         }
-        outcome, reason = _classify(point, assignments)
+        outcome, reason, source = _classify(point, assignments)
         execution_profile, execution_harness = _execution_route(point, assignments)
         obligations.append(
             CoverageObligation(
@@ -854,6 +1198,7 @@ def expand_test_point(plan: CoveragePlan, point: TestPoint) -> tuple[CoverageObl
                 assignments=assignments,
                 outcome=outcome,
                 reason=reason,
+                source=source,
                 execution_profile=execution_profile,
                 execution_harness=execution_harness,
             )
@@ -1057,6 +1402,7 @@ __all__ = [
     "CoverageError",
     "CoverageObligation",
     "CoverageReconciliation",
+    "CoverageInteractionRequirement",
     "CoverageConditionProof",
     "CoverageContractProof",
     "CoverageCompilation",
