@@ -18,6 +18,7 @@ from .contracts import (
     inventory_value_equal,
 )
 from .feature_plan import validate_coverage_plan
+from .planning_contracts import FactorDecision
 
 
 class CoverageError(ValueError):
@@ -84,6 +85,135 @@ class CoverageReconciliation:
 
 
 @dataclass(frozen=True)
+class CoverageConditionProof:
+    """Exact primary-assignment proof for one frozen condition tuple."""
+
+    condition_assignment: Mapping[str, Any]
+    primary_axes: tuple[str, ...]
+    theoretical_count: int
+    actual_count: int
+    theoretical_sha256: str
+    actual_sha256: str
+    expected_outcome_counts: Mapping[str, int]
+    outcome_counts: Mapping[str, int]
+    missing_assignments: tuple[str, ...] = ()
+    unexpected_assignments: tuple[str, ...] = ()
+
+    @property
+    def complete(self) -> bool:
+        return (
+            self.theoretical_count == self.actual_count
+            and self.theoretical_sha256 == self.actual_sha256
+            and dict(self.expected_outcome_counts) == dict(self.outcome_counts)
+            and not self.missing_assignments
+            and not self.unexpected_assignments
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "condition_assignment": dict(self.condition_assignment),
+            "primary_axes": list(self.primary_axes),
+            "theoretical_count": self.theoretical_count,
+            "actual_count": self.actual_count,
+            "theoretical_sha256": self.theoretical_sha256,
+            "actual_sha256": self.actual_sha256,
+            "expected_outcome_counts": dict(self.expected_outcome_counts),
+            "outcome_counts": dict(self.outcome_counts),
+            "missing_assignments": list(self.missing_assignments),
+            "unexpected_assignments": list(self.unexpected_assignments),
+            "complete": self.complete,
+        }
+
+
+@dataclass(frozen=True)
+class CoverageContractProof:
+    """A successful exact-set and outcome proof for one contracted point."""
+
+    test_point_id: str
+    combination_policy: str
+    primary_axes: tuple[str, ...]
+    condition_axes: tuple[str, ...]
+    axis_inventory_counts: Mapping[str, int]
+    axis_inventory_sha256: Mapping[str, str]
+    theoretical_count: int
+    actual_count: int
+    theoretical_sha256: str
+    actual_sha256: str
+    expected_outcome_counts: Mapping[str, int]
+    outcome_counts: Mapping[str, int]
+    condition_proofs: tuple[CoverageConditionProof, ...]
+    missing_assignments: tuple[str, ...] = ()
+    unexpected_assignments: tuple[str, ...] = ()
+
+    @property
+    def complete(self) -> bool:
+        return (
+            self.theoretical_count == self.actual_count
+            and self.theoretical_sha256 == self.actual_sha256
+            and dict(self.expected_outcome_counts) == dict(self.outcome_counts)
+            and not self.missing_assignments
+            and not self.unexpected_assignments
+            and bool(self.condition_proofs)
+            and all(item.complete for item in self.condition_proofs)
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "test_point_id": self.test_point_id,
+            "combination_policy": self.combination_policy,
+            "primary_axes": list(self.primary_axes),
+            "condition_axes": list(self.condition_axes),
+            "axis_inventory_counts": dict(self.axis_inventory_counts),
+            "axis_inventory_sha256": dict(self.axis_inventory_sha256),
+            "theoretical_count": self.theoretical_count,
+            "actual_count": self.actual_count,
+            "theoretical_sha256": self.theoretical_sha256,
+            "actual_sha256": self.actual_sha256,
+            "expected_outcome_counts": dict(self.expected_outcome_counts),
+            "outcome_counts": dict(self.outcome_counts),
+            "condition_proofs": [item.to_dict() for item in self.condition_proofs],
+            "missing_assignments": list(self.missing_assignments),
+            "unexpected_assignments": list(self.unexpected_assignments),
+            "complete": self.complete,
+        }
+
+
+@dataclass(frozen=True)
+class CoverageCompilation:
+    """Coverage obligations plus every proof needed to claim completeness."""
+
+    obligations: tuple[CoverageObligation, ...]
+    contract_proofs: tuple[CoverageContractProof, ...]
+    legacy_test_point_ids: tuple[str, ...]
+    factor_owner_by_id: Mapping[str, str]
+
+    @property
+    def proofs(self) -> tuple[CoverageContractProof, ...]:
+        """Backward-friendly short name for callers rendering proof bundles."""
+
+        return self.contract_proofs
+
+    @property
+    def complete(self) -> bool:
+        # An uncontracted v1 point may still be expanded and executed, but it
+        # can never be silently promoted into a v2 mathematical proof.
+        return (
+            bool(self.contract_proofs)
+            and not self.legacy_test_point_ids
+            and all(item.complete for item in self.contract_proofs)
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "obligations": [item.to_dict() for item in self.obligations],
+            "contract_proofs": [item.to_dict() for item in self.contract_proofs],
+            "legacy_test_point_ids": list(self.legacy_test_point_ids),
+            "factor_owner_by_id": dict(self.factor_owner_by_id),
+            "complete": self.complete,
+        }
+
+
+@dataclass(frozen=True)
 class CaseReconciliation:
     required_cases: int
     matched_cases: int
@@ -146,6 +276,499 @@ def stable_obligation_id(
     digest = hashlib.sha256(encoded).hexdigest()[:12]
     prefix = re.sub(r"[^a-z0-9]+", "-", test_point_id.lower()).strip("-") or "point"
     return f"obl-{prefix}-{digest}"
+
+
+def _assignment_key(assignments: Mapping[str, Any]) -> str:
+    if not isinstance(assignments, Mapping):
+        raise CoverageError("coverage assignment must be a mapping")
+    canonical: dict[str, Any] = {}
+    for axis_id, value in assignments.items():
+        if not isinstance(axis_id, str) or not axis_id:
+            raise CoverageError("coverage assignment axis ids must be non-empty strings")
+        if type(value) not in (type(None), bool, int, float, str):
+            raise CoverageError(
+                f"coverage assignment {axis_id} contains unsupported scalar type "
+                f"{type(value).__name__}"
+            )
+        canonical[axis_id] = _canonical_value(value)
+    try:
+        return json.dumps(
+            canonical,
+            ensure_ascii=False,
+            allow_nan=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+    except (TypeError, ValueError) as exc:
+        raise CoverageError(f"coverage assignment is not canonical JSON: {exc}") from exc
+
+
+def assignment_set_sha256(assignments: Iterable[Mapping[str, Any]]) -> str:
+    """Hash a semantic assignment *set* with YAML-scalar type identity.
+
+    Input order is deliberately irrelevant.  Duplicates are an error rather
+    than being collapsed, because collapsing could hide a missing assignment
+    behind a repeated one while preserving the declared row count.
+    """
+
+    keys = [_assignment_key(item) for item in assignments]
+    if len(keys) != len(set(keys)):
+        raise CoverageError("coverage contains a duplicate semantic assignment")
+    encoded = json.dumps(
+        sorted(keys),
+        ensure_ascii=False,
+        allow_nan=False,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _axis_product_assignments(
+    plan: CoveragePlan,
+    axis_ids: Sequence[str],
+) -> tuple[dict[str, Any], ...]:
+    axes = [(axis_id, plan.axes[axis_id].values) for axis_id in axis_ids]
+    return tuple(
+        {
+            axis_id: value
+            for (axis_id, _), value in zip(axes, values)
+        }
+        for values in itertools.product(*(axis_values for _, axis_values in axes))
+    )
+
+
+def _project_assignment(
+    assignments: Mapping[str, Any],
+    axis_ids: Sequence[str],
+) -> dict[str, Any]:
+    return {axis_id: assignments[axis_id] for axis_id in axis_ids}
+
+
+def _assignment_outcome_counts(
+    obligations: Iterable[CoverageObligation],
+) -> dict[str, int]:
+    materialized = tuple(obligations)
+    return {
+        "total": len(materialized),
+        "success": sum(item.outcome == "success" for item in materialized),
+        "expected_failure": sum(
+            item.outcome == "expected_failure" for item in materialized
+        ),
+        "justified_na": sum(item.outcome == "justified_na" for item in materialized),
+    }
+
+
+def _theoretical_outcome_counts(
+    point: TestPoint,
+    assignments: Iterable[Mapping[str, Any]],
+) -> dict[str, int]:
+    outcomes = [_classify(point, item)[0] for item in assignments]
+    missing = sum(item not in COVERAGE_OUTCOMES for item in outcomes)
+    if missing:
+        raise CoverageError(
+            f"test point {point.test_point_id} has {missing} unclassified "
+            "theoretical assignments"
+        )
+    return {
+        "total": len(outcomes),
+        "success": sum(item == "success" for item in outcomes),
+        "expected_failure": sum(item == "expected_failure" for item in outcomes),
+        "justified_na": sum(item == "justified_na" for item in outcomes),
+    }
+
+
+def _condition_label(condition: Mapping[str, Any]) -> str:
+    if not condition:
+        return "{}"
+    return repr(dict(condition))
+
+
+def prove_coverage_contract(
+    plan: CoveragePlan,
+    point: TestPoint,
+    obligations: Iterable[CoverageObligation],
+) -> CoverageContractProof:
+    """Prove one coverage contract from independent theoretical and actual sets.
+
+    The theoretical side is built only from the frozen axis inventories.  The
+    actual side is built only from the supplied obligations.  No declared
+    count or generated list is allowed to stand in for set equality.
+    """
+
+    validate_coverage_plan(plan)
+    matching_points = tuple(
+        candidate
+        for candidate in plan.test_points
+        if candidate.test_point_id == point.test_point_id
+    )
+    if len(matching_points) != 1 or matching_points[0] != point:
+        raise CoverageError(
+            f"test point {point.test_point_id} is not the validated point from plan {plan.plan_id}"
+        )
+    contract = point.coverage_contract
+    if contract is None:
+        raise CoverageError(
+            f"test point {point.test_point_id} has no coverage contract to prove"
+        )
+    if contract.combination_policy not in ("full_cross", "conditional_cross"):
+        raise CoverageError(
+            f"coverage policy {contract.combination_policy} cannot prove exact completeness"
+        )
+
+    axis_ids = contract.primary_axes + contract.condition_axes
+    theoretical = _axis_product_assignments(plan, axis_ids)
+    actual = tuple(obligations)
+    actual_assignment_keys = [_assignment_key(item.assignments) for item in actual]
+    if len(actual_assignment_keys) != len(set(actual_assignment_keys)):
+        raise CoverageError(
+            f"test point {point.test_point_id} contains a duplicate semantic assignment"
+        )
+
+    expected_axis_keys = set(axis_ids)
+    seen_obligation_ids: set[str] = set()
+    for obligation in actual:
+        if obligation.plan_id != plan.plan_id:
+            raise CoverageError(
+                f"obligation {obligation.obligation_id} plan id {obligation.plan_id} "
+                f"does not match {plan.plan_id}"
+            )
+        if obligation.test_point_id != point.test_point_id:
+            raise CoverageError(
+                f"obligation {obligation.obligation_id} belongs to test point "
+                f"{obligation.test_point_id}, not {point.test_point_id}"
+            )
+        assignment_keys = set(obligation.assignments)
+        if assignment_keys != expected_axis_keys:
+            missing = sorted(expected_axis_keys - assignment_keys)
+            extra = sorted(assignment_keys - expected_axis_keys)
+            raise CoverageError(
+                f"obligation {obligation.obligation_id} assignment keys do not match "
+                f"the contract; missing={missing!r}, extra={extra!r}"
+            )
+        for axis_id in axis_ids:
+            value = obligation.assignments[axis_id]
+            if not any(
+                inventory_value_equal(value, allowed)
+                for allowed in plan.axes[axis_id].values
+            ):
+                raise CoverageError(
+                    f"obligation {obligation.obligation_id} uses unknown value "
+                    f"{value!r} for axis {axis_id}"
+                )
+        expected_id = stable_obligation_id(
+            point.test_point_id,
+            obligation.assignments,
+            plan_id=plan.plan_id,
+        )
+        if obligation.obligation_id != expected_id:
+            raise CoverageError(
+                f"obligation id {obligation.obligation_id} does not match stable id {expected_id}"
+            )
+        if obligation.obligation_id in seen_obligation_ids:
+            raise CoverageError(
+                f"test point {point.test_point_id} contains duplicate obligation id "
+                f"{obligation.obligation_id}"
+            )
+        seen_obligation_ids.add(obligation.obligation_id)
+
+        expected_outcome, expected_reason = _classify(point, obligation.assignments)
+        if obligation.outcome != expected_outcome or obligation.reason != expected_reason:
+            raise CoverageError(
+                f"obligation {obligation.obligation_id} outcome/reason does not match "
+                "the plan classification"
+            )
+        expected_profile, expected_harness = _execution_route(
+            point, obligation.assignments
+        )
+        if (
+            obligation.execution_profile != expected_profile
+            or obligation.execution_harness != expected_harness
+        ):
+            raise CoverageError(
+                f"obligation {obligation.obligation_id} execution route does not "
+                "match the plan"
+            )
+
+    theoretical_by_key = {_assignment_key(item): item for item in theoretical}
+    actual_by_key = {
+        _assignment_key(item.assignments): dict(item.assignments) for item in actual
+    }
+
+    condition_assignments = (
+        _axis_product_assignments(plan, contract.condition_axes)
+        if contract.condition_axes
+        else ({},)
+    )
+    condition_proofs: list[CoverageConditionProof] = []
+    for condition in condition_assignments:
+        theoretical_for_condition = tuple(
+            item
+            for item in theoretical
+            if all(
+                inventory_value_equal(item[axis_id], value)
+                for axis_id, value in condition.items()
+            )
+        )
+        actual_for_condition = tuple(
+            item
+            for item in actual
+            if all(
+                inventory_value_equal(item.assignments[axis_id], value)
+                for axis_id, value in condition.items()
+            )
+        )
+        theoretical_primary = tuple(
+            _project_assignment(item, contract.primary_axes)
+            for item in theoretical_for_condition
+        )
+        actual_primary = tuple(
+            _project_assignment(item.assignments, contract.primary_axes)
+            for item in actual_for_condition
+        )
+        theoretical_primary_keys = {
+            _assignment_key(item) for item in theoretical_primary
+        }
+        actual_primary_keys = {_assignment_key(item) for item in actual_primary}
+        missing = tuple(sorted(theoretical_primary_keys - actual_primary_keys))
+        unexpected = tuple(sorted(actual_primary_keys - theoretical_primary_keys))
+        if missing or unexpected:
+            raise CoverageError(
+                f"condition {_condition_label(condition)} missing {len(missing)} "
+                f"assignment(s) and has {len(unexpected)} unexpected assignment(s)"
+            )
+        condition_proofs.append(
+            # Per-condition outcomes are classified independently from the
+            # supplied obligations, just like the assignment set itself.
+            CoverageConditionProof(
+                condition_assignment=dict(condition),
+                primary_axes=contract.primary_axes,
+                theoretical_count=len(theoretical_primary),
+                actual_count=len(actual_primary),
+                theoretical_sha256=assignment_set_sha256(theoretical_primary),
+                actual_sha256=assignment_set_sha256(actual_primary),
+                expected_outcome_counts=_theoretical_outcome_counts(
+                    point, theoretical_for_condition
+                ),
+                outcome_counts=_assignment_outcome_counts(actual_for_condition),
+            )
+        )
+
+    missing_keys = tuple(sorted(set(theoretical_by_key) - set(actual_by_key)))
+    unexpected_keys = tuple(sorted(set(actual_by_key) - set(theoretical_by_key)))
+    if missing_keys or unexpected_keys:
+        raise CoverageError(
+            f"test point {point.test_point_id} exact assignment set mismatch: "
+            f"missing {len(missing_keys)}, unexpected {len(unexpected_keys)}"
+        )
+
+    theoretical_counts = _theoretical_outcome_counts(point, theoretical)
+    expected_counts = contract.expected_counts.to_dict()
+    if theoretical_counts != expected_counts:
+        raise CoverageError(
+            f"test point {point.test_point_id} expected outcome counts {expected_counts!r} "
+            f"do not match independently classified counts {theoretical_counts!r}"
+        )
+    actual_counts = _assignment_outcome_counts(actual)
+    if actual_counts != expected_counts:
+        raise CoverageError(
+            f"test point {point.test_point_id} actual outcome counts {actual_counts!r} "
+            f"do not match expected outcome counts {expected_counts!r}"
+        )
+    if actual_counts["success"] + actual_counts["expected_failure"] == 0:
+        raise CoverageError(
+            f"test point {point.test_point_id} has no executable oracle obligations"
+        )
+
+    proof = CoverageContractProof(
+        test_point_id=point.test_point_id,
+        combination_policy=contract.combination_policy,
+        primary_axes=contract.primary_axes,
+        condition_axes=contract.condition_axes,
+        axis_inventory_counts={
+            axis_id: plan.axes[axis_id].inventory_count for axis_id in axis_ids
+        },
+        axis_inventory_sha256={
+            axis_id: plan.axes[axis_id].inventory_sha256 for axis_id in axis_ids
+        },
+        theoretical_count=len(theoretical),
+        actual_count=len(actual),
+        theoretical_sha256=assignment_set_sha256(theoretical),
+        actual_sha256=assignment_set_sha256(item.assignments for item in actual),
+        expected_outcome_counts=expected_counts,
+        outcome_counts=actual_counts,
+        condition_proofs=tuple(condition_proofs),
+        missing_assignments=missing_keys,
+        unexpected_assignments=unexpected_keys,
+    )
+    if not proof.complete:  # Defensive: never return a partial proof object.
+        raise CoverageError(
+            f"test point {point.test_point_id} coverage proof is incomplete"
+        )
+    return proof
+
+
+def _normalize_factor_decisions(
+    factor_decisions: Sequence[FactorDecision] | Mapping[str, FactorDecision],
+) -> tuple[FactorDecision, ...]:
+    if isinstance(factor_decisions, Mapping):
+        decisions = tuple(factor_decisions.values())
+        mismatched_keys = sorted(
+            str(key)
+            for key, decision in factor_decisions.items()
+            if not isinstance(decision, FactorDecision)
+            or key != decision.factor_id
+        )
+        if mismatched_keys:
+            raise CoverageError(
+                "factor_decisions mapping keys must equal factor_id: "
+                + ", ".join(mismatched_keys)
+            )
+    elif isinstance(factor_decisions, Sequence) and not isinstance(
+        factor_decisions, (str, bytes, bytearray)
+    ):
+        decisions = tuple(factor_decisions)
+    else:
+        raise CoverageError("factor_decisions must be a sequence or mapping")
+    if any(not isinstance(item, FactorDecision) for item in decisions):
+        raise CoverageError("factor_decisions must contain FactorDecision objects")
+    seen: set[str] = set()
+    for decision in decisions:
+        if decision.factor_id in seen:
+            raise CoverageError(
+                f"duplicate factor decision {decision.factor_id}"
+            )
+        seen.add(decision.factor_id)
+    return decisions
+
+
+def compile_coverage_plan(
+    plan: CoveragePlan,
+    factor_decisions: Sequence[FactorDecision] | Mapping[str, FactorDecision],
+    obligations: Optional[Iterable[CoverageObligation]] = None,
+) -> CoverageCompilation:
+    """Bind factor ownership and compile exact proofs for every v2 point."""
+
+    validate_coverage_plan(plan)
+    actual = (
+        tuple(expand_coverage_plan(plan))
+        if obligations is None
+        else tuple(obligations)
+    )
+    known_points = {point.test_point_id for point in plan.test_points}
+    for obligation in actual:
+        if not isinstance(obligation, CoverageObligation):
+            raise CoverageError("obligations must contain CoverageObligation objects")
+        if obligation.test_point_id not in known_points:
+            raise CoverageError(
+                f"obligation {obligation.obligation_id} references unknown test point "
+                f"{obligation.test_point_id}"
+            )
+        if obligation.plan_id != plan.plan_id:
+            raise CoverageError(
+                f"obligation {obligation.obligation_id} references plan "
+                f"{obligation.plan_id}, not {plan.plan_id}"
+            )
+
+    contracted = tuple(
+        point for point in plan.test_points if point.coverage_contract is not None
+    )
+    legacy_ids = tuple(
+        point.test_point_id
+        for point in plan.test_points
+        if point.coverage_contract is None
+    )
+    decisions = _normalize_factor_decisions(factor_decisions)
+    if not contracted:
+        return CoverageCompilation(actual, (), legacy_ids, {})
+    if not decisions:
+        raise CoverageError("contracted coverage plan requires factor decisions")
+
+    decision_by_factor = {item.factor_id: item for item in decisions}
+    owner_by_factor: dict[str, str] = {}
+    axes_in_contracts: set[str] = set()
+    for point in contracted:
+        contract = point.coverage_contract
+        assert contract is not None
+        for axis_id in contract.primary_axes + contract.condition_axes:
+            if axis_id in axes_in_contracts:
+                raise CoverageError(
+                    f"factor {axis_id} has two owning suites in the coverage plan"
+                )
+            axes_in_contracts.add(axis_id)
+            decision = decision_by_factor.get(axis_id)
+            if decision is None:
+                raise CoverageError(
+                    f"contracted factor {axis_id} has no factor decision"
+                )
+            if decision.status != "covered" or decision.review_state != "reviewed":
+                raise CoverageError(
+                    f"contracted factor {axis_id} requires a reviewed covered decision"
+                )
+            if decision.owning_suite_id != point.test_point_id:
+                raise CoverageError(
+                    f"factor {axis_id} owning suite {decision.owning_suite_id} "
+                    f"does not match contracted suite {point.test_point_id}"
+                )
+            if decision.combination_strategy != contract.combination_policy:
+                raise CoverageError(
+                    f"factor {axis_id} policy {decision.combination_strategy} does not "
+                    f"match suite policy {contract.combination_policy}"
+                )
+            axis = plan.axes[axis_id]
+            if (
+                decision.inventory_source != axis.inventory_source
+                or decision.inventory_sha256 != axis.inventory_sha256
+            ):
+                raise CoverageError(
+                    f"factor {axis_id} inventory binding does not match coverage axis"
+                )
+            owner_by_factor[axis_id] = point.test_point_id
+
+    extra_covered = [
+        item.factor_id
+        for item in decisions
+        if item.status == "covered" and item.factor_id not in axes_in_contracts
+    ]
+    if extra_covered:
+        raise CoverageError(
+            "covered factor decisions are not owned by a contracted suite: "
+            + ", ".join(sorted(extra_covered))
+        )
+
+    for decision in decisions:
+        for dependency_id in decision.dependencies:
+            dependency = decision_by_factor.get(dependency_id)
+            if dependency is None:
+                raise CoverageError(
+                    f"factor {decision.factor_id} references missing dependency "
+                    f"decision {dependency_id}"
+                )
+            if (
+                decision.combination_strategy == "full_cross"
+                and dependency.combination_strategy == "full_cross"
+                and decision.owning_suite_id != dependency.owning_suite_id
+            ):
+                raise CoverageError(
+                    f"dependent full_cross factors {decision.factor_id} and "
+                    f"{dependency_id} must use the same owning suite"
+                )
+
+    proofs = tuple(
+        prove_coverage_contract(
+            plan,
+            point,
+            tuple(
+                item for item in actual if item.test_point_id == point.test_point_id
+            ),
+        )
+        for point in contracted
+    )
+    return CoverageCompilation(
+        obligations=actual,
+        contract_proofs=proofs,
+        legacy_test_point_ids=legacy_ids,
+        factor_owner_by_id=owner_by_factor,
+    )
 
 
 def _matches(assignments: Mapping[str, Any], criteria: Mapping[str, Any]) -> bool:
@@ -434,8 +1057,14 @@ __all__ = [
     "CoverageError",
     "CoverageObligation",
     "CoverageReconciliation",
+    "CoverageConditionProof",
+    "CoverageContractProof",
+    "CoverageCompilation",
     "CaseReconciliation",
     "stable_obligation_id",
+    "assignment_set_sha256",
+    "prove_coverage_contract",
+    "compile_coverage_plan",
     "expand_test_point",
     "expand_coverage_plan",
     "reconcile_obligations",

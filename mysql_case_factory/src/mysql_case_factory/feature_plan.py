@@ -238,6 +238,40 @@ def validate_coverage_plan(
             elif dependency not in points_by_id:
                 issues.append(f"test point {point.test_point_id} references unknown dependency {dependency}")
 
+        # A v2 coverage contract is a mathematical claim about this exact test
+        # point, not descriptive metadata.  Keep these reference/count checks
+        # here so malformed plans fail before expansion.  Legacy v1 points omit
+        # the contract and retain their original validation behavior.
+        contract = point.coverage_contract
+        if contract is not None:
+            contract_axes = contract.primary_axes + contract.condition_axes
+            if contract_axes != point.core_axes:
+                issues.append(
+                    f"test point {point.test_point_id} contract axes {contract_axes!r} "
+                    f"must exactly match core_axes {point.core_axes!r} in order"
+                )
+            missing_contract_axes = [
+                axis_id for axis_id in contract_axes if axis_id not in plan.axes
+            ]
+            for axis_id in missing_contract_axes:
+                issues.append(
+                    f"test point {point.test_point_id} coverage contract references "
+                    f"unknown axis {axis_id}"
+                )
+            if (
+                contract.combination_policy in ("full_cross", "conditional_cross")
+                and not missing_contract_axes
+            ):
+                cartesian_size = 1
+                for axis_id in contract_axes:
+                    cartesian_size *= plan.axes[axis_id].inventory_count
+                if contract.expected_counts.total != cartesian_size:
+                    issues.append(
+                        f"test point {point.test_point_id} coverage contract expected "
+                        f"total {contract.expected_counts.total} does not match "
+                        f"Cartesian size {cartesian_size}"
+                    )
+
         for rule_index, rule in enumerate(point.classification_rules):
             for axis_id, criterion in rule.when.items():
                 if axis_id not in point.core_axes:
