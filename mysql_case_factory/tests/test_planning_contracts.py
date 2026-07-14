@@ -26,6 +26,7 @@ from mysql_case_factory.planning_contracts import (
     FeatureSpec,
     PlanCaseBlueprint,
     PlanningBundleManifest,
+    Provenance,
     canonical_json_sha256,
     load_planning_contract,
 )
@@ -34,6 +35,18 @@ from mysql_case_factory.planning_contracts import (
 FIXTURES = Path(__file__).parent / "fixtures" / "coverage"
 SHA_A = "a" * 64
 SHA_B = "b" * 64
+
+
+def provenance(role: str) -> dict:
+    return {
+        "producer_role": role,
+        "input_artifacts": [
+            {"path": "inputs/feature.md", "sha256": SHA_A},
+        ],
+        "output_sha256": SHA_B,
+        "policy_sha256": SHA_A,
+        "created_at": "2026-07-14T00:00:00Z",
+    }
 
 
 def test_artifact_bindings_are_closed_portable_and_digest_bound(tmp_path: Path) -> None:
@@ -77,6 +90,7 @@ def feature_spec_document() -> dict:
         "source_locators": ["inputs/feature.md#alter-table-add-column"],
         "unresolved_questions": [],
         "status": "complete",
+        "provenance": provenance("requirement_analyst"),
     }
 
 
@@ -128,6 +142,7 @@ def impact_graph_document() -> dict:
                 ],
             }
         ],
+        "provenance": provenance("factor_association"),
     }
 
 
@@ -165,6 +180,7 @@ def factor_document(status: str = "covered") -> dict:
         "review_state": "reviewed",
         "inventory_source": "references/common/added_column_type_inventory.yaml#types",
         "inventory_sha256": SHA_A,
+        "provenance": provenance("factor_association"),
     }
     if status != "covered":
         document.update(
@@ -215,6 +231,7 @@ def blueprint_document(outcome: str = "success") -> dict:
         "cleanup_procedure": {"steps": ["drop_table"], "idempotent": True},
         "expected_outcome": outcome,
         "execution_profile": "basic_mysql",
+        "provenance": provenance("lifecycle_oracle"),
     }
     if outcome == "expected_failure":
         document["diagnostic_contract"] = {
@@ -257,6 +274,7 @@ def test_dry_render_is_non_runnable_and_contains_no_execution_route() -> None:
         "normalized_identifiers": {"table": "<table>", "column": "<added_column>"},
         "preview_text": "NON-RUNNABLE PREVIEW: ALTER TABLE <table> ADD COLUMN <added_column> INT",
         "runnable": False,
+        "provenance": provenance("deterministic_coverage_compiler"),
     }
     artifact = DryRenderArtifact.from_dict(document)
     assert artifact.to_dict() == document
@@ -285,6 +303,7 @@ def attestation_document() -> dict:
         "excess_factor_ids": [],
         "findings": [],
         "final_decision": "pass",
+        "provenance": provenance("coverage_auditor"),
     }
 
 
@@ -308,6 +327,21 @@ def test_audit_pass_rejects_open_findings_or_factor_diffs() -> None:
     ]
     with pytest.raises(ContractValidationError, match="pass.*open finding"):
         AuditAttestation.from_dict(invalid)
+
+
+@pytest.mark.parametrize("decision", ["rework", "blocked"])
+def test_non_pass_audit_requires_a_reason_and_sources(decision: str) -> None:
+    invalid = attestation_document()
+    invalid["final_decision"] = decision
+    with pytest.raises(ContractValidationError, match="reason|sources"):
+        AuditAttestation.from_dict(invalid)
+
+    valid = attestation_document()
+    valid["final_decision"] = decision
+    valid["reason"] = "Coverage findings require owner rework."
+    valid["sources"] = ["audits/blind_draft.yaml#findings"]
+    attestation = AuditAttestation.from_dict(valid)
+    assert attestation.to_dict() == valid
 
 
 def execution_brief_document() -> dict:
@@ -356,6 +390,13 @@ def execution_brief_document() -> dict:
         },
         "safety_blockers": [],
         "known_risks": ["DDL runtime varies by table shape."],
+        "decision_consequences": {
+            "full": ["Runs every approved obligation and can support a full validation claim."],
+            "partial": ["Cannot support a complete feature-validation claim."],
+            "deferred": ["Preserves the plan but produces no runtime product evidence."],
+            "declined": ["Closes this execution request without runtime product evidence."],
+        },
+        "provenance": provenance("execution_gatekeeper"),
     }
 
 
@@ -373,6 +414,22 @@ def test_execution_brief_has_exact_counts_and_partial_confidence_loss() -> None:
     with pytest.raises(ContractValidationError, match="confidence_lost"):
         ExecutionBrief.from_dict(no_loss)
 
+    no_partials = execution_brief_document()
+    no_partials["partial_proposals"] = []
+    with pytest.raises(ContractValidationError, match="partial_proposals.*not be empty"):
+        ExecutionBrief.from_dict(no_partials)
+
+    for decision in ("full", "partial", "deferred", "declined"):
+        missing = execution_brief_document()
+        del missing["decision_consequences"][decision]
+        with pytest.raises(ContractValidationError, match="decision_consequences"):
+            ExecutionBrief.from_dict(missing)
+
+        empty = execution_brief_document()
+        empty["decision_consequences"][decision] = []
+        with pytest.raises(ContractValidationError, match=decision):
+            ExecutionBrief.from_dict(empty)
+
 
 def test_bundle_manifest_excludes_itself_ledger_and_decision_tree() -> None:
     entries = (
@@ -387,6 +444,7 @@ def test_bundle_manifest_excludes_itself_ledger_and_decision_tree() -> None:
         created_at="2026-07-14T00:00:00Z",
     )
     assert PlanningBundleManifest.from_dict(manifest.to_dict()) == manifest
+    assert manifest.provenance.producer_role == "planning_orchestrator"
 
     for forbidden in (
         "planning_bundle_manifest.json",
@@ -401,6 +459,79 @@ def test_bundle_manifest_excludes_itself_ledger_and_decision_tree() -> None:
                 policy_sha256=SHA_A,
                 created_at="2026-07-14T00:00:00Z",
             )
+
+
+def test_every_planning_artifact_requires_strict_provenance() -> None:
+    manifest = PlanningBundleManifest.create(
+        request_id="REQ-ADD-1",
+        request_revision=1,
+        entries=(ArtifactBinding("analysis/feature_spec.yaml", SHA_A),),
+        policy_sha256=SHA_A,
+        created_at="2026-07-14T00:00:00Z",
+    ).to_dict()
+    artifacts = (
+        (FeatureSpec, feature_spec_document()),
+        (FeatureImpactGraph, impact_graph_document()),
+        (FactorDecision, factor_document()),
+        (PlanCaseBlueprint, blueprint_document()),
+        (
+            DryRenderArtifact,
+            {
+                "schema_version": 1,
+                "kind": "dry_render_artifact",
+                "dry_render_id": "DRY-ADD-1",
+                "blueprint_id": "BP-ADD-1",
+                "edition": "mysql_8_0_22",
+                "blueprint_sha256": SHA_A,
+                "canonical_sql_ast": {"statement": "alter_table"},
+                "canonical_ast_sha256": canonical_json_sha256({"statement": "alter_table"}),
+                "normalized_identifiers": {"table": "<table>"},
+                "preview_text": "NON-RUNNABLE PREVIEW",
+                "runnable": False,
+                "provenance": provenance("deterministic_coverage_compiler"),
+            },
+        ),
+        (AuditAttestation, attestation_document()),
+        (ExecutionBrief, execution_brief_document()),
+        (PlanningBundleManifest, manifest),
+    )
+    for contract_type, document in artifacts:
+        missing = copy.deepcopy(document)
+        del missing["provenance"]
+        with pytest.raises(ContractValidationError, match="provenance"):
+            contract_type.from_dict(missing)
+
+    valid_provenance = provenance("planning_orchestrator")
+    assert Provenance.from_dict(valid_provenance).to_dict() == valid_provenance
+    with pytest.raises(ContractValidationError, match="unexpected"):
+        Provenance.from_dict({**valid_provenance, "endpoint": "must-not-exist"})
+
+
+def test_external_decision_and_handoff_are_outside_planning_artifact_provenance() -> None:
+    decision = approved_decision_document()
+    decision["provenance"] = provenance("planning_orchestrator")
+    with pytest.raises(ContractValidationError, match="unexpected"):
+        ExecutionDecision.from_dict(decision)
+
+    approved = ExecutionDecision.from_dict(approved_decision_document())
+    handoff = {
+        "schema_version": 1,
+        "kind": "execution_handoff",
+        "handoff_id": "HANDOFF-BOUNDARY-1",
+        "decision_id": approved.decision_id,
+        "decision_sha256": canonical_json_sha256(approved.to_dict()),
+        "planning_bundle_sha256": approved.planning_bundle_sha256,
+        "editions": list(approved.editions),
+        "execution_scope": list(approved.execution_scope),
+        "mode": approved.mode,
+        "plan_bindings": [
+            {"path": "plans/mysql_8_0_22/coverage_plan.yaml", "sha256": SHA_A},
+        ],
+        "expires_at": approved.expires_at,
+        "provenance": provenance("planning_orchestrator"),
+    }
+    with pytest.raises(ContractValidationError, match="unexpected"):
+        ExecutionHandoff.from_dict(handoff)
 
 
 def approved_decision_document() -> dict:

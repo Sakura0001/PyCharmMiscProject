@@ -23,6 +23,19 @@ _SHA256 = re.compile(r"^[0-9a-f]{64}$")
 _STABLE_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
 _SQLSTATE = re.compile(r"^[0-9A-Z]{5}$")
 TARGET_EDITIONS = ("mysql_8_0_22", "mysql_8_0_41")
+PLANNING_PRODUCER_ROLES = (
+    "planning_orchestrator",
+    "requirement_analyst",
+    "version_evidence",
+    "version_evidence_mysql_8_0_22",
+    "version_evidence_mysql_8_0_41",
+    "factor_association",
+    "deterministic_coverage_compiler",
+    "lifecycle_oracle",
+    "coverage_auditor",
+    "lifecycle_auditor",
+    "execution_gatekeeper",
+)
 COMBINATION_STRATEGIES = (
     "full_cross",
     "conditional_cross",
@@ -209,6 +222,75 @@ class ArtifactBinding:
 
 
 @dataclass(frozen=True)
+class Provenance:
+    """Common provenance carried by immutable planning artifacts.
+
+    Decisions and handoffs are external authorization records, not products of
+    a planning role, and therefore intentionally use their own digest bindings
+    instead of this contract.
+    """
+
+    producer_role: str
+    input_artifacts: tuple[ArtifactBinding, ...]
+    output_sha256: str
+    policy_sha256: str
+    created_at: str
+
+    @classmethod
+    def from_dict(cls, raw: Mapping[str, Any], location: str = "provenance") -> "Provenance":
+        document = _mapping(raw, location)
+        _closed(
+            document,
+            {
+                "producer_role",
+                "input_artifacts",
+                "output_sha256",
+                "policy_sha256",
+                "created_at",
+            },
+            set(),
+            location,
+        )
+        producer_role = _text(document.get("producer_role"), f"{location}.producer_role")
+        if producer_role not in PLANNING_PRODUCER_ROLES:
+            raise ContractValidationError(
+                f"{location}.producer_role must be an approved planning role"
+            )
+        inputs_raw = document.get("input_artifacts")
+        if (
+            not isinstance(inputs_raw, Sequence)
+            or isinstance(inputs_raw, (str, bytes))
+            or not inputs_raw
+        ):
+            raise ContractValidationError(
+                f"{location}.input_artifacts must be a non-empty sequence"
+            )
+        inputs = tuple(
+            ArtifactBinding.from_dict(item, f"{location}.input_artifacts[{index}]")
+            for index, item in enumerate(inputs_raw)
+        )
+        if len({item.path for item in inputs}) != len(inputs):
+            raise ContractValidationError(f"{location}.input_artifacts contains duplicate paths")
+        return cls(
+            producer_role=producer_role,
+            input_artifacts=inputs,
+            output_sha256=_digest(document.get("output_sha256"), f"{location}.output_sha256"),
+            policy_sha256=_digest(document.get("policy_sha256"), f"{location}.policy_sha256"),
+            created_at=_timestamp(document.get("created_at"), f"{location}.created_at"),
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        document: dict[str, Any] = {
+            "producer_role": self.producer_role,
+            "input_artifacts": [item.to_dict() for item in self.input_artifacts],
+            "output_sha256": self.output_sha256,
+            "policy_sha256": self.policy_sha256,
+            "created_at": self.created_at,
+        }
+        return document
+
+
+@dataclass(frozen=True)
 class AtomicRequirement:
     requirement_id: str
     description: str
@@ -272,6 +354,7 @@ class FeatureSpec:
     source_locators: tuple[str, ...]
     unresolved_questions: tuple[UnresolvedQuestion, ...]
     status: str
+    provenance: Provenance
     schema_version: int = 1
 
     @classmethod
@@ -281,7 +364,7 @@ class FeatureSpec:
         required = {
             "schema_version", "kind", "feature_id", "operation", "target_objects",
             "behavior_change", "affected_phases", "target_editions", "constraints",
-            "requirements", "source_locators", "unresolved_questions", "status",
+            "requirements", "source_locators", "unresolved_questions", "status", "provenance",
         }
         _closed(document, required, set(), location)
         _header(document, "feature_spec", location)
@@ -330,6 +413,9 @@ class FeatureSpec:
             source_locators=source_locators,
             unresolved_questions=questions,
             status=status,
+            provenance=Provenance.from_dict(
+                document.get("provenance"), f"{location}.provenance"
+            ),
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -347,6 +433,7 @@ class FeatureSpec:
             "source_locators": list(self.source_locators),
             "unresolved_questions": [item.to_dict() for item in self.unresolved_questions],
             "status": self.status,
+            "provenance": self.provenance.to_dict(),
         }
 
 
@@ -410,13 +497,19 @@ class FeatureImpactGraph:
     feature_id: str
     nodes: tuple[ImpactNode, ...]
     edges: tuple[ImpactEdge, ...]
+    provenance: Provenance
     schema_version: int = 1
 
     @classmethod
     def from_dict(cls, raw: Mapping[str, Any]) -> "FeatureImpactGraph":
         location = "feature_impact_graph"
         document = _mapping(raw, location)
-        _closed(document, {"schema_version", "kind", "feature_id", "nodes", "edges"}, set(), location)
+        _closed(
+            document,
+            {"schema_version", "kind", "feature_id", "nodes", "edges", "provenance"},
+            set(),
+            location,
+        )
         _header(document, "feature_impact_graph", location)
         nodes_raw = document.get("nodes")
         edges_raw = document.get("edges")
@@ -436,7 +529,12 @@ class FeatureImpactGraph:
         for edge in edges:
             if edge.from_node not in known or edge.to_node not in known:
                 raise ContractValidationError(f"impact edge {edge.edge_id} references an unknown node")
-        return cls(_identifier(document.get("feature_id"), f"{location}.feature_id"), nodes, edges)
+        return cls(
+            _identifier(document.get("feature_id"), f"{location}.feature_id"),
+            nodes,
+            edges,
+            Provenance.from_dict(document.get("provenance"), f"{location}.provenance"),
+        )
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -444,6 +542,7 @@ class FeatureImpactGraph:
             "feature_id": self.feature_id,
             "nodes": [item.to_dict() for item in self.nodes],
             "edges": [item.to_dict() for item in self.edges],
+            "provenance": self.provenance.to_dict(),
         }
 
 
@@ -458,6 +557,7 @@ class FactorDecision:
     dependencies: tuple[str, ...]
     exclusions: tuple[str, ...]
     review_state: str
+    provenance: Provenance
     inventory_source: Optional[str] = None
     inventory_sha256: Optional[str] = None
     owning_suite_id: Optional[str] = None
@@ -472,6 +572,7 @@ class FactorDecision:
         required = {
             "schema_version", "kind", "factor_id", "domain", "status", "trigger_path",
             "edition_applicability", "combination_strategy", "dependencies", "exclusions", "review_state",
+            "provenance",
         }
         optional = {"inventory_source", "inventory_sha256", "owning_suite_id", "reason", "sources"}
         _closed(document, required, optional, location)
@@ -523,6 +624,9 @@ class FactorDecision:
             dependencies=_identifiers(document.get("dependencies"), f"{location}.dependencies"),
             exclusions=_strings(document.get("exclusions"), f"{location}.exclusions"),
             review_state=review_state,
+            provenance=Provenance.from_dict(
+                document.get("provenance"), f"{location}.provenance"
+            ),
             inventory_source=inventory_source,
             inventory_sha256=inventory_sha256,
             owning_suite_id=owning_suite_id,
@@ -541,6 +645,7 @@ class FactorDecision:
             "owning_suite_id": self.owning_suite_id,
             "review_state": self.review_state,
             "inventory_source": self.inventory_source, "inventory_sha256": self.inventory_sha256,
+            "provenance": self.provenance.to_dict(),
         }
         if self.status != "covered":
             document.pop("owning_suite_id")
@@ -571,6 +676,7 @@ class PlanCaseBlueprint:
     cleanup_procedure: Mapping[str, Any]
     expected_outcome: str
     execution_profile: str
+    provenance: Provenance
     diagnostic_contract: Optional[Mapping[str, Any]] = None
     execution_harness: Optional[str] = None
     schema_version: int = 1
@@ -583,6 +689,7 @@ class PlanCaseBlueprint:
             "schema_version", "kind", "blueprint_id", "plan_id", "edition", "obligation_id",
             "assignments", "setup_recipe", "target_statement", "verification_oracle",
             "cleanup_procedure", "expected_outcome", "execution_profile",
+            "provenance",
         }
         _closed(document, required, {"diagnostic_contract", "execution_harness"}, location)
         _header(document, "plan_case_blueprint", location)
@@ -626,6 +733,9 @@ class PlanCaseBlueprint:
             verification_oracle=_nonempty_json_mapping(document.get("verification_oracle"), f"{location}.verification_oracle"),
             cleanup_procedure=_nonempty_json_mapping(document.get("cleanup_procedure"), f"{location}.cleanup_procedure"),
             expected_outcome=outcome, execution_profile=profile,
+            provenance=Provenance.from_dict(
+                document.get("provenance"), f"{location}.provenance"
+            ),
             diagnostic_contract=diagnostic, execution_harness=harness,
         )
 
@@ -638,6 +748,7 @@ class PlanCaseBlueprint:
             "verification_oracle": dict(self.verification_oracle),
             "cleanup_procedure": dict(self.cleanup_procedure),
             "expected_outcome": self.expected_outcome, "execution_profile": self.execution_profile,
+            "provenance": self.provenance.to_dict(),
         }
         if self.diagnostic_contract is not None:
             document["diagnostic_contract"] = dict(self.diagnostic_contract)
@@ -656,6 +767,7 @@ class DryRenderArtifact:
     canonical_ast_sha256: str
     normalized_identifiers: Mapping[str, Any]
     preview_text: str
+    provenance: Provenance
     runnable: bool = False
     schema_version: int = 1
 
@@ -667,6 +779,7 @@ class DryRenderArtifact:
             "schema_version", "kind", "dry_render_id", "blueprint_id", "edition",
             "blueprint_sha256", "canonical_sql_ast", "canonical_ast_sha256",
             "normalized_identifiers", "preview_text", "runnable",
+            "provenance",
         }
         _closed(document, required, set(), location)
         _header(document, "dry_render_artifact", location)
@@ -683,7 +796,9 @@ class DryRenderArtifact:
             _digest(document.get("blueprint_sha256"), f"{location}.blueprint_sha256"),
             ast, ast_digest,
             _nonempty_json_mapping(document.get("normalized_identifiers"), f"{location}.normalized_identifiers"),
-            _text(document.get("preview_text"), f"{location}.preview_text"), False,
+            _text(document.get("preview_text"), f"{location}.preview_text"),
+            Provenance.from_dict(document.get("provenance"), f"{location}.provenance"),
+            False,
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -695,6 +810,7 @@ class DryRenderArtifact:
             "canonical_ast_sha256": self.canonical_ast_sha256,
             "normalized_identifiers": dict(self.normalized_identifiers),
             "preview_text": self.preview_text, "runnable": False,
+            "provenance": self.provenance.to_dict(),
         }
 
 
@@ -752,6 +868,9 @@ class AuditAttestation:
     excess_factor_ids: tuple[str, ...]
     findings: tuple[AuditFinding, ...]
     final_decision: str
+    provenance: Provenance
+    reason: Optional[str] = None
+    sources: tuple[str, ...] = ()
     schema_version: int = 1
 
     @classmethod
@@ -761,9 +880,9 @@ class AuditAttestation:
         required = {
             "schema_version", "kind", "attestation_id", "auditor_role", "permitted_inputs",
             "candidate_plan_sha256", "reconstructed_factor_ids", "missing_factor_ids",
-            "excess_factor_ids", "findings", "final_decision",
+            "excess_factor_ids", "findings", "final_decision", "provenance",
         }
-        _closed(document, required, set(), location)
+        _closed(document, required, {"reason", "sources"}, location)
         _header(document, "audit_attestation", location)
         inputs_raw = document.get("permitted_inputs")
         findings_raw = document.get("findings")
@@ -784,16 +903,35 @@ class AuditAttestation:
             raise ContractValidationError(f"{location}.final_decision is invalid")
         if decision == "pass" and (missing or excess or any(item.status == "open" for item in findings)):
             raise ContractValidationError("audit pass cannot contain missing/excess factors or an open finding")
+        reason = document.get("reason")
+        sources = _strings(document.get("sources", []), f"{location}.sources")
+        if decision == "pass":
+            if reason is not None or sources:
+                raise ContractValidationError(
+                    f"{location} pass must not declare reason or sources"
+                )
+        else:
+            reason = _text(reason, f"{location}.reason")
+            if not sources:
+                raise ContractValidationError(
+                    f"{location}.sources must not be empty for {decision}"
+                )
         return cls(
             _identifier(document.get("attestation_id"), f"{location}.attestation_id"),
             _identifier(document.get("auditor_role"), f"{location}.auditor_role"), inputs,
             _digest(document.get("candidate_plan_sha256"), f"{location}.candidate_plan_sha256"),
             _identifiers(document.get("reconstructed_factor_ids"), f"{location}.reconstructed_factor_ids"),
-            missing, excess, findings, decision,
+            missing,
+            excess,
+            findings,
+            decision,
+            Provenance.from_dict(document.get("provenance"), f"{location}.provenance"),
+            reason,
+            sources,
         )
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        document: dict[str, Any] = {
             "schema_version": self.schema_version, "kind": "audit_attestation",
             "attestation_id": self.attestation_id, "auditor_role": self.auditor_role,
             "permitted_inputs": [item.to_dict() for item in self.permitted_inputs],
@@ -803,7 +941,12 @@ class AuditAttestation:
             "excess_factor_ids": list(self.excess_factor_ids),
             "findings": [item.to_dict() for item in self.findings],
             "final_decision": self.final_decision,
+            "provenance": self.provenance.to_dict(),
         }
+        if self.final_decision != "pass":
+            document["reason"] = self.reason
+            document["sources"] = list(self.sources)
+        return document
 
 
 @dataclass(frozen=True)
@@ -930,6 +1073,33 @@ class ExecutionRequirements:
 
 
 @dataclass(frozen=True)
+class DecisionConsequences:
+    full: tuple[str, ...]
+    partial: tuple[str, ...]
+    deferred: tuple[str, ...]
+    declined: tuple[str, ...]
+
+    @classmethod
+    def from_dict(cls, raw: Mapping[str, Any], location: str) -> "DecisionConsequences":
+        document = _mapping(raw, location)
+        _closed(document, {"full", "partial", "deferred", "declined"}, set(), location)
+        return cls(
+            full=_strings(document.get("full"), f"{location}.full", True),
+            partial=_strings(document.get("partial"), f"{location}.partial", True),
+            deferred=_strings(document.get("deferred"), f"{location}.deferred", True),
+            declined=_strings(document.get("declined"), f"{location}.declined", True),
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "full": list(self.full),
+            "partial": list(self.partial),
+            "deferred": list(self.deferred),
+            "declined": list(self.declined),
+        }
+
+
+@dataclass(frozen=True)
 class ExecutionBrief:
     brief_id: str
     planning_bundle_sha256: str
@@ -939,6 +1109,8 @@ class ExecutionBrief:
     requirements: ExecutionRequirements
     safety_blockers: tuple[str, ...]
     known_risks: tuple[str, ...]
+    decision_consequences: DecisionConsequences
+    provenance: Provenance
     schema_version: int = 1
 
     @classmethod
@@ -948,6 +1120,7 @@ class ExecutionBrief:
         required = {
             "schema_version", "kind", "brief_id", "planning_bundle_sha256", "counts",
             "full_cost", "partial_proposals", "requirements", "safety_blockers", "known_risks",
+            "decision_consequences", "provenance",
         }
         _closed(document, required, set(), location)
         _header(document, "execution_brief", location)
@@ -955,8 +1128,14 @@ class ExecutionBrief:
         proposals_raw = document.get("partial_proposals")
         if not isinstance(counts_raw, Sequence) or isinstance(counts_raw, (str, bytes)) or not counts_raw:
             raise ContractValidationError(f"{location}.counts must be a non-empty sequence")
-        if not isinstance(proposals_raw, Sequence) or isinstance(proposals_raw, (str, bytes)):
-            raise ContractValidationError(f"{location}.partial_proposals must be a sequence")
+        if (
+            not isinstance(proposals_raw, Sequence)
+            or isinstance(proposals_raw, (str, bytes))
+            or not proposals_raw
+        ):
+            raise ContractValidationError(
+                f"{location}.partial_proposals must be a sequence and must not be empty"
+            )
         counts = tuple(ExecutionCount.from_dict(item, f"{location}.counts[{index}]") for index, item in enumerate(counts_raw))
         keys = [(item.edition, item.suite_id) for item in counts]
         if len(set(keys)) != len(keys):
@@ -973,6 +1152,11 @@ class ExecutionBrief:
             proposals, ExecutionRequirements.from_dict(document.get("requirements"), f"{location}.requirements"),
             _strings(document.get("safety_blockers"), f"{location}.safety_blockers"),
             _strings(document.get("known_risks"), f"{location}.known_risks"),
+            DecisionConsequences.from_dict(
+                document.get("decision_consequences"),
+                f"{location}.decision_consequences",
+            ),
+            Provenance.from_dict(document.get("provenance"), f"{location}.provenance"),
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -983,6 +1167,8 @@ class ExecutionBrief:
             "partial_proposals": [item.to_dict() for item in self.partial_proposals],
             "requirements": self.requirements.to_dict(),
             "safety_blockers": list(self.safety_blockers), "known_risks": list(self.known_risks),
+            "decision_consequences": self.decision_consequences.to_dict(),
+            "provenance": self.provenance.to_dict(),
         }
 
 
@@ -994,6 +1180,7 @@ class PlanningBundleManifest:
     policy_sha256: str
     created_at: str
     bundle_sha256: str
+    provenance: Provenance
     schema_version: int = 1
 
     @staticmethod
@@ -1028,7 +1215,22 @@ class PlanningBundleManifest:
         policy_sha256 = _digest(policy_sha256, "planning_bundle_manifest.policy_sha256")
         created_at = _timestamp(created_at, "planning_bundle_manifest.created_at")
         digest = canonical_json_sha256(cls._payload(request_id, request_revision, entries, policy_sha256, created_at))
-        return cls(request_id, request_revision, entries, policy_sha256, created_at, digest)
+        provenance = Provenance(
+            producer_role="planning_orchestrator",
+            input_artifacts=entries,
+            output_sha256=digest,
+            policy_sha256=policy_sha256,
+            created_at=created_at,
+        )
+        return cls(
+            request_id,
+            request_revision,
+            entries,
+            policy_sha256,
+            created_at,
+            digest,
+            provenance,
+        )
 
     @staticmethod
     def _validate_entries(entries: Sequence[ArtifactBinding]) -> None:
@@ -1047,7 +1249,17 @@ class PlanningBundleManifest:
     def from_dict(cls, raw: Mapping[str, Any]) -> "PlanningBundleManifest":
         location = "planning_bundle_manifest"
         document = _mapping(raw, location)
-        required = {"schema_version", "kind", "request_id", "request_revision", "entries", "policy_sha256", "created_at", "bundle_sha256"}
+        required = {
+            "schema_version",
+            "kind",
+            "request_id",
+            "request_revision",
+            "entries",
+            "policy_sha256",
+            "created_at",
+            "bundle_sha256",
+            "provenance",
+        }
         _closed(document, required, set(), location)
         _header(document, "planning_bundle_manifest", location)
         revision = document.get("request_revision")
@@ -1065,11 +1277,19 @@ class PlanningBundleManifest:
         supplied = _digest(document.get("bundle_sha256"), f"{location}.bundle_sha256")
         if supplied != result.bundle_sha256:
             raise ContractValidationError(f"{location}.bundle_sha256 does not match manifest contents")
+        provenance = Provenance.from_dict(
+            document.get("provenance"), f"{location}.provenance"
+        )
+        if provenance != result.provenance:
+            raise ContractValidationError(
+                f"{location}.provenance must bind the manifest entries, policy, time, and bundle digest"
+            )
         return result
 
     def to_dict(self) -> dict[str, Any]:
         result = self._payload(self.request_id, self.request_revision, self.entries, self.policy_sha256, self.created_at)
         result["bundle_sha256"] = self.bundle_sha256
+        result["provenance"] = self.provenance.to_dict()
         return result
 
 
@@ -1237,10 +1457,11 @@ class ExecutionHandoff:
 
 
 __all__ = [
-    "ArtifactBinding", "AtomicRequirement", "UnresolvedQuestion", "FeatureSpec",
+    "ArtifactBinding", "Provenance", "AtomicRequirement", "UnresolvedQuestion", "FeatureSpec",
     "ImpactNode", "ImpactEdge", "FeatureImpactGraph", "FactorDecision",
     "PlanCaseBlueprint", "DryRenderArtifact", "AuditFinding", "AuditAttestation",
     "ExecutionCount", "ExecutionCost", "PartialExecutionProposal", "ExecutionRequirements",
+    "DecisionConsequences",
     "ExecutionBrief", "PlanningBundleManifest", "ExecutionDecision", "ExecutionHandoff",
     "canonical_json_bytes", "canonical_json_sha256", "load_planning_contract",
 ]

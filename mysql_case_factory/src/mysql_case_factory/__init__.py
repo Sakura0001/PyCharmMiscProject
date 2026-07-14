@@ -52,6 +52,7 @@ from .planning_contracts import (
     ArtifactBinding,
     AuditAttestation,
     DryRenderArtifact,
+    DecisionConsequences,
     ExecutionBrief,
     ExecutionDecision,
     ExecutionHandoff,
@@ -60,6 +61,7 @@ from .planning_contracts import (
     FeatureSpec,
     PlanCaseBlueprint,
     PlanningBundleManifest,
+    Provenance,
     canonical_json_sha256,
     load_planning_contract,
 )
@@ -157,6 +159,7 @@ __all__ = [
     "ArtifactBinding",
     "AuditAttestation",
     "DryRenderArtifact",
+    "DecisionConsequences",
     "ExecutionBrief",
     "ExecutionDecision",
     "ExecutionHandoff",
@@ -165,6 +168,7 @@ __all__ = [
     "FeatureSpec",
     "PlanCaseBlueprint",
     "PlanningBundleManifest",
+    "Provenance",
     "canonical_json_sha256",
     "load_planning_contract",
 ]
