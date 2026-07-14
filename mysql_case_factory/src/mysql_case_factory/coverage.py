@@ -6,8 +6,10 @@ import hashlib
 import itertools
 import json
 import re
+from contextvars import ContextVar
 from dataclasses import dataclass
 from pathlib import Path
+from types import MappingProxyType
 from typing import Any, Iterable, Mapping, Optional, Sequence
 
 from .contracts import (
@@ -36,6 +38,25 @@ class CoverageObligation:
     execution_profile: str = "basic_mysql"
     execution_harness: Optional[str] = None
     source: Optional[str] = None
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.assignments, Mapping):
+            raise CoverageError("coverage obligation assignments must be a mapping")
+        copied = dict(self.assignments)
+        for axis_id, value in copied.items():
+            if not isinstance(axis_id, str) or not axis_id:
+                raise CoverageError(
+                    "coverage obligation assignment keys must be non-empty strings"
+                )
+            if type(value) not in (type(None), bool, int, float, str):
+                raise CoverageError(
+                    "coverage obligation assignment values must be YAML scalars"
+                )
+        object.__setattr__(
+            self,
+            "assignments",
+            MappingProxyType(copied),
+        )
 
     def to_dict(self) -> dict[str, Any]:
         document: dict[str, Any] = {
@@ -270,6 +291,115 @@ def interaction_set_sha256(
     return hashlib.sha256(payload).hexdigest()
 
 
+_PROOF_FACTORY_ACTIVE: ContextVar[bool] = ContextVar(
+    "mysql_case_factory_coverage_proof_factory",
+    default=False,
+)
+_OUTCOME_COUNT_KEYS = {
+    "total",
+    "success",
+    "expected_failure",
+    "justified_na",
+}
+
+
+def _construct_proof(contract_type, **kwargs):
+    """Construct a proof object only while its invariant gate is active."""
+
+    token = _PROOF_FACTORY_ACTIVE.set(True)
+    try:
+        return contract_type(**kwargs)
+    finally:
+        _PROOF_FACTORY_ACTIVE.reset(token)
+
+
+def _require_proof_factory(type_name: str) -> None:
+    if not _PROOF_FACTORY_ACTIVE.get():
+        raise CoverageError(
+            f"{type_name} must be created by the internal proof factory"
+        )
+
+
+def _validated_stable_ids(
+    values: Any,
+    location: str,
+    *,
+    allow_empty: bool = False,
+) -> tuple[str, ...]:
+    if type(values) is not tuple or (not allow_empty and not values):
+        qualifier = "an immutable tuple" if allow_empty else "a non-empty tuple"
+        raise CoverageError(f"{location} must be {qualifier}")
+    if len(values) != len(set(values)):
+        raise CoverageError(f"{location} contains duplicates")
+    for value in values:
+        if not isinstance(value, str) or _STABLE_COVERAGE_ID.fullmatch(value) is None:
+            raise CoverageError(f"{location} contains an invalid stable id")
+    return values
+
+
+def _validated_digest(value: Any, location: str) -> str:
+    if not isinstance(value, str) or _SHA256.fullmatch(value) is None:
+        raise CoverageError(f"{location} must be a lowercase SHA-256")
+    return value
+
+
+def _validated_outcome_counts(
+    value: Any,
+    location: str,
+    expected_total: int,
+) -> Mapping[str, int]:
+    if not isinstance(value, Mapping) or set(value) != _OUTCOME_COUNT_KEYS:
+        raise CoverageError(f"{location} must contain exact outcome count keys")
+    copied = dict(value)
+    if any(type(item) is not int or item < 0 for item in copied.values()):
+        raise CoverageError(f"{location} values must be non-negative integers")
+    if copied["total"] != expected_total:
+        raise CoverageError(f"{location}.total does not match proof count")
+    if copied["total"] != (
+        copied["success"]
+        + copied["expected_failure"]
+        + copied["justified_na"]
+    ):
+        raise CoverageError(f"{location} outcome accounting is inconsistent")
+    return MappingProxyType(copied)
+
+
+def _validated_string_mapping(
+    value: Any,
+    location: str,
+    *,
+    value_is_digest: bool = False,
+) -> Mapping[str, str]:
+    if not isinstance(value, Mapping):
+        raise CoverageError(f"{location} must be a mapping")
+    copied = dict(value)
+    for key, item in copied.items():
+        if not isinstance(key, str) or _STABLE_COVERAGE_ID.fullmatch(key) is None:
+            raise CoverageError(f"{location} has an invalid key")
+        if not isinstance(item, str) or not item:
+            raise CoverageError(f"{location}.{key} must be a non-empty string")
+        if value_is_digest:
+            _validated_digest(item, f"{location}.{key}")
+        elif _STABLE_COVERAGE_ID.fullmatch(item) is None:
+            raise CoverageError(f"{location}.{key} must be a stable id")
+    return MappingProxyType(copied)
+
+
+def _validated_positive_int_mapping(
+    value: Any,
+    location: str,
+) -> Mapping[str, int]:
+    if not isinstance(value, Mapping):
+        raise CoverageError(f"{location} must be a mapping")
+    copied = dict(value)
+    for key, item in copied.items():
+        if not isinstance(key, str) or _STABLE_COVERAGE_ID.fullmatch(key) is None:
+            raise CoverageError(f"{location} has an invalid key")
+        if type(item) is not int or item < 1:
+            raise CoverageError(f"{location}.{key} must be a positive integer")
+    return MappingProxyType(copied)
+
+
 @dataclass(frozen=True)
 class CoverageConditionProof:
     """Exact primary-assignment proof for one frozen condition tuple."""
@@ -284,6 +414,71 @@ class CoverageConditionProof:
     outcome_counts: Mapping[str, int]
     missing_assignments: tuple[str, ...] = ()
     unexpected_assignments: tuple[str, ...] = ()
+
+    def __post_init__(self) -> None:
+        _require_proof_factory(type(self).__name__)
+        if not isinstance(self.condition_assignment, Mapping):
+            raise CoverageError("condition proof assignment must be a mapping")
+        condition_copy = dict(self.condition_assignment)
+        for axis_id, value in condition_copy.items():
+            if (
+                not isinstance(axis_id, str)
+                or _STABLE_COVERAGE_ID.fullmatch(axis_id) is None
+                or type(value) not in (type(None), bool, int, float, str)
+            ):
+                raise CoverageError("condition proof assignment is not canonical")
+        primary_axes = _validated_stable_ids(
+            self.primary_axes,
+            "condition proof primary_axes",
+        )
+        for value, location in (
+            (self.theoretical_count, "condition proof theoretical_count"),
+            (self.actual_count, "condition proof actual_count"),
+        ):
+            if type(value) is not int or value < 1:
+                raise CoverageError(f"{location} must be a positive integer")
+        theoretical_sha256 = _validated_digest(
+            self.theoretical_sha256,
+            "condition proof theoretical_sha256",
+        )
+        actual_sha256 = _validated_digest(
+            self.actual_sha256,
+            "condition proof actual_sha256",
+        )
+        expected_counts = _validated_outcome_counts(
+            self.expected_outcome_counts,
+            "condition proof expected_outcome_counts",
+            self.theoretical_count,
+        )
+        actual_counts = _validated_outcome_counts(
+            self.outcome_counts,
+            "condition proof outcome_counts",
+            self.actual_count,
+        )
+        for values, location in (
+            (self.missing_assignments, "condition proof missing_assignments"),
+            (self.unexpected_assignments, "condition proof unexpected_assignments"),
+        ):
+            if type(values) is not tuple or any(
+                not isinstance(item, str) for item in values
+            ):
+                raise CoverageError(f"{location} must be an immutable string tuple")
+            if values:
+                raise CoverageError(f"{location} must be empty for a proof")
+        if (
+            self.theoretical_count != self.actual_count
+            or theoretical_sha256 != actual_sha256
+            or dict(expected_counts) != dict(actual_counts)
+        ):
+            raise CoverageError("condition proof invariants are incomplete")
+        object.__setattr__(
+            self,
+            "condition_assignment",
+            MappingProxyType(condition_copy),
+        )
+        object.__setattr__(self, "primary_axes", primary_axes)
+        object.__setattr__(self, "expected_outcome_counts", expected_counts)
+        object.__setattr__(self, "outcome_counts", actual_counts)
 
     @property
     def complete(self) -> bool:
@@ -331,6 +526,141 @@ class CoverageContractProof:
     missing_assignments: tuple[str, ...] = ()
     unexpected_assignments: tuple[str, ...] = ()
 
+    def __post_init__(self) -> None:
+        _require_proof_factory(type(self).__name__)
+        if (
+            not isinstance(self.test_point_id, str)
+            or _STABLE_COVERAGE_ID.fullmatch(self.test_point_id) is None
+        ):
+            raise CoverageError("contract proof test_point_id must be stable")
+        if self.combination_policy not in ("full_cross", "conditional_cross"):
+            raise CoverageError("contract proof combination_policy is not exact")
+        primary_axes = _validated_stable_ids(
+            self.primary_axes,
+            "contract proof primary_axes",
+        )
+        condition_axes = _validated_stable_ids(
+            self.condition_axes,
+            "contract proof condition_axes",
+            allow_empty=True,
+        )
+        if set(primary_axes) & set(condition_axes):
+            raise CoverageError("contract proof axes overlap")
+        if self.combination_policy == "full_cross" and condition_axes:
+            raise CoverageError("full_cross proof cannot contain condition axes")
+        if self.combination_policy == "conditional_cross" and not condition_axes:
+            raise CoverageError("conditional_cross proof requires condition axes")
+        all_axes = primary_axes + condition_axes
+        inventory_counts = _validated_positive_int_mapping(
+            self.axis_inventory_counts,
+            "contract proof axis_inventory_counts",
+        )
+        inventory_digests = _validated_string_mapping(
+            self.axis_inventory_sha256,
+            "contract proof axis_inventory_sha256",
+            value_is_digest=True,
+        )
+        if set(inventory_counts) != set(all_axes) or set(inventory_digests) != set(
+            all_axes
+        ):
+            raise CoverageError("contract proof inventory bindings do not match axes")
+        cartesian_count = 1
+        for axis_id in all_axes:
+            cartesian_count *= inventory_counts[axis_id]
+        for value, location in (
+            (self.theoretical_count, "contract proof theoretical_count"),
+            (self.actual_count, "contract proof actual_count"),
+        ):
+            if type(value) is not int or value < 1:
+                raise CoverageError(f"{location} must be a positive integer")
+        if self.theoretical_count != cartesian_count:
+            raise CoverageError(
+                "contract proof theoretical_count does not match inventory product"
+            )
+        theoretical_sha256 = _validated_digest(
+            self.theoretical_sha256,
+            "contract proof theoretical_sha256",
+        )
+        actual_sha256 = _validated_digest(
+            self.actual_sha256,
+            "contract proof actual_sha256",
+        )
+        expected_counts = _validated_outcome_counts(
+            self.expected_outcome_counts,
+            "contract proof expected_outcome_counts",
+            self.theoretical_count,
+        )
+        actual_counts = _validated_outcome_counts(
+            self.outcome_counts,
+            "contract proof outcome_counts",
+            self.actual_count,
+        )
+        if type(self.condition_proofs) is not tuple or not self.condition_proofs:
+            raise CoverageError("contract proof condition_proofs must be non-empty")
+        if any(
+            not isinstance(item, CoverageConditionProof) or not item.complete
+            for item in self.condition_proofs
+        ):
+            raise CoverageError("contract proof contains a malformed condition proof")
+        condition_keys = [
+            _assignment_key(item.condition_assignment)
+            for item in self.condition_proofs
+        ]
+        if len(condition_keys) != len(set(condition_keys)):
+            raise CoverageError("contract proof contains duplicate condition assignments")
+        for item in self.condition_proofs:
+            if item.primary_axes != primary_axes or set(item.condition_assignment) != set(
+                condition_axes
+            ):
+                raise CoverageError("condition proof axes do not match contract proof")
+        primary_count = 1
+        for axis_id in primary_axes:
+            primary_count *= inventory_counts[axis_id]
+        expected_condition_count = 1
+        for axis_id in condition_axes:
+            expected_condition_count *= inventory_counts[axis_id]
+        if len(self.condition_proofs) != expected_condition_count or any(
+            item.theoretical_count != primary_count
+            for item in self.condition_proofs
+        ):
+            raise CoverageError(
+                "condition proof cardinalities do not match inventory bindings"
+            )
+        if sum(item.theoretical_count for item in self.condition_proofs) != self.theoretical_count:
+            raise CoverageError("condition proof counts do not reconcile to contract proof")
+        for outcome in _OUTCOME_COUNT_KEYS:
+            if outcome == "total":
+                continue
+            if sum(
+                item.expected_outcome_counts[outcome]
+                for item in self.condition_proofs
+            ) != expected_counts[outcome]:
+                raise CoverageError(
+                    "condition proof outcome counts do not reconcile to contract proof"
+                )
+        for values, location in (
+            (self.missing_assignments, "contract proof missing_assignments"),
+            (self.unexpected_assignments, "contract proof unexpected_assignments"),
+        ):
+            if type(values) is not tuple or any(
+                not isinstance(item, str) for item in values
+            ):
+                raise CoverageError(f"{location} must be an immutable string tuple")
+            if values:
+                raise CoverageError(f"{location} must be empty for a proof")
+        if (
+            self.theoretical_count != self.actual_count
+            or theoretical_sha256 != actual_sha256
+            or dict(expected_counts) != dict(actual_counts)
+        ):
+            raise CoverageError("contract proof invariants are incomplete")
+        object.__setattr__(self, "primary_axes", primary_axes)
+        object.__setattr__(self, "condition_axes", condition_axes)
+        object.__setattr__(self, "axis_inventory_counts", inventory_counts)
+        object.__setattr__(self, "axis_inventory_sha256", inventory_digests)
+        object.__setattr__(self, "expected_outcome_counts", expected_counts)
+        object.__setattr__(self, "outcome_counts", actual_counts)
+
     @property
     def complete(self) -> bool:
         return (
@@ -376,6 +706,115 @@ class CoverageCompilation:
     expected_interaction_set_sha256: Optional[str]
     actual_interaction_set_sha256: Optional[str]
     interaction_manifest_reconciled: bool
+
+    def __post_init__(self) -> None:
+        _require_proof_factory(type(self).__name__)
+        if type(self.obligations) is not tuple or any(
+            not isinstance(item, CoverageObligation) for item in self.obligations
+        ):
+            raise CoverageError("coverage compilation obligations must be a typed tuple")
+        obligation_ids = [item.obligation_id for item in self.obligations]
+        if len(obligation_ids) != len(set(obligation_ids)):
+            raise CoverageError("coverage compilation contains duplicate obligation ids")
+        if any(
+            not isinstance(item, str) or not item
+            for item in obligation_ids
+        ):
+            raise CoverageError("coverage compilation has an invalid obligation id")
+        if len({item.plan_id for item in self.obligations}) > 1:
+            raise CoverageError("coverage compilation obligations span multiple plans")
+        if type(self.contract_proofs) is not tuple or any(
+            not isinstance(item, CoverageContractProof) or not item.complete
+            for item in self.contract_proofs
+        ):
+            raise CoverageError("coverage compilation contract_proofs are malformed")
+        proof_ids = [item.test_point_id for item in self.contract_proofs]
+        if len(proof_ids) != len(set(proof_ids)):
+            raise CoverageError("coverage compilation contains duplicate point proofs")
+        legacy_ids = _validated_stable_ids(
+            self.legacy_test_point_ids,
+            "coverage compilation legacy_test_point_ids",
+            allow_empty=True,
+        )
+        if set(proof_ids) & set(legacy_ids):
+            raise CoverageError("coverage compilation proof and legacy point ids overlap")
+        known_point_ids = set(proof_ids) | set(legacy_ids)
+        if any(
+            obligation.test_point_id not in known_point_ids
+            for obligation in self.obligations
+        ):
+            raise CoverageError(
+                "coverage compilation obligation references an unproved point"
+            )
+        factor_owners = _validated_string_mapping(
+            self.factor_owner_by_id,
+            "coverage compilation factor_owner_by_id",
+        )
+        interaction_sources = _validated_string_mapping(
+            self.interaction_source_sha256_by_id,
+            "coverage compilation interaction_source_sha256_by_id",
+            value_is_digest=True,
+        )
+        if type(self.interaction_manifest_reconciled) is not bool:
+            raise CoverageError(
+                "coverage compilation interaction_manifest_reconciled must be bool"
+            )
+        if self.contract_proofs:
+            expected_owned_factors = {
+                axis_id
+                for proof in self.contract_proofs
+                for axis_id in proof.primary_axes
+            }
+            if set(factor_owners) != expected_owned_factors:
+                raise CoverageError(
+                    "coverage compilation factor owners do not match primary factors"
+                )
+            if len(interaction_sources) != len(self.contract_proofs):
+                raise CoverageError(
+                    "coverage compilation interaction records do not reconcile to proofs"
+                )
+            for proof in self.contract_proofs:
+                if sum(
+                    obligation.test_point_id == proof.test_point_id
+                    for obligation in self.obligations
+                ) != proof.actual_count:
+                    raise CoverageError(
+                        "coverage compilation obligation counts do not match proofs"
+                    )
+            expected_digest = _validated_digest(
+                self.expected_interaction_set_sha256,
+                "coverage compilation expected_interaction_set_sha256",
+            )
+            actual_digest = _validated_digest(
+                self.actual_interaction_set_sha256,
+                "coverage compilation actual_interaction_set_sha256",
+            )
+            if (
+                expected_digest != actual_digest
+                or not self.interaction_manifest_reconciled
+                or not interaction_sources
+                or not factor_owners
+            ):
+                raise CoverageError("coverage compilation proof bundle is incomplete")
+        else:
+            expected_digest = self.expected_interaction_set_sha256
+            actual_digest = self.actual_interaction_set_sha256
+            if (
+                expected_digest is not None
+                or actual_digest is not None
+                or interaction_sources
+                or factor_owners
+            ):
+                raise CoverageError(
+                    "legacy coverage compilation cannot contain v2 proof bindings"
+                )
+        object.__setattr__(self, "legacy_test_point_ids", legacy_ids)
+        object.__setattr__(self, "factor_owner_by_id", factor_owners)
+        object.__setattr__(
+            self,
+            "interaction_source_sha256_by_id",
+            interaction_sources,
+        )
 
     @property
     def proofs(self) -> tuple[CoverageContractProof, ...]:
@@ -583,6 +1022,21 @@ def _condition_label(condition: Mapping[str, Any]) -> str:
     return repr(dict(condition))
 
 
+def _canonical_validated_plan(plan: CoveragePlan) -> CoveragePlan:
+    """Reparse a plan so mutable nested state cannot bypass constructors.
+
+    ``validate_coverage_plan`` checks cross references, while the canonical
+    parser independently recomputes every axis count and inventory digest.
+    Both proof boundaries call this helper before consulting any plan field.
+    """
+
+    if not isinstance(plan, CoveragePlan):
+        raise CoverageError("coverage proof requires a CoveragePlan")
+    canonical = CoveragePlan.from_dict(plan.to_dict())
+    validate_coverage_plan(canonical)
+    return canonical
+
+
 def prove_coverage_contract(
     plan: CoveragePlan,
     point: TestPoint,
@@ -595,16 +1049,22 @@ def prove_coverage_contract(
     count or generated list is allowed to stand in for set equality.
     """
 
-    validate_coverage_plan(plan)
+    supplied_point = point
+    plan = _canonical_validated_plan(plan)
     matching_points = tuple(
         candidate
         for candidate in plan.test_points
-        if candidate.test_point_id == point.test_point_id
+        if candidate.test_point_id == supplied_point.test_point_id
     )
-    if len(matching_points) != 1 or matching_points[0] != point:
+    if (
+        len(matching_points) != 1
+        or matching_points[0].to_dict() != supplied_point.to_dict()
+    ):
         raise CoverageError(
-            f"test point {point.test_point_id} is not the validated point from plan {plan.plan_id}"
+            f"test point {supplied_point.test_point_id} is not the validated point "
+            f"from plan {plan.plan_id}"
         )
+    point = matching_points[0]
     contract = point.coverage_contract
     if contract is None:
         raise CoverageError(
@@ -745,7 +1205,8 @@ def prove_coverage_contract(
         condition_proofs.append(
             # Per-condition outcomes are classified independently from the
             # supplied obligations, just like the assignment set itself.
-            CoverageConditionProof(
+            _construct_proof(
+                CoverageConditionProof,
                 condition_assignment=dict(condition),
                 primary_axes=contract.primary_axes,
                 theoretical_count=len(theoretical_primary),
@@ -785,7 +1246,8 @@ def prove_coverage_contract(
             f"test point {point.test_point_id} has no executable oracle obligations"
         )
 
-    proof = CoverageContractProof(
+    proof = _construct_proof(
+        CoverageContractProof,
         test_point_id=point.test_point_id,
         combination_policy=contract.combination_policy,
         primary_axes=contract.primary_axes,
@@ -905,7 +1367,7 @@ def compile_coverage_plan(
     own suites and factor dependencies in concert.
     """
 
-    validate_coverage_plan(plan)
+    plan = _canonical_validated_plan(plan)
     actual = (
         tuple(expand_coverage_plan(plan))
         if obligations is None
@@ -941,7 +1403,8 @@ def compile_coverage_plan(
             raise CoverageError(
                 "legacy coverage plan cannot consume v2 interaction requirements"
             )
-        return CoverageCompilation(
+        return _construct_proof(
+            CoverageCompilation,
             obligations=actual,
             contract_proofs=(),
             legacy_test_point_ids=legacy_ids,
@@ -1180,7 +1643,8 @@ def compile_coverage_plan(
         )
         for point in contracted
     )
-    return CoverageCompilation(
+    return _construct_proof(
+        CoverageCompilation,
         obligations=actual,
         contract_proofs=proofs,
         legacy_test_point_ids=legacy_ids,

@@ -7,6 +7,8 @@ from collections import Counter
 from dataclasses import replace
 from pathlib import Path
 
+import mysql_case_factory.coverage as coverage_module
+
 from mysql_case_factory.contracts import (
     ContractValidationError,
     CaseManifest,
@@ -21,6 +23,7 @@ from mysql_case_factory.coverage import (
     CoverageContractProof,
     CoverageError,
     CoverageInteractionRequirement,
+    CoverageObligation,
     assignment_set_sha256,
     compile_coverage_plan,
     expand_coverage_plan,
@@ -670,12 +673,6 @@ class ExactCoverageContractProofTest(unittest.TestCase):
             compilation.actual_interaction_set_sha256,
             compilation.expected_interaction_set_sha256,
         )
-        self.assertFalse(
-            replace(compilation, actual_interaction_set_sha256="0" * 64).complete
-        )
-        self.assertFalse(
-            replace(compilation, interaction_manifest_reconciled=False).complete
-        )
         with self.assertRaisesRegex(
             CoverageError,
             "contracted coverage plan requires a complete interaction manifest",
@@ -704,6 +701,176 @@ class ExactCoverageContractProofTest(unittest.TestCase):
 
         with self.assertRaisesRegex(CoverageError, "unknown value.*replacement"):
             prove_coverage_contract(plan, plan.test_points[0], obligations)
+
+    def test_proof_boundaries_reparse_mutated_axis_inventory_snapshots(self):
+        for boundary in ("prove", "compile"):
+            with self.subTest(boundary=boundary):
+                plan = CoveragePlan.from_dict(self.plan_document())
+                obligations = expand_coverage_plan(plan)
+                original = plan.axes["table_kind"]
+                plan.axes["table_kind"] = replace(
+                    original,
+                    values=("heap", "foreign", "same-count-replacement"),
+                    # Deliberately retain the original count and SHA.
+                )
+                with self.assertRaisesRegex(
+                    ContractValidationError,
+                    "inventory_sha256 does not match",
+                ):
+                    if boundary == "prove":
+                        prove_coverage_contract(
+                            plan,
+                            plan.test_points[0],
+                            obligations,
+                        )
+                    else:
+                        self.compile_with_manifest(
+                            plan,
+                            self.decisions(plan),
+                            obligations,
+                            (self.interaction(),),
+                        )
+
+    def test_compiled_proof_mappings_are_defensive_immutable_copies(self):
+        source_assignments = {"axis": "original"}
+        standalone = CoverageObligation(
+            obligation_id="obl-copy-test",
+            plan_id="PLAN-COPY",
+            test_point_id="TP-COPY",
+            assignments=source_assignments,
+            outcome="success",
+        )
+        source_assignments["axis"] = "mutated"
+        self.assertEqual(standalone.assignments["axis"], "original")
+        with self.assertRaises(TypeError):
+            standalone.assignments["axis"] = "forbidden"
+
+        document = self.plan_document()
+        plan = CoveragePlan.from_dict(document)
+        compilation = self.compile_with_manifest(
+            plan,
+            self.decisions(plan),
+            expand_coverage_plan(plan),
+            (self.interaction(),),
+        )
+        frozen_document = compilation.to_dict()
+        proof = compilation.contract_proofs[0]
+        condition = proof.condition_proofs[0]
+        exposed_mappings = (
+            compilation.factor_owner_by_id,
+            compilation.interaction_source_sha256_by_id,
+            proof.axis_inventory_counts,
+            proof.axis_inventory_sha256,
+            proof.expected_outcome_counts,
+            proof.outcome_counts,
+            condition.condition_assignment,
+            condition.expected_outcome_counts,
+            condition.outcome_counts,
+            compilation.obligations[0].assignments,
+        )
+        for exposed in exposed_mappings:
+            with self.assertRaises(TypeError):
+                exposed["tamper"] = "forbidden"
+        document["axes"]["table_kind"]["values"][0] = "source-mutated"
+        self.assertEqual(compilation.to_dict(), frozen_document)
+
+    def test_proof_objects_are_factory_only_and_cannot_be_faked_complete(self):
+        counts = {
+            "total": 1,
+            "success": 1,
+            "expected_failure": 0,
+            "justified_na": 0,
+        }
+        with self.assertRaisesRegex(CoverageError, "internal proof factory"):
+            CoverageConditionProof(
+                condition_assignment={},
+                primary_axes=("axis",),
+                theoretical_count=1,
+                actual_count=1,
+                theoretical_sha256="a" * 64,
+                actual_sha256="a" * 64,
+                expected_outcome_counts=counts,
+                outcome_counts=counts,
+            )
+        with self.assertRaisesRegex(CoverageError, "internal proof factory"):
+            CoverageContractProof(
+                test_point_id="TP",
+                combination_policy="full_cross",
+                primary_axes=("axis",),
+                condition_axes=(),
+                axis_inventory_counts={"axis": 1},
+                axis_inventory_sha256={"axis": "a" * 64},
+                theoretical_count=1,
+                actual_count=1,
+                theoretical_sha256="a" * 64,
+                actual_sha256="a" * 64,
+                expected_outcome_counts=counts,
+                outcome_counts=counts,
+                condition_proofs=(),
+            )
+        with self.assertRaisesRegex(CoverageError, "internal proof factory"):
+            CoverageCompilation(
+                obligations=(),
+                contract_proofs=(),
+                legacy_test_point_ids=(),
+                factor_owner_by_id={},
+                interaction_source_sha256_by_id={},
+                expected_interaction_set_sha256="a" * 64,
+                actual_interaction_set_sha256="a" * 64,
+                interaction_manifest_reconciled=True,
+            )
+
+        with self.assertRaisesRegex(CoverageError, "invariants are incomplete"):
+            coverage_module._construct_proof(
+                CoverageConditionProof,
+                condition_assignment={},
+                primary_axes=("axis",),
+                theoretical_count=1,
+                actual_count=2,
+                theoretical_sha256="a" * 64,
+                actual_sha256="a" * 64,
+                expected_outcome_counts=counts,
+                outcome_counts={**counts, "total": 2, "success": 2},
+            )
+        with self.assertRaisesRegex(CoverageError, "malformed condition proof"):
+            coverage_module._construct_proof(
+                CoverageContractProof,
+                test_point_id="TP",
+                combination_policy="full_cross",
+                primary_axes=("axis",),
+                condition_axes=(),
+                axis_inventory_counts={"axis": 1},
+                axis_inventory_sha256={"axis": "a" * 64},
+                theoretical_count=1,
+                actual_count=1,
+                theoretical_sha256="a" * 64,
+                actual_sha256="a" * 64,
+                expected_outcome_counts=counts,
+                outcome_counts=counts,
+                condition_proofs=("not-a-proof",),
+            )
+        with self.assertRaisesRegex(CoverageError, "contract_proofs are malformed"):
+            coverage_module._construct_proof(
+                CoverageCompilation,
+                obligations=(),
+                contract_proofs=("not-a-proof",),
+                legacy_test_point_ids=(),
+                factor_owner_by_id={},
+                interaction_source_sha256_by_id={},
+                expected_interaction_set_sha256="a" * 64,
+                actual_interaction_set_sha256="a" * 64,
+                interaction_manifest_reconciled=True,
+            )
+
+        plan = CoveragePlan.from_dict(self.plan_document())
+        compilation = self.compile_with_manifest(
+            plan,
+            self.decisions(plan),
+            expand_coverage_plan(plan),
+            (self.interaction(),),
+        )
+        with self.assertRaisesRegex(CoverageError, "internal proof factory"):
+            replace(compilation, interaction_manifest_reconciled=False)
 
     def test_external_interaction_rejects_coordinated_axis_split_without_dependencies(self):
         document = self.plan_document()
