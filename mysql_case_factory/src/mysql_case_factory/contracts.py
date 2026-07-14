@@ -1248,6 +1248,29 @@ class CoverageExpectedCounts:
     expected_failure: int
     justified_na: int
 
+    def __post_init__(self) -> None:
+        counts = {
+            "total": self.total,
+            "success": self.success,
+            "expected_failure": self.expected_failure,
+            "justified_na": self.justified_na,
+        }
+        for key, value in counts.items():
+            if type(value) is not int or value < 0:
+                raise ContractValidationError(
+                    f"coverage_contract.expected_counts.{key} must be a non-negative integer"
+                )
+        if self.total < 1:
+            raise ContractValidationError(
+                "coverage_contract.expected_counts.total must be positive; "
+                "zero is not a frozen final count"
+            )
+        if self.total != self.success + self.expected_failure + self.justified_na:
+            raise ContractValidationError(
+                "coverage_contract.expected_counts.total must equal success + "
+                "expected_failure + justified_na"
+            )
+
     @classmethod
     def from_dict(
         cls,
@@ -1304,6 +1327,56 @@ class CoverageContract:
     primary_axes: tuple[str, ...]
     condition_axes: tuple[str, ...]
     expected_counts: CoverageExpectedCounts
+
+    def __post_init__(self) -> None:
+        allowed_policies = {
+            "full_cross",
+            "conditional_cross",
+            "boundary",
+            "negative",
+            "representative",
+            "pairwise",
+        }
+        if (
+            not isinstance(self.combination_policy, str)
+            or self.combination_policy not in allowed_policies
+        ):
+            raise ContractValidationError(
+                "coverage_contract.combination_policy must be one of "
+                + ", ".join(sorted(allowed_policies))
+            )
+        if type(self.primary_axes) is not tuple or type(self.condition_axes) is not tuple:
+            raise ContractValidationError(
+                "coverage_contract primary_axes and condition_axes must be immutable tuples"
+            )
+        if not self.primary_axes:
+            raise ContractValidationError(
+                "coverage_contract.primary_axes must not be empty"
+            )
+        for index, axis_id in enumerate(self.primary_axes):
+            _stable_id(axis_id, f"coverage_contract.primary_axes[{index}]")
+        for index, axis_id in enumerate(self.condition_axes):
+            _stable_id(axis_id, f"coverage_contract.condition_axes[{index}]")
+        _validate_unique(self.primary_axes, "coverage-contract primary axis")
+        _validate_unique(self.condition_axes, "coverage-contract condition axis")
+        overlap = sorted(set(self.primary_axes) & set(self.condition_axes))
+        if overlap:
+            raise ContractValidationError(
+                "coverage_contract primary_axes and condition_axes overlap: "
+                + ", ".join(overlap)
+            )
+        if self.combination_policy == "conditional_cross" and not self.condition_axes:
+            raise ContractValidationError(
+                "coverage_contract.condition_axes must not be empty for conditional_cross"
+            )
+        if self.combination_policy == "full_cross" and self.condition_axes:
+            raise ContractValidationError(
+                "coverage_contract.condition_axes must be empty for full_cross"
+            )
+        if not isinstance(self.expected_counts, CoverageExpectedCounts):
+            raise ContractValidationError(
+                "coverage_contract.expected_counts must be CoverageExpectedCounts"
+            )
 
     @classmethod
     def from_dict(

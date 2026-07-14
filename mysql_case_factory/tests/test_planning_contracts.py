@@ -90,12 +90,60 @@ def test_relative_path_aliases_are_rejected_before_bundle_checks(path: str) -> N
         ArtifactBinding.from_dict({"path": path, "sha256": SHA_A})
 
 
+@pytest.mark.parametrize(
+    "path",
+    (
+        "C:/planning/feature.yaml",
+        "c:planning/feature.yaml",
+        "C:\\planning\\feature.yaml",
+        "\\\\server\\share\\feature.yaml",
+        "//server/share/feature.yaml",
+        "//?/C:/planning/feature.yaml",
+        "analysis/feature\x00.yaml",
+        "analysis/feature\n.yaml",
+        "analysis/feature\t.yaml",
+        "analysis/feature\x7f.yaml",
+    ),
+)
+def test_windows_qualified_and_control_character_paths_are_rejected(path: str) -> None:
+    with pytest.raises(ContractValidationError, match="portable|control|drive|relative"):
+        ArtifactBinding.from_dict({"path": path, "sha256": SHA_A})
+
+
 def test_canonical_json_is_recursive_and_preserves_bool_int_identity() -> None:
     with pytest.raises(ContractValidationError, match="mapping keys must be strings"):
         canonical_json_sha256({1: "integer-key"})
     with pytest.raises(ContractValidationError, match="finite|supported"):
         canonical_json_sha256({"nested": [float("nan")]})
     assert canonical_json_sha256({"value": True}) != canonical_json_sha256({"value": 1})
+
+
+def test_canonical_json_rejects_cycles_but_accepts_shared_acyclic_values(
+    tmp_path: Path,
+) -> None:
+    cyclic_mapping: dict = {}
+    cyclic_mapping["self"] = cyclic_mapping
+    with pytest.raises(ContractValidationError, match="cycle"):
+        canonical_json_sha256(cyclic_mapping)
+
+    cyclic_list: list = []
+    cyclic_list.append(cyclic_list)
+    with pytest.raises(ContractValidationError, match="cycle"):
+        canonical_json_sha256(cyclic_list)
+
+    shared = {"values": [1, 2]}
+    shared_graph = {"left": shared, "right": shared}
+    assert canonical_json_sha256(shared_graph) == canonical_json_sha256(
+        {"left": {"values": [1, 2]}, "right": {"values": [1, 2]}}
+    )
+
+    alias_cycle = tmp_path / "alias-cycle.yaml"
+    alias_cycle.write_text(
+        "path: &loop\n  child: *loop\nsha256: " + SHA_A + "\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ContractValidationError, match="cycle"):
+        load_planning_contract(alias_cycle, ArtifactBinding)
 
 
 def feature_spec_document() -> dict:
@@ -637,6 +685,16 @@ def test_security_contracts_require_factories_and_deep_freeze_input_state() -> N
     with pytest.raises(ContractValidationError, match="validated factory"):
         _direct_reconstruct(blueprint)
 
+    shared_setup = {"values": ["one", "two"]}
+    shared_source = blueprint_document()
+    shared_source["setup_recipe"] = {
+        "recipe_id": "plain",
+        "left": shared_setup,
+        "right": shared_setup,
+    }
+    shared_blueprint = PlanCaseBlueprint.from_dict(shared_source)
+    assert shared_blueprint.setup_recipe["left"] is shared_blueprint.setup_recipe["right"]
+
     dry_source = {
         "schema_version": 1,
         "kind": "dry_render_artifact",
@@ -676,6 +734,42 @@ def test_security_contracts_require_factories_and_deep_freeze_input_state() -> N
     )
     with pytest.raises(ContractValidationError, match="validated factory"):
         _direct_reconstruct(brief)
+
+
+def test_coverage_contract_direct_construction_enforces_all_invariants() -> None:
+    counts = CoverageExpectedCounts(
+        total=2,
+        success=1,
+        expected_failure=1,
+        justified_na=0,
+    )
+    contract = CoverageContract(
+        combination_policy="full_cross",
+        primary_axes=("table_recipe", "column_type"),
+        condition_axes=(),
+        expected_counts=counts,
+    )
+    assert CoverageContract.from_dict(contract.to_dict()) == contract
+
+    with pytest.raises(ContractValidationError, match="total must equal"):
+        CoverageExpectedCounts(2, 1, 0, 0)
+    with pytest.raises(ContractValidationError, match="non-negative integer"):
+        CoverageExpectedCounts(1, True, 0, 0)
+    with pytest.raises(ContractValidationError, match="combination_policy"):
+        CoverageContract("sample", ("table_recipe",), (), counts)
+    with pytest.raises(ContractValidationError, match="overlap"):
+        CoverageContract(
+            "conditional_cross",
+            ("table_recipe",),
+            ("table_recipe",),
+            counts,
+        )
+    with pytest.raises(ContractValidationError, match="condition_axes.*conditional_cross"):
+        CoverageContract("conditional_cross", ("table_recipe",), (), counts)
+    with pytest.raises(ContractValidationError, match="condition_axes.*full_cross"):
+        CoverageContract("full_cross", ("table_recipe",), ("algorithm",), counts)
+    with pytest.raises(ContractValidationError, match="tuple"):
+        CoverageContract("full_cross", ["table_recipe"], [], counts)
 
 
 def approved_decision_document() -> dict:

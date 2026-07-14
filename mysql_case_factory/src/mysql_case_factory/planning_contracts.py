@@ -64,24 +64,42 @@ class _UniqueKeyLoader(yaml.SafeLoader):
         return super().construct_mapping(node, deep=deep)
 
 
-def _validate_json_value(value: Any, location: str = "value") -> None:
+def _validate_json_value(
+    value: Any,
+    location: str = "value",
+    _active_containers: Optional[set[int]] = None,
+) -> None:
     if value is None or isinstance(value, (str, bool, int)):
         return
     if isinstance(value, float):
         if not math.isfinite(value):
             raise ContractValidationError(f"{location} must contain only finite numbers")
         return
-    if isinstance(value, Mapping):
-        for key, item in value.items():
-            if not isinstance(key, str):
-                raise ContractValidationError(
-                    f"{location} mapping keys must be strings"
-                )
-            _validate_json_value(item, f"{location}.{key}")
-        return
-    if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
-        for index, item in enumerate(value):
-            _validate_json_value(item, f"{location}[{index}]")
+    is_mapping = isinstance(value, Mapping)
+    is_sequence = isinstance(value, Sequence) and not isinstance(
+        value, (str, bytes, bytearray)
+    )
+    if is_mapping or is_sequence:
+        active = _active_containers if _active_containers is not None else set()
+        identity = id(value)
+        if identity in active:
+            raise ContractValidationError(
+                f"{location} contains a container cycle"
+            )
+        active.add(identity)
+        try:
+            if is_mapping:
+                for key, item in value.items():
+                    if not isinstance(key, str):
+                        raise ContractValidationError(
+                            f"{location} mapping keys must be strings"
+                        )
+                    _validate_json_value(item, f"{location}.{key}", active)
+            else:
+                for index, item in enumerate(value):
+                    _validate_json_value(item, f"{location}[{index}]", active)
+        finally:
+            active.remove(identity)
         return
     raise ContractValidationError(
         f"{location} contains an unsupported canonical JSON value of type "
@@ -99,13 +117,28 @@ def _deep_thaw(value: Any) -> Any:
 
 def _deep_freeze(value: Any) -> Any:
     _validate_json_value(value)
-    if isinstance(value, Mapping):
-        return MappingProxyType(
-            {key: _deep_freeze(item) for key, item in value.items()}
+    memo: dict[int, Any] = {}
+
+    def freeze(item: Any) -> Any:
+        is_mapping = isinstance(item, Mapping)
+        is_sequence = isinstance(item, Sequence) and not isinstance(
+            item, (str, bytes, bytearray)
         )
-    if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
-        return tuple(_deep_freeze(item) for item in value)
-    return value
+        if not is_mapping and not is_sequence:
+            return item
+        identity = id(item)
+        if identity in memo:
+            return memo[identity]
+        if is_mapping:
+            frozen = MappingProxyType(
+                {key: freeze(child) for key, child in item.items()}
+            )
+        else:
+            frozen = tuple(freeze(child) for child in item)
+        memo[identity] = frozen
+        return frozen
+
+    return freeze(value)
 
 
 def canonical_json_bytes(value: Any) -> bytes:
@@ -196,9 +229,22 @@ def _digest(value: Any, location: str) -> str:
 
 
 def _relative_path(value: Any, location: str) -> str:
-    value = _text(value, location)
+    if not isinstance(value, str) or not value or value != value.strip():
+        raise ContractValidationError(
+            f"{location} must be a non-empty portable path without surrounding whitespace"
+        )
+    if any(ord(character) < 32 or 127 <= ord(character) <= 159 for character in value):
+        raise ContractValidationError(f"{location} must not contain control characters")
+    if re.match(r"^[A-Za-z]:", value):
+        raise ContractValidationError(
+            f"{location} must not use a Windows drive-qualified path"
+        )
     if "\\" in value:
         raise ContractValidationError(f"{location} must use portable forward slashes")
+    if re.search(r'[<>:"|?*]', value):
+        raise ContractValidationError(
+            f"{location} contains characters that are not portable on Windows"
+        )
     path = PurePosixPath(value)
     if path.is_absolute() or ".." in path.parts:
         raise ContractValidationError(f"{location} must be relative and must not escape its root")
