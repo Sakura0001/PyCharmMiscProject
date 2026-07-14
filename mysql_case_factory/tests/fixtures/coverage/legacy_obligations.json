@@ -1,0 +1,22 @@
+[
+  {
+    "obligation_id": "obl-tp-legacy-ed61988d769a",
+    "plan_id": "PLAN-LEGACY",
+    "test_point_id": "TP-LEGACY",
+    "assignments": {
+      "table_recipe": "innodb_plain"
+    },
+    "outcome": "success",
+    "execution_profile": "basic_mysql"
+  },
+  {
+    "obligation_id": "obl-tp-legacy-99c6840b0395",
+    "plan_id": "PLAN-LEGACY",
+    "test_point_id": "TP-LEGACY",
+    "assignments": {
+      "table_recipe": "innodb_partitioned"
+    },
+    "outcome": "success",
+    "execution_profile": "basic_mysql"
+  }
+]

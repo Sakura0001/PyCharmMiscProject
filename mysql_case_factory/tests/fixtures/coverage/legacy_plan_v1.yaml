@@ -1,0 +1,72 @@
+schema_version: 1
+kind: coverage_plan
+plan_id: PLAN-LEGACY
+feature_id: legacy-add-column
+axes:
+  table_recipe:
+    values:
+    - innodb_plain
+    - innodb_partitioned
+    inventory_source: references/common/legacy_table_recipes.yaml#recipes
+    coverage_mode: complete
+    inventory_count: 2
+    inventory_sha256: d9b5a019e0401f8f8dc07515006e1f5f06cb02bc322e1ddb511b2f81f0148020
+scope_decisions:
+  object:
+    status: not_applicable
+    reason: Legacy fixture does not claim canonical object coverage.
+  relation:
+    status: not_applicable
+    reason: Legacy fixture does not claim canonical relation coverage.
+  table:
+    status: not_applicable
+    reason: Legacy fixture predates the canonical InnoDB recipe universe.
+  column_type:
+    status: not_applicable
+    reason: Legacy fixture does not claim canonical column type coverage.
+risk_decisions:
+  syntax:
+    status: not_applicable
+    reason: Legacy fixture isolates serialization compatibility.
+  operation:
+    status: not_applicable
+    reason: Legacy fixture isolates serialization compatibility.
+  lifecycle:
+    status: not_applicable
+    reason: Legacy fixture isolates serialization compatibility.
+  data_profile:
+    status: not_applicable
+    reason: Legacy fixture isolates serialization compatibility.
+  large_value_lob:
+    status: not_applicable
+    reason: Legacy fixture isolates serialization compatibility.
+  transaction:
+    status: not_applicable
+    reason: Legacy fixture isolates serialization compatibility.
+  partitioning:
+    status: not_applicable
+    reason: Legacy fixture isolates serialization compatibility.
+  index_constraint_trigger:
+    status: not_applicable
+    reason: Legacy fixture isolates serialization compatibility.
+  privilege:
+    status: not_applicable
+    reason: Legacy fixture isolates serialization compatibility.
+  maintenance:
+    status: not_applicable
+    reason: Legacy fixture isolates serialization compatibility.
+  concurrency:
+    status: not_applicable
+    reason: Legacy fixture isolates serialization compatibility.
+  restart_recovery:
+    status: not_applicable
+    reason: Legacy fixture isolates serialization compatibility.
+test_points:
+- id: TP-LEGACY
+  title: Frozen legacy table recipe expansion
+  requirement_ids:
+  - REQ-LEGACY
+  core_axes:
+  - table_recipe
+  dependencies: []
+  default_outcome: success

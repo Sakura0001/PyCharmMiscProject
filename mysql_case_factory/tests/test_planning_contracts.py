@@ -1,0 +1,500 @@
+from __future__ import annotations
+
+import copy
+import json
+from pathlib import Path
+
+import pytest
+import yaml
+
+from mysql_case_factory.contracts import (
+    ContractValidationError,
+    CoverageContract,
+    CoverageExpectedCounts,
+    CoveragePlan,
+)
+from mysql_case_factory.coverage import expand_coverage_plan
+from mysql_case_factory.planning_contracts import (
+    ArtifactBinding,
+    AuditAttestation,
+    DryRenderArtifact,
+    ExecutionBrief,
+    ExecutionDecision,
+    ExecutionHandoff,
+    FactorDecision,
+    FeatureImpactGraph,
+    FeatureSpec,
+    PlanCaseBlueprint,
+    PlanningBundleManifest,
+    canonical_json_sha256,
+    load_planning_contract,
+)
+
+
+FIXTURES = Path(__file__).parent / "fixtures" / "coverage"
+SHA_A = "a" * 64
+SHA_B = "b" * 64
+
+
+def test_artifact_bindings_are_closed_portable_and_digest_bound(tmp_path: Path) -> None:
+    binding = ArtifactBinding.from_dict({"path": "analysis/feature_spec.yaml", "sha256": SHA_A})
+    assert binding.to_dict() == {"path": "analysis/feature_spec.yaml", "sha256": SHA_A}
+
+    for path in ("/tmp/spec.yaml", "../spec.yaml", "analysis\\spec.yaml"):
+        with pytest.raises(ContractValidationError, match="relative|portable|escape"):
+            ArtifactBinding.from_dict({"path": path, "sha256": SHA_A})
+    with pytest.raises(ContractValidationError, match="unexpected"):
+        ArtifactBinding.from_dict(
+            {"path": "analysis/spec.yaml", "sha256": SHA_A, "ignored": True}
+        )
+    with pytest.raises(ContractValidationError, match="SHA-256"):
+        ArtifactBinding.from_dict({"path": "analysis/spec.yaml", "sha256": "weak"})
+
+    path = tmp_path / "binding.yaml"
+    path.write_text("path: a.yaml\npath: b.yaml\nsha256: " + SHA_A + "\n", encoding="utf-8")
+    with pytest.raises(ContractValidationError, match="duplicate YAML key path"):
+        load_planning_contract(path, ArtifactBinding)
+
+
+def feature_spec_document() -> dict:
+    return {
+        "schema_version": 1,
+        "kind": "feature_spec",
+        "feature_id": "alter-table-add-column-enhancement",
+        "operation": "alter_table_add_column",
+        "target_objects": ["innodb_table"],
+        "behavior_change": "ADD COLUMN semantics are enhanced.",
+        "affected_phases": ["definition", "execution", "verification"],
+        "target_editions": ["mysql_8_0_22", "mysql_8_0_41"],
+        "constraints": ["engine=innodb"],
+        "requirements": [
+            {
+                "id": "REQ-ADD-1",
+                "description": "Plan the enhanced ADD COLUMN behavior.",
+                "source_locator": "inputs/feature.md#alter-table-add-column",
+            }
+        ],
+        "source_locators": ["inputs/feature.md#alter-table-add-column"],
+        "unresolved_questions": [],
+        "status": "complete",
+    }
+
+
+def test_feature_spec_is_closed_and_complete_rejects_unresolved_questions() -> None:
+    spec = FeatureSpec.from_dict(feature_spec_document())
+    assert spec.operation == "alter_table_add_column"
+    assert spec.to_dict() == feature_spec_document()
+
+    unresolved = feature_spec_document()
+    unresolved["unresolved_questions"] = [
+        {
+            "id": "Q-1",
+            "question": "Does the enhancement alter positional INSTANT support?",
+            "coverage_impact": "Changes the version-witness suite.",
+            "source_locator": "inputs/feature.md#alter-table-add-column",
+        }
+    ]
+    with pytest.raises(ContractValidationError, match="unresolved questions.*complete"):
+        FeatureSpec.from_dict(unresolved)
+
+
+def impact_graph_document() -> dict:
+    return {
+        "schema_version": 1,
+        "kind": "feature_impact_graph",
+        "feature_id": "alter-table-add-column-enhancement",
+        "nodes": [
+            {
+                "id": "requirement.REQ-ADD-1",
+                "type": "requirement",
+                "label": "ADD COLUMN enhancement",
+                "sources": ["inputs/feature.md#alter-table-add-column"],
+            },
+            {
+                "id": "factor.added_column_type",
+                "type": "factor_domain",
+                "label": "Added column type",
+                "sources": ["references/common/feature_association_knowledge.yaml#rules.add-column"],
+            },
+        ],
+        "edges": [
+            {
+                "id": "edge.requirement-to-type",
+                "from": "requirement.REQ-ADD-1",
+                "to": "factor.added_column_type",
+                "rule_id": "rule.add-column-implies-type",
+                "evidence": [
+                    "references/common/feature_association_knowledge.yaml#rules.add-column"
+                ],
+            }
+        ],
+    }
+
+
+def test_impact_graph_has_typed_referentially_closed_unique_nodes_and_edges() -> None:
+    graph = FeatureImpactGraph.from_dict(impact_graph_document())
+    assert graph.to_dict() == impact_graph_document()
+
+    duplicate = impact_graph_document()
+    duplicate["nodes"].append(copy.deepcopy(duplicate["nodes"][0]))
+    with pytest.raises(ContractValidationError, match="duplicate impact node id"):
+        FeatureImpactGraph.from_dict(duplicate)
+
+    dangling = impact_graph_document()
+    dangling["edges"][0]["to"] = "factor.missing"
+    with pytest.raises(ContractValidationError, match="unknown node"):
+        FeatureImpactGraph.from_dict(dangling)
+
+
+def factor_document(status: str = "covered") -> dict:
+    document = {
+        "schema_version": 1,
+        "kind": "factor_decision",
+        "factor_id": "added_column_type",
+        "domain": "data_and_type",
+        "status": status,
+        "trigger_path": ["requirement.REQ-ADD-1", "factor.added_column_type"],
+        "edition_applicability": {
+            "mysql_8_0_22": "applicable",
+            "mysql_8_0_41": "applicable",
+        },
+        "combination_strategy": "full_cross",
+        "dependencies": ["innodb_table_recipe"],
+        "exclusions": [],
+        "owning_suite_id": "suite.add-column-primary",
+        "review_state": "reviewed",
+        "inventory_source": "references/common/added_column_type_inventory.yaml#types",
+        "inventory_sha256": SHA_A,
+    }
+    if status != "covered":
+        document.update(
+            {
+                "combination_strategy": "not_applicable" if status == "justified_na" else "unresolved",
+                "reason": "No relevant executable surface is currently established.",
+                "sources": ["references/common/mandatory_factor_domain_policy.yaml#domains"],
+            }
+        )
+        document.pop("inventory_source")
+        document.pop("inventory_sha256")
+        document.pop("owning_suite_id")
+    return document
+
+
+def test_factor_decisions_require_inventory_or_evidenced_non_success() -> None:
+    assert FactorDecision.from_dict(factor_document()).status == "covered"
+    assert FactorDecision.from_dict(factor_document("justified_na")).status == "justified_na"
+    assert FactorDecision.from_dict(factor_document("unknown")).status == "unknown"
+
+    for field in ("reason", "sources"):
+        invalid = factor_document("unknown")
+        del invalid[field]
+        with pytest.raises(ContractValidationError, match=field):
+            FactorDecision.from_dict(invalid)
+
+    missing_owner = factor_document()
+    del missing_owner["owning_suite_id"]
+    with pytest.raises(ContractValidationError, match="owning_suite_id"):
+        FactorDecision.from_dict(missing_owner)
+
+    with pytest.raises(ContractValidationError, match="unexpected"):
+        FactorDecision.from_dict({**factor_document(), "unreviewed_hint": "sample"})
+
+
+def blueprint_document(outcome: str = "success") -> dict:
+    document = {
+        "schema_version": 1,
+        "kind": "plan_case_blueprint",
+        "blueprint_id": "BP-ADD-1",
+        "plan_id": "PLAN-ADD-8022",
+        "edition": "mysql_8_0_22",
+        "obligation_id": "obl-add-1",
+        "assignments": {"innodb_table_recipe": "plain", "added_column_type": "int"},
+        "setup_recipe": {"recipe_id": "plain", "steps": ["create_table", "seed"]},
+        "target_statement": {"operation": "alter_table_add_column", "position": "last"},
+        "verification_oracle": {"metadata": "column_exists", "data": "round_trip"},
+        "cleanup_procedure": {"steps": ["drop_table"], "idempotent": True},
+        "expected_outcome": outcome,
+        "execution_profile": "basic_mysql",
+    }
+    if outcome == "expected_failure":
+        document["diagnostic_contract"] = {
+            "error_code": 1846,
+            "sqlstate": "0A000",
+            "terminal_error_count": 1,
+            "message_pattern": "ALGORITHM=INSTANT is not supported",
+        }
+    return document
+
+
+def test_blueprint_requires_all_lifecycle_phases_and_exact_negative_diagnostic() -> None:
+    assert PlanCaseBlueprint.from_dict(blueprint_document()).diagnostic_contract is None
+    negative = PlanCaseBlueprint.from_dict(blueprint_document("expected_failure"))
+    assert negative.diagnostic_contract["sqlstate"] == "0A000"
+
+    missing_phase = blueprint_document()
+    missing_phase["verification_oracle"] = {}
+    with pytest.raises(ContractValidationError, match="verification_oracle.*not be empty"):
+        PlanCaseBlueprint.from_dict(missing_phase)
+
+    missing_diagnostic = blueprint_document("expected_failure")
+    del missing_diagnostic["diagnostic_contract"]["sqlstate"]
+    with pytest.raises(ContractValidationError, match="sqlstate"):
+        PlanCaseBlueprint.from_dict(missing_diagnostic)
+
+
+def test_dry_render_is_non_runnable_and_contains_no_execution_route() -> None:
+    document = {
+        "schema_version": 1,
+        "kind": "dry_render_artifact",
+        "dry_render_id": "DRY-ADD-1",
+        "blueprint_id": "BP-ADD-1",
+        "edition": "mysql_8_0_22",
+        "blueprint_sha256": SHA_A,
+        "canonical_sql_ast": {"statement": "alter_table", "action": "add_column"},
+        "canonical_ast_sha256": canonical_json_sha256(
+            {"statement": "alter_table", "action": "add_column"}
+        ),
+        "normalized_identifiers": {"table": "<table>", "column": "<added_column>"},
+        "preview_text": "NON-RUNNABLE PREVIEW: ALTER TABLE <table> ADD COLUMN <added_column> INT",
+        "runnable": False,
+    }
+    artifact = DryRenderArtifact.from_dict(document)
+    assert artifact.to_dict() == document
+
+    executable = copy.deepcopy(document)
+    executable["runnable"] = True
+    with pytest.raises(ContractValidationError, match="runnable must be false"):
+        DryRenderArtifact.from_dict(executable)
+    with pytest.raises(ContractValidationError, match="unexpected"):
+        DryRenderArtifact.from_dict({**document, "endpoint": "mysql://secret"})
+
+
+def attestation_document() -> dict:
+    return {
+        "schema_version": 1,
+        "kind": "audit_attestation",
+        "attestation_id": "AUDIT-COVERAGE-1",
+        "auditor_role": "coverage_auditor",
+        "permitted_inputs": [
+            {"path": "inputs/feature.md", "sha256": SHA_A},
+            {"path": "audits/blind_draft.yaml", "sha256": SHA_B},
+        ],
+        "candidate_plan_sha256": SHA_A,
+        "reconstructed_factor_ids": ["added_column_type", "innodb_table_recipe"],
+        "missing_factor_ids": [],
+        "excess_factor_ids": [],
+        "findings": [],
+        "final_decision": "pass",
+    }
+
+
+def test_audit_pass_rejects_open_findings_or_factor_diffs() -> None:
+    assert AuditAttestation.from_dict(attestation_document()).final_decision == "pass"
+
+    invalid = attestation_document()
+    invalid["missing_factor_ids"] = ["algorithm"]
+    with pytest.raises(ContractValidationError, match="pass.*missing"):
+        AuditAttestation.from_dict(invalid)
+
+    invalid = attestation_document()
+    invalid["findings"] = [
+        {
+            "id": "F-1",
+            "status": "open",
+            "severity": "high",
+            "description": "Algorithm coverage is absent.",
+            "sources": ["references/common/mandatory_factor_domain_policy.yaml#domains"],
+        }
+    ]
+    with pytest.raises(ContractValidationError, match="pass.*open finding"):
+        AuditAttestation.from_dict(invalid)
+
+
+def execution_brief_document() -> dict:
+    return {
+        "schema_version": 1,
+        "kind": "execution_brief",
+        "brief_id": "BRIEF-ADD-1",
+        "planning_bundle_sha256": SHA_A,
+        "counts": [
+            {
+                "edition": "mysql_8_0_22",
+                "suite_id": "suite.add-column-primary",
+                "total": 66,
+                "success": 65,
+                "expected_failure": 1,
+                "justified_na": 0,
+            },
+            {
+                "edition": "mysql_8_0_41",
+                "suite_id": "suite.add-column-primary",
+                "total": 66,
+                "success": 66,
+                "expected_failure": 0,
+                "justified_na": 0,
+            },
+        ],
+        "full_cost": {"estimated_seconds": 900, "disk_bytes": 1048576, "max_concurrency": 2},
+        "partial_proposals": [
+            {
+                "proposal_id": "partial.version-witness-only",
+                "selected_suite_ids": ["suite.add-column-version-witness"],
+                "cost": {"estimated_seconds": 30, "disk_bytes": 4096, "max_concurrency": 1},
+                "confidence_lost": [
+                    "Does not validate the full InnoDB recipe by added-column-type Cartesian set."
+                ],
+            }
+        ],
+        "requirements": {
+            "endpoints": ["one reference and one DUT for each exact patch edition"],
+            "topology": ["standalone primary for the primary suite"],
+            "privileges": ["CREATE", "ALTER", "DROP", "SELECT", "INSERT"],
+            "disk_bytes": 1048576,
+            "time_seconds": 900,
+            "max_concurrency": 2,
+            "harnesses": ["basic_mysql"],
+        },
+        "safety_blockers": [],
+        "known_risks": ["DDL runtime varies by table shape."],
+    }
+
+
+def test_execution_brief_has_exact_counts_and_partial_confidence_loss() -> None:
+    brief = ExecutionBrief.from_dict(execution_brief_document())
+    assert brief.to_dict() == execution_brief_document()
+
+    bad_count = execution_brief_document()
+    bad_count["counts"][0]["success"] = 64
+    with pytest.raises(ContractValidationError, match="total must equal"):
+        ExecutionBrief.from_dict(bad_count)
+
+    no_loss = execution_brief_document()
+    no_loss["partial_proposals"][0]["confidence_lost"] = []
+    with pytest.raises(ContractValidationError, match="confidence_lost"):
+        ExecutionBrief.from_dict(no_loss)
+
+
+def test_bundle_manifest_excludes_itself_ledger_and_decision_tree() -> None:
+    entries = (
+        ArtifactBinding("analysis/feature_spec.yaml", SHA_A),
+        ArtifactBinding("execution_brief.json", SHA_B),
+    )
+    manifest = PlanningBundleManifest.create(
+        request_id="REQ-ADD-1",
+        request_revision=1,
+        entries=entries,
+        policy_sha256=SHA_A,
+        created_at="2026-07-14T00:00:00Z",
+    )
+    assert PlanningBundleManifest.from_dict(manifest.to_dict()) == manifest
+
+    for forbidden in (
+        "planning_bundle_manifest.json",
+        "planning_run.json",
+        "decision/execution_decision.yaml",
+    ):
+        with pytest.raises(ContractValidationError, match="must not include|decision"):
+            PlanningBundleManifest.create(
+                request_id="REQ-ADD-1",
+                request_revision=1,
+                entries=(ArtifactBinding(forbidden, SHA_A),),
+                policy_sha256=SHA_A,
+                created_at="2026-07-14T00:00:00Z",
+            )
+
+
+def approved_decision_document() -> dict:
+    return {
+        "schema_version": 1,
+        "kind": "execution_decision",
+        "decision_id": "DECISION-ADD-1",
+        "status": "approved",
+        "planning_bundle_sha256": SHA_A,
+        "editions": ["mysql_8_0_22", "mysql_8_0_41"],
+        "execution_scope": ["suite.add-column-primary"],
+        "mode": "partial",
+        "resource_limits": {"max_concurrency": 2, "time_seconds": 900, "disk_bytes": 1048576},
+        "valid_from": "2026-07-14T00:00:00Z",
+        "expires_at": "2026-07-15T00:00:00Z",
+        "approver_identity": "host:user:yuyu",
+    }
+
+
+def test_execution_decision_is_explicit_and_handoff_binds_its_digest() -> None:
+    decision = ExecutionDecision.from_dict(approved_decision_document())
+    assert decision.status == "approved"
+
+    pending = {
+        "schema_version": 1,
+        "kind": "execution_decision",
+        "decision_id": "DECISION-ADD-1",
+        "status": "pending",
+        "planning_bundle_sha256": SHA_A,
+    }
+    assert ExecutionDecision.from_dict(pending).status == "pending"
+
+    invalid = approved_decision_document()
+    del invalid["approver_identity"]
+    with pytest.raises(ContractValidationError, match="approver_identity"):
+        ExecutionDecision.from_dict(invalid)
+
+    decision_sha256 = canonical_json_sha256(decision.to_dict())
+    handoff_document = {
+        "schema_version": 1,
+        "kind": "execution_handoff",
+        "handoff_id": "HANDOFF-ADD-1",
+        "decision_id": decision.decision_id,
+        "decision_sha256": decision_sha256,
+        "planning_bundle_sha256": SHA_A,
+        "editions": ["mysql_8_0_22", "mysql_8_0_41"],
+        "execution_scope": ["suite.add-column-primary"],
+        "mode": "partial",
+        "plan_bindings": [
+            {"path": "plans/mysql_8_0_22/coverage_plan.yaml", "sha256": SHA_A},
+            {"path": "plans/mysql_8_0_41/coverage_plan.yaml", "sha256": SHA_B},
+        ],
+        "expires_at": "2026-07-15T00:00:00Z",
+    }
+    handoff = ExecutionHandoff.from_dict(handoff_document)
+    assert handoff.binds(decision)
+    assert not handoff.binds(ExecutionDecision.from_dict({**pending, "decision_id": "DECISION-OTHER"}))
+
+
+def test_coverage_contract_is_strict_and_legacy_v1_bytes_and_ids_are_frozen() -> None:
+    expected = CoverageExpectedCounts.from_dict(
+        {"total": 6, "success": 4, "expected_failure": 1, "justified_na": 1}
+    )
+    contract = CoverageContract.from_dict(
+        {
+            "combination_policy": "full_cross",
+            "primary_axes": ["innodb_table_recipe", "added_column_type"],
+            "condition_axes": [],
+            "expected_counts": expected.to_dict(),
+        }
+    )
+    assert contract.expected_counts == expected
+
+    with pytest.raises(ContractValidationError, match="total must equal"):
+        CoverageExpectedCounts.from_dict(
+            {"total": 6, "success": 4, "expected_failure": 0, "justified_na": 1}
+        )
+    with pytest.raises(ContractValidationError, match="overlap"):
+        CoverageContract.from_dict(
+            {
+                "combination_policy": "full_cross",
+                "primary_axes": ["table"],
+                "condition_axes": ["table"],
+                "expected_counts": {"total": 1, "success": 1, "expected_failure": 0, "justified_na": 0},
+            }
+        )
+
+    fixture_text = (FIXTURES / "legacy_plan_v1.yaml").read_text(encoding="utf-8")
+    plan = CoveragePlan.from_dict(yaml.safe_load(fixture_text))
+    assert all(point.coverage_contract is None for point in plan.test_points)
+    assert yaml.safe_dump(plan.to_dict(), allow_unicode=True, sort_keys=False) == fixture_text
+
+    obligations = [item.to_dict() for item in expand_coverage_plan(plan)]
+    expected_obligations = json.loads(
+        (FIXTURES / "legacy_obligations.json").read_text(encoding="utf-8")
+    )
+    assert obligations == expected_obligations

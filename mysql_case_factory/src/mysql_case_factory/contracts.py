@@ -1240,6 +1240,139 @@ class ExecutionRoutingRule:
 
 
 @dataclass(frozen=True)
+class CoverageExpectedCounts:
+    """Frozen outcome accounting for one feature-level coverage contract."""
+
+    total: int
+    success: int
+    expected_failure: int
+    justified_na: int
+
+    @classmethod
+    def from_dict(
+        cls,
+        raw: Mapping[str, Any],
+        location: str = "coverage_contract.expected_counts",
+    ) -> "CoverageExpectedCounts":
+        document = _mapping(raw, location)
+        _require_exact_keys(
+            document,
+            {"total", "success", "expected_failure", "justified_na"},
+            location,
+        )
+        counts: dict[str, int] = {}
+        for key in ("total", "success", "expected_failure", "justified_na"):
+            value = document.get(key)
+            if type(value) is not int or value < 0:
+                raise ContractValidationError(
+                    f"{location}.{key} must be a non-negative integer"
+                )
+            counts[key] = value
+        if counts["total"] < 1:
+            raise ContractValidationError(
+                f"{location}.total must be positive; zero is not a frozen final count"
+            )
+        classified = (
+            counts["success"]
+            + counts["expected_failure"]
+            + counts["justified_na"]
+        )
+        if counts["total"] != classified:
+            raise ContractValidationError(
+                f"{location}.total must equal success + expected_failure + justified_na"
+            )
+        return cls(**counts)
+
+    def to_dict(self) -> dict[str, int]:
+        return {
+            "total": self.total,
+            "success": self.success,
+            "expected_failure": self.expected_failure,
+            "justified_na": self.justified_na,
+        }
+
+
+@dataclass(frozen=True)
+class CoverageContract:
+    """An explicit completeness claim attached to a new feature test point.
+
+    Legacy v1 points omit this object.  Its absence intentionally preserves the
+    old expansion semantics and makes no new mathematical coverage claim.
+    """
+
+    combination_policy: str
+    primary_axes: tuple[str, ...]
+    condition_axes: tuple[str, ...]
+    expected_counts: CoverageExpectedCounts
+
+    @classmethod
+    def from_dict(
+        cls,
+        raw: Mapping[str, Any],
+        location: str = "coverage_contract",
+    ) -> "CoverageContract":
+        document = _mapping(raw, location)
+        _require_exact_keys(
+            document,
+            {"combination_policy", "primary_axes", "condition_axes", "expected_counts"},
+            location,
+        )
+        combination_policy = _required_string(document, "combination_policy", location)
+        allowed_policies = {
+            "full_cross",
+            "conditional_cross",
+            "boundary",
+            "negative",
+            "representative",
+            "pairwise",
+        }
+        if combination_policy not in allowed_policies:
+            raise ContractValidationError(
+                f"{location}.combination_policy must be one of "
+                + ", ".join(sorted(allowed_policies))
+            )
+        primary_axes = _stable_id_tuple(
+            document.get("primary_axes"), f"{location}.primary_axes"
+        )
+        condition_axes = _stable_id_tuple(
+            document.get("condition_axes"), f"{location}.condition_axes"
+        )
+        if not primary_axes:
+            raise ContractValidationError(f"{location}.primary_axes must not be empty")
+        _validate_unique(primary_axes, "coverage-contract primary axis")
+        _validate_unique(condition_axes, "coverage-contract condition axis")
+        overlap = sorted(set(primary_axes) & set(condition_axes))
+        if overlap:
+            raise ContractValidationError(
+                f"{location} primary_axes and condition_axes overlap: " + ", ".join(overlap)
+            )
+        if combination_policy == "conditional_cross" and not condition_axes:
+            raise ContractValidationError(
+                f"{location}.condition_axes must not be empty for conditional_cross"
+            )
+        if combination_policy == "full_cross" and condition_axes:
+            raise ContractValidationError(
+                f"{location}.condition_axes must be empty for full_cross"
+            )
+        return cls(
+            combination_policy=combination_policy,
+            primary_axes=primary_axes,
+            condition_axes=condition_axes,
+            expected_counts=CoverageExpectedCounts.from_dict(
+                document.get("expected_counts"), f"{location}.expected_counts"
+            ),
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "combination_policy": self.combination_policy,
+            "primary_axes": list(self.primary_axes),
+            "condition_axes": list(self.condition_axes),
+            "expected_counts": self.expected_counts.to_dict(),
+        }
+
+
+@dataclass(frozen=True)
 class TestPoint:
     test_point_id: str
     title: str
@@ -1253,6 +1386,7 @@ class TestPoint:
     description: Optional[str] = None
     default_execution_profile: str = "basic_mysql"
     default_execution_harness: Optional[str] = None
+    coverage_contract: Optional[CoverageContract] = None
 
     @classmethod
     def from_dict(cls, raw: Mapping[str, Any], location: str = "test_point") -> "TestPoint":
@@ -1268,6 +1402,7 @@ class TestPoint:
                 "description",
                 "default_execution_profile",
                 "default_execution_harness",
+                "coverage_contract",
             },
             location,
         )
@@ -1326,6 +1461,14 @@ class TestPoint:
             description=_optional_string(document, "description", location),
             default_execution_profile=default_execution_profile,
             default_execution_harness=default_execution_harness,
+            coverage_contract=(
+                CoverageContract.from_dict(
+                    document["coverage_contract"],
+                    f"{location}.coverage_contract",
+                )
+                if "coverage_contract" in document
+                else None
+            ),
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -1350,6 +1493,8 @@ class TestPoint:
             document["default_reason"] = self.default_reason
         if self.description is not None:
             document["description"] = self.description
+        if self.coverage_contract is not None:
+            document["coverage_contract"] = self.coverage_contract.to_dict()
         return document
 
 
@@ -1771,6 +1916,8 @@ __all__ = [
     "RiskDecision",
     "CoverageClassificationRule",
     "ExecutionRoutingRule",
+    "CoverageExpectedCounts",
+    "CoverageContract",
     "TestPoint",
     "CoveragePlan",
     "CaseManifest",
