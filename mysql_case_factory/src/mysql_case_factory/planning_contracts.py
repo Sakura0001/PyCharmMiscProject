@@ -1102,7 +1102,6 @@ class DecisionConsequences:
 @dataclass(frozen=True)
 class ExecutionBrief:
     brief_id: str
-    planning_bundle_sha256: str
     counts: tuple[ExecutionCount, ...]
     full_cost: ExecutionCost
     partial_proposals: tuple[PartialExecutionProposal, ...]
@@ -1118,7 +1117,7 @@ class ExecutionBrief:
         location = "execution_brief"
         document = _mapping(raw, location)
         required = {
-            "schema_version", "kind", "brief_id", "planning_bundle_sha256", "counts",
+            "schema_version", "kind", "brief_id", "counts",
             "full_cost", "partial_proposals", "requirements", "safety_blockers", "known_risks",
             "decision_consequences", "provenance",
         }
@@ -1147,7 +1146,6 @@ class ExecutionBrief:
             raise ContractValidationError("duplicate partial proposal id")
         return cls(
             _identifier(document.get("brief_id"), f"{location}.brief_id"),
-            _digest(document.get("planning_bundle_sha256"), f"{location}.planning_bundle_sha256"),
             counts, ExecutionCost.from_dict(document.get("full_cost"), f"{location}.full_cost"),
             proposals, ExecutionRequirements.from_dict(document.get("requirements"), f"{location}.requirements"),
             _strings(document.get("safety_blockers"), f"{location}.safety_blockers"),
@@ -1162,7 +1160,7 @@ class ExecutionBrief:
     def to_dict(self) -> dict[str, Any]:
         return {
             "schema_version": self.schema_version, "kind": "execution_brief",
-            "brief_id": self.brief_id, "planning_bundle_sha256": self.planning_bundle_sha256,
+            "brief_id": self.brief_id,
             "counts": [item.to_dict() for item in self.counts], "full_cost": self.full_cost.to_dict(),
             "partial_proposals": [item.to_dict() for item in self.partial_proposals],
             "requirements": self.requirements.to_dict(),

@@ -349,7 +349,6 @@ def execution_brief_document() -> dict:
         "schema_version": 1,
         "kind": "execution_brief",
         "brief_id": "BRIEF-ADD-1",
-        "planning_bundle_sha256": SHA_A,
         "counts": [
             {
                 "edition": "mysql_8_0_22",
@@ -429,6 +428,25 @@ def test_execution_brief_has_exact_counts_and_partial_confidence_loss() -> None:
         empty["decision_consequences"][decision] = []
         with pytest.raises(ContractValidationError, match=decision):
             ExecutionBrief.from_dict(empty)
+
+
+def test_execution_brief_is_digestible_before_bundle_and_rejects_bundle_digest() -> None:
+    brief = ExecutionBrief.from_dict(execution_brief_document())
+    brief_sha256 = canonical_json_sha256(brief.to_dict())
+    manifest = PlanningBundleManifest.create(
+        request_id="REQ-ADD-1",
+        request_revision=1,
+        entries=(ArtifactBinding("execution_brief.json", brief_sha256),),
+        policy_sha256=SHA_A,
+        created_at="2026-07-14T00:00:00Z",
+    )
+    assert manifest.entries[0].sha256 == brief_sha256
+    assert "planning_bundle_sha256" not in brief.to_dict()
+
+    circular = execution_brief_document()
+    circular["planning_bundle_sha256"] = manifest.bundle_sha256
+    with pytest.raises(ContractValidationError, match="unexpected.*planning_bundle_sha256"):
+        ExecutionBrief.from_dict(circular)
 
 
 def test_bundle_manifest_excludes_itself_ledger_and_decision_tree() -> None:
