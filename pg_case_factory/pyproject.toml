@@ -9,7 +9,10 @@ description = "Plan, generate, and differentially verify PostgreSQL 18.4 SQL tes
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [{ name = "yuyu" }]
-dependencies = ["PyYAML>=6.0.2"]
+dependencies = [
+  "PyYAML>=6.0.2",
+  "rfc8785>=0.1.4,<1",
+]
 
 [project.scripts]
 pg-case = "pg_case_factory.cli:main"
