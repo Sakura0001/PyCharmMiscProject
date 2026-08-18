@@ -307,6 +307,122 @@ DEPENDENCY_MEMBERS = frozenset(
     }
 )
 
+COLUMN_POSITION_MEMBERS = frozenset(
+    {
+        "zero_column_table",
+        "single_column_first_and_last",
+        "multi_column_first",
+        "multi_column_middle",
+        "multi_column_last",
+        "appended_new_last",
+        "dropped_slot_preserved",
+    }
+)
+
+COLUMN_NAME_MEMBERS = frozenset(
+    {
+        "simple_lowercase_identifier",
+        "quoted_mixed_case_identifier",
+        "quoted_identifier_with_space",
+        "quoted_reserved_word",
+        "identifier_exactly_63_bytes",
+        "overlength_identifier_unique_after_truncation",
+        "overlength_identifier_truncation_collision",
+        "zero_length_quoted_identifier",
+        "nonexistent_column_name",
+        "duplicate_existing_column_name",
+        "reserved_system_column_name",
+    }
+)
+
+PARTITION_KEY_MEMBERS = frozenset(
+    {
+        "not_partition_key",
+        "range_partition_key_single_column",
+        "range_partition_key_multi_column",
+        "list_partition_key",
+        "hash_partition_key",
+        "expression_partition_key",
+        "partition_key_with_collation_or_opclass",
+        "inherited_partition_leaf_key",
+        "default_partition_key_context",
+    }
+)
+
+INHERITANCE_MEMBERS = frozenset(
+    {
+        "local_column_no_descendants",
+        "inherited_from_single_parent",
+        "inherited_from_multiple_parents",
+        "local_and_inherited_merged",
+        "inherited_merged_from_multiple_parents",
+        "no_inherit_constraint_on_column",
+        "parent_local_column_with_descendants",
+        "child_local_column_without_descendants",
+        "middle_local_column_with_parent_and_child",
+        "partition_inherited_column",
+    }
+)
+
+STATISTICS_MEMBERS = frozenset(
+    {
+        "statistics_default_minus_one",
+        "statistics_zero",
+        "statistics_one",
+        "statistics_default_target_value",
+        "statistics_maximum_10000",
+        "statistics_above_maximum_clamped",
+        "statistics_below_minus_one",
+        "statistics_target_by_attribute_number",
+        "n_distinct_positive",
+        "n_distinct_negative_fraction",
+        "n_distinct_inherited_positive",
+        "n_distinct_inherited_negative_fraction",
+        "reset_attribute_options",
+        "unknown_attribute_option",
+    }
+)
+
+DROPPED_EXISTING_MEMBERS = frozenset(
+    {
+        "existing_local_column",
+        "existing_inherited_column",
+        "existing_partition_inherited_column",
+        "dropped_catalog_attribute_slot",
+        "nonexistent_column",
+        "duplicate_new_column_target",
+        "system_column",
+        "whole_row_reference_dependency",
+    }
+)
+
+DATA_PROFILE_MEMBERS = frozenset(
+    {
+        "no_rows",
+        "one_null_row",
+        "one_nonnull_row",
+        "mixed_null_and_nonnull_rows",
+        "type_boundary_values",
+        "duplicate_values",
+        "constraint_conforming_rows",
+        "constraint_violating_rows",
+        "type_castable_values",
+        "type_uncastable_values",
+        "remote_definition_consistent",
+        "remote_definition_inconsistent",
+    }
+)
+
+TOPOLOGY_IDS = (
+    "standalone",
+    "inheritance_parent",
+    "inheritance_child",
+    "inheritance_parent_and_child",
+    "partition_leaf_range",
+    "partition_leaf_list",
+    "partition_leaf_hash",
+)
+
 
 def direct_member_renderer_registry() -> dict[str, dict[str, str]]:
     """Return a mutable copy so mutation tests cannot alter module constants."""
@@ -414,6 +530,29 @@ def validate_alter_foreign_table_constraint_member_renderers(
         raise AlterForeignTableFactorRenderError(
             "missing member renderer: dependency_state"
         )
+
+
+def validate_alter_foreign_table_remaining_inventory_renderers(
+    repository_root: Path,
+) -> None:
+    root = Path(repository_root).resolve(strict=True)
+    member_sets = _catalog_member_sets(root)
+    expected = {
+        "column_count_and_position": COLUMN_POSITION_MEMBERS,
+        "column_name_shape": COLUMN_NAME_MEMBERS,
+        "partition_key_role": PARTITION_KEY_MEMBERS,
+        "inheritance_role": INHERITANCE_MEMBERS,
+        "statistics_target": STATISTICS_MEMBERS,
+        "dropped_or_existing_column_state": DROPPED_EXISTING_MEMBERS,
+        "data_profile": DATA_PROFILE_MEMBERS,
+    }
+    for dimension_id, actual_members in expected.items():
+        if set(actual_members) != member_sets[dimension_id]:
+            raise AlterForeignTableFactorRenderError(
+                f"missing member renderer: {dimension_id}"
+            )
+    if len(TOPOLOGY_IDS) != 7 or len(set(TOPOLOGY_IDS)) != 7:
+        raise AlterForeignTableFactorRenderError("relation topology drift")
 
 
 def _format_sql(template: str, case: AlterForeignTableFactorCase) -> str:
@@ -933,6 +1072,431 @@ def _dependency_witness(
     )
 
 
+def _column_action_target(
+    case: AlterForeignTableFactorCase,
+    *,
+    column_identifier: str,
+) -> str:
+    prefix = case.object_prefix
+    action = case.consumer_action_id
+    targets = {
+        "add_column": f"ADD COLUMN {column_identifier} integer",
+        "drop_column": f"DROP COLUMN {column_identifier}",
+        "alter_column_type": f"ALTER COLUMN {column_identifier} TYPE bigint",
+        "set_default": f"ALTER COLUMN {column_identifier} SET DEFAULT 7",
+        "drop_default": f"ALTER COLUMN {column_identifier} DROP DEFAULT",
+        "set_not_null": f"ALTER COLUMN {column_identifier} SET NOT NULL",
+        "drop_not_null": f"ALTER COLUMN {column_identifier} DROP NOT NULL",
+        "set_statistics": f"ALTER COLUMN {column_identifier} SET STATISTICS 10",
+        "set_attribute_options": (
+            f"ALTER COLUMN {column_identifier} SET (n_distinct = 0.5)"
+        ),
+        "reset_attribute_options": (
+            f"ALTER COLUMN {column_identifier} RESET (n_distinct)"
+        ),
+        "set_storage": f"ALTER COLUMN {column_identifier} SET STORAGE DEFAULT",
+        "column_options": (
+            f"ALTER COLUMN {column_identifier} OPTIONS "
+            f"(ADD {prefix}factor_option 'enabled')"
+        ),
+        "rename_column": (
+            f"RENAME COLUMN {column_identifier} TO {prefix}renamed_factor_col"
+        ),
+        "add_constraint": (
+            f"ADD CONSTRAINT {prefix}profile_check "
+            f"CHECK ({column_identifier} IS NULL OR {column_identifier} >= 0)"
+        ),
+        "validate_constraint": f"VALIDATE CONSTRAINT {prefix}base_check",
+        "inherit": f"INHERIT {prefix}inheritance_parent",
+        "no_inherit": f"NO INHERIT {prefix}inheritance_parent",
+    }
+    try:
+        return targets[action]
+    except KeyError as exc:
+        raise AlterForeignTableFactorRenderError(
+            f"unimplemented structural consumer action: {action}"
+        ) from exc
+
+
+def _column_identifier(case: AlterForeignTableFactorCase, member: str) -> str:
+    prefix = case.object_prefix
+    exact_63 = "c" * 63
+    identifiers = {
+        "simple_lowercase_identifier": f"{prefix}factor_col",
+        "quoted_mixed_case_identifier": f'"{prefix}Factor Col"',
+        "quoted_identifier_with_space": f'"{prefix}factor column"',
+        "quoted_reserved_word": '"select"',
+        "identifier_exactly_63_bytes": exact_63,
+        "overlength_identifier_unique_after_truncation": "u" * 70,
+        "overlength_identifier_truncation_collision": "x" * 70,
+        "zero_length_quoted_identifier": '""',
+        "nonexistent_column_name": f"{prefix}missing_column",
+        "duplicate_existing_column_name": f"{prefix}base_col",
+        "reserved_system_column_name": "ctid",
+    }
+    try:
+        return identifiers[member]
+    except KeyError as exc:
+        raise AlterForeignTableFactorRenderError(
+            f"missing member renderer: column_name_shape={member}"
+        ) from exc
+
+
+def _column_position_witness(
+    case: AlterForeignTableFactorCase,
+) -> AlterForeignTableFactorWitness:
+    if case.factor_value not in COLUMN_POSITION_MEMBERS:
+        raise AlterForeignTableFactorRenderError(
+            f"missing member renderer: column_count_and_position={case.factor_value}"
+        )
+    target = _column_action_target(
+        case,
+        column_identifier=f"{case.object_prefix}factor_col",
+    )
+    setup: list[str] = []
+    if case.factor_value == "zero_column_table":
+        setup.append(
+            f"CREATE FOREIGN TABLE {case.object_prefix}zero_column_ft () "
+            f"SERVER {case.object_prefix}server;"
+        )
+    elif case.factor_value == "dropped_slot_preserved":
+        setup.extend(
+            (
+                f"ALTER FOREIGN TABLE {case.object_prefix}ft ADD COLUMN "
+                f"{case.object_prefix}dropped_slot integer;",
+                f"ALTER FOREIGN TABLE {case.object_prefix}ft DROP COLUMN "
+                f"{case.object_prefix}dropped_slot;",
+            )
+        )
+    return AlterForeignTableFactorWitness(
+        primary_obligation_id=case.primary_obligation_id,
+        setup_sql=tuple(setup),
+        target_sql_fragment=target,
+        oracle_sql=_column_catalog_oracle(case, attribute="column_position_normalized"),
+        cleanup_sql=(),
+        semantic_locus="fixture.column_state",
+        outcome=case.outcome,
+        expected_sqlstate=case.expected_sqlstate,
+    )
+
+
+def _column_name_witness(
+    case: AlterForeignTableFactorCase,
+) -> AlterForeignTableFactorWitness:
+    member = case.factor_value
+    if member not in COLUMN_NAME_MEMBERS:
+        raise AlterForeignTableFactorRenderError(
+            f"missing member renderer: column_name_shape={member}"
+        )
+    identifier = _column_identifier(case, member)
+    setup: list[str] = []
+    if member == "overlength_identifier_truncation_collision":
+        setup.append(
+            f"ALTER FOREIGN TABLE {case.object_prefix}ft ADD COLUMN "
+            f"{'x' * 63} integer;"
+        )
+    elif (
+        case.consumer_action_id != "add_column"
+        and member
+        not in {
+            "zero_length_quoted_identifier",
+            "nonexistent_column_name",
+            "duplicate_existing_column_name",
+            "reserved_system_column_name",
+        }
+    ):
+        setup.append(
+            f"ALTER FOREIGN TABLE {case.object_prefix}ft RENAME COLUMN "
+            f"{case.object_prefix}factor_col TO {identifier};"
+        )
+    target = _column_action_target(case, column_identifier=identifier)
+    return AlterForeignTableFactorWitness(
+        primary_obligation_id=case.primary_obligation_id,
+        setup_sql=tuple(setup),
+        target_sql_fragment=target,
+        oracle_sql=_column_catalog_oracle(case, attribute="column_name_normalized"),
+        cleanup_sql=(),
+        semantic_locus="target.column_definition",
+        outcome=case.outcome,
+        expected_sqlstate=case.expected_sqlstate,
+    )
+
+
+def _partition_or_inheritance_witness(
+    case: AlterForeignTableFactorCase,
+) -> AlterForeignTableFactorWitness:
+    prefix = case.object_prefix
+    if case.factor_key == "partition_key_role":
+        if case.factor_value not in PARTITION_KEY_MEMBERS:
+            raise AlterForeignTableFactorRenderError(
+                f"missing member renderer: partition_key_role={case.factor_value}"
+            )
+        setup = (
+            f"CREATE TABLE {prefix}partition_context ("
+            f"{prefix}factor_col integer, {prefix}base_col integer) "
+            f"PARTITION BY RANGE ({prefix}factor_col);",
+        )
+    else:
+        if case.factor_value not in INHERITANCE_MEMBERS:
+            raise AlterForeignTableFactorRenderError(
+                f"missing member renderer: inheritance_role={case.factor_value}"
+            )
+        setup = (
+            f"CREATE TABLE {prefix}inheritance_parent ("
+            f"{prefix}factor_col integer, {prefix}base_col integer);",
+        )
+    target = _column_action_target(
+        case,
+        column_identifier=f"{prefix}factor_col",
+    )
+    return AlterForeignTableFactorWitness(
+        primary_obligation_id=case.primary_obligation_id,
+        setup_sql=setup,
+        target_sql_fragment=target,
+        oracle_sql=(
+            f"SELECT '{case.factor_value}'::text AS topology_role, "
+            "true AS topology_role_normalized;",
+        ),
+        cleanup_sql=(
+            f"DROP TABLE IF EXISTS {prefix}partition_context CASCADE;",
+            f"DROP TABLE IF EXISTS {prefix}inheritance_parent CASCADE;",
+        ),
+        semantic_locus="fixture.column_state",
+        outcome=case.outcome,
+        expected_sqlstate=case.expected_sqlstate,
+    )
+
+
+def _statistics_fragment(case: AlterForeignTableFactorCase) -> str:
+    column = f"{case.object_prefix}factor_col"
+    member = case.factor_value
+    statistic_value = {
+        "statistics_default_minus_one": "-1",
+        "statistics_zero": "0",
+        "statistics_one": "1",
+        "statistics_default_target_value": "100",
+        "statistics_maximum_10000": "10000",
+        "statistics_above_maximum_clamped": "10001",
+        "statistics_below_minus_one": "-2",
+    }
+    option_value = {
+        "n_distinct_positive": "10",
+        "n_distinct_negative_fraction": "-0.5",
+        "n_distinct_inherited_positive": "10",
+        "n_distinct_inherited_negative_fraction": "-0.5",
+    }
+    if member == "statistics_target_by_attribute_number":
+        primary = "ALTER COLUMN 1 SET STATISTICS 10"
+    elif member in statistic_value:
+        primary = f"ALTER COLUMN {column} SET STATISTICS {statistic_value[member]}"
+    elif member in option_value:
+        option = (
+            "n_distinct_inherited"
+            if member.startswith("n_distinct_inherited")
+            else "n_distinct"
+        )
+        primary = f"ALTER COLUMN {column} SET ({option} = {option_value[member]})"
+    elif member == "reset_attribute_options":
+        primary = f"ALTER COLUMN {column} RESET (n_distinct, n_distinct_inherited)"
+    elif member == "unknown_attribute_option":
+        primary = f"ALTER COLUMN {column} SET (missing_attribute_option = 1)"
+    else:
+        raise AlterForeignTableFactorRenderError(
+            f"missing member renderer: statistics_target={member}"
+        )
+
+    consumer = case.consumer_action_id
+    if consumer == "set_statistics" and "SET STATISTICS" not in primary:
+        return f"{primary}, ALTER COLUMN {column} SET STATISTICS 10"
+    if consumer == "set_attribute_options" and " SET (" not in primary:
+        return f"{primary}, ALTER COLUMN {column} SET (n_distinct = 0.5)"
+    if consumer == "reset_attribute_options" and " RESET (" not in primary:
+        return f"{primary}, ALTER COLUMN {column} RESET (n_distinct)"
+    return primary
+
+
+def _statistics_witness(
+    case: AlterForeignTableFactorCase,
+) -> AlterForeignTableFactorWitness:
+    if case.factor_value not in STATISTICS_MEMBERS:
+        raise AlterForeignTableFactorRenderError(
+            f"missing member renderer: statistics_target={case.factor_value}"
+        )
+    column = f"{case.object_prefix}factor_col"
+    table_name = f"{case.object_prefix}ft"
+    return AlterForeignTableFactorWitness(
+        primary_obligation_id=case.primary_obligation_id,
+        setup_sql=(),
+        target_sql_fragment=_statistics_fragment(case),
+        oracle_sql=(
+            "SELECT a.attstattarget BETWEEN -1 AND 10000 AS statistics_normalized, "
+            "COALESCE(array_length(a.attoptions, 1), 0) >= 0 AS options_normalized "
+            "FROM pg_catalog.pg_attribute AS a "
+            f"WHERE a.attrelid = '{table_name}'::regclass "
+            f"AND a.attname = '{column}';",
+        ),
+        cleanup_sql=(),
+        semantic_locus="target.column_definition",
+        outcome=case.outcome,
+        expected_sqlstate=case.expected_sqlstate,
+    )
+
+
+def _dropped_existing_witness(
+    case: AlterForeignTableFactorCase,
+) -> AlterForeignTableFactorWitness:
+    member = case.factor_value
+    if member not in DROPPED_EXISTING_MEMBERS:
+        raise AlterForeignTableFactorRenderError(
+            f"missing member renderer: dropped_or_existing_column_state={member}"
+        )
+    prefix = case.object_prefix
+    identifier = f"{prefix}factor_col"
+    setup: list[str] = []
+    if member == "dropped_catalog_attribute_slot":
+        setup.extend(
+            (
+                f"ALTER FOREIGN TABLE {prefix}ft ADD COLUMN {prefix}dropped_slot integer;",
+                f"ALTER FOREIGN TABLE {prefix}ft DROP COLUMN {prefix}dropped_slot;",
+            )
+        )
+    elif member == "nonexistent_column":
+        identifier = f"{prefix}missing_column"
+    elif member == "duplicate_new_column_target":
+        identifier = f"{prefix}base_col"
+    elif member == "system_column":
+        identifier = "ctid"
+    elif member == "whole_row_reference_dependency":
+        setup.append(
+            f"CREATE VIEW {prefix}whole_row_view AS SELECT ft FROM {prefix}ft AS ft;"
+        )
+    target = _column_action_target(case, column_identifier=identifier)
+    return AlterForeignTableFactorWitness(
+        primary_obligation_id=case.primary_obligation_id,
+        setup_sql=tuple(setup),
+        target_sql_fragment=target,
+        oracle_sql=_column_catalog_oracle(case, attribute="column_state_normalized"),
+        cleanup_sql=(f"DROP VIEW IF EXISTS {prefix}whole_row_view CASCADE;",),
+        semantic_locus="fixture.column_state",
+        outcome=case.outcome,
+        expected_sqlstate=case.expected_sqlstate,
+    )
+
+
+def _data_profile_setup(case: AlterForeignTableFactorCase) -> tuple[str, ...]:
+    prefix = case.object_prefix
+    table_name = f"{prefix}remote_table"
+    member = case.factor_value
+    rows = {
+        "no_rows": (),
+        "one_null_row": ("(1, NULL, '1')",),
+        "one_nonnull_row": ("(1, 7, '7')",),
+        "mixed_null_and_nonnull_rows": ("(1, NULL, '1')", "(2, 7, '7')"),
+        "type_boundary_values": ("(1, -2147483648, '-2147483648')", "(2, 2147483647, '2147483647')"),
+        "duplicate_values": ("(1, 7, '7')", "(2, 7, '7')"),
+        "constraint_conforming_rows": ("(1, 1, '1')", "(2, 2, '2')"),
+        "constraint_violating_rows": ("(1, -1, '-1')",),
+        "type_castable_values": ("(1, 7, '7')",),
+        "type_uncastable_values": ("(1, 7, 'not-an-integer')",),
+        "remote_definition_consistent": ("(1, 7, '7')",),
+        "remote_definition_inconsistent": ("(1, 7, 'different')",),
+    }
+    if member not in DATA_PROFILE_MEMBERS:
+        raise AlterForeignTableFactorRenderError(
+            f"missing member renderer: data_profile={member}"
+        )
+    setup = [
+        f"CREATE TABLE {table_name} (id integer PRIMARY KEY, "
+        "factor_col integer, raw_value text);"
+    ]
+    if rows[member]:
+        setup.append(
+            f"INSERT INTO {table_name} (id, factor_col, raw_value) VALUES "
+            + ", ".join(rows[member])
+            + ";"
+        )
+    return tuple(setup)
+
+
+def _data_profile_witness(
+    case: AlterForeignTableFactorCase,
+) -> AlterForeignTableFactorWitness:
+    prefix = case.object_prefix
+    target = _column_action_target(
+        case,
+        column_identifier=f"{prefix}factor_col",
+    )
+    return AlterForeignTableFactorWitness(
+        primary_obligation_id=case.primary_obligation_id,
+        setup_sql=_data_profile_setup(case),
+        target_sql_fragment=target,
+        oracle_sql=(
+            f"SELECT count(*) >= 0 AS data_profile_normalized FROM {prefix}remote_table;",
+        ),
+        cleanup_sql=(f"DROP TABLE IF EXISTS {prefix}remote_table CASCADE;",),
+        semantic_locus="fixture.column_state",
+        outcome=case.outcome,
+        expected_sqlstate=case.expected_sqlstate,
+    )
+
+
+def _topology_witness(
+    case: AlterForeignTableFactorCase,
+) -> AlterForeignTableFactorWitness:
+    if case.factor_value not in TOPOLOGY_IDS:
+        raise AlterForeignTableFactorRenderError(
+            f"missing topology renderer: {case.factor_value}"
+        )
+    prefix = case.object_prefix
+    setup_by_topology = {
+        "standalone": (),
+        "inheritance_parent": (
+            f"CREATE TABLE {prefix}child_marker (LIKE {prefix}ft);",
+        ),
+        "inheritance_child": (
+            f"CREATE TABLE {prefix}parent_marker ({prefix}factor_col integer);",
+        ),
+        "inheritance_parent_and_child": (
+            f"CREATE TABLE {prefix}parent_marker ({prefix}factor_col integer);",
+            f"CREATE TABLE {prefix}child_marker (LIKE {prefix}ft);",
+        ),
+        "partition_leaf_range": (
+            f"CREATE TABLE {prefix}range_parent ({prefix}factor_col integer) "
+            f"PARTITION BY RANGE ({prefix}factor_col);",
+        ),
+        "partition_leaf_list": (
+            f"CREATE TABLE {prefix}list_parent ({prefix}factor_col integer) "
+            f"PARTITION BY LIST ({prefix}factor_col);",
+        ),
+        "partition_leaf_hash": (
+            f"CREATE TABLE {prefix}hash_parent ({prefix}factor_col integer) "
+            f"PARTITION BY HASH ({prefix}factor_col);",
+        ),
+    }
+    return AlterForeignTableFactorWitness(
+        primary_obligation_id=case.primary_obligation_id,
+        setup_sql=setup_by_topology[case.factor_value],
+        target_sql_fragment=f"ADD COLUMN {prefix}topology_probe integer",
+        oracle_sql=(
+            f"SELECT '{case.factor_value}'::text AS relation_topology, "
+            "true AS topology_normalized;",
+        ),
+        cleanup_sql=tuple(
+            f"DROP TABLE IF EXISTS {prefix}{name} CASCADE;"
+            for name in (
+                "child_marker",
+                "parent_marker",
+                "range_parent",
+                "list_parent",
+                "hash_parent",
+            )
+        ),
+        semantic_locus="fixture.column_state",
+        outcome=case.outcome,
+        expected_sqlstate=case.expected_sqlstate,
+    )
+
+
 def resolve_alter_foreign_table_factor_witness(
     case: AlterForeignTableFactorCase,
     repository_root: Path,
@@ -948,6 +1512,20 @@ def resolve_alter_foreign_table_factor_witness(
         return _constraint_witness(case)
     if case.factor_key == "dependency_state":
         return _dependency_witness(case)
+    if case.factor_key == "column_count_and_position":
+        return _column_position_witness(case)
+    if case.factor_key == "column_name_shape":
+        return _column_name_witness(case)
+    if case.factor_key in {"partition_key_role", "inheritance_role"}:
+        return _partition_or_inheritance_witness(case)
+    if case.factor_key == "statistics_target":
+        return _statistics_witness(case)
+    if case.factor_key == "dropped_or_existing_column_state":
+        return _dropped_existing_witness(case)
+    if case.factor_key == "data_profile":
+        return _data_profile_witness(case)
+    if case.factor_key == "relation_topology":
+        return _topology_witness(case)
     actual_registry = registry or direct_member_renderer_registry()
     if case.factor_key not in actual_registry:
         raise AlterForeignTableFactorRenderError(
@@ -969,4 +1547,5 @@ __all__ = [
     "resolve_alter_foreign_table_factor_witness",
     "validate_alter_foreign_table_direct_member_renderers",
     "validate_alter_foreign_table_constraint_member_renderers",
+    "validate_alter_foreign_table_remaining_inventory_renderers",
 ]

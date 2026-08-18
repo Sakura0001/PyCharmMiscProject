@@ -12,6 +12,7 @@ from pg_case_factory.alter_foreign_table_factor_render import (
     resolve_alter_foreign_table_factor_witness,
     validate_alter_foreign_table_constraint_member_renderers,
     validate_alter_foreign_table_direct_member_renderers,
+    validate_alter_foreign_table_remaining_inventory_renderers,
 )
 
 
@@ -124,6 +125,38 @@ class AlterForeignTableColumnFactorRenderTest(unittest.TestCase):
                 self.assertNotIn("::oid", "\n".join(witness.oracle_sql).lower())
                 if case.factor_value != "no_external_dependency":
                     self.assertTrue(witness.setup_sql)
+
+    def test_every_local_inventory_obligation_has_one_renderer(self) -> None:
+        validate_alter_foreign_table_remaining_inventory_renderers(ROOT)
+        plan = build_alter_foreign_table_factor_loop_plan(ROOT)
+        inv_cases = [row for row in plan.cases if row.kind == "INV"]
+        self.assertEqual(1_564, len(inv_cases))
+        rendered = [
+            resolve_alter_foreign_table_factor_witness(row, ROOT)
+            for row in inv_cases
+        ]
+        self.assertEqual(1_564, len(rendered))
+        self.assertTrue(all(row.primary_obligation_id for row in rendered))
+
+    def test_all_seven_relation_topologies_have_explicit_witnesses(self) -> None:
+        plan = build_alter_foreign_table_factor_loop_plan(ROOT)
+        rows = [row for row in plan.cases if row.factor_key == "relation_topology"]
+        self.assertEqual(
+            (
+                "standalone",
+                "inheritance_parent",
+                "inheritance_child",
+                "inheritance_parent_and_child",
+                "partition_leaf_range",
+                "partition_leaf_list",
+                "partition_leaf_hash",
+            ),
+            tuple(row.factor_value for row in rows),
+        )
+        for case in rows:
+            witness = resolve_alter_foreign_table_factor_witness(case, ROOT)
+            self.assertTrue(witness.target_sql_fragment)
+            self.assertEqual("fixture.column_state", witness.semantic_locus)
 
 
 if __name__ == "__main__":

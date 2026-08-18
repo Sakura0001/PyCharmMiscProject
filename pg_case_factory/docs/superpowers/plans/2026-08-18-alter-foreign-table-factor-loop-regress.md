@@ -426,7 +426,7 @@ git commit -m "feat: render alter foreign table constraints"
 - Modify: `src/pg_case_factory/alter_foreign_table_factor_render.py`
 - Modify: `tests/test_alter_foreign_table_factor_render.py`
 
-- [ ] **Step 1: Write the failing remaining-INV totality test**
+- [x] **Step 1: Write the failing remaining-INV totality test**
 
 ```python
 def test_every_local_inventory_obligation_has_one_renderer(self) -> None:
@@ -438,11 +438,11 @@ def test_every_local_inventory_obligation_has_one_renderer(self) -> None:
     self.assertTrue(all(row.primary_obligation_id for row in rendered))
 ```
 
-- [ ] **Step 2: Run the test and verify RED on the first missing dimension**
+- [x] **Step 2: Run the test and verify RED on the first missing dimension**
 
 Expected: `AlterForeignTableFactorRenderError` names the unimplemented dimension/member/action.
 
-- [ ] **Step 3: Implement the remaining structural dimensions in catalog order**
+- [x] **Step 3: Implement the remaining structural dimensions in catalog order**
 
 ```text
 column_count_and_position
@@ -456,7 +456,7 @@ data_profile
 
 Each renderer receives one primary member and a compatible complete baseline table. Identifier tests use PostgreSQL's 63-byte limit after UTF-8 byte counting and folding. `zero_length_quoted_identifier` is a parser-reachable failure; the overlength collision fixture creates the colliding identifier first.
 
-- [ ] **Step 4: Implement exactly seven topology witnesses**
+- [x] **Step 4: Implement exactly seven topology witnesses**
 
 ```python
 TOPOLOGY_IDS = (
@@ -468,11 +468,11 @@ TOPOLOGY_IDS = (
 
 The primary target uses a legal baseline action. Partition leaf cases validate `42809` or `42P16` only when that guard is primary.
 
-- [ ] **Step 5: Implement statistics and attribute-option oracles**
+- [x] **Step 5: Implement statistics and attribute-option oracles**
 
 Cover `-1`, `0`, `1`, the configured default, `10000`, above-maximum clamping, below-`-1` failure, attribute-number form, positive/negative `n_distinct`, inherited values, reset, and unknown option. Normalize every oracle.
 
-- [ ] **Step 6: Run tests and commit**
+- [x] **Step 6: Run tests and commit**
 
 ```bash
 uv run python -m unittest -v tests.test_alter_foreign_table_factor_render
