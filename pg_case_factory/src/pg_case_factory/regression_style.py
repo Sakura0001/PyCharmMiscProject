@@ -730,6 +730,19 @@ def audit_catalog_observability(sql_text: str) -> CatalogObservabilityReport:
     for ordinal, statement in enumerate(statements, start=1):
         masked, mask_issues = _mask_non_code(statement)
         parser_issues.extend(f"statement {ordinal}: {issue}" for issue in mask_issues)
+        top_level_words = tuple(token[0] for token in _top_level_tokens(masked))
+        if top_level_words[:2] == ("CREATE", "CONVERSION") or top_level_words[:3] == (
+            "CREATE",
+            "DEFAULT",
+            "CONVERSION",
+        ):
+            # CREATE CONVERSION's FROM clause names a support function.  It is
+            # not a catalog-relation observation and must not be audited as one.
+            continue
+        if top_level_words[:2] == ("CREATE", "COLLATION"):
+            # CREATE COLLATION ... FROM pg_catalog."C" names a source
+            # collation; it is not a catalog SELECT observation.
+            continue
         qualified = tuple(
             re.sub(r"\s+", "", match.group("relation"))
             for match in _CATALOG_RELATION_PATTERN.finditer(masked)
@@ -925,6 +938,23 @@ def _drop_table_names(statement: str) -> Optional[tuple[str, ...]]:
     return _split_identifier_list(match.group("names"))
 
 
+def contains_create_table_statement(sql_text: str) -> bool:
+    """Return whether executable SQL contains a real CREATE TABLE statement.
+
+    This deliberately parses statement starts instead of searching for the
+    ``CREATE TABLE`` substring, which would misclassify ``CREATE TABLESPACE``.
+    """
+
+    if not isinstance(sql_text, str) or not sql_text:
+        raise RegressionStyleError("sql_text must be a non-empty string")
+    statements, _ = _split_sql_statements(sql_text)
+    for statement in statements:
+        masked, _ = _mask_non_code(statement)
+        if _CREATE_TABLE_PATTERN.match(masked) is not None:
+            return True
+    return False
+
+
 def audit_complete_table_script(
     sql_text: str, *, expected_object_prefix: Optional[str] = None
 ) -> TableScriptAuditReport:
@@ -1043,6 +1073,7 @@ __all__ = [
     "audit_complete_table_script",
     "build_regression_batch_mapping",
     "compare_two_run_transcripts",
+    "contains_create_table_statement",
     "render_huawei_sql_header",
     "validate_huawei_sql_header",
     "validate_two_run_determinism",

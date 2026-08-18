@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:pg-case-factory:coverage-v2:current-pointer:2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "kind", "artifact_id", "predecessors", "semantic_payload", "semantic_sha256", "operational_metadata"],
+  "properties": {
+    "schema_version": {"const": 2},
+    "kind": {"const": "current-pointer"},
+    "artifact_id": {"type": "string", "minLength": 1},
+    "predecessors": {
+      "type": "object",
+      "propertyNames": {"type": "string", "minLength": 1},
+      "additionalProperties": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+    },
+    "semantic_payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["run_id", "statement_key", "revision_id", "plan_content_root_sha256", "validated_plan_root_sha256", "active_global_revision_id", "approval_semantic_sha256", "generation_contract_root_sha256", "planning_state", "runtime_state", "origin", "failure_state"],
+      "properties": {
+        "run_id": {"type": "string", "pattern": "^fscr-pg18_4-[0-9a-f]{16}$"},
+        "statement_key": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+        "revision_id": {"type": "string", "pattern": "^r[0-9]{4,}$"},
+        "plan_content_root_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+        "validated_plan_root_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+        "active_global_revision_id": {"type": ["string", "null"], "pattern": "^g[0-9]{4,}$"},
+        "approval_semantic_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+        "generation_contract_root_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+        "planning_state": {"type": "string", "enum": ["discovered", "inputs_locked", "readiness_passed", "ledgers_enumerated", "interaction_universe_frozen", "products_partitioned", "atoms_compiled", "fixtures_planned", "packing_frozen", "mapping_frozen", "witnesses_bound", "local_plan_validated", "global_handoff_closed", "plan_approved", "generation_allowed", "generating", "generated", "statically_validated", "packaged"]},
+        "runtime_state": {"type": "string", "enum": ["not_run", "running", "runtime_executed", "runtime_verified", "runtime_failed"]},
+        "origin": {"type": "string", "enum": ["native_v2", "legacy_import"]},
+        "failure_state": {
+          "oneOf": [
+            {"type": "null"},
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["failed_stage", "reason", "retryable"],
+              "properties": {
+                "failed_stage": {"type": "string", "minLength": 1},
+                "reason": {"type": "string", "minLength": 1},
+                "retryable": {"type": "boolean"}
+              }
+            }
+          ]
+        }
+      }
+    },
+    "semantic_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "operational_metadata": {"type": ["object", "null"]}
+  }
+}

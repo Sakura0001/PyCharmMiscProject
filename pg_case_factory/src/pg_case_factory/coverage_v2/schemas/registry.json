@@ -1,0 +1,10 @@
+{
+  "schema_version": 2,
+  "kind": "artifact-schema-registry",
+  "schemas": [
+    {"kind": "current-pointer", "resource_name": "current-pointer.schema.json", "schema_version": 2},
+    {"kind": "input-lock", "resource_name": "input-lock.schema.json", "schema_version": 2},
+    {"kind": "readiness", "resource_name": "readiness.schema.json", "schema_version": 2},
+    {"kind": "statement-order", "resource_name": "statement-order.schema.json", "schema_version": 2}
+  ]
+}

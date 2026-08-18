@@ -4,12 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pg-case-factory"
-version = "0.2.0"
-description = "Plan, generate, and differentially verify PostgreSQL 18.4 SQL test cases."
+version = "0.3.0"
+description = "Generate exhaustive, sharded PostgreSQL 18.4 regress SQL packages from feature documents."
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [{ name = "yuyu" }]
 dependencies = [
+  "jsonschema>=4.23,<5",
   "PyYAML>=6.0.2",
   "rfc8785>=0.1.4,<1",
 ]
@@ -22,3 +23,6 @@ package-dir = { "" = "src" }
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+"pg_case_factory.coverage_v2.schemas" = ["*.json"]

@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import unittest
 
+import pg_case_factory.regression_style as regression_style
 from pg_case_factory.regression_style import (
     ExecutionTranscript,
     HuaweiSqlHeader,
@@ -224,6 +225,16 @@ class HuaweiHeaderTest(unittest.TestCase):
 
 
 class CatalogObservabilityAuditTest(unittest.TestCase):
+    def test_create_conversion_support_function_is_not_a_catalog_relation(self) -> None:
+        report = audit_catalog_observability(
+            "CREATE DEFAULT CONVERSION a_001_conv "
+            "FOR 'UTF8' TO 'LATIN1' "
+            "FROM pg_catalog.utf8_to_iso8859_1;\n"
+        )
+
+        self.assertTrue(report.passed, report.to_dict())
+        self.assertEqual((), report.queries)
+
     def test_explicit_ordered_pg_catalog_observation_is_allowed(self) -> None:
         report = audit_catalog_observability(
             "SELECT c.relname, c.relkind\n"
@@ -360,6 +371,19 @@ class TranscriptDeterminismTest(unittest.TestCase):
 
 
 class CompleteTableScriptAuditTest(unittest.TestCase):
+    def test_create_tablespace_is_not_a_create_table_statement(self) -> None:
+        self.assertFalse(
+            regression_style.contains_create_table_statement(
+                "CREATE TABLESPACE pcf_ts LOCATION '/tmp/pcf-ts';\n"
+                "ALTER DATABASE pcf_db SET TABLESPACE pcf_ts;\n"
+            )
+        )
+        self.assertTrue(
+            regression_style.contains_create_table_statement(
+                "CREATE TABLE pcf_table(id integer);\n"
+            )
+        )
+
     def _complete_sql(self) -> str:
         return (
             render_huawei_sql_header(_header())

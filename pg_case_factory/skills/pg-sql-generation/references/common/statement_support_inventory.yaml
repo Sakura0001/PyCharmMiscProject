@@ -1870,8 +1870,8 @@ statements:
     PG18-CREATE-ROLE-USER-LEGACY:
       membership_clause:
       - user_clause
-  review_note: IN GROUP and USER are absent from the PG18 documented synopsis, so legacy parser behavior remains a differential
-    oracle rather than an assumed failure.
+  review_note: IN GROUP and USER are absent from the PG18 documented synopsis, so legacy parser behavior remains an explicit
+    regress boundary rather than an assumed failure.
 - statement_key: create_rule
   source_reference: references/statements/ddl/rule/create_rule.md
   sgml_ref_id: sql-createrule
@@ -4062,7 +4062,7 @@ statements:
       name_shape:
       - lc_ctype
   review_note: PG18 removes special prose for LC_COLLATE and LC_CTYPE without documenting their removal as SHOW inputs; both
-    remain explicit differential points.
+    remain explicit regress boundary points.
 - statement_key: start_transaction
   source_reference: references/statements/tcl/transaction/start_transaction.md
   sgml_ref_id: sql-start-transaction

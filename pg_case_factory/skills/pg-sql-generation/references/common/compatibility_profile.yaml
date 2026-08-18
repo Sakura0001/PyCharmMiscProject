@@ -27,7 +27,7 @@ official_evidence:
 policy:
   observable_compatibility: strict
   divergence_verdict: suspected_defect
-  differential_oracle: upstream_postgresql_18_4
+  behavior_reference: upstream_postgresql_18_4_documentation_and_source
   allow_silent_exclusions: false
   unchanged_document_inheritance: static_reviewed
   changed_synopsis_requires_test_points: true
@@ -177,7 +177,7 @@ statement_reviews:
   create_role:
     status: synopsis_adapted
     reviewed_against: "18.4"
-    note: IN GROUP and USER are absent from the PG18 documented synopsis, so legacy parser behavior remains a differential oracle rather than an assumed failure.
+    note: IN GROUP and USER are absent from the PG18 documented synopsis, so legacy parser behavior remains an explicit regress boundary rather than an assumed failure.
     affected_factors:
       membership_clause: [in_group, user_clause]
     required_test_points: [PG18-CREATE-ROLE-IN-GROUP-LEGACY, PG18-CREATE-ROLE-USER-LEGACY]
@@ -478,7 +478,7 @@ statement_reviews:
   show:
     status: semantic_reviewed
     reviewed_against: "18.4"
-    note: PG18 removes special prose for LC_COLLATE and LC_CTYPE without documenting their removal as SHOW inputs; both remain explicit differential points.
+    note: PG18 removes special prose for LC_COLLATE and LC_CTYPE without documenting their removal as SHOW inputs; both remain explicit regress boundary points.
     affected_factors:
       name_shape: [lc_collate, lc_ctype]
     required_test_points: [PG18-SHOW-LC-COLLATE, PG18-SHOW-LC-CTYPE]

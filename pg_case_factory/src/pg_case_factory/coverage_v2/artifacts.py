@@ -103,6 +103,11 @@ def _validate_envelope_shape(document: Mapping[str, Any]) -> None:
         raise CoverageV2ArtifactError("artifact semantic SHA must be lowercase SHA-256")
 
 
+def validate_artifact_envelope(document: Mapping[str, Any]) -> None:
+    """Validate only the common V2 envelope; kind-specific validation is separate."""
+    _validate_envelope_shape(document)
+
+
 def build_artifact(
     *,
     artifact_id: str,

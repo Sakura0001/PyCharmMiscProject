@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:pg-case-factory:coverage-v2:readiness:2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "kind", "artifact_id", "predecessors", "semantic_payload", "semantic_sha256", "operational_metadata"],
+  "properties": {
+    "schema_version": {"const": 2},
+    "kind": {"const": "readiness"},
+    "artifact_id": {"type": "string", "minLength": 1},
+    "predecessors": {
+      "type": "object",
+      "propertyNames": {"type": "string", "minLength": 1},
+      "additionalProperties": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+    },
+    "semantic_payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["statement_key", "passed", "checks", "missing_components", "implemented_schema_kinds", "required_schema_kinds", "schema_registry_semantic_sha256"],
+      "properties": {
+        "statement_key": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+        "passed": {"type": "boolean"},
+        "checks": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["component_id", "passed", "evidence_semantic_sha256"],
+            "properties": {
+              "component_id": {"type": "string", "minLength": 1},
+              "passed": {"type": "boolean"},
+              "evidence_semantic_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+            }
+          }
+        },
+        "missing_components": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "implemented_schema_kinds": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "required_schema_kinds": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "schema_registry_semantic_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "semantic_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "operational_metadata": {"type": ["object", "null"]}
+  }
+}

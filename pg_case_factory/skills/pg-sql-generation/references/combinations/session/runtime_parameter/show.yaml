@@ -307,7 +307,7 @@ pg18_compatibility:
     sql: >-
       SHOW LC_COLLATE;
     oracle: reference_parity
-    covers: LC_COLLATE remains a differential behavior point after removal of its special parameter prose
+    covers: LC_COLLATE remains an explicit regress boundary after removal of its special parameter prose
   - id: PG18-SHOW-LC-CTYPE
     affected_factors:
     - name_shape
@@ -317,4 +317,4 @@ pg18_compatibility:
     sql: >-
       SHOW LC_CTYPE;
     oracle: reference_parity
-    covers: LC_CTYPE remains a differential behavior point after removal of its special parameter prose
+    covers: LC_CTYPE remains an explicit regress boundary after removal of its special parameter prose

@@ -1,0 +1,1654 @@
+"""Evidence-backed regress generation for the remaining statement cycle.
+
+This module is intentionally registry-driven.  There is no generic SQL
+fallback: a statement is generatable only after an explicit, reviewed case
+design and renderer have been registered for it.  The first registered design
+is PostgreSQL 18.4 ``ABORT``.
+"""
+
+from __future__ import annotations
+
+import hashlib
+import importlib.util
+import itertools
+import json
+import os
+import re
+import shutil
+import tempfile
+import sys
+from collections import Counter
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Callable, Mapping
+
+from .regression_style import (
+    HuaweiSqlHeader,
+    audit_catalog_observability,
+    audit_complete_table_script,
+    contains_create_table_statement,
+    render_huawei_sql_header,
+    validate_huawei_sql_header,
+)
+from .statement_factor_cycle import (
+    StatementCycleEntry,
+    StatementFactorCycleSnapshot,
+)
+
+
+_CREATE_DATE = "2026-08-10"
+_VERSION = "1.0"
+_AUTHOR = "pg-case-factory Codex"
+_FE = "PG18-STATEMENT-FACTOR-LOOP"
+_DISPOSITIONS = frozenset({"covered", "expected_failure", "justified_na"})
+
+
+class RemainingStatementRegressError(ValueError):
+    """Raised when a statement design or generated package is incomplete."""
+
+
+@dataclass(frozen=True)
+class FactorValueDecision:
+    row_id: str
+    factor: str
+    value: str
+    disposition: str
+    reason: str | None
+    case_ids: tuple[str, ...]
+
+    def __post_init__(self) -> None:
+        if self.disposition not in _DISPOSITIONS:
+            raise RemainingStatementRegressError(
+                f"unsupported factor disposition {self.disposition!r}"
+            )
+        if self.disposition == "justified_na":
+            if not self.reason or self.case_ids:
+                raise RemainingStatementRegressError(
+                    f"justified N/A {self.factor}={self.value} needs a reason and no cases"
+                )
+        elif not self.case_ids:
+            raise RemainingStatementRegressError(
+                f"{self.factor}={self.value} must be witnessed by a case"
+            )
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "row_id": self.row_id,
+            "factor": self.factor,
+            "value": self.value,
+            "disposition": self.disposition,
+            "reason": self.reason,
+            "case_ids": list(self.case_ids),
+        }
+
+
+@dataclass(frozen=True)
+class StatementRegressCase:
+    ordinal: int
+    case_id: str
+    sql_filename: str
+    object_prefix: str
+    case_group: str
+    case_type: str
+    outcome: str
+    execution_profile: str
+    derived_axes: Mapping[str, str]
+    factor_values: tuple[str, ...]
+    combination_strategy: str
+    description: str
+    expected_anchor: str
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "ordinal": self.ordinal,
+            "case_id": self.case_id,
+            "sql_filename": self.sql_filename,
+            "object_prefix": self.object_prefix,
+            "case_group": self.case_group,
+            "case_type": self.case_type,
+            "outcome": self.outcome,
+            "execution_profile": self.execution_profile,
+            "derived_axes": dict(self.derived_axes),
+            "factor_values": list(self.factor_values),
+            "combination_strategy": self.combination_strategy,
+            "description": self.description,
+            "expected_anchor": self.expected_anchor,
+        }
+
+
+@dataclass(frozen=True)
+class StatementRegressPlan:
+    statement_key: str
+    file_prefix: str
+    cycle_fingerprint: str
+    matrix_path: str
+    matrix_sha256: str
+    reference_path: str
+    reference_sha256: str
+    universe_semantic_sha256: str
+    official_source: str
+    cases: tuple[StatementRegressCase, ...]
+    factor_decisions: tuple[FactorValueDecision, ...]
+
+    @property
+    def case_group_counts(self) -> dict[str, int]:
+        return dict(sorted(Counter(case.case_group for case in self.cases).items()))
+
+    @property
+    def factor_disposition_counts(self) -> dict[str, int]:
+        counts = Counter(decision.disposition for decision in self.factor_decisions)
+        return {name: counts.get(name, 0) for name in sorted(_DISPOSITIONS)}
+
+    @property
+    def external_cases(self) -> tuple[StatementRegressCase, ...]:
+        return tuple(
+            case for case in self.cases if case.execution_profile == "external_isolated"
+        )
+
+    @property
+    def serial_cases(self) -> tuple[StatementRegressCase, ...]:
+        return tuple(
+            case
+            for case in self.cases
+            if case.execution_profile == "same_session_multiphase"
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "schema_version": 1,
+            "statement_key": self.statement_key,
+            "file_prefix": self.file_prefix,
+            "cycle_fingerprint": self.cycle_fingerprint,
+            "matrix_path": self.matrix_path,
+            "matrix_sha256": self.matrix_sha256,
+            "reference_path": self.reference_path,
+            "reference_sha256": self.reference_sha256,
+            "universe_semantic_sha256": self.universe_semantic_sha256,
+            "official_source": self.official_source,
+            "case_count": len(self.cases),
+            "case_group_counts": self.case_group_counts,
+            "factor_value_count": len(self.factor_decisions),
+            "factor_disposition_counts": self.factor_disposition_counts,
+            "cases": [case.to_dict() for case in self.cases],
+        }
+
+
+@dataclass(frozen=True)
+class StatementRegressValidation:
+    statement_key: str
+    cycle_fingerprint: str
+    passed: bool
+    issues: tuple[str, ...]
+    sql_file_count: int
+    factor_value_count: int
+    sql_sha256: Mapping[str, str]
+    input_sha256: Mapping[str, str]
+    package_sha256: str
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "schema_version": 1,
+            "statement_key": self.statement_key,
+            "cycle_fingerprint": self.cycle_fingerprint,
+            "passed": self.passed,
+            "issues": list(self.issues),
+            "sql_file_count": self.sql_file_count,
+            "factor_value_count": self.factor_value_count,
+            "sql_sha256": dict(self.sql_sha256),
+            "input_sha256": dict(self.input_sha256),
+            "package_sha256": self.package_sha256,
+            "runtime_status": "not_run_static_sql_only",
+        }
+
+
+def _entry(snapshot: StatementFactorCycleSnapshot, statement_key: str) -> StatementCycleEntry:
+    matches = [entry for entry in snapshot.entries if entry.statement_key == statement_key]
+    if len(matches) != 1:
+        raise RemainingStatementRegressError(
+            f"expected one cycle entry for {statement_key}, found {len(matches)}"
+        )
+    entry = matches[0]
+    if entry.is_retained:
+        raise RemainingStatementRegressError(
+            f"statement {statement_key} is retained and must not be regenerated here"
+        )
+    return entry
+
+
+def _case(
+    ordinal: int,
+    *,
+    group: str,
+    case_type: str,
+    outcome: str,
+    execution_profile: str,
+    axes: Mapping[str, str],
+    factor_values: tuple[str, ...],
+    combination_strategy: str,
+    description: str,
+    expected_anchor: str,
+) -> StatementRegressCase:
+    number = f"{ordinal:05d}"
+    return StatementRegressCase(
+        ordinal=ordinal,
+        case_id=f"ABORT{number}",
+        sql_filename=f"ABORT{number}.sql",
+        object_prefix=f"abort_{number}_",
+        case_group=group,
+        case_type=case_type,
+        outcome=outcome,
+        execution_profile=execution_profile,
+        derived_axes=dict(axes),
+        factor_values=factor_values,
+        combination_strategy=combination_strategy,
+        description=description,
+        expected_anchor=expected_anchor,
+    )
+
+
+def _build_abort_cases() -> tuple[StatementRegressCase, ...]:
+    cases: list[StatementRegressCase] = []
+
+    optional_keywords = ("omitted", "WORK", "TRANSACTION")
+    chain_clauses = ("omitted", "AND CHAIN", "AND NO CHAIN")
+    states = (
+        "active_clean",
+        "active_failed",
+        "active_with_nested_savepoints",
+        "idle",
+    )
+    for optional_keyword, chain_clause, transaction_state in itertools.product(
+        optional_keywords, chain_clauses, states
+    ):
+        target_failure = transaction_state == "idle" and chain_clause == "AND CHAIN"
+        outcome = "expected_failure" if target_failure else "success"
+        state_factor = {
+            "active_clean": "transaction_state=inside_transaction",
+            "active_failed": "transaction_state=inside_transaction",
+            "active_with_nested_savepoints": "transaction_state=savepoint_exists",
+            "idle": "transaction_state=outside_transaction",
+        }[transaction_state]
+        factors = (
+            "statement_branch=branch_1",
+            f"expected_status={'failure' if target_failure else 'success'}",
+            state_factor,
+            "transaction_mode=default",
+            f"chain_behavior={_chain_factor_value(chain_clause)}",
+            "environment_context=normal_session",
+            (
+                "environment_context=outside_transaction_required"
+                if transaction_state == "idle"
+                else "environment_context=transaction_block"
+            ),
+            "framework_context=no_outer_transaction",
+            (
+                "invalid_combination=syntax_valid_semantic_error"
+                if target_failure
+                else "invalid_combination=none"
+            ),
+            (
+                "state_boundary=no_open_transaction"
+                if transaction_state == "idle"
+                else (
+                    "state_boundary=nested_savepoint"
+                    if transaction_state == "active_with_nested_savepoints"
+                    else "verification_mode=effect_query"
+                )
+            ),
+            (
+                "verification_mode=error_assertion"
+                if target_failure
+                else "verification_mode=effect_query"
+            ),
+            (
+                "cleanup_mode=rollback"
+                if chain_clause == "AND CHAIN"
+                else "cleanup_mode=drop_objects"
+            ),
+        )
+        if transaction_state == "active_with_nested_savepoints":
+            factors += (
+                "savepoint_name_shape=simple_name",
+                "savepoint_name_shape=quoted_name",
+                "savepoint_name_shape=released_name",
+            )
+        syntax_label = _abort_sql(optional_keyword, chain_clause).removesuffix(";")
+        description = (
+            f"Verify PostgreSQL 18.4 {syntax_label} in {transaction_state} state"
+        )
+        anchor = (
+            "target SQLSTATE 25P01 and a usable idle session"
+            if target_failure
+            else (
+                "old transaction changes are absent and the chained transaction is active"
+                if chain_clause == "AND CHAIN"
+                else "old transaction changes are absent and no chained transaction remains"
+            )
+        )
+        cases.append(
+            _case(
+                len(cases) + 1,
+                group="legal_syntax_state_product",
+                case_type="negative" if target_failure else "state_transition",
+                outcome=outcome,
+                execution_profile="same_session_multiphase",
+                axes={
+                    "optional_keyword": optional_keyword,
+                    "chain_clause": chain_clause,
+                    "transaction_state": transaction_state,
+                },
+                factor_values=tuple(dict.fromkeys(factors)),
+                combination_strategy="full-cartesian 3 optional keywords × 3 chain clauses × 4 transaction states",
+                description=description,
+                expected_anchor=anchor,
+            )
+        )
+
+    isolations = (
+        "READ COMMITTED",
+        "READ UNCOMMITTED",
+        "REPEATABLE READ",
+        "SERIALIZABLE",
+    )
+    access_modes = ("READ WRITE", "READ ONLY")
+    deferrabilities = ("DEFERRABLE", "NOT DEFERRABLE")
+    for isolation, access_mode, deferrability in itertools.product(
+        isolations, access_modes, deferrabilities
+    ):
+        factors = (
+            "statement_branch=branch_1",
+            "expected_status=success",
+            "transaction_state=inside_transaction",
+            "transaction_mode=isolation_level",
+            (
+                "transaction_mode=read_write"
+                if access_mode == "READ WRITE"
+                else "transaction_mode=read_only"
+            ),
+            "chain_behavior=and_chain",
+            "environment_context=transaction_block",
+            "framework_context=no_outer_transaction",
+            "invalid_combination=none",
+            "verification_mode=effect_query",
+            "cleanup_mode=rollback",
+        )
+        if deferrability == "DEFERRABLE":
+            factors += ("transaction_mode=deferrable",)
+        cases.append(
+            _case(
+                len(cases) + 1,
+                group="chain_characteristics_product",
+                case_type="state_transition",
+                outcome="success",
+                execution_profile="same_session_multiphase",
+                axes={
+                    "isolation": isolation,
+                    "access_mode": access_mode,
+                    "deferrability": deferrability,
+                },
+                factor_values=tuple(dict.fromkeys(factors)),
+                combination_strategy="full-cartesian 4 isolation levels × 2 access modes × 2 deferrability modes",
+                description=(
+                    "Verify ABORT AND CHAIN preserves "
+                    f"{isolation}, {access_mode}, {deferrability}"
+                ),
+                expected_anchor="all three transaction characteristics are preserved and the chained transaction is cleaned",
+            )
+        )
+
+    cases.append(
+        _case(
+            len(cases) + 1,
+            group="transactional_ddl",
+            case_type="catalog",
+            outcome="success",
+            execution_profile="same_session_multiphase",
+            axes={"catalog_effect": "create_table_rolled_back"},
+            factor_values=(
+                "statement_branch=branch_1",
+                "expected_status=success",
+                "transaction_state=inside_transaction",
+                "transaction_mode=default",
+                "chain_behavior=none",
+                "environment_context=transaction_block",
+                "framework_context=no_outer_transaction",
+                "invalid_combination=none",
+                "verification_mode=catalog_query",
+                "cleanup_mode=drop_objects",
+            ),
+            combination_strategy="dedicated catalog-effect witness",
+            description="Verify ABORT discards a table created in the current transaction",
+            expected_anchor="to_regclass is NULL after ABORT",
+        )
+    )
+
+    syntax_failures = (
+        ("missing_and", "ABORT CHAIN;"),
+        ("missing_chain", "ABORT AND;"),
+        ("incomplete_no_chain", "ABORT AND NO;"),
+        ("duplicate_optional_keyword", "ABORT WORK TRANSACTION;"),
+        ("target_operand", "{target_operand}"),
+    )
+    for syntax_error, _ in syntax_failures:
+        cases.append(
+            _case(
+                len(cases) + 1,
+                group="syntax_boundary",
+                case_type="negative",
+                outcome="expected_failure",
+                execution_profile="same_session_multiphase",
+                axes={"syntax_error": syntax_error},
+                factor_values=(
+                    "statement_branch=branch_1",
+                    "expected_status=failure",
+                    "framework_context=no_outer_transaction",
+                    "verification_mode=error_assertion",
+                    "cleanup_mode=reset_state",
+                ),
+                combination_strategy="one independent parser boundary per file",
+                description=f"Verify ABORT rejects the {syntax_error} syntax boundary",
+                expected_anchor="target SQLSTATE 42601 and a usable session",
+            )
+        )
+
+    for chain_clause in chain_clauses:
+        target_failure = chain_clause == "AND CHAIN"
+        cases.append(
+            _case(
+                len(cases) + 1,
+                group="prepared_transaction_noninterference",
+                case_type="external_state",
+                outcome="expected_failure" if target_failure else "success",
+                execution_profile="external_isolated",
+                axes={
+                    "chain_clause": chain_clause,
+                    "required_setting": "max_prepared_transactions_gt_0",
+                },
+                factor_values=(
+                    "statement_branch=branch_1",
+                    f"expected_status={'failure' if target_failure else 'success'}",
+                    "transaction_state=prepared_transaction_exists",
+                    "transaction_mode=default",
+                    f"chain_behavior={_chain_factor_value(chain_clause)}",
+                    "environment_context=external_resource_required",
+                    "framework_context=no_outer_transaction",
+                    (
+                        "invalid_combination=syntax_valid_semantic_error"
+                        if target_failure
+                        else "invalid_combination=none"
+                    ),
+                    "state_boundary=prepared_transaction_leftover",
+                    (
+                        "verification_mode=error_assertion"
+                        if target_failure
+                        else "verification_mode=catalog_query"
+                    ),
+                    "cleanup_mode=rollback",
+                ),
+                combination_strategy="external prepared-transaction state × all chain clauses",
+                description=(
+                    f"Verify {_abort_sql('omitted', chain_clause).removesuffix(';')} "
+                    "does not consume an existing prepared transaction"
+                ),
+                expected_anchor=(
+                    "target SQLSTATE 25P01 and the prepared transaction remains present"
+                    if target_failure
+                    else "the prepared transaction remains present until explicit cleanup"
+                ),
+            )
+        )
+
+    return tuple(cases)
+
+
+def _chain_factor_value(chain_clause: str) -> str:
+    return {
+        "omitted": "none",
+        "AND CHAIN": "and_chain",
+        "AND NO CHAIN": "and_no_chain",
+    }[chain_clause]
+
+
+def _abort_sql(optional_keyword: str, chain_clause: str) -> str:
+    parts = ["ABORT"]
+    if optional_keyword != "omitted":
+        parts.append(optional_keyword)
+    if chain_clause != "omitted":
+        parts.extend(chain_clause.split())
+    return " ".join(parts) + ";"
+
+
+def _ids(cases: tuple[StatementRegressCase, ...], predicate: Callable[[StatementRegressCase], bool]) -> tuple[str, ...]:
+    return tuple(case.case_id for case in cases if predicate(case))
+
+
+def _build_abort_factor_decisions(
+    entry: StatementCycleEntry,
+    cases: tuple[StatementRegressCase, ...],
+) -> tuple[FactorValueDecision, ...]:
+    na_reasons = {
+        ("transaction_id_shape", "simple_id"): "ABORT has no transaction identifier operand.",
+        ("transaction_id_shape", "quoted_id"): "ABORT has no transaction identifier operand, quoted or otherwise.",
+        ("transaction_id_shape", "missing_id"): "ABORT does not require or accept a transaction identifier.",
+        ("transaction_id_shape", "duplicate_id"): "ABORT cannot contain duplicate transaction identifiers because it accepts none.",
+        ("savepoint_name_shape", "missing_name"): "ABORT rolls back the top-level transaction and never resolves a savepoint name.",
+        ("transaction_state", "missing_required_state"): "This value duplicates the explicitly covered outside_transaction idle state and has no distinct official ABORT state.",
+        ("framework_context", "outer_transaction_present"): "A hidden harness transaction would be terminated by ABORT; the file contract therefore forbids an implicit outer transaction.",
+        ("invalid_combination", "object_type_mismatch"): "ABORT has no target object whose type can mismatch.",
+        ("verification_mode", "returned_rows"): "ABORT returns a command status, not a result-row set.",
+    }
+    expected_failure_values = {
+        ("expected_status", "failure"),
+        ("invalid_combination", "syntax_valid_semantic_error"),
+        ("verification_mode", "error_assertion"),
+    }
+
+    def witnesses(factor: str, value: str) -> tuple[str, ...]:
+        token = f"{factor}={value}"
+        return _ids(cases, lambda case: token in case.factor_values)
+
+    decisions: list[FactorValueDecision] = []
+    for factor in entry.factors:
+        for value, row_id in zip(factor.values, factor.row_ids):
+            pair = (factor.name, value)
+            if pair in na_reasons:
+                disposition = "justified_na"
+                reason = na_reasons[pair]
+                case_ids: tuple[str, ...] = ()
+            else:
+                disposition = (
+                    "expected_failure" if pair in expected_failure_values else "covered"
+                )
+                reason = (
+                    "The value is exercised only by a single-cause expected-failure target."
+                    if disposition == "expected_failure"
+                    else None
+                )
+                case_ids = witnesses(factor.name, value)
+            decisions.append(
+                FactorValueDecision(
+                    row_id=row_id,
+                    factor=factor.name,
+                    value=value,
+                    disposition=disposition,
+                    reason=reason,
+                    case_ids=case_ids,
+                )
+            )
+    return tuple(decisions)
+
+
+def _build_abort_plan(
+    snapshot: StatementFactorCycleSnapshot,
+    entry: StatementCycleEntry,
+) -> StatementRegressPlan:
+    cases = _build_abort_cases()
+    if tuple(case.ordinal for case in cases) != tuple(range(1, len(cases) + 1)):
+        raise RemainingStatementRegressError("ABORT case ordinals are not contiguous")
+    decisions = _build_abort_factor_decisions(entry, cases)
+    return StatementRegressPlan(
+        statement_key="abort",
+        file_prefix="ABORT",
+        cycle_fingerprint=snapshot.fingerprint,
+        matrix_path=entry.matrix_path.as_posix(),
+        matrix_sha256=entry.matrix_sha256,
+        reference_path=entry.reference_path.as_posix(),
+        reference_sha256=entry.reference_sha256,
+        universe_semantic_sha256=snapshot.universe_semantic_sha256,
+        official_source=entry.official_source,
+        cases=cases,
+        factor_decisions=decisions,
+    )
+
+
+def _build_alter_aggregate_plan_lazily(
+    snapshot: StatementFactorCycleSnapshot,
+    entry: StatementCycleEntry,
+) -> StatementRegressPlan:
+    # Keep statement-specific fixture and SQL logic out of this already large
+    # cycle/publication module.  The lazy import avoids a module cycle because
+    # the design module reuses the immutable plan dataclasses above.
+    from .alter_aggregate_regress import build_alter_aggregate_plan
+
+    return build_alter_aggregate_plan(snapshot, entry)
+
+
+def _build_alter_collation_plan_lazily(
+    snapshot: StatementFactorCycleSnapshot,
+    entry: StatementCycleEntry,
+) -> StatementRegressPlan:
+    from .alter_collation_regress import build_alter_collation_plan
+
+    return build_alter_collation_plan(snapshot, entry)
+
+
+def _build_alter_conversion_plan_lazily(
+    snapshot: StatementFactorCycleSnapshot,
+    entry: StatementCycleEntry,
+) -> StatementRegressPlan:
+    from .alter_conversion_regress import build_alter_conversion_plan
+
+    return build_alter_conversion_plan(snapshot, entry)
+
+
+def _build_alter_database_plan_lazily(
+    snapshot: StatementFactorCycleSnapshot,
+    entry: StatementCycleEntry,
+) -> StatementRegressPlan:
+    from .alter_database_regress import build_alter_database_plan
+
+    return build_alter_database_plan(snapshot, entry)
+
+
+def _build_alter_default_privileges_plan_lazily(
+    snapshot: StatementFactorCycleSnapshot,
+    entry: StatementCycleEntry,
+) -> StatementRegressPlan:
+    from .alter_default_privileges_regress import (
+        build_alter_default_privileges_plan,
+    )
+
+    return build_alter_default_privileges_plan(snapshot, entry)
+
+
+def _build_alter_domain_plan_lazily(
+    snapshot: StatementFactorCycleSnapshot,
+    entry: StatementCycleEntry,
+) -> StatementRegressPlan:
+    from .alter_domain_regress import build_alter_domain_plan
+
+    return build_alter_domain_plan(snapshot, entry)
+
+
+def _build_alter_event_trigger_plan_lazily(
+    snapshot: StatementFactorCycleSnapshot,
+    entry: StatementCycleEntry,
+) -> StatementRegressPlan:
+    from .alter_event_trigger_regress import build_alter_event_trigger_plan
+
+    return build_alter_event_trigger_plan(snapshot, entry)
+
+
+def _build_alter_extension_plan_lazily(
+    snapshot: StatementFactorCycleSnapshot,
+    entry: StatementCycleEntry,
+) -> StatementRegressPlan:
+    from .alter_extension_regress import build_alter_extension_plan
+
+    return build_alter_extension_plan(snapshot, entry)
+
+
+def _build_alter_foreign_data_wrapper_plan_lazily(
+    snapshot: StatementFactorCycleSnapshot,
+    entry: StatementCycleEntry,
+) -> StatementRegressPlan:
+    from .alter_foreign_data_wrapper_regress import (
+        build_alter_foreign_data_wrapper_plan,
+    )
+
+    return build_alter_foreign_data_wrapper_plan(snapshot, entry)
+
+
+_PLAN_BUILDERS: Mapping[
+    str,
+    Callable[[StatementFactorCycleSnapshot, StatementCycleEntry], StatementRegressPlan],
+] = {
+    "abort": _build_abort_plan,
+    "alter_aggregate": _build_alter_aggregate_plan_lazily,
+    "alter_collation": _build_alter_collation_plan_lazily,
+    "alter_conversion": _build_alter_conversion_plan_lazily,
+    "alter_database": _build_alter_database_plan_lazily,
+    "alter_default_privileges": _build_alter_default_privileges_plan_lazily,
+    "alter_domain": _build_alter_domain_plan_lazily,
+    "alter_event_trigger": _build_alter_event_trigger_plan_lazily,
+    "alter_extension": _build_alter_extension_plan_lazily,
+    "alter_foreign_data_wrapper": _build_alter_foreign_data_wrapper_plan_lazily,
+}
+
+
+def build_statement_regress_plan(
+    snapshot: StatementFactorCycleSnapshot,
+    statement_key: str,
+) -> StatementRegressPlan:
+    """Build one explicit statement plan; never fall back to generic SQL."""
+
+    entry = _entry(snapshot, statement_key)
+    try:
+        builder = _PLAN_BUILDERS[statement_key]
+    except KeyError as exc:
+        raise RemainingStatementRegressError(
+            f"statement {statement_key} has no reviewed renderer"
+        ) from exc
+    plan = builder(snapshot, entry)
+    expected_rows = {
+        row_id for factor in entry.factors for row_id in factor.row_ids
+    }
+    actual_rows = {decision.row_id for decision in plan.factor_decisions}
+    if len(actual_rows) != len(plan.factor_decisions) or actual_rows != expected_rows:
+        raise RemainingStatementRegressError(
+            f"{statement_key} factor dispositions do not conserve canonical rows"
+        )
+    return plan
+
+
+def _trace_lines(plan: StatementRegressPlan, case: StatementRegressCase) -> list[str]:
+    derived = ", ".join(
+        f"{key}={value}" for key, value in sorted(case.derived_axes.items())
+    )
+    factors = ", ".join(case.factor_values)
+    return [
+        f"-- case_id: {case.case_id}",
+        f"-- source_md: {plan.reference_path}",
+        f"-- factor_md: {plan.matrix_path}",
+        f"-- factor_values: {factors}",
+        f"-- derived_axes: {derived}",
+        f"-- combination_strategy: {case.combination_strategy}",
+        f"-- session_count: 1",
+        f"-- execution_profile: {case.execution_profile}",
+        "-- outer_transaction: forbidden",
+        f"-- expected_anchor: {case.expected_anchor}",
+    ]
+
+
+def _header(plan: StatementRegressPlan, case: StatementRegressCase) -> list[str]:
+    header = render_huawei_sql_header(
+        HuaweiSqlHeader(
+            author=_AUTHOR,
+            create_at=_CREATE_DATE,
+            version=_VERSION,
+            description=case.description,
+            fe=_FE,
+        )
+    ).rstrip("\n")
+    return header.splitlines() + _trace_lines(plan, case)
+
+
+def _render_abort_core(
+    plan: StatementRegressPlan, case: StatementRegressCase
+) -> str:
+    optional_keyword = case.derived_axes["optional_keyword"]
+    chain_clause = case.derived_axes["chain_clause"]
+    state = case.derived_axes["transaction_state"]
+    target = _abort_sql(optional_keyword, chain_clause)
+    prefix = case.object_prefix
+
+    if state == "idle":
+        lines = _header(plan, case) + [
+            "SET client_min_messages TO warning;",
+            r"\set ON_ERROR_STOP off",
+            "",
+            "-- 1. 保持会话处于事务外空闲状态，避免框架外层事务掩盖 ABORT 的事务外行为。",
+            "SELECT true AS idle_state_ready;",
+            "",
+            (
+                f"-- 2. 事务外执行 {target[:-1]}；"
+                + (
+                    "expected SQLSTATE 25P01，且不得启动 chained transaction。"
+                    if chain_clause == "AND CHAIN"
+                    else "expected WARNING 25P01，命令为无效果操作。"
+                )
+            ),
+            target,
+        ]
+        if chain_clause == "AND CHAIN":
+            lines.extend(
+                [
+                    r"\echo target_sqlstate :SQLSTATE",
+                    "",
+                    "-- 3. 归一化检查上一条目标错误；expected abort_outside_chain_rejected=true。",
+                    "SELECT :'SQLSTATE' = '25P01' AS abort_outside_chain_rejected;",
+                    "",
+                    "-- 4. 错误后执行稳定查询；expected session_usable_after_idle_abort=true。",
+                    "SELECT true AS session_usable_after_idle_abort;",
+                ]
+            )
+        else:
+            lines.extend(
+                [
+                    "",
+                    "-- 3. WARNING 后执行稳定查询；expected session_usable_after_idle_abort=true。",
+                    "SELECT true AS session_usable_after_idle_abort;",
+                ]
+            )
+        return "\n".join(lines).rstrip() + "\n"
+
+    data_table = f"public.{prefix}data"
+    probe_table = f"{prefix}probe"
+    drop = f"DROP TABLE IF EXISTS {probe_table}, {data_table};"
+    lines = _header(plan, case) + [
+        drop,
+        "SET search_path TO public, pg_catalog;",
+        "SET client_min_messages TO warning;",
+        r"\set ON_ERROR_STOP off",
+        f"CREATE TABLE {data_table} (",
+        "    id integer PRIMARY KEY,",
+        "    note text NOT NULL,",
+        "    amount numeric(12, 2) NOT NULL CHECK (amount >= 0)",
+        ");",
+        f"CREATE TEMP TABLE {probe_table} (",
+        "    marker integer PRIMARY KEY,",
+        "    note text NOT NULL",
+        ") ON COMMIT DELETE ROWS;",
+        f"INSERT INTO {data_table}(id, note, amount)",
+        "VALUES (0, 'committed_control', 10.00);",
+        "",
+        "-- 1. 创建完整数据表和 ON COMMIT 探针；id=0 是已提交控制行，其他行只能存在于待回滚事务。",
+        f"SELECT id, note, amount FROM {data_table} ORDER BY id;",
+        "",
+        "-- 2. 建立目标事务状态并写入只允许被 ABORT 丢弃的数据。",
+        "BEGIN;",
+        f"INSERT INTO {data_table}(id, note, amount) VALUES (1, 'top_level_change', 20.00);",
+    ]
+    if state == "active_failed":
+        lines.extend(
+            [
+                "SELECT 1 / 0;",
+                r"\echo setup_sqlstate :SQLSTATE",
+            ]
+        )
+    elif state == "active_with_nested_savepoints":
+        lines.extend(
+            [
+                f"SAVEPOINT {prefix}released_sp;",
+                f"RELEASE SAVEPOINT {prefix}released_sp;",
+                f"SAVEPOINT {prefix}simple_sp;",
+                f"INSERT INTO {data_table}(id, note, amount) VALUES (2, 'simple_savepoint_change', 30.00);",
+                f'SAVEPOINT "{prefix}Quoted Savepoint";',
+                f"INSERT INTO {data_table}(id, note, amount) VALUES (3, 'quoted_savepoint_change', 40.00);",
+            ]
+        )
+
+    lines.extend(
+        [
+            "",
+            f"-- 3. 执行目标 {target[:-1]}；expected 旧顶层事务及全部子事务修改均被丢弃。",
+            target,
+            "",
+            "-- 4. 查询已提交控制行；expected 仅 id=0，证明 ABORT 没有退化为局部 savepoint 回滚。",
+            f"SELECT id, note, amount FROM {data_table} ORDER BY id;",
+        ]
+    )
+    if chain_clause == "AND CHAIN":
+        lines.extend(
+            [
+                "",
+                "-- 5. 在 chained transaction 写入探针；expected chained_transaction_active=true。",
+                f"INSERT INTO {probe_table}(marker, note) VALUES (1, 'inside_chain');",
+                f"SELECT count(*) = 1 AS chained_transaction_active FROM {probe_table};",
+                "",
+                "-- 6. 使用无 CHAIN 的 ABORT 关闭新事务；expected 探针行被 ON COMMIT 清空。",
+                "ABORT;",
+                f"SELECT count(*) = 0 AS chained_transaction_cleaned FROM {probe_table};",
+            ]
+        )
+    else:
+        lines.extend(
+            [
+                "",
+                "-- 5. 在目标命令后写入探针；隐式事务提交应触发 ON COMMIT DELETE ROWS，expected no_chained_transaction=true。",
+                f"INSERT INTO {probe_table}(marker, note) VALUES (1, 'implicit_transaction');",
+                f"SELECT count(*) = 0 AS no_chained_transaction FROM {probe_table};",
+            ]
+        )
+    if case.ordinal == 1:
+        lines.extend(
+            [
+                "",
+                "-- 6. 恢复本文件修改的 session 状态，覆盖 cleanup_mode=reset_state。",
+                "RESET ALL;",
+            ]
+        )
+    lines.extend(
+        [
+            "",
+            "-- 7. 反向清理本文件的临时探针和持久数据表。",
+            drop,
+        ]
+    )
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def _expected_isolation(isolation: str) -> str:
+    return isolation.lower()
+
+
+def _render_abort_characteristics(
+    plan: StatementRegressPlan, case: StatementRegressCase
+) -> str:
+    isolation = case.derived_axes["isolation"]
+    access_mode = case.derived_axes["access_mode"]
+    deferrability = case.derived_axes["deferrability"]
+    prefix = case.object_prefix
+    probe = f"{prefix}probe"
+    drop = f"DROP TABLE IF EXISTS {probe};"
+    read_only = "true" if access_mode == "READ ONLY" else "false"
+    deferrable = "true" if deferrability == "DEFERRABLE" else "false"
+    lines = _header(plan, case) + [
+        drop,
+        "SET client_min_messages TO warning;",
+        f"CREATE TEMP TABLE {probe} (",
+        "    marker integer PRIMARY KEY,",
+        "    note text NOT NULL",
+        ") ON COMMIT DELETE ROWS;",
+        "",
+        "-- 1. 创建 ON COMMIT 探针，用行是否仍存在稳定区分 chained transaction 是否保持打开。",
+        f"SELECT count(*) = 0 AS probe_initially_empty FROM {probe};",
+        "",
+        "-- 2. 以完整事务特征组合启动事务，为 AND CHAIN 的继承行为建立前置状态。",
+        f"BEGIN ISOLATION LEVEL {isolation}, {access_mode}, {deferrability};",
+        "",
+        "-- 3. 执行目标 ABORT AND CHAIN；旧事务结束后应立即建立具有相同特征的新事务。",
+        "ABORT AND CHAIN;",
+        "",
+        "-- 4. 归一化比较三项设置；expected characteristics_preserved=true。",
+        "SELECT",
+        f"    current_setting('transaction_isolation') = '{_expected_isolation(isolation)}'",
+        f"    AND current_setting('transaction_read_only')::boolean = {read_only}",
+        f"    AND current_setting('transaction_deferrable')::boolean = {deferrable}",
+        "    AS characteristics_preserved;",
+        "",
+        "-- 5. 在新事务写入探针；expected chained_transaction_active=true。",
+        f"INSERT INTO {probe}(marker, note) VALUES (1, 'inside_chain');",
+        f"SELECT count(*) = 1 AS chained_transaction_active FROM {probe};",
+        "",
+        "-- 6. 使用无 CHAIN 的 ABORT 关闭新事务；expected chained_transaction_cleaned=true。",
+        "ABORT;",
+        f"SELECT count(*) = 0 AS chained_transaction_cleaned FROM {probe};",
+        "",
+        "-- 7. 清理本文件的临时探针表。",
+        drop,
+    ]
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def _render_abort_catalog(
+    plan: StatementRegressPlan, case: StatementRegressCase
+) -> str:
+    table = f"public.{case.object_prefix}created_inside_abort"
+    drop = f"DROP TABLE IF EXISTS {table};"
+    lines = _header(plan, case) + [
+        drop,
+        "SET search_path TO public, pg_catalog;",
+        "",
+        "-- 1. 清除同名残留；目标表随后只在待回滚事务内创建。",
+        "SELECT to_regclass('public."
+        + case.object_prefix
+        + "created_inside_abort') IS NULL AS object_absent_before_target;",
+        "",
+        "-- 2. 在事务中创建包含完整列结构和约束的表。",
+        "BEGIN;",
+        f"CREATE TABLE {table} (",
+        "    id integer PRIMARY KEY,",
+        "    note text NOT NULL,",
+        "    amount numeric(12, 2) NOT NULL CHECK (amount >= 0)",
+        ");",
+        "",
+        "-- 3. 执行目标 ABORT；事务性 DDL 应与事务一起被丢弃。",
+        "ABORT;",
+        "",
+        "-- 4. 通过稳定 regclass 谓词验证；expected transactional_ddl_was_discarded=true。",
+        "SELECT to_regclass('public."
+        + case.object_prefix
+        + "created_inside_abort') IS NULL AS transactional_ddl_was_discarded;",
+        "",
+        "-- 5. 幂等清理同名对象，保证文件可重复执行。",
+        drop,
+    ]
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def _render_abort_syntax(
+    plan: StatementRegressPlan, case: StatementRegressCase
+) -> str:
+    syntax_error = case.derived_axes["syntax_error"]
+    target = {
+        "missing_and": "ABORT CHAIN;",
+        "missing_chain": "ABORT AND;",
+        "incomplete_no_chain": "ABORT AND NO;",
+        "duplicate_optional_keyword": "ABORT WORK TRANSACTION;",
+        "target_operand": f"ABORT {case.object_prefix}target;",
+    }[syntax_error]
+    lines = _header(plan, case) + [
+        "SET client_min_messages TO warning;",
+        r"\set ON_ERROR_STOP off",
+        "",
+        "-- 1. 保持连接在事务外并允许预期语法错误后继续执行验证查询。",
+        "SELECT true AS parser_boundary_ready;",
+        "",
+        f"-- 2. 执行唯一的 {syntax_error} 负例；expected SQLSTATE 42601。",
+        target,
+        r"\echo target_sqlstate :SQLSTATE",
+        "",
+        "-- 3. 归一化检查目标错误；expected syntax_boundary_rejected=true。",
+        "SELECT :'SQLSTATE' = '42601' AS syntax_boundary_rejected;",
+        "",
+        "-- 4. 恢复 session 设置并确认连接仍可使用。",
+        "RESET ALL;",
+        "SELECT true AS session_usable_after_syntax_error;",
+    ]
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def _render_abort_prepared(
+    plan: StatementRegressPlan, case: StatementRegressCase
+) -> str:
+    chain_clause = case.derived_axes["chain_clause"]
+    target = _abort_sql("omitted", chain_clause)
+    gid = f"{case.object_prefix}prepared"
+    target_failure = chain_clause == "AND CHAIN"
+    lines = _header(plan, case) + [
+        "SET client_min_messages TO warning;",
+        r"\set ON_ERROR_STOP off",
+        "",
+        "-- 1. 清理同名 prepared transaction 残留；本外部 fixture 要求 max_prepared_transactions > 0。",
+        "SELECT format('ROLLBACK PREPARED %L;', gid)",
+        "FROM pg_catalog.pg_prepared_xacts",
+        f"WHERE gid = '{gid}'",
+        "ORDER BY gid",
+        r"\gexec",
+        "",
+        "-- 2. 分配事务 ID 并准备事务，使其脱离当前会话成为独立 prepared transaction。",
+        "BEGIN;",
+        "SELECT pg_catalog.pg_current_xact_id() IS NOT NULL AS xid_assigned;",
+        f"PREPARE TRANSACTION '{gid}';",
+        "",
+        f"-- 3. 当前会话已空闲，执行目标 {target[:-1]}；prepared transaction 不应被 ABORT 消费。",
+        target,
+    ]
+    if target_failure:
+        lines.extend(
+            [
+                r"\echo target_sqlstate :SQLSTATE",
+                "SELECT :'SQLSTATE' = '25P01' AS idle_chain_rejected;",
+            ]
+        )
+    lines.extend(
+        [
+            "",
+            "-- 4. 查询固定 GID；expected prepared_transaction_preserved=true。",
+            "SELECT count(*) = 1 AS prepared_transaction_preserved",
+            "FROM pg_catalog.pg_prepared_xacts",
+            f"WHERE gid = '{gid}'",
+            "ORDER BY prepared_transaction_preserved;",
+            "",
+            "-- 5. 显式回滚 prepared transaction 并验证清理完成，避免跨用例遗留。",
+            f"ROLLBACK PREPARED '{gid}';",
+            "SELECT count(*) = 0 AS prepared_transaction_cleaned",
+            "FROM pg_catalog.pg_prepared_xacts",
+            f"WHERE gid = '{gid}'",
+            "ORDER BY prepared_transaction_cleaned;",
+        ]
+    )
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def render_statement_regress_case(
+    plan: StatementRegressPlan,
+    case: StatementRegressCase,
+) -> str:
+    """Render a reviewed logical case; no generic statement fallback exists."""
+
+    if case not in plan.cases:
+        raise RemainingStatementRegressError("case does not belong to the plan")
+    if plan.statement_key == "alter_aggregate":
+        from .alter_aggregate_regress import render_alter_aggregate_case
+
+        return render_alter_aggregate_case(plan, case)
+    if plan.statement_key == "alter_collation":
+        from .alter_collation_regress import render_alter_collation_case
+
+        return render_alter_collation_case(plan, case)
+    if plan.statement_key == "alter_conversion":
+        from .alter_conversion_regress import render_alter_conversion_case
+
+        return render_alter_conversion_case(plan, case)
+    if plan.statement_key == "alter_database":
+        from .alter_database_regress import render_alter_database_case
+
+        return render_alter_database_case(plan, case)
+    if plan.statement_key == "alter_default_privileges":
+        from .alter_default_privileges_regress import (
+            render_alter_default_privileges_case,
+        )
+
+        return render_alter_default_privileges_case(plan, case)
+    if plan.statement_key == "alter_domain":
+        from .alter_domain_regress import render_alter_domain_case
+
+        return render_alter_domain_case(plan, case)
+    if plan.statement_key == "alter_event_trigger":
+        from .alter_event_trigger_regress import render_alter_event_trigger_case
+
+        return render_alter_event_trigger_case(plan, case)
+    if plan.statement_key == "alter_extension":
+        from .alter_extension_regress import render_alter_extension_case
+
+        return render_alter_extension_case(plan, case)
+    if plan.statement_key == "alter_foreign_data_wrapper":
+        from .alter_foreign_data_wrapper_regress import (
+            render_alter_foreign_data_wrapper_case,
+        )
+
+        return render_alter_foreign_data_wrapper_case(plan, case)
+    if plan.statement_key != "abort":
+        raise RemainingStatementRegressError(
+            f"statement {plan.statement_key} has no SQL renderer"
+        )
+    renderers = {
+        "legal_syntax_state_product": _render_abort_core,
+        "chain_characteristics_product": _render_abort_characteristics,
+        "transactional_ddl": _render_abort_catalog,
+        "syntax_boundary": _render_abort_syntax,
+        "prepared_transaction_noninterference": _render_abort_prepared,
+    }
+    try:
+        renderer = renderers[case.case_group]
+    except KeyError as exc:
+        raise RemainingStatementRegressError(
+            f"ABORT case group {case.case_group} has no renderer"
+        ) from exc
+    return renderer(plan, case)
+
+
+def _sha256(payload: bytes) -> str:
+    return hashlib.sha256(payload).hexdigest()
+
+
+def _json_bytes(document: Mapping[str, Any]) -> bytes:
+    return (
+        json.dumps(document, ensure_ascii=False, indent=2, sort_keys=False) + "\n"
+    ).encode("utf-8")
+
+
+def _write_bytes(path: Path, payload: bytes) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(payload)
+
+
+def _schedule(cases: tuple[StatementRegressCase, ...]) -> bytes:
+    return "".join(f"test: {case.case_id}\n" for case in cases).encode("utf-8")
+
+
+def _expected_output_files(plan: StatementRegressPlan) -> dict[str, bytes]:
+    files = {
+        case.sql_filename: render_statement_regress_case(plan, case).encode("utf-8")
+        for case in plan.cases
+    }
+    files["serial_schedule"] = _schedule(plan.serial_cases)
+    files["external_schedule"] = _schedule(plan.external_cases)
+    return files
+
+
+def _coverage_document(plan: StatementRegressPlan) -> dict[str, Any]:
+    return {
+        "schema_version": 1,
+        "statement_key": plan.statement_key,
+        "cycle_fingerprint": plan.cycle_fingerprint,
+        "factor_value_count": len(plan.factor_decisions),
+        "factor_disposition_counts": plan.factor_disposition_counts,
+        "missing_row_ids": [],
+        "duplicate_row_ids": [],
+        "decisions": [decision.to_dict() for decision in plan.factor_decisions],
+    }
+
+
+def _package_document(
+    plan: StatementRegressPlan,
+    output_files: Mapping[str, bytes],
+) -> dict[str, Any]:
+    sql_hashes = {
+        name: _sha256(payload)
+        for name, payload in sorted(output_files.items())
+        if name.endswith(".sql")
+    }
+    document: dict[str, Any] = {
+        "schema_version": 1,
+        "kind": "statement_factor_regress_package",
+        "statement_key": plan.statement_key,
+        "cycle_fingerprint": plan.cycle_fingerprint,
+        "input_sha256": {
+            "matrix": plan.matrix_sha256,
+            "reference": plan.reference_sha256,
+            "applicability_universe_semantic": plan.universe_semantic_sha256,
+        },
+        "renderer": {
+            "id": f"explicit-{plan.statement_key.replace('_', '-')}-pg18-v1",
+            "version": 1,
+            "generic_fallback": False,
+        },
+        "case_count": len(plan.cases),
+        "sql_file_count": len(plan.cases),
+        "serial_case_count": len(plan.serial_cases),
+        "external_case_count": len(plan.external_cases),
+        "factor_value_count": len(plan.factor_decisions),
+        "case_group_counts": plan.case_group_counts,
+        "factor_disposition_counts": plan.factor_disposition_counts,
+        "sql_sha256": sql_hashes,
+        "schedule_sha256": {
+            "serial_schedule": _sha256(output_files["serial_schedule"]),
+            "external_schedule": _sha256(output_files["external_schedule"]),
+        },
+        "runtime_status": "not_run_static_sql_only",
+    }
+    if plan.statement_key == "abort":
+        document["official_syntax_product"] = {
+            "optional_keyword": 3,
+            "chain_clause": 3,
+            "transaction_state": 4,
+            "expected_product": 36,
+            "actual_product": plan.case_group_counts["legal_syntax_state_product"],
+        }
+        document["characteristics_product"] = {
+            "isolation": 4,
+            "access_mode": 2,
+            "deferrability": 2,
+            "expected_product": 16,
+            "actual_product": plan.case_group_counts[
+                "chain_characteristics_product"
+            ],
+        }
+    elif plan.statement_key == "alter_aggregate":
+        document["official_syntax_products"] = {
+            "success_rename": {
+                "signature_binding": 14,
+                "aggregate_name_shape": 3,
+                "new_name_shape": 3,
+                "expected_product": 126,
+                "actual_product": plan.case_group_counts["success_rename_product"],
+            },
+            "success_owner": {
+                "signature_binding": 14,
+                "aggregate_name_shape": 3,
+                "owner_target": 4,
+                "expected_product": 168,
+                "actual_product": plan.case_group_counts["success_owner_product"],
+            },
+            "success_set_schema": {
+                "signature_binding": 14,
+                "aggregate_name_shape": 3,
+                "expected_product": 42,
+                "actual_product": plan.case_group_counts["success_set_schema_product"],
+            },
+            "branch_state_failures": {
+                "expected_product": 336,
+                "actual_product": (
+                    plan.case_group_counts["failure_rename_conflict_product"]
+                    + plan.case_group_counts["failure_owner_unavailable_product"]
+                    + plan.case_group_counts["failure_set_schema_state_product"]
+                ),
+            },
+        }
+    elif plan.statement_key == "alter_collation":
+        document["official_syntax_products"] = {
+            "success_main_products": {
+                "expected_product": 81,
+                "actual_product": sum(
+                    plan.case_group_counts[name]
+                    for name in (
+                        "success_refresh_product",
+                        "success_rename_product",
+                        "success_owner_product",
+                        "success_set_schema_product",
+                    )
+                ),
+            },
+            "branch_state_failures": {
+                "expected_product": 33,
+                "actual_product": sum(
+                    plan.case_group_counts[name]
+                    for name in (
+                        "missing_object_product",
+                        "rename_duplicate_product",
+                        "owner_missing_role_product",
+                        "set_schema_missing_product",
+                        "set_schema_conflict_product",
+                    )
+                ),
+            },
+            "privilege_truth_tables": {
+                "expected_product": 27,
+                "actual_product": sum(
+                    plan.case_group_counts[name]
+                    for name in (
+                        "refresh_privilege_truth_product",
+                        "rename_privilege_truth_product",
+                        "owner_privilege_truth_product",
+                        "set_schema_privilege_truth_product",
+                    )
+                ),
+            },
+            "suite_total": {
+                "expected_product": 174,
+                "actual_product": len(plan.cases),
+            },
+        }
+    elif plan.statement_key == "alter_conversion":
+        document["official_syntax_products"] = {
+            "success_main_products": {
+                "expected_product": 102,
+                "actual_product": sum(
+                    plan.case_group_counts[name]
+                    for name in (
+                        "success_rename_product",
+                        "success_owner_product",
+                        "success_set_schema_product",
+                    )
+                ),
+            },
+            "branch_state_products": {
+                "expected_product": 31,
+                "actual_product": sum(
+                    plan.case_group_counts[name]
+                    for name in (
+                        "missing_conversion_product",
+                        "rename_conflict_product",
+                        "owner_missing_role_product",
+                        "set_schema_missing_product",
+                        "set_schema_conflict_product",
+                        "default_pair_move_product",
+                    )
+                ),
+            },
+            "privilege_truth_tables": {
+                "expected_product": 30,
+                "actual_product": sum(
+                    plan.case_group_counts[name]
+                    for name in (
+                        "rename_privilege_truth_product",
+                        "owner_privilege_truth_product",
+                        "set_schema_privilege_truth_product",
+                    )
+                ),
+            },
+            "suite_total": {
+                "expected_product": 216,
+                "actual_product": len(plan.cases),
+            },
+        }
+    return document
+
+
+def _validate_rendered_output(
+    plan: StatementRegressPlan,
+    output_dir: Path,
+    repository_root: Path,
+    package: Mapping[str, Any] | None = None,
+) -> StatementRegressValidation:
+    issues: list[str] = []
+    expected_names = {case.sql_filename for case in plan.cases}
+    actual_paths = sorted(output_dir.glob(f"{plan.file_prefix}*.sql"))
+    actual_names = {path.name for path in actual_paths}
+    if actual_names != expected_names:
+        missing = sorted(expected_names - actual_names)
+        unexpected = sorted(actual_names - expected_names)
+        if missing:
+            issues.append("missing SQL files: " + ", ".join(missing))
+        if unexpected:
+            issues.append("unexpected SQL files: " + ", ".join(unexpected))
+
+    case_by_filename = {case.sql_filename: case for case in plan.cases}
+    sql_hashes: dict[str, str] = {}
+    target_patterns = {
+        "abort": r"(?m)^ABORT(?:\s|;)",
+        "alter_aggregate": r"(?m)^ALTER\s+AGGREGATE(?:\s|;)",
+        "alter_collation": r"(?m)^ALTER\s+COLLATION(?:\s|;)",
+        "alter_conversion": r"(?m)^ALTER\s+CONVERSION(?:\s|;)",
+        "alter_database": r"(?m)^ALTER\s+DATABASE(?:\s|;)",
+        "alter_default_privileges": (
+            r"(?m)^ALTER\s+DEFAULT\s+PRIVILEGES(?:\s|;|$)"
+        ),
+        "alter_domain": r"(?m)^ALTER\s+DOMAIN(?:\s|;|$)",
+        "alter_event_trigger": r"(?m)^ALTER\s+EVENT\s+TRIGGER(?:\s|;|$)",
+        "alter_extension": r"(?m)^ALTER\s+EXTENSION(?:\s|;|$)",
+        "alter_foreign_data_wrapper": (
+            r"(?m)^ALTER\s+FOREIGN\s+DATA\s+WRAPPER(?:\s|;|$)"
+        ),
+    }
+    target_pattern = re.compile(
+        target_patterns.get(plan.statement_key, r"(?!)"), re.IGNORECASE
+    )
+    for path in actual_paths:
+        payload = path.read_bytes()
+        sql_hashes[path.name] = _sha256(payload)
+        case = case_by_filename.get(path.name)
+        if case is None:
+            continue
+        try:
+            sql = payload.decode("utf-8")
+        except UnicodeDecodeError:
+            issues.append(f"{path.name}: SQL is not UTF-8")
+            continue
+        try:
+            validate_huawei_sql_header(sql)
+        except ValueError as exc:
+            issues.append(f"{path.name}: invalid Huawei header: {exc}")
+        if f"-- case_id: {case.case_id}" not in sql:
+            issues.append(f"{path.name}: missing case trace")
+        if f"-- source_md: {plan.reference_path}" not in sql:
+            issues.append(f"{path.name}: missing source reference trace")
+        if f"-- factor_md: {plan.matrix_path}" not in sql:
+            issues.append(f"{path.name}: missing factor reference trace")
+        if len(re.findall(r"(?m)^-- \d+\. ", sql)) < 3:
+            issues.append(f"{path.name}: fewer than three numbered stages")
+        if not target_pattern.search(sql):
+            issues.append(f"{path.name}: no real {plan.statement_key} statement")
+        if re.search(r"\{[A-Za-z_][A-Za-z0-9_]*\}", sql):
+            issues.append(f"{path.name}: unresolved SQL placeholder")
+        if plan.statement_key == "abort" and "[ WORK | TRANSACTION ]" in sql:
+            issues.append(f"{path.name}: unresolved ABORT EBNF")
+        if re.search(r"\bpg_sleep\s*\(", sql, re.IGNORECASE):
+            issues.append(f"{path.name}: pg_sleep is forbidden")
+        if r"\!" in sql:
+            issues.append(f"{path.name}: shell escape is forbidden")
+        if case.outcome == "expected_failure" and "SQLSTATE" not in sql:
+            issues.append(f"{path.name}: expected failure lacks a SQLSTATE anchor")
+        if contains_create_table_statement(sql):
+            table_audit = audit_complete_table_script(
+                sql,
+                expected_object_prefix=case.object_prefix,
+            )
+            if not table_audit.passed:
+                issues.extend(
+                    f"{path.name}: {issue}" for issue in table_audit.issues
+                )
+        catalog_audit = audit_catalog_observability(sql)
+        if not catalog_audit.passed and case.execution_profile != "external_isolated":
+            issues.extend(
+                f"{path.name}: catalog audit: {issue}"
+                for issue in catalog_audit.parser_issues
+            )
+            for query in catalog_audit.queries:
+                issues.extend(
+                    f"{path.name}: catalog audit: {issue}" for issue in query.issues
+                )
+
+    serial_path = output_dir / "serial_schedule"
+    external_path = output_dir / "external_schedule"
+    expected_serial = _schedule(plan.serial_cases)
+    expected_external = _schedule(plan.external_cases)
+    if not serial_path.is_file() or serial_path.read_bytes() != expected_serial:
+        issues.append("serial_schedule does not exactly match same-session cases")
+    if not external_path.is_file() or external_path.read_bytes() != expected_external:
+        issues.append("external_schedule does not exactly match external cases")
+
+    style_validator_path = (
+        repository_root
+        / "skills/regress-output-script-style/scripts/validate_regress_sql_style.py"
+    )
+    if not style_validator_path.is_file():
+        issues.append("regress output style validator is missing")
+    else:
+        module_name = "_pg_case_factory_regress_output_style_validator"
+        specification = importlib.util.spec_from_file_location(
+            module_name, style_validator_path
+        )
+        if specification is None or specification.loader is None:
+            issues.append("cannot load regress output style validator")
+        else:
+            module = importlib.util.module_from_spec(specification)
+            sys.modules[module_name] = module
+            try:
+                specification.loader.exec_module(module)
+                _, style_issues = module.validate_directory(
+                    output_dir, plan.file_prefix
+                )
+            except Exception as exc:  # fail closed at the external style boundary
+                issues.append(f"regress output style validator failed: {exc}")
+            else:
+                issues.extend(
+                    f"{item.file}: {item.message}" for item in style_issues
+                )
+
+    row_ids = [decision.row_id for decision in plan.factor_decisions]
+    if len(row_ids) != len(set(row_ids)):
+        issues.append("factor disposition ledger contains duplicate canonical rows")
+    for decision in plan.factor_decisions:
+        if decision.disposition != "justified_na":
+            missing_cases = sorted(set(decision.case_ids) - {case.case_id for case in plan.cases})
+            if missing_cases:
+                issues.append(
+                    f"factor decision {decision.row_id} references unknown cases: "
+                    + ", ".join(missing_cases)
+                )
+
+    if package is not None:
+        if package.get("statement_key") != plan.statement_key:
+            issues.append("package statement_key does not match")
+        if package.get("cycle_fingerprint") != plan.cycle_fingerprint:
+            issues.append("package cycle fingerprint does not match")
+        if package.get("sql_file_count") != len(plan.cases):
+            issues.append("package SQL file count does not match")
+        if package.get("sql_sha256") != sql_hashes:
+            issues.append("package SQL SHA-256 map does not match real files")
+
+    return StatementRegressValidation(
+        statement_key=plan.statement_key,
+        cycle_fingerprint=plan.cycle_fingerprint,
+        passed=not issues,
+        issues=tuple(dict.fromkeys(issues)),
+        sql_file_count=len(actual_paths),
+        factor_value_count=len(plan.factor_decisions),
+        sql_sha256=sql_hashes,
+        input_sha256={
+            "matrix": plan.matrix_sha256,
+            "reference": plan.reference_sha256,
+            "applicability_universe_semantic": plan.universe_semantic_sha256,
+        },
+        package_sha256=_sha256(_json_bytes(package)) if package is not None else "",
+    )
+
+
+def _publish_directory(target: Path, files: Mapping[str, bytes]) -> None:
+    if target.exists() or target.is_symlink():
+        raise RemainingStatementRegressError(
+            f"output directory already exists: {target}"
+        )
+    target.parent.mkdir(parents=True, exist_ok=True)
+    staging = Path(
+        tempfile.mkdtemp(prefix=f".{target.name}.staging.", dir=target.parent)
+    )
+    try:
+        for relative, payload in files.items():
+            _write_bytes(staging / relative, payload)
+        os.replace(staging, target)
+    except BaseException:
+        shutil.rmtree(staging, ignore_errors=True)
+        raise
+
+
+def generate_statement_regress_package(
+    repository_root: Path,
+    statement_key: str,
+    *,
+    output_dir: Path,
+    evidence_dir: Path,
+) -> StatementRegressValidation:
+    """Generate one immutable statement leaf and its independent evidence bundle."""
+
+    if output_dir.exists() or output_dir.is_symlink():
+        raise RemainingStatementRegressError(
+            f"output directory already exists: {output_dir}"
+        )
+    if evidence_dir.exists() or evidence_dir.is_symlink():
+        raise RemainingStatementRegressError(
+            f"evidence directory already exists: {evidence_dir}"
+        )
+    from .statement_factor_cycle import discover_statement_factor_cycle
+
+    snapshot = discover_statement_factor_cycle(repository_root)
+    plan = build_statement_regress_plan(snapshot, statement_key)
+    output_files = _expected_output_files(plan)
+    _publish_directory(output_dir, output_files)
+
+    package = _package_document(plan, output_files)
+    validation = _validate_rendered_output(
+        plan, output_dir, Path(repository_root).resolve(), package
+    )
+    evidence_files = {
+        "plan.json": _json_bytes(plan.to_dict()),
+        "coverage.json": _json_bytes(_coverage_document(plan)),
+        "package.json": _json_bytes(package),
+        "validation.json": _json_bytes(validation.to_dict()),
+    }
+    _publish_directory(evidence_dir, evidence_files)
+    if not validation.passed:
+        raise RemainingStatementRegressError(
+            f"generated {statement_key} package failed validation: "
+            + "; ".join(validation.issues)
+        )
+    return validation
+
+
+def _load_json(path: Path, label: str) -> dict[str, Any]:
+    if path.is_symlink() or not path.is_file():
+        raise RemainingStatementRegressError(f"{label} is missing: {path}")
+    try:
+        document = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise RemainingStatementRegressError(f"cannot read {label}: {exc}") from exc
+    if not isinstance(document, dict):
+        raise RemainingStatementRegressError(f"{label} must contain a JSON object")
+    return document
+
+
+def validate_statement_regress_package(
+    repository_root: Path,
+    statement_key: str,
+    *,
+    output_dir: Path,
+    evidence_dir: Path,
+) -> StatementRegressValidation:
+    """Recompute every static statement gate against the real published files."""
+
+    from .statement_factor_cycle import discover_statement_factor_cycle
+
+    snapshot = discover_statement_factor_cycle(repository_root)
+    plan = build_statement_regress_plan(snapshot, statement_key)
+    expected_plan = _json_bytes(plan.to_dict())
+    expected_coverage = _json_bytes(_coverage_document(plan))
+    issues: list[str] = []
+    try:
+        if (evidence_dir / "plan.json").read_bytes() != expected_plan:
+            issues.append("persisted plan.json differs from the reviewed plan")
+        if (evidence_dir / "coverage.json").read_bytes() != expected_coverage:
+            issues.append("persisted coverage.json differs from canonical decisions")
+    except OSError as exc:
+        issues.append(f"cannot read persisted plan/coverage evidence: {exc}")
+    package = _load_json(evidence_dir / "package.json", "statement package evidence")
+    validation = _validate_rendered_output(
+        plan, output_dir, Path(repository_root).resolve(), package
+    )
+    combined = tuple(dict.fromkeys([*issues, *validation.issues]))
+    result = StatementRegressValidation(
+        statement_key=statement_key,
+        cycle_fingerprint=plan.cycle_fingerprint,
+        passed=not combined,
+        issues=combined,
+        sql_file_count=validation.sql_file_count,
+        factor_value_count=validation.factor_value_count,
+        sql_sha256=validation.sql_sha256,
+        input_sha256=validation.input_sha256,
+        package_sha256=validation.package_sha256,
+    )
+    _write_bytes(evidence_dir / "validation.json", _json_bytes(result.to_dict()))
+    return result

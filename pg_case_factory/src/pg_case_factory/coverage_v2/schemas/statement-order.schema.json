@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:pg-case-factory:coverage-v2:statement-order:2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "kind", "artifact_id", "predecessors", "semantic_payload", "semantic_sha256", "operational_metadata"],
+  "properties": {
+    "schema_version": {"const": 2},
+    "kind": {"const": "statement-order"},
+    "artifact_id": {"type": "string", "minLength": 1},
+    "predecessors": {
+      "type": "object",
+      "propertyNames": {"type": "string", "minLength": 1},
+      "additionalProperties": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+    },
+    "semantic_payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["inventory_byte_sha256", "universe_semantic_sha256", "statement_count", "factor_count", "factor_value_count", "statements"],
+      "properties": {
+        "inventory_byte_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "universe_semantic_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "statement_count": {"const": 183},
+        "factor_count": {"const": 3357},
+        "factor_value_count": {"const": 9978},
+        "statements": {
+          "type": "array",
+          "minItems": 183,
+          "maxItems": 183,
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["ordinal", "statement_key", "reference_path", "matrix_path", "factor_count", "factor_value_count"],
+            "properties": {
+              "ordinal": {"type": "integer", "minimum": 1, "maximum": 183},
+              "statement_key": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+              "reference_path": {"type": "string", "minLength": 1},
+              "matrix_path": {"type": "string", "minLength": 1},
+              "factor_count": {"type": "integer", "minimum": 1},
+              "factor_value_count": {"type": "integer", "minimum": 1}
+            }
+          }
+        }
+      }
+    },
+    "semantic_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "operational_metadata": {"type": ["object", "null"]}
+  }
+}

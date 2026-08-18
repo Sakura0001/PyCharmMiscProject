@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:pg-case-factory:coverage-v2:artifact-envelope:2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "kind", "artifact_id", "predecessors", "semantic_payload", "semantic_sha256", "operational_metadata"],
+  "properties": {
+    "schema_version": {"const": 2},
+    "kind": {"type": "string", "minLength": 1},
+    "artifact_id": {"type": "string", "minLength": 1},
+    "predecessors": {
+      "type": "object",
+      "propertyNames": {"type": "string", "minLength": 1},
+      "additionalProperties": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+    },
+    "semantic_payload": {"type": "object"},
+    "semantic_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "operational_metadata": {"type": ["object", "null"]}
+  }
+}
