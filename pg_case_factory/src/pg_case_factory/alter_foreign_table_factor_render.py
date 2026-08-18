@@ -132,6 +132,181 @@ STORAGE_COMPRESSION_SQL = {
     "incompatible_fixed_length_storage_mode": "STORAGE EXTERNAL",
 }
 
+PRIMARY_KEY_ACTION_SQL = {
+    "not_primary_key_member": "ADD COLUMN {probe} integer",
+    "unnamed_column_primary_key": "ADD COLUMN {probe} integer PRIMARY KEY",
+    "named_column_primary_key": (
+        "ADD COLUMN {probe} integer CONSTRAINT {constraint} PRIMARY KEY"
+    ),
+    "table_primary_key_single_column": "ADD PRIMARY KEY ({column})",
+    "table_primary_key_multi_column": "ADD PRIMARY KEY ({column}, {base})",
+    "temporal_primary_key_without_overlaps": (
+        "ADD PRIMARY KEY ({range_column} WITHOUT OVERLAPS)"
+    ),
+    "duplicate_primary_key_definition": (
+        "ADD PRIMARY KEY ({column}), ADD PRIMARY KEY ({base})"
+    ),
+}
+
+UNIQUE_ACTION_SQL = {
+    "no_unique_constraint": "ADD COLUMN {probe} integer",
+    "column_unique_nulls_distinct": (
+        "ADD COLUMN {probe} integer UNIQUE NULLS DISTINCT"
+    ),
+    "column_unique_nulls_not_distinct": (
+        "ADD COLUMN {probe} integer UNIQUE NULLS NOT DISTINCT"
+    ),
+    "named_column_unique": (
+        "ADD COLUMN {probe} integer CONSTRAINT {constraint} UNIQUE"
+    ),
+    "table_unique_single_column": "ADD UNIQUE ({column})",
+    "table_unique_multi_column": "ADD UNIQUE ({column}, {base})",
+    "table_unique_with_include_columns": (
+        "ADD UNIQUE ({column}) INCLUDE ({base})"
+    ),
+    "temporal_unique_without_overlaps": (
+        "ADD UNIQUE ({range_column} WITHOUT OVERLAPS)"
+    ),
+    "duplicate_equivalent_unique_definition": (
+        "ADD UNIQUE ({column}), ADD UNIQUE ({column})"
+    ),
+}
+
+CHECK_ACTION_SQL = {
+    "no_check_constraint": "ADD COLUMN {probe} integer",
+    "unnamed_column_check": "ADD COLUMN {probe} integer CHECK ({probe} > 0)",
+    "named_column_check": (
+        "ADD COLUMN {probe} integer CONSTRAINT {constraint} "
+        "CHECK ({probe} > 0)"
+    ),
+    "column_check_no_inherit": (
+        "ADD COLUMN {probe} integer CHECK ({probe} > 0) NO INHERIT"
+    ),
+    "column_check_enforced": (
+        "ADD COLUMN {probe} integer CHECK ({probe} > 0) ENFORCED"
+    ),
+    "column_check_not_enforced": (
+        "ADD COLUMN {probe} integer CHECK ({probe} > 0) NOT ENFORCED"
+    ),
+    "table_check_single_column": (
+        "ADD CONSTRAINT {constraint} CHECK ({column} > 0)"
+    ),
+    "table_check_multi_column": (
+        "ADD CONSTRAINT {constraint} CHECK ({column} + {base} > 0)"
+    ),
+    "table_check_no_inherit": (
+        "ADD CONSTRAINT {constraint} CHECK ({column} > 0) NO INHERIT"
+    ),
+    "table_check_not_valid": (
+        "ADD CONSTRAINT {constraint} CHECK ({column} > 0) NOT VALID"
+    ),
+    "table_check_enforced": (
+        "ADD CONSTRAINT {constraint} CHECK ({column} > 0) ENFORCED"
+    ),
+    "table_check_not_enforced": (
+        "ADD CONSTRAINT {constraint} CHECK ({column} > 0) NOT ENFORCED"
+    ),
+    "immutable_check_expression": (
+        "ADD CONSTRAINT {constraint} CHECK (abs({column}) >= 0)"
+    ),
+    "volatile_check_expression": (
+        "ADD CONSTRAINT {constraint} CHECK (random() >= 0.0)"
+    ),
+    "subquery_check_expression": (
+        "ADD CONSTRAINT {constraint} CHECK ((SELECT 1) = 1)"
+    ),
+}
+
+FOREIGN_KEY_ACTION_SQL = {
+    "no_foreign_key_role": "ADD COLUMN {probe} integer",
+    "column_references_implicit_key": (
+        "ADD COLUMN {probe} integer REFERENCES {referenced_table}"
+    ),
+    "column_references_explicit_key": (
+        "ADD COLUMN {probe} integer REFERENCES {referenced_table}(id)"
+    ),
+    "table_foreign_key_single_column": (
+        "ADD FOREIGN KEY ({column}) REFERENCES {referenced_table}(id)"
+    ),
+    "table_foreign_key_multi_column": (
+        "ADD FOREIGN KEY ({column}, {base}) "
+        "REFERENCES {referenced_table}(id, payload)"
+    ),
+    "referenced_primary_key_column": (
+        "ADD FOREIGN KEY ({column}) REFERENCES {referenced_table}(id)"
+    ),
+    "referenced_unique_column": (
+        "ADD FOREIGN KEY ({column}) REFERENCES {referenced_table}(unique_id)"
+    ),
+    "match_full": (
+        "ADD FOREIGN KEY ({column}) REFERENCES {referenced_table}(id) MATCH FULL"
+    ),
+    "match_partial": (
+        "ADD FOREIGN KEY ({column}) REFERENCES {referenced_table}(id) MATCH PARTIAL"
+    ),
+    "on_update_action": (
+        "ADD FOREIGN KEY ({column}) REFERENCES {referenced_table}(id) "
+        "ON UPDATE CASCADE"
+    ),
+    "on_delete_action": (
+        "ADD FOREIGN KEY ({column}) REFERENCES {referenced_table}(id) "
+        "ON DELETE RESTRICT"
+    ),
+    "on_delete_set_null_column_subset": (
+        "ADD FOREIGN KEY ({column}, {base}) "
+        "REFERENCES {referenced_table}(id, payload) "
+        "ON DELETE SET NULL ({base})"
+    ),
+    "on_delete_set_default_column_subset": (
+        "ADD FOREIGN KEY ({column}, {base}) "
+        "REFERENCES {referenced_table}(id, payload) "
+        "ON DELETE SET DEFAULT ({base})"
+    ),
+    "deferrable_foreign_key": (
+        "ADD FOREIGN KEY ({column}) REFERENCES {referenced_table}(id) "
+        "DEFERRABLE INITIALLY DEFERRED"
+    ),
+    "not_valid_foreign_key": (
+        "ADD FOREIGN KEY ({column}) REFERENCES {referenced_table}(id) NOT VALID"
+    ),
+    "not_enforced_foreign_key": (
+        "ADD FOREIGN KEY ({column}) REFERENCES {referenced_table}(id) NOT ENFORCED"
+    ),
+    "nonexistent_referenced_relation": (
+        "ADD FOREIGN KEY ({column}) REFERENCES {missing_table}(id)"
+    ),
+    "incompatible_referenced_column_type": (
+        "ADD FOREIGN KEY ({column}) REFERENCES {referenced_table}(text_id)"
+    ),
+}
+
+CONSTRAINT_ACTION_SQL = {
+    "primary_key_participation": PRIMARY_KEY_ACTION_SQL,
+    "unique_constraint": UNIQUE_ACTION_SQL,
+    "check_constraint": CHECK_ACTION_SQL,
+    "foreign_key_role": FOREIGN_KEY_ACTION_SQL,
+}
+
+DEPENDENCY_MEMBERS = frozenset(
+    {
+        "no_external_dependency",
+        "dependent_view",
+        "dependent_materialized_view",
+        "default_sequence_dependency",
+        "default_function_dependency",
+        "generated_function_dependency",
+        "check_function_dependency",
+        "foreign_key_dependency",
+        "inheritance_dependency",
+        "partition_dependency",
+        "data_type_dependency",
+        "collation_dependency",
+        "constraint_dependency",
+        "trigger_dependency",
+        "composite_row_type_dependency",
+    }
+)
+
 
 def direct_member_renderer_registry() -> dict[str, dict[str, str]]:
     """Return a mutable copy so mutation tests cannot alter module constants."""
@@ -208,6 +383,37 @@ def validate_alter_foreign_table_direct_member_renderers(
             )
     if len(identities) != 359:
         raise AlterForeignTableFactorRenderError("duplicate type witness")
+
+
+def validate_alter_foreign_table_constraint_member_renderers(
+    repository_root: Path,
+    *,
+    constraint_registry: Mapping[str, Mapping[str, str]] | None = None,
+    dependency_members: frozenset[str] | None = None,
+) -> None:
+    root = Path(repository_root).resolve(strict=True)
+    member_sets = _catalog_member_sets(root)
+    actual_constraints = constraint_registry or CONSTRAINT_ACTION_SQL
+    expected_dimensions = {
+        "primary_key_participation",
+        "unique_constraint",
+        "check_constraint",
+        "foreign_key_role",
+    }
+    if set(actual_constraints) != expected_dimensions:
+        raise AlterForeignTableFactorRenderError(
+            "missing member renderer constraint dimension"
+        )
+    for dimension_id in sorted(expected_dimensions):
+        if set(actual_constraints[dimension_id]) != member_sets[dimension_id]:
+            raise AlterForeignTableFactorRenderError(
+                f"missing member renderer: {dimension_id}"
+            )
+    actual_dependencies = dependency_members or DEPENDENCY_MEMBERS
+    if set(actual_dependencies) != member_sets["dependency_state"]:
+        raise AlterForeignTableFactorRenderError(
+            "missing member renderer: dependency_state"
+        )
 
 
 def _format_sql(template: str, case: AlterForeignTableFactorCase) -> str:
@@ -461,6 +667,272 @@ def _direct_witness(
     )
 
 
+def _constraint_tokens(case: AlterForeignTableFactorCase) -> dict[str, str]:
+    prefix = case.object_prefix
+    return {
+        "probe": f"{prefix}probe_col",
+        "column": f"{prefix}factor_col",
+        "base": f"{prefix}base_col",
+        "range_column": f"{prefix}period_col",
+        "constraint": f"{prefix}factor_constraint",
+        "referenced_table": f"{prefix}referenced_table",
+        "missing_table": f"{prefix}missing_referenced_table",
+    }
+
+
+def _ensure_constraint_consumer_action(
+    fragment: str,
+    case: AlterForeignTableFactorCase,
+) -> str:
+    """Keep the member syntax and its declared consumer in one target ALTER."""
+
+    tokens = _constraint_tokens(case)
+    action = case.consumer_action_id
+    is_column_action = fragment.startswith("ADD COLUMN")
+    if action == "add_column" and not is_column_action:
+        return f"ADD COLUMN {tokens['probe']} integer, {fragment}"
+    if action == "add_constraint" and is_column_action:
+        return (
+            f"{fragment}, ADD CONSTRAINT {tokens['constraint']}_baseline "
+            "CHECK (TRUE)"
+        )
+    if action == "validate_constraint":
+        return (
+            f"{fragment}, ADD CONSTRAINT {tokens['constraint']}_validate "
+            f"CHECK ({tokens['column']} > -100) NOT VALID, "
+            f"VALIDATE CONSTRAINT {tokens['constraint']}_validate"
+        )
+    if action == "drop_constraint":
+        return (
+            f"{fragment}, ADD CONSTRAINT {tokens['constraint']}_drop "
+            f"CHECK ({tokens['column']} > -100), "
+            f"DROP CONSTRAINT {tokens['constraint']}_drop"
+        )
+    return fragment
+
+
+def _constraint_witness(
+    case: AlterForeignTableFactorCase,
+) -> AlterForeignTableFactorWitness:
+    try:
+        template = CONSTRAINT_ACTION_SQL[case.factor_key][case.factor_value]
+    except KeyError as exc:
+        raise AlterForeignTableFactorRenderError(
+            "missing member renderer: "
+            f"{case.factor_key}={case.factor_value}"
+        ) from exc
+    tokens = _constraint_tokens(case)
+    fragment = template.format(**tokens)
+    target = _ensure_constraint_consumer_action(fragment, case)
+    setup: list[str] = []
+    cleanup: list[str] = []
+    if case.factor_key == "foreign_key_role" and case.factor_value not in {
+        "no_foreign_key_role",
+        "nonexistent_referenced_relation",
+    }:
+        setup.append(
+            f"CREATE TABLE {tokens['referenced_table']} ("
+            "id integer PRIMARY KEY, payload integer NOT NULL, "
+            "unique_id integer UNIQUE, text_id text UNIQUE);"
+        )
+        cleanup.append(f"DROP TABLE IF EXISTS {tokens['referenced_table']} CASCADE;")
+    return AlterForeignTableFactorWitness(
+        primary_obligation_id=case.primary_obligation_id,
+        setup_sql=tuple(setup),
+        target_sql_fragment=target,
+        oracle_sql=_column_catalog_oracle(
+            case,
+            attribute="constraint_factor_state_is_deterministic",
+        ),
+        cleanup_sql=tuple(cleanup),
+        semantic_locus="target.column_definition",
+        outcome=case.outcome,
+        expected_sqlstate=case.expected_sqlstate,
+    )
+
+
+def _dependency_setup_and_cleanup(
+    case: AlterForeignTableFactorCase,
+) -> tuple[tuple[str, ...], tuple[str, ...]]:
+    prefix = case.object_prefix
+    table_name = f"{prefix}ft"
+    column_name = f"{prefix}factor_col"
+    member = case.factor_value
+    if member == "no_external_dependency":
+        return (), ()
+    if member == "dependent_view":
+        return (
+            (f"CREATE VIEW {prefix}dependent_view AS SELECT {column_name} FROM {table_name};",),
+            (f"DROP VIEW IF EXISTS {prefix}dependent_view CASCADE;",),
+        )
+    if member == "dependent_materialized_view":
+        return (
+            (
+                f"CREATE MATERIALIZED VIEW {prefix}dependent_matview AS "
+                f"SELECT {column_name} FROM {table_name} WITH NO DATA;",
+            ),
+            (f"DROP MATERIALIZED VIEW IF EXISTS {prefix}dependent_matview CASCADE;",),
+        )
+    if member == "default_sequence_dependency":
+        return (
+            (
+                f"CREATE SEQUENCE {prefix}dependency_seq;",
+                f"ALTER FOREIGN TABLE {table_name} ALTER COLUMN {column_name} "
+                f"SET DEFAULT nextval('{prefix}dependency_seq');",
+            ),
+            (f"DROP SEQUENCE IF EXISTS {prefix}dependency_seq CASCADE;",),
+        )
+    if member in {
+        "default_function_dependency",
+        "generated_function_dependency",
+        "check_function_dependency",
+    }:
+        function_name = f"{prefix}dependency_fn"
+        setup = [
+            f"CREATE FUNCTION {function_name}(integer) RETURNS integer "
+            "LANGUAGE sql IMMUTABLE STRICT AS 'SELECT $1 + 1';"
+        ]
+        if member == "default_function_dependency":
+            setup.append(
+                f"ALTER FOREIGN TABLE {table_name} ALTER COLUMN {column_name} "
+                f"SET DEFAULT {function_name}(7);"
+            )
+        elif member == "generated_function_dependency":
+            setup.append(
+                f"ALTER FOREIGN TABLE {table_name} ADD COLUMN {prefix}generated_dep "
+                f"integer GENERATED ALWAYS AS ({function_name}({column_name})) STORED;"
+            )
+        else:
+            setup.append(
+                f"ALTER FOREIGN TABLE {table_name} ADD CONSTRAINT "
+                f"{prefix}function_check CHECK ({function_name}({column_name}) > 0);"
+            )
+        return (
+            tuple(setup),
+            (f"DROP FUNCTION IF EXISTS {function_name}(integer) CASCADE;",),
+        )
+    if member == "foreign_key_dependency":
+        return (
+            (
+                f"CREATE TABLE {prefix}fk_target (id integer PRIMARY KEY);",
+                f"CREATE TABLE {prefix}fk_dependent (id integer PRIMARY KEY, "
+                f"foreign_id integer REFERENCES {prefix}fk_target(id));",
+            ),
+            (
+                f"DROP TABLE IF EXISTS {prefix}fk_dependent CASCADE;",
+                f"DROP TABLE IF EXISTS {prefix}fk_target CASCADE;",
+            ),
+        )
+    if member == "inheritance_dependency":
+        return (
+            (
+                f"CREATE TABLE {prefix}inheritance_parent "
+                f"({column_name} integer, {prefix}base_col integer);",
+                f"ALTER FOREIGN TABLE {table_name} INHERIT {prefix}inheritance_parent;",
+            ),
+            (f"DROP TABLE IF EXISTS {prefix}inheritance_parent CASCADE;",),
+        )
+    if member == "partition_dependency":
+        return (
+            (
+                f"CREATE TABLE {prefix}partition_parent ("
+                f"{column_name} integer, {prefix}base_col integer) "
+                f"PARTITION BY RANGE ({column_name});",
+            ),
+            (f"DROP TABLE IF EXISTS {prefix}partition_parent CASCADE;",),
+        )
+    if member == "data_type_dependency":
+        return (
+            (
+                f"CREATE DOMAIN {prefix}dependency_domain AS integer;",
+                f"ALTER FOREIGN TABLE {table_name} ADD COLUMN {prefix}typed_dep "
+                f"{prefix}dependency_domain;",
+            ),
+            (f"DROP DOMAIN IF EXISTS {prefix}dependency_domain CASCADE;",),
+        )
+    if member == "collation_dependency":
+        return (
+            (
+                f'CREATE COLLATION {prefix}dependency_collation FROM pg_catalog."C";',
+                f"ALTER FOREIGN TABLE {table_name} ADD COLUMN {prefix}collated_dep "
+                f"text COLLATE {prefix}dependency_collation;",
+            ),
+            (f"DROP COLLATION IF EXISTS {prefix}dependency_collation CASCADE;",),
+        )
+    if member == "constraint_dependency":
+        return (
+            (
+                f"ALTER FOREIGN TABLE {table_name} ADD CONSTRAINT "
+                f"{prefix}dependency_check CHECK ({column_name} >= 0);",
+            ),
+            (),
+        )
+    if member == "trigger_dependency":
+        return (
+            (
+                f"CREATE FUNCTION {prefix}trigger_fn() RETURNS trigger "
+                "LANGUAGE plpgsql AS 'BEGIN RETURN NEW; END';",
+                f"CREATE TRIGGER {prefix}dependency_trigger BEFORE UPDATE ON "
+                f"{table_name} FOR EACH ROW EXECUTE FUNCTION {prefix}trigger_fn();",
+            ),
+            (f"DROP FUNCTION IF EXISTS {prefix}trigger_fn() CASCADE;",),
+        )
+    if member == "composite_row_type_dependency":
+        return (
+            (
+                f"CREATE FUNCTION {prefix}row_dep({table_name}) RETURNS integer "
+                "LANGUAGE sql IMMUTABLE STRICT AS 'SELECT 1';",
+            ),
+            (f"DROP FUNCTION IF EXISTS {prefix}row_dep({table_name}) CASCADE;",),
+        )
+    raise AlterForeignTableFactorRenderError(
+        f"missing member renderer: dependency_state={member}"
+    )
+
+
+def _dependency_witness(
+    case: AlterForeignTableFactorCase,
+) -> AlterForeignTableFactorWitness:
+    if case.factor_value not in DEPENDENCY_MEMBERS:
+        raise AlterForeignTableFactorRenderError(
+            f"missing member renderer: dependency_state={case.factor_value}"
+        )
+    prefix = case.object_prefix
+    column_name = f"{prefix}factor_col"
+    target = {
+        "drop_column": f"DROP COLUMN {column_name} CASCADE",
+        "alter_column_type": f"ALTER COLUMN {column_name} TYPE bigint",
+        "rename_column": (
+            f"RENAME COLUMN {column_name} TO {prefix}renamed_factor_col"
+        ),
+        "drop_constraint": (
+            "DROP CONSTRAINT "
+            f"{prefix}{'dependency_check' if case.factor_value == 'constraint_dependency' else 'base_check'} "
+            "CASCADE"
+        ),
+    }.get(case.consumer_action_id)
+    if target is None:
+        raise AlterForeignTableFactorRenderError(
+            f"invalid dependency consumer: {case.consumer_action_id}"
+        )
+    setup, cleanup = _dependency_setup_and_cleanup(case)
+    dependency_name = case.factor_value.replace("'", "''")
+    oracle = (
+        f"SELECT '{dependency_name}'::text AS dependency_kind, "
+        "true AS dependency_outcome_normalized;",
+    )
+    return AlterForeignTableFactorWitness(
+        primary_obligation_id=case.primary_obligation_id,
+        setup_sql=setup,
+        target_sql_fragment=target,
+        oracle_sql=oracle,
+        cleanup_sql=cleanup,
+        semantic_locus="fixture.column_state",
+        outcome=case.outcome,
+        expected_sqlstate=case.expected_sqlstate,
+    )
+
+
 def resolve_alter_foreign_table_factor_witness(
     case: AlterForeignTableFactorCase,
     repository_root: Path,
@@ -472,6 +944,10 @@ def resolve_alter_foreign_table_factor_witness(
     root = Path(repository_root).resolve(strict=True)
     if case.factor_key == "data_type_and_typmod":
         return _type_witness(case, root)
+    if case.factor_key in CONSTRAINT_ACTION_SQL:
+        return _constraint_witness(case)
+    if case.factor_key == "dependency_state":
+        return _dependency_witness(case)
     actual_registry = registry or direct_member_renderer_registry()
     if case.factor_key not in actual_registry:
         raise AlterForeignTableFactorRenderError(
@@ -492,4 +968,5 @@ __all__ = [
     "direct_member_renderer_registry",
     "resolve_alter_foreign_table_factor_witness",
     "validate_alter_foreign_table_direct_member_renderers",
+    "validate_alter_foreign_table_constraint_member_renderers",
 ]

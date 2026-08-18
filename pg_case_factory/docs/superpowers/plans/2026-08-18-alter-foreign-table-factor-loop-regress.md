@@ -364,7 +364,7 @@ git commit -m "feat: render alter foreign table column factors"
 - Modify: `src/pg_case_factory/alter_foreign_table_factor_render.py`
 - Modify: `tests/test_alter_foreign_table_factor_render.py`
 
-- [ ] **Step 1: Write a failing test for all constraint-member/action rows**
+- [x] **Step 1: Write a failing test for all constraint-member/action rows**
 
 ```python
 def test_constraint_members_have_isolated_action_witnesses(self) -> None:
@@ -399,19 +399,19 @@ foreign key 18 × 2 actions = 36
 total                              128
 ```
 
-- [ ] **Step 2: Run the test and verify RED**
+- [x] **Step 2: Run the test and verify RED**
 
 Expected: the first constraint member lacking a renderer is reported.
 
-- [ ] **Step 3: Implement total constraint maps**
+- [x] **Step 3: Implement total constraint maps**
 
 Render baseline members with a legal CHECK/NOT NULL baseline. Render PK, UNIQUE, and FK forms so PostgreSQL reaches the foreign-table restriction and returns `0A000`; do not substitute parser-invalid text. Render `subquery_check_expression` as the isolated `0A000` check-expression failure. Create referenced local tables for FK members and clean them in reverse dependency order.
 
-- [ ] **Step 4: Implement all 60 dependency-state/action witnesses**
+- [x] **Step 4: Implement all 60 dependency-state/action witnesses**
 
 Create the declared dependent view, materialized view, sequence, function, type, collation, constraint, trigger, inheritance, partition, or composite row-type fixture. RESTRICT preserves the dependency after failure; CASCADE proves removal. Oracle output is normalized boolean/text and never a raw OID.
 
-- [ ] **Step 5: Run tests and commit**
+- [x] **Step 5: Run tests and commit**
 
 ```bash
 uv run python -m unittest -v tests.test_alter_foreign_table_factor_render

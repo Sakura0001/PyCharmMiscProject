@@ -10,6 +10,7 @@ from pg_case_factory.alter_foreign_table_factor_render import (
     AlterForeignTableFactorRenderError,
     direct_member_renderer_registry,
     resolve_alter_foreign_table_factor_witness,
+    validate_alter_foreign_table_constraint_member_renderers,
     validate_alter_foreign_table_direct_member_renderers,
 )
 
@@ -81,6 +82,48 @@ class AlterForeignTableColumnFactorRenderTest(unittest.TestCase):
                     ): "",
                 },
             )
+
+    def test_constraint_members_have_isolated_action_witnesses(self) -> None:
+        validate_alter_foreign_table_constraint_member_renderers(ROOT)
+        plan = build_alter_foreign_table_factor_loop_plan(ROOT)
+        dimensions = {
+            "primary_key_participation",
+            "unique_constraint",
+            "check_constraint",
+            "foreign_key_role",
+        }
+        rows = [row for row in plan.cases if row.factor_key in dimensions]
+        self.assertEqual(128, len(rows))
+        for case in rows:
+            with self.subTest(case_id=case.case_id):
+                witness = resolve_alter_foreign_table_factor_witness(case, ROOT)
+                self.assertTrue(witness.target_sql_fragment)
+                if case.factor_key in {
+                    "primary_key_participation",
+                    "unique_constraint",
+                    "foreign_key_role",
+                } and case.factor_value not in {
+                    "not_primary_key_member",
+                    "no_unique_constraint",
+                    "no_foreign_key_role",
+                }:
+                    self.assertEqual(
+                        ("expected_failure", "0A000"),
+                        (witness.outcome, witness.expected_sqlstate),
+                    )
+
+    def test_all_dependency_member_action_rows_have_real_fixtures(self) -> None:
+        plan = build_alter_foreign_table_factor_loop_plan(ROOT)
+        rows = [row for row in plan.cases if row.factor_key == "dependency_state"]
+        self.assertEqual(60, len(rows))
+        for case in rows:
+            with self.subTest(case_id=case.case_id):
+                witness = resolve_alter_foreign_table_factor_witness(case, ROOT)
+                self.assertTrue(witness.target_sql_fragment.strip())
+                self.assertTrue(witness.oracle_sql)
+                self.assertNotIn("::oid", "\n".join(witness.oracle_sql).lower())
+                if case.factor_value != "no_external_dependency":
+                    self.assertTrue(witness.setup_sql)
 
 
 if __name__ == "__main__":
