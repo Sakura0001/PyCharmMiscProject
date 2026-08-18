@@ -52,7 +52,7 @@ The compiler must derive these counts from repository inputs and fail closed on 
 - Create: `tests/test_alter_foreign_table_factor_loop.py`
 - Modify: `src/pg_case_factory/alter_foreign_table_regress.py`
 
-- [ ] **Step 1: Write the failing ledger-count and identity test**
+- [x] **Step 1: Write the failing ledger-count and identity test**
 
 ```python
 from collections import Counter
@@ -82,7 +82,7 @@ class AlterForeignTableFactorLoopLedgerTest(unittest.TestCase):
         )
 ```
 
-- [ ] **Step 2: Run the test and verify RED**
+- [x] **Step 2: Run the test and verify RED**
 
 ```bash
 uv run python -m unittest -v \
@@ -91,7 +91,7 @@ uv run python -m unittest -v \
 
 Expected: `ModuleNotFoundError: pg_case_factory.alter_foreign_table_factor_loop`.
 
-- [ ] **Step 3: Implement the immutable obligation record and compiler**
+- [x] **Step 3: Implement the immutable obligation record and compiler**
 
 ```python
 @dataclass(frozen=True)
@@ -135,7 +135,7 @@ AFT-RISK|transaction|commit-or-rollback
 
 `_compile_column_obligations()` consumes `compile_alter_foreign_table_column_obligations()` and preserves all 1,569 rows. Convert its 12 `handoff:create_index` rows to `disposition="delegated"`; preserve the other 1,557 rows as `covered` or `expected_failure`. Add seven `INV` topology rows. Never call `iter_alter_foreign_table_single_action_inventory_interactions()`.
 
-- [ ] **Step 4: Add public exports and run GREEN**
+- [x] **Step 4: Add public exports and run GREEN**
 
 ```bash
 uv run python -m unittest -v tests.test_alter_foreign_table_factor_loop
@@ -143,7 +143,7 @@ uv run python -m unittest -v tests.test_alter_foreign_table_factor_loop
 
 Expected: all Task 1 tests pass in under five seconds.
 
-- [ ] **Step 5: Commit Task 1**
+- [x] **Step 5: Commit Task 1**
 
 ```bash
 git add src/pg_case_factory/alter_foreign_table_factor_loop.py \
