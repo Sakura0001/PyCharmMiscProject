@@ -158,7 +158,7 @@ git commit -m "feat: compile alter foreign table factor loop"
 - Modify: `src/pg_case_factory/alter_foreign_table_factor_loop.py`
 - Modify: `tests/test_alter_foreign_table_factor_loop.py`
 
-- [ ] **Step 1: Write the failing one-to-one plan test**
+- [x] **Step 1: Write the failing one-to-one plan test**
 
 ```python
 def test_builds_one_stable_program_per_local_obligation(self) -> None:
@@ -179,11 +179,11 @@ def test_builds_one_stable_program_per_local_obligation(self) -> None:
     self.assertEqual(expected, {row.primary_obligation_id for row in plan.cases})
 ```
 
-- [ ] **Step 2: Run the test and verify RED**
+- [x] **Step 2: Run the test and verify RED**
 
 Expected: import error for `build_alter_foreign_table_factor_loop_plan`.
 
-- [ ] **Step 3: Implement plan records and deterministic numbering**
+- [x] **Step 3: Implement plan records and deterministic numbering**
 
 ```python
 @dataclass(frozen=True)
@@ -214,7 +214,7 @@ class AlterForeignTableFactorLoopPlan:
 
 Use ledger order and four-digit filenames. `baseline_assignments` contains exactly one value for each action-applicable key and never contains a second value for `case.factor_key`.
 
-- [ ] **Step 4: Add assignment-driven failure tests**
+- [x] **Step 4: Add assignment-driven failure tests**
 
 ```python
 def test_failure_disposition_drives_case_outcome(self) -> None:
@@ -237,7 +237,7 @@ def test_failure_disposition_drives_case_outcome(self) -> None:
             )
 ```
 
-- [ ] **Step 5: Run tests and commit**
+- [x] **Step 5: Run tests and commit**
 
 ```bash
 uv run python -m unittest -v tests.test_alter_foreign_table_factor_loop

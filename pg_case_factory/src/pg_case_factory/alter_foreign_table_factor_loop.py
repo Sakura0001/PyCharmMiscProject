@@ -10,6 +10,8 @@ from __future__ import annotations
 
 from collections import Counter
 from dataclasses import dataclass, replace
+import hashlib
+import json
 from pathlib import Path
 
 from .alter_foreign_table_regress import (
@@ -17,6 +19,7 @@ from .alter_foreign_table_regress import (
     load_alter_foreign_table_grammar_actions,
     load_alter_foreign_table_grammar_axes,
     load_alter_foreign_table_topologies,
+    load_alter_foreign_table_type_witnesses,
 )
 from .applicability import CatalogRow, load_shipped_applicability_universe
 
@@ -36,6 +39,32 @@ class AlterForeignTableFactorObligation:
     disposition: str
     source_locator: str
     delegated_statement_key: str | None = None
+
+
+@dataclass(frozen=True)
+class AlterForeignTableFactorCase:
+    ordinal: int
+    case_id: str
+    sql_filename: str
+    object_prefix: str
+    primary_obligation_id: str
+    kind: str
+    factor_key: str
+    factor_value: str
+    consumer_action_id: str
+    outcome: str
+    expected_sqlstate: str
+    expected_failure_reason: str | None
+    baseline_assignments: tuple[tuple[str, str], ...]
+    execution_profile: str
+
+
+@dataclass(frozen=True)
+class AlterForeignTableFactorLoopPlan:
+    obligations: tuple[AlterForeignTableFactorObligation, ...]
+    cases: tuple[AlterForeignTableFactorCase, ...]
+    delegated: tuple[AlterForeignTableFactorObligation, ...]
+    obligation_multiset_sha256: str
 
 
 _OUTER_AXIS_CONSUMER = {
@@ -132,6 +161,11 @@ def _compile_grammar_obligations() -> list[AlterForeignTableFactorObligation]:
             )
         )
     for axis in load_alter_foreign_table_grammar_axes():
+        factor_key = (
+            f"outer:{axis.axis_id}"
+            if axis.action_id.startswith("__outer_")
+            else f"local:{axis.axis_id}"
+        )
         consumer = (
             _OUTER_AXIS_CONSUMER[axis.grammar_branch_id]
             if axis.action_id.startswith("__outer_")
@@ -147,7 +181,7 @@ def _compile_grammar_obligations() -> list[AlterForeignTableFactorObligation]:
                         f"{axis.axis_id}|{value}"
                     ),
                     kind="GRM",
-                    factor_key=axis.axis_id,
+                    factor_key=factor_key,
                     value=value,
                     consumer_action_id=consumer,
                     disposition="covered",
@@ -157,6 +191,194 @@ def _compile_grammar_obligations() -> list[AlterForeignTableFactorObligation]:
     if len(rows) != 136:
         raise AlterForeignTableFactorLoopError("grammar obligation count drift")
     return rows
+
+
+def _baseline_assignments(
+    obligation: AlterForeignTableFactorObligation,
+) -> tuple[tuple[str, str], ...]:
+    actions = {
+        row.action_id: row for row in load_alter_foreign_table_grammar_actions()
+    }
+    try:
+        action = actions[obligation.consumer_action_id]
+    except KeyError as exc:
+        raise AlterForeignTableFactorLoopError(
+            f"unknown consumer action: {obligation.consumer_action_id}"
+        ) from exc
+    assignments: dict[str, str] = {
+        "grammar_branch": action.grammar_branch_id,
+        "target_action": action.action_id,
+        "object_state": "exists",
+        "privilege_level": "table_owner",
+        "table_name_shape": "simple_id",
+        "relation_topology": "standalone",
+        "expected_status": "success",
+        "verification_mode": "effect_query",
+        "cleanup_mode": "drop_foreign_table",
+    }
+    outer_action = {
+        "branch_action_list": "__outer_action_list__",
+        "branch_rename_column": "__outer_rename_column__",
+        "branch_rename_table": "__outer_rename_table__",
+        "branch_set_schema": "__outer_set_schema__",
+    }[action.grammar_branch_id]
+    for axis in load_alter_foreign_table_grammar_axes():
+        if axis.action_id == outer_action:
+            assignments[f"outer:{axis.axis_id}"] = axis.values[0]
+        elif axis.action_id == action.action_id:
+            assignments[f"local:{axis.axis_id}"] = axis.values[0]
+    assignments[obligation.factor_key] = obligation.value
+    if len(assignments) != len(set(assignments)):
+        raise AlterForeignTableFactorLoopError("duplicate baseline factor key")
+    return tuple(assignments.items())
+
+
+def _expected_failure_details(
+    repository_root: Path,
+    obligation: AlterForeignTableFactorObligation,
+    type_expectations: dict[tuple[str, str, str], tuple[str, str]],
+) -> tuple[str, str]:
+    if obligation.kind == "INV" and obligation.factor_key == "data_type_and_typmod":
+        selector, member = obligation.value.split("::", 1)
+        try:
+            return type_expectations[
+                (selector, member, obligation.consumer_action_id)
+            ]
+        except KeyError as exc:
+            raise AlterForeignTableFactorLoopError(
+                "missing type failure expectation for "
+                f"{selector}::{member}/{obligation.consumer_action_id}"
+            ) from exc
+
+    sfv_sqlstate = {
+        ("new_schema_name_shape", "nonexistent_schema"): "3F000",
+        ("schema_existence", "schema_not_exists"): "3F000",
+        ("no_type_usage_privilege", "lacks_usage"): "42501",
+        ("non_owner_attempt", "non_owner_execution"): "42501",
+        ("privilege_level", "non_owner"): "42501",
+        ("set_role_capability", "cannot_set_role"): "42501",
+        ("type_usage_privilege", "lacks_usage"): "42501",
+    }
+    if obligation.kind == "SFV":
+        sqlstate = sfv_sqlstate.get(
+            (obligation.factor_key, obligation.value), "42704"
+        )
+        return (
+            sqlstate,
+            f"canonical_factor_rejected:{obligation.factor_key}={obligation.value}",
+        )
+
+    inventory_sqlstate = {
+        "column_name_shape": "42703",
+        "collation": "42704",
+        "nullability": "0A000",
+        "default_state": "0A000",
+        "generation_mode": "42P17",
+        "identity_mode": "22023",
+        "primary_key_participation": "0A000",
+        "unique_constraint": "0A000",
+        "check_constraint": "0A000",
+        "foreign_key_role": "0A000",
+        "storage_and_compression": "0A000",
+        "statistics_target": "22023",
+        "dropped_or_existing_column_state": "42703",
+    }
+    sqlstate = inventory_sqlstate.get(obligation.factor_key, "0A000")
+    return (
+        sqlstate,
+        f"inventory_member_rejected:{obligation.factor_key}={obligation.value}",
+    )
+
+
+def _obligation_multiset_sha256(
+    rows: tuple[AlterForeignTableFactorObligation, ...],
+) -> str:
+    digest = hashlib.sha256(b"alter-foreign-table-factor-obligations-v1\n")
+    for row in rows:
+        digest.update(
+            json.dumps(
+                {
+                    "obligation_id": row.obligation_id,
+                    "kind": row.kind,
+                    "factor_key": row.factor_key,
+                    "value": row.value,
+                    "consumer_action_id": row.consumer_action_id,
+                    "disposition": row.disposition,
+                    "delegated_statement_key": row.delegated_statement_key,
+                },
+                ensure_ascii=False,
+                sort_keys=True,
+                separators=(",", ":"),
+            ).encode("utf-8")
+        )
+        digest.update(b"\n")
+    return digest.hexdigest()
+
+
+def build_alter_foreign_table_factor_loop_plan(
+    repository_root: Path,
+) -> AlterForeignTableFactorLoopPlan:
+    """Assign one stable local SQL program to every non-delegated obligation."""
+
+    root = Path(repository_root).resolve(strict=True)
+    obligations = compile_alter_foreign_table_factor_loop_obligations(root)
+    type_expectations: dict[tuple[str, str, str], tuple[str, str]] = {}
+    for witness in load_alter_foreign_table_type_witnesses(root):
+        for action_id in ("add_column", "alter_column_type"):
+            expectation = witness.expectation_for(action_id)
+            if expectation.outcome == "expected_failure":
+                type_expectations[(witness.selector_id, witness.member, action_id)] = (
+                    expectation.expected_sqlstate,
+                    expectation.failure_reason or "type_member_rejected",
+                )
+
+    cases: list[AlterForeignTableFactorCase] = []
+    delegated: list[AlterForeignTableFactorObligation] = []
+    for obligation in obligations:
+        if obligation.disposition == "delegated":
+            delegated.append(obligation)
+            continue
+        ordinal = len(cases) + 1
+        if obligation.disposition == "expected_failure":
+            sqlstate, failure_reason = _expected_failure_details(
+                root, obligation, type_expectations
+            )
+            outcome = "expected_failure"
+        else:
+            outcome = "success"
+            sqlstate = "00000"
+            failure_reason = None
+        cases.append(
+            AlterForeignTableFactorCase(
+                ordinal=ordinal,
+                case_id=f"AFTCASE-{ordinal:04d}",
+                sql_filename=f"ALTERFOREIGNTABLE{ordinal:04d}.sql",
+                object_prefix=f"alterforeigntable_{ordinal:04d}_",
+                primary_obligation_id=obligation.obligation_id,
+                kind=obligation.kind,
+                factor_key=obligation.factor_key,
+                factor_value=obligation.value,
+                consumer_action_id=obligation.consumer_action_id,
+                outcome=outcome,
+                expected_sqlstate=sqlstate,
+                expected_failure_reason=failure_reason,
+                baseline_assignments=_baseline_assignments(obligation),
+                execution_profile="serial_sql",
+            )
+        )
+    plan = AlterForeignTableFactorLoopPlan(
+        obligations=obligations,
+        cases=tuple(cases),
+        delegated=tuple(delegated),
+        obligation_multiset_sha256=_obligation_multiset_sha256(obligations),
+    )
+    if len(plan.cases) != 1_805 or len(plan.delegated) != 12:
+        raise AlterForeignTableFactorLoopError("factor loop plan count drift")
+    if len({row.primary_obligation_id for row in plan.cases}) != 1_805:
+        raise AlterForeignTableFactorLoopError("local obligation mapping drift")
+    if len({row.sql_filename for row in plan.cases}) != 1_805:
+        raise AlterForeignTableFactorLoopError("duplicate SQL filename")
+    return plan
 
 
 def _canonical_consumer(row: CatalogRow) -> str:
@@ -323,5 +545,8 @@ def compile_alter_foreign_table_factor_loop_obligations(
 __all__ = [
     "AlterForeignTableFactorLoopError",
     "AlterForeignTableFactorObligation",
+    "AlterForeignTableFactorCase",
+    "AlterForeignTableFactorLoopPlan",
+    "build_alter_foreign_table_factor_loop_plan",
     "compile_alter_foreign_table_factor_loop_obligations",
 ]
