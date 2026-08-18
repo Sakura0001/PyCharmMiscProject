@@ -42,6 +42,32 @@ class AlterFunctionFactorObligation:
     delegated_statement_key: str | None = None
 
 
+@dataclass(frozen=True)
+class AlterFunctionFactorCase:
+    ordinal: int
+    case_id: str
+    sql_filename: str
+    object_prefix: str
+    primary_obligation_id: str
+    kind: str
+    factor_key: str
+    factor_value: str
+    consumer_action_id: str
+    outcome: str
+    expected_sqlstate: str
+    expected_failure_reason: str | None
+    baseline_assignments: tuple[tuple[str, str], ...]
+    execution_profile: str
+
+
+@dataclass(frozen=True)
+class AlterFunctionFactorLoopPlan:
+    obligations: tuple[AlterFunctionFactorObligation, ...]
+    cases: tuple[AlterFunctionFactorCase, ...]
+    delegated: tuple[AlterFunctionFactorObligation, ...]
+    obligation_multiset_sha256: str
+
+
 # Official synopsis branches.
 _BRANCH_ACTION_FORM = "branch_action_form"
 
@@ -303,6 +329,223 @@ def _obligation_multiset_sha256(
     return digest.hexdigest()
 
 
+def _consumer_branch_map() -> dict[str, str]:
+    return {
+        action.action_id: action.grammar_branch_id
+        for action in load_alter_function_grammar_actions()
+    }
+
+
+def _renderer_factor_key(factor_key: str) -> str:
+    """Map an obligation factor key to the renderer's flat factor namespace."""
+
+    if factor_key.startswith("outer:") or factor_key.startswith("local:"):
+        return factor_key.split(":", 1)[1]
+    return factor_key
+
+
+# Verified PG 18.4 SQLSTATE for each reachable expected-failure value.  These
+# were probed against an isolated 18.4 instance under the function-owner
+# baseline (reserved-schema rejections surface as 42501 under a non-superuser
+# owner, not as a superuser-only success).
+_SFV_FAILURE_SQLSTATE: dict[tuple[str, str], tuple[str, str]] = {
+    ("expected_status", "failure"): (
+        "42883",
+        "expected_status_failure_function_not_found",
+    ),
+    ("object_state", "not_exists"): ("42883", "function_does_not_exist"),
+    ("object_state", "different_signature_exists"): (
+        "42883",
+        "function_signature_does_not_exist",
+    ),
+    ("rename_target", "duplicate_name"): (
+        "42723",
+        "function_already_exists_in_schema",
+    ),
+    ("owner_target", "nonexistent_role"): ("42704", "role_does_not_exist"),
+    ("schema_target", "schema_not_exists"): ("3F000", "schema_does_not_exist"),
+    ("schema_target", "pg_catalog_reserved"): (
+        "42501",
+        "permission_denied_for_reserved_schema",
+    ),
+    ("schema_target", "information_schema_reserved"): (
+        "42501",
+        "permission_denied_for_reserved_schema",
+    ),
+    ("extension_target", "extension_not_exists"): (
+        "42704",
+        "extension_does_not_exist",
+    ),
+    ("argtype_specification", "with_partial_signature"): (
+        "42883",
+        "function_signature_does_not_exist",
+    ),
+    ("configuration_parameter_shape", "invalid_parameter"): (
+        "42704",
+        "unrecognized_configuration_parameter",
+    ),
+    ("privilege_level", "non_owner_no_privilege"): (
+        "42501",
+        "must_be_owner_of_function",
+    ),
+    ("schema_dependency", "target_schema_not_exists"): (
+        "3F000",
+        "schema_does_not_exist",
+    ),
+    ("schema_dependency", "reserved_schema"): (
+        "42501",
+        "permission_denied_for_reserved_schema",
+    ),
+    ("role_dependency", "owner_role_not_exists"): (
+        "42704",
+        "role_does_not_exist",
+    ),
+    ("extension_dependency", "extension_not_installed"): (
+        "42704",
+        "extension_does_not_exist",
+    ),
+    ("target_function_not_exists", "function_name_not_found"): (
+        "42883",
+        "function_does_not_exist",
+    ),
+    ("target_function_not_exists", "function_signature_not_found"): (
+        "42883",
+        "function_signature_does_not_exist",
+    ),
+    ("target_function_different_type", "same_name_is_aggregate"): (
+        "42809",
+        "not_a_function_is_aggregate",
+    ),
+    ("target_function_different_type", "same_name_is_procedure"): (
+        "42809",
+        "not_a_function_is_procedure",
+    ),
+    ("permission_insufficient", "no_alter_privilege"): (
+        "42501",
+        "must_be_owner_of_function",
+    ),
+    ("permission_insufficient", "not_owner_for_OWNER_TO"): (
+        "42501",
+        "must_be_owner_of_function",
+    ),
+    ("permission_insufficient", "not_owner_for_SET_SCHEMA"): (
+        "42501",
+        "must_be_owner_of_function",
+    ),
+    ("conflicting_action", "multiple_conflicting_volatility"): (
+        "42601",
+        "conflicting_or_redundant_options",
+    ),
+}
+
+
+def _expected_failure_details(
+    obligation: AlterFunctionFactorObligation,
+) -> tuple[str, str]:
+    try:
+        return _SFV_FAILURE_SQLSTATE[(obligation.factor_key, obligation.value)]
+    except KeyError as exc:
+        raise AlterFunctionFactorLoopError(
+            "missing expected-failure SQLSTATE for "
+            f"{obligation.factor_key}={obligation.value}"
+        ) from exc
+
+
+def _baseline_assignments(
+    obligation: AlterFunctionFactorObligation,
+) -> tuple[tuple[str, str], ...]:
+    """One legal baseline value per action-applicable key; primary overrides."""
+
+    branch = _consumer_branch_map()[obligation.consumer_action_id]
+    assignments: dict[str, str] = {
+        "grammar_branch": branch,
+        "target_action": obligation.consumer_action_id,
+        "object_state": "exists",
+        "privilege_level": "function_owner",
+        "function_name_shape": "simple",
+        "argtype_specification": "with_full_signature",
+        "expected_status": "success",
+        "verification_mode": "pg_proc_catalog_query",
+        "cleanup_mode": "DROP_FUNCTION_IF_EXISTS",
+        # GRM axis baselines (minimal / absent form).
+        "restrict_clause": "absent",
+        "action_list_cardinality": "one_action",
+        "set_assignment_form": "to_value",
+        "external_keyword": "omitted",
+        "depends_polarity": "depends",
+    }
+    if branch == "branch_rename":
+        assignments["new_name_shape"] = "simple"
+    elif branch == "branch_owner":
+        assignments["owner_target"] = "new_owner_role"
+        assignments["role_dependency"] = "owner_role_exists"
+    elif branch == "branch_set_schema":
+        assignments["schema_target"] = "schema_exists"
+        assignments["schema_dependency"] = "target_schema_exists"
+    elif branch == "branch_depends_extension":
+        assignments["extension_target"] = "extension_exists"
+        assignments["extension_dependency"] = "extension_installed"
+    # The primary value overrides exactly one key.
+    assignments[_renderer_factor_key(obligation.factor_key)] = obligation.value
+    if len(assignments) != len(set(assignments)):
+        raise AlterFunctionFactorLoopError("duplicate baseline factor key")
+    return tuple(sorted(assignments.items()))
+
+
+def build_alter_function_factor_loop_plan(
+    repository_root: Path,
+) -> AlterFunctionFactorLoopPlan:
+    """Assign one stable local SQL program to every non-delegated obligation."""
+
+    root = Path(repository_root).resolve(strict=True)
+    obligations = compile_alter_function_factor_loop_obligations(root)
+    cases: list[AlterFunctionFactorCase] = []
+    delegated: list[AlterFunctionFactorObligation] = []
+    for obligation in obligations:
+        if obligation.disposition == "delegated":
+            delegated.append(obligation)
+            continue
+        ordinal = len(cases) + 1
+        if obligation.disposition == "expected_failure":
+            sqlstate, failure_reason = _expected_failure_details(obligation)
+            outcome = "expected_failure"
+        else:
+            outcome = "success"
+            sqlstate = "00000"
+            failure_reason = None
+        cases.append(
+            AlterFunctionFactorCase(
+                ordinal=ordinal,
+                case_id=f"ALTERFUNCTION{ordinal:04d}",
+                sql_filename=f"ALTERFUNCTION{ordinal:04d}.sql",
+                object_prefix=f"alterfunction_{ordinal:04d}_",
+                primary_obligation_id=obligation.obligation_id,
+                kind=obligation.kind,
+                factor_key=_renderer_factor_key(obligation.factor_key),
+                factor_value=obligation.value,
+                consumer_action_id=obligation.consumer_action_id,
+                outcome=outcome,
+                expected_sqlstate=sqlstate,
+                expected_failure_reason=failure_reason,
+                baseline_assignments=_baseline_assignments(obligation),
+                execution_profile="serial_sql",
+            )
+        )
+    plan = AlterFunctionFactorLoopPlan(
+        obligations=obligations,
+        cases=tuple(cases),
+        delegated=tuple(delegated),
+        obligation_multiset_sha256=_obligation_multiset_sha256(obligations),
+    )
+    if len(plan.cases) != 123 or len(plan.delegated) != 0:
+        raise AlterFunctionFactorLoopError("factor loop plan count drift")
+    if len({row.primary_obligation_id for row in plan.cases}) != 123:
+        raise AlterFunctionFactorLoopError("local obligation mapping drift")
+    if len({row.sql_filename for row in plan.cases}) != 123:
+        raise AlterFunctionFactorLoopError("duplicate SQL filename")
+    return plan
+
+
 def compile_alter_function_factor_loop_obligations(
     repository_root: Path,
 ) -> tuple[AlterFunctionFactorObligation, ...]:
@@ -348,6 +591,9 @@ def compile_alter_function_factor_loop_obligations(
 __all__ = [
     "AlterFunctionFactorLoopError",
     "AlterFunctionFactorObligation",
+    "AlterFunctionFactorCase",
+    "AlterFunctionFactorLoopPlan",
     "compile_alter_function_factor_loop_obligations",
+    "build_alter_function_factor_loop_plan",
     "_obligation_multiset_sha256",
 ]

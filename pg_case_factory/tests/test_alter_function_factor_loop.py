@@ -4,6 +4,9 @@ import unittest
 
 from pg_case_factory.alter_function_factor_loop import (
     AlterFunctionFactorLoopError,
+    AlterFunctionFactorCase,
+    AlterFunctionFactorLoopPlan,
+    build_alter_function_factor_loop_plan,
     compile_alter_function_factor_loop_obligations,
 )
 from pg_case_factory.alter_function_regress import (
@@ -77,6 +80,86 @@ class AlterFunctionFactorLoopLedgerTest(unittest.TestCase):
         # without_signature and over_63_chars are NOT failures (legal / truncated)
         self.assertNotIn(("argtype_specification", "without_signature"), failures)
         self.assertNotIn(("identifier_length_exceeded", "over_63_chars"), failures)
+
+
+class AlterFunctionFactorLoopPlanTest(unittest.TestCase):
+    def test_one_case_per_local_obligation_with_stable_numbering(self) -> None:
+        plan = build_alter_function_factor_loop_plan(ROOT)
+        self.assertIsInstance(plan, AlterFunctionFactorLoopPlan)
+        # delegated is empty for ALTER FUNCTION (boundaries are expected_failure)
+        self.assertEqual(0, len(plan.delegated))
+        # exactly one local case per non-delegated obligation
+        self.assertEqual(123, len(plan.cases))
+        # stable 1..N numbering
+        self.assertEqual(
+            list(range(1, 124)), [row.ordinal for row in plan.cases]
+        )
+        # case_id / sql_filename / object_prefix follow the 4-digit scheme
+        self.assertEqual("ALTERFUNCTION0001", plan.cases[0].case_id)
+        self.assertEqual("ALTERFUNCTION0123", plan.cases[-1].case_id)
+        self.assertEqual("ALTERFUNCTION0001.sql", plan.cases[0].sql_filename)
+        self.assertEqual("ALTERFUNCTION0123.sql", plan.cases[-1].sql_filename)
+        self.assertEqual(
+            "alterfunction_0001_", plan.cases[0].object_prefix
+        )
+        self.assertEqual(
+            "alterfunction_0123_", plan.cases[-1].object_prefix
+        )
+        # every case maps to exactly one obligation
+        self.assertEqual(
+            123, len({row.primary_obligation_id for row in plan.cases})
+        )
+        self.assertEqual(
+            123, len({row.sql_filename for row in plan.cases})
+        )
+        # execution profile is the serial contract
+        self.assertTrue(
+            all(row.execution_profile == "serial_sql" for row in plan.cases)
+        )
+
+    def test_outcome_driven_by_disposition(self) -> None:
+        plan = build_alter_function_factor_loop_plan(ROOT)
+        obligations = compile_alter_function_factor_loop_obligations(ROOT)
+        by_id = {row.obligation_id: row for row in obligations}
+        for case in plan.cases:
+            obligation = by_id[case.primary_obligation_id]
+            if obligation.disposition == "expected_failure":
+                self.assertEqual("expected_failure", case.outcome)
+                # fixed 5-digit SQLSTATE
+                self.assertEqual(5, len(case.expected_sqlstate))
+                self.assertIsNotNone(case.expected_failure_reason)
+            else:
+                self.assertEqual("success", case.outcome)
+                self.assertEqual("00000", case.expected_sqlstate)
+                self.assertIsNone(case.expected_failure_reason)
+
+    def test_baseline_has_one_primary_value_no_duplicates(self) -> None:
+        plan = build_alter_function_factor_loop_plan(ROOT)
+        for case in plan.cases:
+            # exactly one primary factor override per case
+            primary_seen = sum(
+                1
+                for key, _ in case.baseline_assignments
+                if key == case.factor_key
+            )
+            self.assertEqual(1, primary_seen, case.sql_filename)
+            # no duplicate keys in the baseline
+            keys = [key for key, _ in case.baseline_assignments]
+            self.assertEqual(
+                len(keys), len(set(keys)), case.sql_filename
+            )
+            # the primary value is the obligation's own value
+            primary_value = next(
+                value
+                for key, value in case.baseline_assignments
+                if key == case.factor_key
+            )
+            self.assertEqual(case.factor_value, primary_value)
+            # every baseline is sorted for determinism
+            self.assertEqual(
+                case.baseline_assignments,
+                tuple(sorted(case.baseline_assignments)),
+            )
 
 
 if __name__ == "__main__":
