@@ -1427,5 +1427,109 @@ class AlterConversionRegressPublicationTest(unittest.TestCase):
             self.assertTrue(validation.passed, validation.issues)
 
 
+class AlterForeignTableFactorLoopPublicationTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.snapshot = discover_statement_factor_cycle(ROOT)
+        cls.plan = build_statement_regress_plan(
+            cls.snapshot,
+            "alter_foreign_table",
+        )
+
+    def test_plan_exposes_the_complete_factor_value_loop(self) -> None:
+        self.assertEqual("ALTERFOREIGNTABLE", self.plan.file_prefix)
+        self.assertEqual(1_805, len(self.plan.cases))
+        self.assertEqual(103, len(self.plan.factor_decisions))
+        self.assertEqual(
+            {
+                "factor_value_loop_grm": 136,
+                "factor_value_loop_inv": 1_564,
+                "factor_value_loop_risk": 2,
+                "factor_value_loop_sfv": 103,
+            },
+            self.plan.case_group_counts,
+        )
+        self.assertEqual(
+            tuple(range(1, 1_806)),
+            tuple(case.ordinal for case in self.plan.cases),
+        )
+
+    def test_generate_validate_and_regenerate_deterministically(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            first_output = root / "first" / "alter_foreign_table"
+            first_evidence = root / "first-evidence"
+            second_output = root / "second" / "alter_foreign_table"
+            second_evidence = root / "second-evidence"
+
+            first = generate_statement_regress_package(
+                ROOT,
+                "alter_foreign_table",
+                output_dir=first_output,
+                evidence_dir=first_evidence,
+            )
+            second = generate_statement_regress_package(
+                ROOT,
+                "alter_foreign_table",
+                output_dir=second_output,
+                evidence_dir=second_evidence,
+            )
+
+            self.assertTrue(first.passed, first.issues)
+            self.assertTrue(second.passed, second.issues)
+            self.assertEqual(
+                1_805,
+                len(list(first_output.glob("ALTERFOREIGNTABLE*.sql"))),
+            )
+            actual = json.loads(
+                (first_evidence / "actual-factor-witness-report.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+            self.assertIs(True, actual["passed"])
+            self.assertEqual(1_817, actual["decision_count"])
+            self.assertEqual(1_805, actual["sql_file_count"])
+            self.assertEqual(12, actual["delegated_count"])
+            self.assertEqual(0, actual["missing_obligation_count"])
+            self.assertEqual(0, actual["duplicate_obligation_count"])
+            self.assertEqual(0, actual["unknown_obligation_count"])
+            self.assertEqual(0, actual["semantic_witness_mismatch_count"])
+
+            package = json.loads(
+                (first_evidence / "package.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(
+                "factor_value_independent_loop_v1",
+                package["generation_mode"],
+            )
+            self.assertEqual(1_817, package["decision_count"])
+            self.assertEqual(12, package["delegated_count"])
+
+            validation = validate_statement_regress_package(
+                ROOT,
+                "alter_foreign_table",
+                output_dir=first_output,
+                evidence_dir=first_evidence,
+            )
+            self.assertTrue(validation.passed, validation.issues)
+
+            for first_root, second_root in (
+                (first_output, second_output),
+                (first_evidence, second_evidence),
+            ):
+                self.assertEqual(
+                    {
+                        path.relative_to(first_root): path.read_bytes()
+                        for path in first_root.rglob("*")
+                        if path.is_file()
+                    },
+                    {
+                        path.relative_to(second_root): path.read_bytes()
+                        for path in second_root.rglob("*")
+                        if path.is_file()
+                    },
+                )
+
+
 if __name__ == "__main__":
     unittest.main()

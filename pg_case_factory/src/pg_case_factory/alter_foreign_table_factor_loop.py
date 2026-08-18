@@ -438,7 +438,7 @@ def build_alter_foreign_table_factor_loop_plan(
         cases.append(
             AlterForeignTableFactorCase(
                 ordinal=ordinal,
-                case_id=f"AFTCASE-{ordinal:04d}",
+                case_id=f"ALTERFOREIGNTABLE{ordinal:04d}",
                 sql_filename=f"ALTERFOREIGNTABLE{ordinal:04d}.sql",
                 object_prefix=f"alterforeigntable_{ordinal:04d}_",
                 primary_obligation_id=obligation.obligation_id,

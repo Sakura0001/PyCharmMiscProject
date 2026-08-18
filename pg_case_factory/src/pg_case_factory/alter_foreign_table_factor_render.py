@@ -94,7 +94,7 @@ GENERATION_SQL = {
     ),
     "volatile_generation_expression": "GENERATED ALWAYS AS (random()) STORED",
     "stable_generation_expression": (
-        "GENERATED ALWAYS AS (EXTRACT(DAY FROM CURRENT_DATE)) STORED"
+        "GENERATED ALWAYS AS (date_part('day', CURRENT_DATE)) STORED"
     ),
     "self_reference_generation_expression": (
         "GENERATED ALWAYS AS ({column_name} + 1) STORED"
@@ -251,7 +251,7 @@ FOREIGN_KEY_ACTION_SQL = {
     ),
     "on_update_action": (
         "ADD FOREIGN KEY ({column}) REFERENCES {referenced_table}(id) "
-        "ON UPDATE CASCADE"
+        "ON UPDATE :aft_update_action"
     ),
     "on_delete_action": (
         "ADD FOREIGN KEY ({column}) REFERENCES {referenced_table}(id) "
@@ -633,7 +633,9 @@ def _column_catalog_oracle(
         "SELECT 1 FROM pg_catalog.pg_attribute AS a "
         f"WHERE a.attrelid = '{table_name}'::regclass "
         f"AND a.attname = '{actual_column_name}' AND NOT a.attisdropped"
-        f") AS {attribute};",
+        f") AS {attribute} "
+        "FROM (VALUES (1)) AS deterministic_probe(value) "
+        "ORDER BY deterministic_probe.value;",
     )
 
 
@@ -932,6 +934,11 @@ def _constraint_witness(
             "unique_id integer UNIQUE, text_id text UNIQUE);"
         )
         cleanup.append(f"DROP TABLE IF EXISTS {tokens['referenced_table']} CASCADE;")
+    if (
+        case.factor_key == "foreign_key_role"
+        and case.factor_value == "on_update_action"
+    ):
+        setup.append("\\set aft_update_action CASCADE")
     return AlterForeignTableFactorWitness(
         primary_obligation_id=case.primary_obligation_id,
         setup_sql=tuple(setup),
@@ -1398,7 +1405,7 @@ def _statistics_witness(
             "COALESCE(array_length(a.attoptions, 1), 0) >= 0 AS options_normalized "
             "FROM pg_catalog.pg_attribute AS a "
             f"WHERE a.attrelid = '{table_name}'::regclass "
-            f"AND a.attname = '{column}';",
+            f"AND a.attname = '{column}' ORDER BY a.attnum;",
         ),
         cleanup_sql=(),
         semantic_locus="target.column_definition",
@@ -1963,7 +1970,9 @@ def _canonical_oracle(case: AlterForeignTableFactorCase) -> tuple[str, ...]:
             ),
             "pg_class_catalog_query": (
                 "SELECT EXISTS (SELECT 1 FROM pg_catalog.pg_class "
-                f"WHERE relname = '{prefix}ft') AS pg_class_normalized;",
+                f"WHERE relname = '{prefix}ft') AS pg_class_normalized "
+                "FROM (VALUES (1)) AS deterministic_probe(value) "
+                "ORDER BY deterministic_probe.value;",
             ),
         }[case.factor_value]
     if case.factor_key == "if_exists_notice":
@@ -2046,7 +2055,9 @@ def _transaction_witness(
             f"WHERE a.attrelid = '{prefix}ft'::regclass "
             f"AND a.attname = '{prefix}transaction_probe') = "
             f"{'true' if case.factor_value == 'commit' else 'false'} "
-            "AS transaction_outcome_normalized;",
+            "AS transaction_outcome_normalized "
+            "FROM (VALUES (1)) AS deterministic_probe(value) "
+            "ORDER BY deterministic_probe.value;",
         ),
         cleanup_sql=(),
         semantic_locus="transaction.state_transition",
@@ -2093,11 +2104,38 @@ def _fixture_column_name(case: AlterForeignTableFactorCase) -> str:
     return f"{case.object_prefix}factor_col"
 
 
+def _ordinary_table_names(case: AlterForeignTableFactorCase) -> tuple[str, ...]:
+    prefix = case.object_prefix
+    return tuple(
+        f"{prefix}{suffix}"
+        for suffix in (
+            "base",
+            "remote_table",
+            "referenced_table",
+            "fk_dependent",
+            "fk_target",
+            "partition_context",
+            "partition_parent",
+            "inheritance_parent",
+            "child_marker",
+            "parent_marker",
+            "range_parent",
+            "list_parent",
+            "hash_parent",
+            "zero_column_ft",
+            "row_table",
+        )
+    )
+
+
+def _table_boundary_cleanup(case: AlterForeignTableFactorCase) -> str:
+    return "DROP TABLE IF EXISTS " + ", ".join(_ordinary_table_names(case)) + " CASCADE;"
+
+
 def _pre_cleanup_sql(case: AlterForeignTableFactorCase) -> tuple[str, ...]:
     prefix = case.object_prefix
-    base = f"{prefix}base"
     return (
-        f"DROP TABLE IF EXISTS {base} CASCADE;",
+        _table_boundary_cleanup(case),
         "RESET ROLE;",
         f"DROP VIEW IF EXISTS {prefix}dependent_view CASCADE;",
         f"DROP VIEW IF EXISTS {prefix}whole_row_view CASCADE;",
@@ -2335,7 +2373,7 @@ def _final_cleanup_sql(
             f"DROP ROLE IF EXISTS {prefix}new_owner;",
             f"DROP SERVER IF EXISTS {prefix}server CASCADE;",
             f"DROP FOREIGN DATA WRAPPER IF EXISTS {prefix}fdw CASCADE;",
-            f"DROP TABLE IF EXISTS {prefix}base CASCADE;",
+            _table_boundary_cleanup(case),
         )
     )
     return tuple(rows)
@@ -2363,20 +2401,24 @@ def render_alter_foreign_table_factor_case(
         "-- version      : 1.0",
         "-- description  : ALTER FOREIGN TABLE "
         f"{case.factor_key}={case.factor_value}",
-        "-- FE           :",
+        "-- FE           : PG18-STATEMENT-FACTOR-LOOP",
         "-- ++",
         "-- --------------------------------------------------------",
         f"-- case_id: {case.case_id}",
+        "-- source_md: skills/pg-sql-generation/references/statements/ddl/foreign_table/alter_foreign_table.md",
+        "-- factor_md: skills/pg-sql-generation/references/combinations/ddl/foreign_table/alter_foreign_table.yaml",
         f"-- primary_obligation_id: {case.primary_obligation_id}",
         f"-- expected_outcome: {case.outcome}",
         f"-- expected_sqlstate: {case.expected_sqlstate}",
-        "\\set ON_ERROR_STOP on",
+        "-- 1. 清理本编号对象，保证脚本可重复执行。",
     ]
     lines.extend(_pre_cleanup_sql(case))
+    lines.append("-- 2. 创建完整本地表、外表和因子专用夹具。")
     lines.extend(_common_fixture_sql(case))
     lines.extend(witness.setup_sql)
     if case.outcome == "expected_failure":
         lines.append("\\set ON_ERROR_STOP off")
+    lines.append("-- 3. 执行唯一获得覆盖信用的 ALTER FOREIGN TABLE。")
     lines.append(_PRIMARY_BEGIN)
     lines.append(_primary_statement(case, witness))
     lines.append(_PRIMARY_END)
@@ -2387,7 +2429,9 @@ def render_alter_foreign_table_factor_case(
         f"SELECT :'target_sqlstate' = '{case.expected_sqlstate}' "
         "AS target_sqlstate_matches_expected;"
     )
+    lines.append("-- 4. 验证 SQLSTATE、目录状态和数据行为。")
     lines.extend(witness.oracle_sql)
+    lines.append("-- 5. 清理全部本编号对象。")
     lines.extend(_final_cleanup_sql(case, witness))
     rendered = "\n".join(row.rstrip() for row in lines) + "\n"
     if "{" in rendered or "}" in rendered:

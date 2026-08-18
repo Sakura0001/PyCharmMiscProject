@@ -608,7 +608,7 @@ git commit -m "feat: assemble alter foreign table regress programs"
 - Modify: `src/pg_case_factory/remaining_statement_regress.py`
 - Modify: `tests/test_remaining_statement_regress.py`
 
-- [ ] **Step 1: Write failing conservation and mutation tests**
+- [x] **Step 1: Write failing conservation and mutation tests**
 
 ```python
 def test_actual_programs_conserve_primary_obligation_bag(self) -> None:
@@ -639,15 +639,15 @@ def test_comment_only_primary_value_cannot_pass(self) -> None:
     self.assertEqual(1, report.semantic_witness_mismatch_count)
 ```
 
-- [ ] **Step 2: Run tests and verify RED**
+- [x] **Step 2: Run tests and verify RED**
 
 Expected: missing validator module.
 
-- [ ] **Step 3: Implement strict validation reports**
+- [x] **Step 3: Implement strict validation reports**
 
 Store exact expected/actual primary-obligation multisets, SQL SHA map, semantic locus, expected outcome/SQLSTATE, delegated multiset, and missing/duplicate/unknown/mismatch counters. Validate final bytes, not planner metadata. Factor decoders read the declared target, fixture, oracle, or cleanup locus.
 
-- [ ] **Step 4: Register the statement in the main publication path**
+- [x] **Step 4: Register the statement in the main publication path**
 
 Add lazy plan and renderer branches for `alter_foreign_table` and this exact target regex:
 
@@ -669,11 +669,11 @@ Package evidence must include:
 }
 ```
 
-- [ ] **Step 5: Publish twice to empty temporary directories and compare bytes**
+- [x] **Step 5: Publish twice to empty temporary directories and compare bytes**
 
 Use `publish_statement_regress()` twice. Compare complete relative-path-to-SHA maps for SQL, schedules, plan, coverage, handoff, package, and validation. Missing, extra, or different paths fail.
 
-- [ ] **Step 6: Run static tests and commit**
+- [x] **Step 6: Run static tests and commit**
 
 ```bash
 uv run python -m unittest -v \
