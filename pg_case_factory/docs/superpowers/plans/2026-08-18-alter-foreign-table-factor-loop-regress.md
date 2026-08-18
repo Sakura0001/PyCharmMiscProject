@@ -754,11 +754,11 @@ git commit -m "test: add alter foreign table pg18 runtime"
 - Create/replace: `artifacts/regress/by-factor/ddl/foreign_table/alter_foreign_table/`
 - Create/replace: `artifacts/intermediates/remaining-statement-factor-cycle/alter_foreign_table/`
 
-- [ ] **Step 1: Generate into a temporary sibling directory**
+- [x] **Step 1: Generate into a temporary sibling directory**
 
 Run the statement publication command with the frozen cycle snapshot. Require exactly 1,805 `.sql` files, two schedules, plan/coverage/handoff/package/validation JSON, and no unexpected files.
 
-- [ ] **Step 2: Run mechanical style validation**
+- [x] **Step 2: Run mechanical style validation**
 
 ```bash
 uv run python skills/regress-output-script-style/scripts/validate_regress_sql_style.py \
@@ -768,7 +768,7 @@ uv run python skills/regress-output-script-style/scripts/validate_regress_sql_st
 
 Expected: `PASS`. `MANUAL_CONFIRMATION_REQUIRED` is not accepted as completion.
 
-- [ ] **Step 3: Run the complete local suite twice**
+- [x] **Step 3: Run the complete local suite twice**
 
 Call `run_alter_foreign_table_factor_suite()` with serial execution and 30-second per-file timeout. Require:
 
@@ -784,15 +784,15 @@ cleanup failures             0
 two-run mismatches           0
 ```
 
-- [ ] **Step 4: Re-run static validation from published bytes**
+- [x] **Step 4: Re-run static validation from published bytes**
 
 Recompute every SQL SHA, the primary-obligation bag, 12 delegated records, schedules, package SHA, and runtime predecessor SHA. Do not trust pre-publication in-memory objects.
 
-- [ ] **Step 5: Update the readable plan and progress atomically**
+- [x] **Step 5: Update the readable plan and progress atomically**
 
 Set AFT status to `complete`, record exact 1,817/1,805/12 counts, package SHA, runtime evidence SHA, PG18.4 identity, and two-run totals. Mark only `alter_foreign_table` complete and set the next pointer to `alter_function`.
 
-- [ ] **Step 6: Run the final verification set**
+- [x] **Step 6: Run the final verification set**
 
 ```bash
 uv run python -m unittest -v \
@@ -816,7 +816,7 @@ git diff --check
 
 Expected: all tests pass, compilation succeeds, and `git diff --check` prints nothing.
 
-- [ ] **Step 7: Commit package and completion evidence**
+- [x] **Step 7: Commit package and completion evidence**
 
 ```bash
 git add docs/superpowers/plans/2026-08-18-alter-foreign-table-full-regress-coverage-plan.md \
@@ -827,3 +827,14 @@ git commit -m "test: publish alter foreign table factor regress"
 ```
 
 Do not begin `ALTER FUNCTION` until Task 10 evidence has been re-read from disk and all mismatch/failure totals remain zero.
+
+### Task 10 completion evidence
+
+- Decisions / local SQL / delegated handoffs: `1,817 / 1,805 / 12`.
+- Canonical statement-factor rows: `103 / 103`, missing `0`, duplicate `0`.
+- Actual primary obligation witnesses: `1,817 / 1,817`, semantic mismatches `0`.
+- Published package SHA-256: `aa3253fa97dce46c9ced6e7959cc9f77b528b511d8cefd4d0abf1453ecb6f700`.
+- Runtime: PostgreSQL `180004`; run 01 `1,805`, run 02 `1,805`, total `3,610` executions.
+- Runtime mismatches/failures: execution `0`, SQLSTATE `0`, oracle `0`, cleanup `0`, transcript `0`, structured result `0`.
+- Runtime validation SHA-256: `84b7ed1ee8913770dcad8e04d6590b20fa207a19f6899eff6022670b5b4ef073`.
+- Next statement: `alter_function`.

@@ -5,7 +5,7 @@
 ## 当前状态
 
 - 清单指纹：`606b9e710210e50ff88b14de7052163f9ee31f6f1d1e744bc0bd9935f399a9d9`
-- 下一条：`alter_foreign_table`
+- 下一条：`alter_function`
 
 ## 顺序清单
 
@@ -21,7 +21,7 @@
 | [x] | 008 | `alter_event_trigger` | `ddl/event_trigger` | 20 / 56 | 159 | `artifacts/regress/by-factor/ddl/event_trigger/alter_event_trigger` |
 | [x] | 009 | `alter_extension` | `ddl/extension` | 24 / 67 | 416 | `artifacts/regress/by-factor/ddl/extension/alter_extension` |
 | [x] | 010 | `alter_foreign_data_wrapper` | `ddl/foreign_data_wrapper` | 26 / 67 | 155 | `artifacts/regress/by-factor/ddl/foreign_data_wrapper/alter_foreign_data_wrapper` |
-| [ ] | 011 | `alter_foreign_table` | `ddl/foreign_table` | 32 / 103 | — | 待生成 |
+| [x] | 011 | `alter_foreign_table` | `ddl/foreign_table` | 32 / 103 | 1805 | `artifacts/regress/by-factor/ddl/foreign_table/alter_foreign_table` |
 | [ ] | 012 | `alter_function` | `ddl/function` | 24 / 85 | — | 待生成 |
 | [ ] | 013 | `alter_group` | `ddl/group` | 23 / 57 | — | 待生成 |
 | [ ] | 014 | `alter_index` | `ddl/index` | 19 / 66 | — | 待生成 |

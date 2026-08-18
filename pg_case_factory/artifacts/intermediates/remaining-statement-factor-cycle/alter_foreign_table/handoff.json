@@ -1,0 +1,141 @@
+{
+  "schema_version": 1,
+  "kind": "alter_foreign_table_factor_handoff_ledger",
+  "generation_mode": "factor_value_independent_loop_v1",
+  "delegated_count": 12,
+  "owner_statement_key": "create_index",
+  "decisions": [
+    {
+      "ordinal": 1356,
+      "obligation_id": "AFT-INV|handoff:create_index|index_role|no_index_role",
+      "kind": "INV",
+      "factor_key": "index_role",
+      "value": "no_index_role",
+      "consumer_action_id": "handoff:create_index",
+      "disposition": "delegated",
+      "source_locator": "skills/pg-sql-generation/references/common/pg18_column_structure_catalog.yaml#dimension=index_role;member=no_index_role",
+      "delegated_statement_key": "create_index"
+    },
+    {
+      "ordinal": 1357,
+      "obligation_id": "AFT-INV|handoff:create_index|index_role|btree_index_key",
+      "kind": "INV",
+      "factor_key": "index_role",
+      "value": "btree_index_key",
+      "consumer_action_id": "handoff:create_index",
+      "disposition": "delegated",
+      "source_locator": "skills/pg-sql-generation/references/common/pg18_column_structure_catalog.yaml#dimension=index_role;member=btree_index_key",
+      "delegated_statement_key": "create_index"
+    },
+    {
+      "ordinal": 1358,
+      "obligation_id": "AFT-INV|handoff:create_index|index_role|hash_index_key",
+      "kind": "INV",
+      "factor_key": "index_role",
+      "value": "hash_index_key",
+      "consumer_action_id": "handoff:create_index",
+      "disposition": "delegated",
+      "source_locator": "skills/pg-sql-generation/references/common/pg18_column_structure_catalog.yaml#dimension=index_role;member=hash_index_key",
+      "delegated_statement_key": "create_index"
+    },
+    {
+      "ordinal": 1359,
+      "obligation_id": "AFT-INV|handoff:create_index|index_role|gist_index_key",
+      "kind": "INV",
+      "factor_key": "index_role",
+      "value": "gist_index_key",
+      "consumer_action_id": "handoff:create_index",
+      "disposition": "delegated",
+      "source_locator": "skills/pg-sql-generation/references/common/pg18_column_structure_catalog.yaml#dimension=index_role;member=gist_index_key",
+      "delegated_statement_key": "create_index"
+    },
+    {
+      "ordinal": 1360,
+      "obligation_id": "AFT-INV|handoff:create_index|index_role|gin_index_key",
+      "kind": "INV",
+      "factor_key": "index_role",
+      "value": "gin_index_key",
+      "consumer_action_id": "handoff:create_index",
+      "disposition": "delegated",
+      "source_locator": "skills/pg-sql-generation/references/common/pg18_column_structure_catalog.yaml#dimension=index_role;member=gin_index_key",
+      "delegated_statement_key": "create_index"
+    },
+    {
+      "ordinal": 1361,
+      "obligation_id": "AFT-INV|handoff:create_index|index_role|brin_index_key",
+      "kind": "INV",
+      "factor_key": "index_role",
+      "value": "brin_index_key",
+      "consumer_action_id": "handoff:create_index",
+      "disposition": "delegated",
+      "source_locator": "skills/pg-sql-generation/references/common/pg18_column_structure_catalog.yaml#dimension=index_role;member=brin_index_key",
+      "delegated_statement_key": "create_index"
+    },
+    {
+      "ordinal": 1362,
+      "obligation_id": "AFT-INV|handoff:create_index|index_role|included_index_column",
+      "kind": "INV",
+      "factor_key": "index_role",
+      "value": "included_index_column",
+      "consumer_action_id": "handoff:create_index",
+      "disposition": "delegated",
+      "source_locator": "skills/pg-sql-generation/references/common/pg18_column_structure_catalog.yaml#dimension=index_role;member=included_index_column",
+      "delegated_statement_key": "create_index"
+    },
+    {
+      "ordinal": 1363,
+      "obligation_id": "AFT-INV|handoff:create_index|index_role|expression_index_dependency",
+      "kind": "INV",
+      "factor_key": "index_role",
+      "value": "expression_index_dependency",
+      "consumer_action_id": "handoff:create_index",
+      "disposition": "delegated",
+      "source_locator": "skills/pg-sql-generation/references/common/pg18_column_structure_catalog.yaml#dimension=index_role;member=expression_index_dependency",
+      "delegated_statement_key": "create_index"
+    },
+    {
+      "ordinal": 1364,
+      "obligation_id": "AFT-INV|handoff:create_index|index_role|partial_index_dependency",
+      "kind": "INV",
+      "factor_key": "index_role",
+      "value": "partial_index_dependency",
+      "consumer_action_id": "handoff:create_index",
+      "disposition": "delegated",
+      "source_locator": "skills/pg-sql-generation/references/common/pg18_column_structure_catalog.yaml#dimension=index_role;member=partial_index_dependency",
+      "delegated_statement_key": "create_index"
+    },
+    {
+      "ordinal": 1365,
+      "obligation_id": "AFT-INV|handoff:create_index|index_role|unique_index_key",
+      "kind": "INV",
+      "factor_key": "index_role",
+      "value": "unique_index_key",
+      "consumer_action_id": "handoff:create_index",
+      "disposition": "delegated",
+      "source_locator": "skills/pg-sql-generation/references/common/pg18_column_structure_catalog.yaml#dimension=index_role;member=unique_index_key",
+      "delegated_statement_key": "create_index"
+    },
+    {
+      "ordinal": 1366,
+      "obligation_id": "AFT-INV|handoff:create_index|index_role|primary_index_key",
+      "kind": "INV",
+      "factor_key": "index_role",
+      "value": "primary_index_key",
+      "consumer_action_id": "handoff:create_index",
+      "disposition": "delegated",
+      "source_locator": "skills/pg-sql-generation/references/common/pg18_column_structure_catalog.yaml#dimension=index_role;member=primary_index_key",
+      "delegated_statement_key": "create_index"
+    },
+    {
+      "ordinal": 1367,
+      "obligation_id": "AFT-INV|handoff:create_index|index_role|foreign_table_index_target",
+      "kind": "INV",
+      "factor_key": "index_role",
+      "value": "foreign_table_index_target",
+      "consumer_action_id": "handoff:create_index",
+      "disposition": "delegated",
+      "source_locator": "skills/pg-sql-generation/references/common/pg18_column_structure_catalog.yaml#dimension=index_role;member=foreign_table_index_target",
+      "delegated_statement_key": "create_index"
+    }
+  ]
+}

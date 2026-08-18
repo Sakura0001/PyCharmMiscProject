@@ -1,0 +1,1293 @@
+{
+  "schema_version": 1,
+  "inventory_fingerprint": "606b9e710210e50ff88b14de7052163f9ee31f6f1d1e744bc0bd9935f399a9d9",
+  "inventory_sha256": "f4eb4d036e26444ab158b607ad363281664dd5eb27874d397a310a60c8e8c7cb",
+  "universe_semantic_sha256": "42707defa63ed63e2c15e6d0fa1cde04b93aef9b3c735d1149198b10eb6977fc",
+  "statement_count": 183,
+  "retained_statement_count": 6,
+  "pending_statement_count": 177,
+  "next_pending_statement": "alter_function",
+  "statements": {
+    "abort": {
+      "status": "completed",
+      "package_path": "artifacts/regress/by-factor/tcl/transaction/abort",
+      "sql_file_count": 61,
+      "validation_evidence": "/Users/yuyu/PyCharmMiscProject/pg_case_factory/artifacts/intermediates/remaining-statement-factor-cycle/abort/validation.json",
+      "validation_evidence_sha256": "37dd611090a68e124906c0cf7dd3f62a7b02565722b30ae6afb7fd049db1bea5"
+    },
+    "alter_aggregate": {
+      "status": "completed",
+      "package_path": "artifacts/regress/by-factor/ddl/aggregate/alter_aggregate",
+      "sql_file_count": 783,
+      "validation_evidence": "/Users/yuyu/PyCharmMiscProject/pg_case_factory/artifacts/intermediates/remaining-statement-factor-cycle/alter_aggregate/validation.json",
+      "validation_evidence_sha256": "538fae6b2791211546db3cc6ec8a800c80f3f053e285f63f3ade100dde2caa64"
+    },
+    "alter_collation": {
+      "status": "completed",
+      "package_path": "artifacts/regress/by-factor/ddl/collation/alter_collation",
+      "sql_file_count": 174,
+      "validation_evidence": "/Users/yuyu/PyCharmMiscProject/pg_case_factory/artifacts/intermediates/remaining-statement-factor-cycle/alter_collation/validation.json",
+      "validation_evidence_sha256": "25abf0ecff2be1c9a2676eb947f76fcb9d7b6ac24473886a2ccb7c1754da7891"
+    },
+    "alter_conversion": {
+      "status": "completed",
+      "package_path": "artifacts/regress/by-factor/ddl/conversion/alter_conversion",
+      "sql_file_count": 216,
+      "validation_evidence": "/Users/yuyu/PyCharmMiscProject/pg_case_factory/artifacts/intermediates/remaining-statement-factor-cycle/alter_conversion/validation.json",
+      "validation_evidence_sha256": "0cdb6424ea4802ea9a84c8f992da306813c4055e5429bfad4ac0bfce8ae571c1"
+    },
+    "alter_database": {
+      "status": "completed",
+      "package_path": "artifacts/regress/by-factor/ddl/database/alter_database",
+      "sql_file_count": 1420,
+      "validation_evidence": "/Users/yuyu/PyCharmMiscProject/pg_case_factory/artifacts/intermediates/remaining-statement-factor-cycle/alter_database/validation.json",
+      "validation_evidence_sha256": "718495514507839b5b7c481de4f9fd6c0e2375558bf0559261ae4448fb41c566"
+    },
+    "alter_default_privileges": {
+      "status": "completed",
+      "package_path": "artifacts/regress/by-factor/ddl/default_privileges/alter_default_privileges",
+      "sql_file_count": 4271,
+      "validation_evidence": "/Users/yuyu/PyCharmMiscProject/pg_case_factory/artifacts/intermediates/remaining-statement-factor-cycle/alter_default_privileges/validation.json",
+      "validation_evidence_sha256": "e9de373863c037f672b32ef31d19e75e0d9e88630577f1600ef81ea213c2c771"
+    },
+    "alter_domain": {
+      "status": "completed",
+      "package_path": "artifacts/regress/by-factor/ddl/domain/alter_domain",
+      "sql_file_count": 908,
+      "validation_evidence": "/Users/yuyu/PyCharmMiscProject/pg_case_factory/artifacts/intermediates/remaining-statement-factor-cycle/alter_domain/validation.json",
+      "validation_evidence_sha256": "299a3a76aaf87143c053da706bac8844999b0c56fd98f83413c1c916dbf60f8d"
+    },
+    "alter_event_trigger": {
+      "status": "completed",
+      "package_path": "artifacts/regress/by-factor/ddl/event_trigger/alter_event_trigger",
+      "sql_file_count": 159,
+      "validation_evidence": "/Users/yuyu/PyCharmMiscProject/pg_case_factory/artifacts/intermediates/remaining-statement-factor-cycle/alter_event_trigger/validation.json",
+      "validation_evidence_sha256": "91bcbef543bd34aed190379bf6603845757541f12f4ecab442c2e08153f45b51"
+    },
+    "alter_extension": {
+      "status": "completed",
+      "package_path": "artifacts/regress/by-factor/ddl/extension/alter_extension",
+      "sql_file_count": 416,
+      "validation_evidence": "/Users/yuyu/PyCharmMiscProject/pg_case_factory/artifacts/intermediates/remaining-statement-factor-cycle/alter_extension/validation.json",
+      "validation_evidence_sha256": "819a19ab1bddaa3af20ebb75f25dd82f4bf265ef34e9aec27e2bc2b8701bd92c"
+    },
+    "alter_foreign_data_wrapper": {
+      "status": "completed",
+      "package_path": "artifacts/regress/by-factor/ddl/foreign_data_wrapper/alter_foreign_data_wrapper",
+      "sql_file_count": 155,
+      "validation_evidence": "/Users/yuyu/PyCharmMiscProject/pg_case_factory/artifacts/intermediates/remaining-statement-factor-cycle/alter_foreign_data_wrapper/validation.json",
+      "validation_evidence_sha256": "a00b684f611682466acf4f28ab2b63efdb44776e35536813f17da9040c0e7ea3"
+    },
+    "alter_foreign_table": {
+      "status": "completed",
+      "package_path": "artifacts/regress/by-factor/ddl/foreign_table/alter_foreign_table",
+      "sql_file_count": 1805,
+      "validation_evidence": "/Users/yuyu/PyCharmMiscProject/pg_case_factory/artifacts/intermediates/remaining-statement-factor-cycle/alter_foreign_table/validation.json",
+      "validation_evidence_sha256": "7da57a4d297abefb9f123d57096ec5c05e69809935ebaa7a7a3aa74800df5edb"
+    },
+    "alter_function": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "alter_group": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "alter_index": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "alter_language": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "alter_large_object": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "alter_materialized_view": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "alter_operator": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "alter_operator_class": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "alter_operator_family": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "alter_policy": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "alter_procedure": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "alter_publication": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "alter_role": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "alter_routine": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "alter_rule": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "alter_schema": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "alter_sequence": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "alter_server": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "alter_statistics": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "alter_subscription": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "alter_system": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "alter_table": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "alter_tablespace": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "alter_text_search_configuration": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "alter_text_search_dictionary": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "alter_text_search_parser": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "alter_text_search_template": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "alter_trigger": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "alter_type": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "alter_user": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "alter_user_mapping": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "alter_view": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "analyze": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "begin": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "call": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "checkpoint": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "close": {
+      "status": "retained_existing",
+      "package_path": "artifacts/regress/cursor-factor-full-v1",
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "cluster": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "comment": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "commit": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "commit_prepared": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "copy": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "create_access_method": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "create_aggregate": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "create_cast": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "create_collation": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "create_conversion": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "create_database": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "create_domain": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "create_event_trigger": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "create_extension": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "create_foreign_data_wrapper": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "create_foreign_table": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "create_function": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "create_group": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "create_index": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "create_language": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "create_materialized_view": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "create_operator": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "create_operator_class": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "create_operator_family": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "create_policy": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "create_procedure": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "create_publication": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "create_role": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "create_rule": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "create_schema": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "create_sequence": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "create_server": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "create_statistics": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "create_subscription": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "create_table": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "create_table_as": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "create_tablespace": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "create_text_search_configuration": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "create_text_search_dictionary": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "create_text_search_parser": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "create_text_search_template": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "create_transform": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "create_trigger": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "create_type": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "create_user": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "create_user_mapping": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "create_view": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "deallocate": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "declare": {
+      "status": "retained_existing",
+      "package_path": "artifacts/regress/cursor-factor-full-v1",
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "delete": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "discard": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "do": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "drop_access_method": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "drop_aggregate": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "drop_cast": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "drop_collation": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "drop_conversion": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "drop_database": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "drop_domain": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "drop_event_trigger": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "drop_extension": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "drop_foreign_data_wrapper": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "drop_foreign_table": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "drop_function": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "drop_group": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "drop_index": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "drop_language": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "drop_materialized_view": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "drop_operator": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "drop_operator_class": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "drop_operator_family": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "drop_owned": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "drop_policy": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "drop_procedure": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "drop_publication": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "drop_role": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "drop_routine": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "drop_rule": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "drop_schema": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "drop_sequence": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "drop_server": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "drop_statistics": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "drop_subscription": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "drop_table": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "drop_tablespace": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "drop_text_search_configuration": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "drop_text_search_dictionary": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "drop_text_search_parser": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "drop_text_search_template": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "drop_transform": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "drop_trigger": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "drop_type": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "drop_user": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "drop_user_mapping": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "drop_view": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "end": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "execute": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "explain": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "fetch": {
+      "status": "retained_existing",
+      "package_path": "artifacts/regress/cursor-factor-full-v1",
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "grant": {
+      "status": "retained_existing",
+      "package_path": "artifacts/regress/dcl-factor-full-v1",
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "import_foreign_schema": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "insert": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "listen": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "load": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "lock": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "merge": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "move": {
+      "status": "retained_existing",
+      "package_path": "artifacts/regress/cursor-factor-full-v1",
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "notify": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "prepare": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "prepare_transaction": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "reassign_owned": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "refresh_materialized_view": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "reindex": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "release_savepoint": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "reset": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "revoke": {
+      "status": "retained_existing",
+      "package_path": "artifacts/regress/dcl-factor-full-v1",
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "rollback": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "rollback_prepared": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "rollback_to_savepoint": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "savepoint": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "security_label": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "select": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "select_into": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "set": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "set_constraints": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "set_role": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "set_session_authorization": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "set_transaction": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "show": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "start_transaction": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "truncate": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "unlisten": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "update": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "vacuum": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    },
+    "values": {
+      "status": "pending",
+      "package_path": null,
+      "sql_file_count": null,
+      "validation_evidence": null,
+      "validation_evidence_sha256": null
+    }
+  }
+}
