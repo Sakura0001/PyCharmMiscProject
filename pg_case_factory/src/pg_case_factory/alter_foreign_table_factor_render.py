@@ -2412,7 +2412,10 @@ def render_alter_foreign_table_factor_case(
         f"-- expected_sqlstate: {case.expected_sqlstate}",
         "-- 1. 清理本编号对象，保证脚本可重复执行。",
     ]
-    lines.extend(_pre_cleanup_sql(case))
+    pre_cleanup = _pre_cleanup_sql(case)
+    lines.append(pre_cleanup[0])
+    lines.append("\\set ON_ERROR_STOP on")
+    lines.extend(pre_cleanup[1:])
     lines.append("-- 2. 创建完整本地表、外表和因子专用夹具。")
     lines.extend(_common_fixture_sql(case))
     lines.extend(witness.setup_sql)
@@ -2423,6 +2426,7 @@ def render_alter_foreign_table_factor_case(
     lines.append(_primary_statement(case, witness))
     lines.append(_PRIMARY_END)
     lines.append("\\set target_sqlstate :SQLSTATE")
+    lines.append("\\echo PGCF_TARGET_SQLSTATE=:target_sqlstate")
     if case.outcome == "expected_failure":
         lines.append("\\set ON_ERROR_STOP on")
     lines.append(

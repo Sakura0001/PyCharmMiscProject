@@ -251,10 +251,12 @@ def _expected_failure_details(
             ) from exc
 
     sfv_sqlstate = {
+        ("column_name_shape", "nonexistent_column"): "42703",
         ("new_schema_name_shape", "nonexistent_schema"): "3F000",
         ("schema_existence", "schema_not_exists"): "3F000",
         ("no_type_usage_privilege", "lacks_usage"): "42501",
         ("non_owner_attempt", "non_owner_execution"): "42501",
+        ("nonexistent_column", "column_missing"): "42703",
         ("privilege_level", "non_owner"): "42501",
         ("set_role_capability", "cannot_set_role"): "42501",
         ("type_usage_privilege", "lacks_usage"): "42501",

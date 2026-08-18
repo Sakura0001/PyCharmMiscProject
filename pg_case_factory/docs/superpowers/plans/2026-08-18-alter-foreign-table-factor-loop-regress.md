@@ -694,7 +694,7 @@ git commit -m "feat: publish alter foreign table factor regress"
 - Create: `src/pg_case_factory/alter_foreign_table_factor_runtime.py`
 - Create: `tests/test_alter_foreign_table_factor_runtime.py`
 
-- [ ] **Step 1: Write the failing transcript-comparison test**
+- [x] **Step 1: Write the failing transcript-comparison test**
 
 ```python
 def test_two_run_result_requires_identical_normalized_transcripts(self) -> None:
@@ -710,11 +710,11 @@ def test_two_run_result_requires_identical_normalized_transcripts(self) -> None:
     self.assertFalse(changed.passed)
 ```
 
-- [ ] **Step 2: Run the test and verify RED**
+- [x] **Step 2: Run the test and verify RED**
 
 Expected: missing runtime module.
 
-- [ ] **Step 3: Implement bounded psql execution**
+- [x] **Step 3: Implement bounded psql execution**
 
 Use this frozen profile:
 
@@ -727,17 +727,17 @@ PER_FILE_TIMEOUT_SECONDS = 30
 MAX_PARALLELISM = 1
 ```
 
-Reject a server whose `server_version_num` is outside `[180400, 180500)`. Execute `psql -X -v VERBOSITY=sqlstate -f <file>`. Capture stdout, stderr, exit code, timeout, extracted `target_sqlstate`, boolean oracle failures, and cleanup result.
+Reject a server whose `server_version_num` is outside `[180004, 180005)`. Execute `psql -X -v VERBOSITY=sqlstate -f <file>`. Capture stdout, stderr, exit code, timeout, extracted `target_sqlstate`, boolean oracle failures, and cleanup result.
 
-- [ ] **Step 4: Implement clean-state and two-run evidence**
+- [x] **Step 4: Implement clean-state and two-run evidence**
 
 Before each run, execute an allowlisted probe proving no object with the case prefix remains. Verify the same condition afterward. Run every file twice, normalize only psql banners and absolute temporary paths, then require byte-identical normalized transcripts and identical structured results.
 
-- [ ] **Step 5: Add a six-case PG18.4 integration test**
+- [x] **Step 5: Add a six-case PG18.4 integration test**
 
 Select one success, expected failure, quoted identifier, type member, partition guard, and transaction rollback. Execute all six twice and assert 12 executions, zero mismatches, zero cleanup failures, and exact SQLSTATEs.
 
-- [ ] **Step 6: Run tests and commit**
+- [x] **Step 6: Run tests and commit**
 
 ```bash
 uv run python -m unittest -v tests.test_alter_foreign_table_factor_runtime
