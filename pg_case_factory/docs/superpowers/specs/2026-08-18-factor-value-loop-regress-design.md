@@ -1,6 +1,6 @@
 # 全语句因子值独立循环 Regress 生成设计
 
-状态：`approved_design_pending_written_review`
+状态：`approved`
 
 批准日期：2026-08-18
 
@@ -52,11 +52,14 @@
 6. 语义完全等价的 alias 可以复用同一个 resolver 和 SQL 模板，但每条 obligation 仍生成独立编号 program 并单独结算，禁止一个文件领取多个 primary id；
 7. 每个文件精确包含一次被测 target statement；清理阶段中同类 SQL 不领取覆盖信用。
 
-按此合同，覆盖完成等式为：
+按此合同，program 和 delegated handoff 分别守恒：
 
 ```text
-Bag(required obligation ids)
+Bag(required obligation ids where disposition in {covered, expected_failure})
 = Bag(primary obligation ids from validated programs)
+
+Bag(required obligation ids where disposition = delegated)
+= Bag(source obligation ids from validated handoff records)
 
 missing   = 0
 duplicate = 0
@@ -146,15 +149,17 @@ success 必须命中 `00000` 且 oracle 为 true；expected failure 必须命中
 新口径的初始数量估算：
 
 ```text
-列成员 × 适用 action obligation     1,569
+本语句列成员 × 适用 action           1,557
+index_role delegated handoff             12
 官方语法 obligation                    136
 canonical factor value                 103
-权限/状态/事务/风险补充               约 50–300
+本语句 transaction risk                  2
 ------------------------------------------------
-预计正式 SQL program                约 1,800–2,100
+初始正式 SQL program                    1,805
+另存 handoff record                        12
 ```
 
-精确数量由 required obligation ledger 编译结果决定，不以估算值作为通过条件。正式物理 program 数必须等于 required obligation 数；alias 只复用 renderer 模板，不合并 primary credit。如果一个风险值需要多个不可合并的合法上下文，应先把它拆成多个独立 `RISK` obligation，再按一义务一 program 生成。
+精确数量由 required obligation ledger 编译结果决定。正式物理 program 数必须等于 `covered + expected_failure` obligation 数；delegated obligation 逐成员写入 handoff ledger，不生成目标语句错误的 SQL。alias 只复用 renderer 模板，不合并 primary credit。如果一个风险值需要多个不可合并的合法上下文，应先把它拆成多个独立 `RISK` obligation，再按一义务一 program 生成。
 
 已经完成的 PG18.4 类型、COLLATE、nullability、default、generation、identity、storage/compression 校准继续作为 resolver 证据使用，但不再把每个校准值与全部 grammar/topology 组合相乘。
 
@@ -164,7 +169,7 @@ canonical factor value                 103
 
 - required obligation ledger count 和 SHA 已冻结；
 - 每条 obligation 的 disposition 与 primary case 已确定；
-- ledger 等式的 missing/duplicate/unknown 均为 0；
+- program 与 delegated handoff 两条 ledger 等式的 missing/duplicate/unknown 均为 0；
 - 每个 primary value 已从最终 SQL/harness 重新提取并匹配；
 - SQL 文件编号连续、对象前缀一致、setup/oracle/cleanup 完整；
 - regress style validator 通过；
