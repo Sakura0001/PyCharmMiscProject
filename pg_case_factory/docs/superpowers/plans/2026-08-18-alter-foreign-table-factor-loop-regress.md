@@ -489,7 +489,7 @@ git commit -m "feat: render alter foreign table structural factors"
 - Modify: `tests/test_alter_foreign_table_factor_loop.py`
 - Modify: `tests/test_alter_foreign_table_factor_render.py`
 
-- [ ] **Step 1: Write failing branch/action coverage tests**
+- [x] **Step 1: Write failing branch/action coverage tests**
 
 ```python
 def test_all_27_official_actions_render_once_as_primary(self) -> None:
@@ -505,23 +505,23 @@ def test_all_27_official_actions_render_once_as_primary(self) -> None:
     )
 ```
 
-- [ ] **Step 2: Run the test and verify RED**
+- [x] **Step 2: Run the test and verify RED**
 
 Expected: missing routing or rendering for at least one of the six PG18 actions absent from the old canonical action list.
 
-- [ ] **Step 3: Implement the 46-axis/109-value grammar router**
+- [x] **Step 3: Implement the 46-axis/109-value grammar router**
 
 For every grammar obligation, select its declared branch/action and render the exact syntax value. `multiple_actions` receives one dedicated command containing two compatible action fragments; it never expands ordered pairs. `one` and `many` list values use frozen lengths one and two. Omitted/present noise keywords must be visible in target bytes.
 
-- [ ] **Step 4: Implement the 32-factor/103-value SFV router**
+- [x] **Step 4: Implement the 32-factor/103-value SFV router**
 
 Load factor values from the matrix contract. Define a total `CANONICAL_FACTOR_ROUTE` keyed by factor name and assert its key set equals the matrix factor key set. Negative aliases use isolated fixtures; `verification_mode` values are primary in the oracle locus and `cleanup_mode` values are primary in the cleanup locus.
 
-- [ ] **Step 5: Implement commit and rollback transaction witnesses**
+- [x] **Step 5: Implement commit and rollback transaction witnesses**
 
 The commit case performs a legal metadata change and proves persistence. The rollback case captures original state, runs one target inside `BEGIN`, rolls back, and proves name/column/owner/schema state is unchanged. Both files contain exactly one target statement.
 
-- [ ] **Step 6: Run complete witness totality and commit**
+- [x] **Step 6: Run complete witness totality and commit**
 
 ```bash
 uv run python -m unittest -v \

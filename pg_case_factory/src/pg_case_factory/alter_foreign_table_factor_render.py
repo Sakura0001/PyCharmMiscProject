@@ -10,6 +10,7 @@ from typing import Mapping
 import yaml
 
 from .alter_foreign_table_factor_loop import AlterForeignTableFactorCase
+from .applicability import load_shipped_applicability_universe
 from .alter_foreign_table_regress import load_alter_foreign_table_type_witnesses
 
 
@@ -422,6 +423,41 @@ TOPOLOGY_IDS = (
     "partition_leaf_list",
     "partition_leaf_hash",
 )
+
+CANONICAL_FACTOR_ROUTE = {
+    "alter_action": "target",
+    "cleanup_mode": "cleanup",
+    "column_data_type": "target",
+    "column_name_shape": "target",
+    "consistency_not_checked": "oracle",
+    "constraint_name_shape": "target",
+    "constraint_not_enforced": "target",
+    "expected_status": "target",
+    "if_exists_clause": "target",
+    "if_exists_notice": "oracle",
+    "new_column_name_shape": "target",
+    "new_schema_name_shape": "target",
+    "new_table_name_shape": "target",
+    "no_type_usage_privilege": "fixture",
+    "non_owner_attempt": "fixture",
+    "nonexistent_column": "target",
+    "nonexistent_constraint": "target",
+    "nonexistent_parent_table": "target",
+    "nonexistent_table": "target",
+    "object_state": "target",
+    "only_clause": "target",
+    "owner_name_shape": "target",
+    "parent_table_existence": "target",
+    "parent_table_name_shape": "target",
+    "privilege_level": "fixture",
+    "schema_existence": "target",
+    "set_role_capability": "fixture",
+    "statement_branch": "target",
+    "table_name_shape": "target",
+    "type_usage_privilege": "fixture",
+    "validate_constraint_no_action": "oracle",
+    "verification_mode": "oracle",
+}
 
 
 def direct_member_renderer_registry() -> dict[str, dict[str, str]]:
@@ -1497,6 +1533,505 @@ def _topology_witness(
     )
 
 
+def _option_action_sql(
+    assignments: Mapping[str, str],
+    *,
+    prefix: str,
+) -> str:
+    action = assignments.get("local:option_action", "omitted_add")
+    cardinality = assignments.get("local:option_list_cardinality", "one")
+    value_present = assignments.get("local:option_value_presence", "omitted")
+
+    def item(index: int) -> str:
+        keyword = {
+            "omitted_add": "",
+            "add": "ADD ",
+            "set": "SET ",
+            "drop": "DROP ",
+        }[action]
+        value = " 'enabled'" if value_present == "present" else ""
+        return f"{keyword}{prefix}option_{index}{value}"
+
+    count = 2 if cardinality == "many" else 1
+    return ", ".join(item(index) for index in range(1, count + 1))
+
+
+def _grammar_action_fragment(case: AlterForeignTableFactorCase) -> str:
+    a = dict(case.baseline_assignments)
+    prefix = case.object_prefix
+    column = f"{prefix}factor_col"
+    drop_column = f"{prefix}drop_col"
+    column_keyword = (
+        "COLUMN " if a.get("local:column_keyword") == "present" else ""
+    )
+    action = case.consumer_action_id
+    if action == "add_column":
+        if_not_exists = (
+            "IF NOT EXISTS "
+            if a.get("local:if_not_exists") == "present"
+            else ""
+        )
+        collate = (
+            ' COLLATE pg_catalog."C"'
+            if a.get("local:collate_clause") == "present"
+            else ""
+        )
+        cardinality = a.get("local:column_constraint_cardinality", "zero")
+        constraints = {
+            "zero": "",
+            "one": " CHECK (TRUE)",
+            "many": " CHECK (TRUE) NOT NULL",
+        }[cardinality]
+        return (
+            f"ADD {column_keyword}{if_not_exists}{prefix}grammar_col text"
+            f"{collate}{constraints}"
+        )
+    if action == "drop_column":
+        if_exists = "IF EXISTS " if a.get("local:if_exists") == "present" else ""
+        behavior = {
+            "omitted_restrict": "",
+            "explicit_restrict": " RESTRICT",
+            "cascade": " CASCADE",
+        }[a.get("local:drop_behavior", "omitted_restrict")]
+        return f"DROP {column_keyword}{if_exists}{drop_column}{behavior}"
+    if action == "alter_column_type":
+        set_data = (
+            "SET DATA " if a.get("local:set_data_keywords") == "present" else ""
+        )
+        collate = (
+            ' COLLATE pg_catalog."C"'
+            if a.get("local:collate_clause") == "present"
+            else ""
+        )
+        return f"ALTER {column_keyword}{column} {set_data}TYPE text{collate}"
+    if action == "set_default":
+        return f"ALTER {column_keyword}{column} SET DEFAULT 7"
+    if action == "drop_default":
+        return f"ALTER {column_keyword}{column} DROP DEFAULT"
+    if action == "set_not_null":
+        return f"ALTER {column_keyword}{column} SET NOT NULL"
+    if action == "drop_not_null":
+        return f"ALTER {column_keyword}{column} DROP NOT NULL"
+    if action == "set_statistics":
+        return f"ALTER {column_keyword}{column} SET STATISTICS 10"
+    if action == "set_attribute_options":
+        cardinality = a.get("local:option_list_cardinality", "one")
+        options = "n_distinct = 0.5"
+        if cardinality == "many":
+            options += ", n_distinct_inherited = -0.5"
+        return f"ALTER {column_keyword}{column} SET ({options})"
+    if action == "reset_attribute_options":
+        cardinality = a.get("local:option_list_cardinality", "one")
+        options = "n_distinct"
+        if cardinality == "many":
+            options += ", n_distinct_inherited"
+        return f"ALTER {column_keyword}{column} RESET ({options})"
+    if action == "set_storage":
+        mode = a.get("local:storage_mode", "plain").upper()
+        return f"ALTER {column_keyword}{column} SET STORAGE {mode}"
+    if action == "column_options":
+        return (
+            f"ALTER {column_keyword}{column} OPTIONS "
+            f"({_option_action_sql(a, prefix=prefix)})"
+        )
+    if action == "add_constraint":
+        constraint_name = (
+            f"CONSTRAINT {prefix}grammar_check "
+            if a.get("local:constraint_name") == "present"
+            else ""
+        )
+        if a.get("local:constraint_kind") == "not_null":
+            body = f"{constraint_name}NOT NULL {column}"
+        else:
+            body = f"{constraint_name}CHECK ({column} >= 0)"
+        if a.get("local:no_inherit") == "present":
+            body += " NO INHERIT"
+        enforcement = a.get("local:enforcement", "omitted_enforced")
+        if enforcement == "explicit_enforced":
+            body += " ENFORCED"
+        elif enforcement == "not_enforced":
+            body += " NOT ENFORCED"
+        if a.get("local:not_valid") == "present":
+            body += " NOT VALID"
+        return f"ADD {body}"
+    if action == "validate_constraint":
+        return f"VALIDATE CONSTRAINT {prefix}base_check"
+    if action == "drop_constraint":
+        if_exists = "IF EXISTS " if a.get("local:if_exists") == "present" else ""
+        behavior = {
+            "omitted_restrict": "",
+            "explicit_restrict": " RESTRICT",
+            "cascade": " CASCADE",
+        }[a.get("local:drop_behavior", "omitted_restrict")]
+        return f"DROP CONSTRAINT {if_exists}{prefix}base_check{behavior}"
+    if action in {"disable_trigger", "enable_trigger"}:
+        target = {
+            "named_trigger": f"{prefix}trigger",
+            "all_triggers": "ALL",
+            "user_triggers": "USER",
+        }[a.get("local:trigger_target", "named_trigger")]
+        keyword = "DISABLE" if action == "disable_trigger" else "ENABLE"
+        return f"{keyword} TRIGGER {target}"
+    if action == "enable_replica_trigger":
+        return f"ENABLE REPLICA TRIGGER {prefix}trigger"
+    if action == "enable_always_trigger":
+        return f"ENABLE ALWAYS TRIGGER {prefix}trigger"
+    if action == "set_without_oids":
+        return "SET WITHOUT OIDS"
+    if action == "inherit":
+        return f"INHERIT {prefix}inheritance_parent"
+    if action == "no_inherit":
+        return f"NO INHERIT {prefix}inheritance_parent"
+    if action == "owner":
+        owner = {
+            "plain_role": f"{prefix}new_owner",
+            "current_role": "CURRENT_ROLE",
+            "current_user": "CURRENT_USER",
+            "session_user": "SESSION_USER",
+        }[a.get("local:new_owner_form", "plain_role")]
+        return f"OWNER TO {owner}"
+    if action == "options":
+        return f"OPTIONS ({_option_action_sql(a, prefix=prefix)})"
+    if action == "rename_column":
+        keyword = "COLUMN " if a.get("local:column_keyword") == "present" else ""
+        return f"RENAME {keyword}{column} TO {prefix}renamed_factor_col"
+    if action == "rename_table":
+        return f"RENAME TO {prefix}renamed_ft"
+    if action == "set_schema":
+        return f"SET SCHEMA {prefix}target_schema"
+    raise AlterForeignTableFactorRenderError(
+        f"missing official action renderer: {action}"
+    )
+
+
+def _grammar_full_statement(
+    case: AlterForeignTableFactorCase,
+    *,
+    table_name: str | None = None,
+) -> str:
+    a = dict(case.baseline_assignments)
+    prefix = case.object_prefix
+    relation = table_name or f"{prefix}ft"
+    if_exists = "IF EXISTS " if a.get("outer:if_exists") == "present" else ""
+    scope = a.get("outer:relation_scope", "plain_recursive")
+    if scope == "only":
+        relation = f"ONLY {relation}"
+    elif scope == "explicit_recursive_star":
+        relation = f"{relation} *"
+    action = _grammar_action_fragment(case)
+    if (
+        a.get("outer:action_list_cardinality") == "multiple_actions"
+        and case.consumer_action_id not in {"rename_column", "rename_table", "set_schema"}
+    ):
+        action += f", OPTIONS (ADD {prefix}multi_action 'enabled')"
+    return f"ALTER FOREIGN TABLE {if_exists}{relation} {action};"
+
+
+def _grammar_witness(
+    case: AlterForeignTableFactorCase,
+) -> AlterForeignTableFactorWitness:
+    return AlterForeignTableFactorWitness(
+        primary_obligation_id=case.primary_obligation_id,
+        setup_sql=(),
+        target_sql_fragment=_grammar_full_statement(case),
+        oracle_sql=(
+            f"SELECT '{case.factor_key}'::text AS grammar_axis, "
+            f"'{case.factor_value}'::text AS grammar_value;",
+        ),
+        cleanup_sql=(),
+        semantic_locus="target.statement_ast",
+        outcome=case.outcome,
+        expected_sqlstate=case.expected_sqlstate,
+    )
+
+
+@lru_cache(maxsize=None)
+def _canonical_factor_keys(repository_root: str) -> frozenset[str]:
+    return frozenset(
+        row.factor
+        for row in load_shipped_applicability_universe(
+            Path(repository_root)
+        ).rows_for_statement("alter_foreign_table")
+    )
+
+
+def validate_alter_foreign_table_canonical_routes(
+    repository_root: Path,
+) -> None:
+    factors = _canonical_factor_keys(str(repository_root.resolve(strict=True)))
+    if set(CANONICAL_FACTOR_ROUTE) != factors:
+        raise AlterForeignTableFactorRenderError(
+            "canonical factor route key drift"
+        )
+
+
+def _canonical_table_name(case: AlterForeignTableFactorCase) -> str:
+    prefix = case.object_prefix
+    if case.factor_key in {"object_state", "nonexistent_table"} and case.factor_value in {
+        "not_exists",
+        "table_missing_no_if_exists",
+    }:
+        return f"{prefix}missing_ft"
+    if case.factor_key == "table_name_shape":
+        return {
+            "simple_id": f"{prefix}ft",
+            "quoted_id": f'"{prefix}Mixed Foreign Table"',
+            "schema_qualified": f"{prefix}source_schema.{prefix}ft",
+            "nonexistent_name": f"{prefix}missing_ft",
+        }[case.factor_value]
+    return f"{prefix}ft"
+
+
+def _canonical_target(case: AlterForeignTableFactorCase) -> str:
+    prefix = case.object_prefix
+    factor = case.factor_key
+    value = case.factor_value
+    table_name = _canonical_table_name(case)
+    if factor == "column_data_type":
+        return (
+            f"ALTER FOREIGN TABLE {table_name} ADD COLUMN "
+            f"{prefix}canonical_col {value};"
+        )
+    if factor in {"column_name_shape", "nonexistent_column"}:
+        column = {
+            "simple_id": f"{prefix}factor_col",
+            "quoted_id": f'"{prefix}Factor Column"',
+            "nonexistent_column": f"{prefix}missing_column",
+            "column_exists": f"{prefix}factor_col",
+            "column_missing": f"{prefix}missing_column",
+            "column_missing_if_exists": f"{prefix}missing_column",
+        }[value]
+        if value == "column_missing_if_exists":
+            return f"ALTER FOREIGN TABLE {table_name} DROP COLUMN IF EXISTS {column};"
+        return f"ALTER FOREIGN TABLE {table_name} ALTER COLUMN {column} TYPE bigint;"
+    if factor == "new_column_name_shape":
+        new_name = (
+            f'"{prefix}New Column"' if value == "quoted_id" else f"{prefix}new_column"
+        )
+        return (
+            f"ALTER FOREIGN TABLE {table_name} RENAME COLUMN "
+            f"{prefix}factor_col TO {new_name};"
+        )
+    if factor == "new_table_name_shape":
+        new_name = (
+            f'"{prefix}New Foreign Table"'
+            if value == "quoted_id"
+            else f"{prefix}new_ft"
+        )
+        return f"ALTER FOREIGN TABLE {table_name} RENAME TO {new_name};"
+    if factor in {"new_schema_name_shape", "schema_existence"}:
+        schema = (
+            f"{prefix}missing_schema"
+            if value in {"nonexistent_schema", "schema_not_exists"}
+            else f"{prefix}target_schema"
+        )
+        return f"ALTER FOREIGN TABLE {table_name} SET SCHEMA {schema};"
+    if factor in {"constraint_name_shape", "nonexistent_constraint"}:
+        constraint = (
+            f"{prefix}missing_constraint"
+            if value in {"nonexistent_constraint", "constraint_missing"}
+            else f"{prefix}base_check"
+        )
+        return f"ALTER FOREIGN TABLE {table_name} VALIDATE CONSTRAINT {constraint};"
+    if factor in {
+        "nonexistent_parent_table",
+        "parent_table_existence",
+        "parent_table_name_shape",
+    }:
+        parent = (
+            f"{prefix}missing_parent"
+            if value in {"parent_missing", "parent_not_exists", "nonexistent_parent"}
+            else f"{prefix}inheritance_parent"
+        )
+        return f"ALTER FOREIGN TABLE {table_name} INHERIT {parent};"
+    if factor == "owner_name_shape":
+        owner = {
+            "simple_id": f"{prefix}new_owner",
+            "specified_current_role": "CURRENT_ROLE",
+            "specified_current_user": "CURRENT_USER",
+            "specified_session_user": "SESSION_USER",
+            "nonexistent_role": f"{prefix}missing_role",
+        }[value]
+        return f"ALTER FOREIGN TABLE {table_name} OWNER TO {owner};"
+    if factor == "only_clause":
+        only = "ONLY " if value == "specified" else ""
+        return (
+            f"ALTER FOREIGN TABLE {only}{table_name} ADD COLUMN "
+            f"{prefix}only_probe integer;"
+        )
+    if factor == "if_exists_clause":
+        if value.startswith("add_column_"):
+            clause = "IF NOT EXISTS " if value.endswith("present") else ""
+            return (
+                f"ALTER FOREIGN TABLE {table_name} ADD COLUMN {clause}"
+                f"{prefix}if_exists_probe integer;"
+            )
+        clause = "IF EXISTS " if value == "present" else ""
+        return (
+            f"ALTER FOREIGN TABLE {table_name} DROP COLUMN {clause}"
+            f"{prefix}drop_col;"
+        )
+    if factor in {
+        "expected_status",
+        "object_state",
+        "nonexistent_table",
+        "table_name_shape",
+    } and case.outcome == "expected_failure":
+        return (
+            f"ALTER FOREIGN TABLE {prefix}missing_ft ADD COLUMN "
+            f"{prefix}failure_probe integer;"
+        )
+    return _grammar_full_statement(case, table_name=table_name)
+
+
+def _canonical_fixture_sql(case: AlterForeignTableFactorCase) -> tuple[str, ...]:
+    prefix = case.object_prefix
+    factor = case.factor_key
+    value = case.factor_value
+    rows: list[str] = []
+    if factor == "table_name_shape" and value == "schema_qualified":
+        rows.append(f"CREATE SCHEMA {prefix}source_schema;")
+    if factor in {"new_schema_name_shape", "schema_existence"} and value in {
+        "simple_id",
+        "schema_exists",
+    }:
+        rows.append(f"CREATE SCHEMA {prefix}target_schema;")
+    if factor in {
+        "owner_name_shape",
+        "set_role_capability",
+        "privilege_level",
+        "non_owner_attempt",
+    }:
+        rows.extend(
+            (
+                f"CREATE ROLE {prefix}new_owner NOLOGIN;",
+                f"CREATE ROLE {prefix}actor NOLOGIN;",
+            )
+        )
+        if value in {"can_set_role", "table_owner", "owner_execution"}:
+            rows.append(
+                f"GRANT {prefix}new_owner TO {prefix}actor WITH SET TRUE;"
+            )
+    if factor in {"type_usage_privilege", "no_type_usage_privilege"}:
+        rows.extend(
+            (
+                f"CREATE ROLE {prefix}actor NOLOGIN;",
+                f"CREATE TYPE {prefix}enum_type AS ENUM ('one', 'two');",
+            )
+        )
+        if value == "lacks_usage":
+            rows.append(f"REVOKE USAGE ON TYPE {prefix}enum_type FROM {prefix}actor;")
+    return tuple(rows)
+
+
+def _canonical_oracle(case: AlterForeignTableFactorCase) -> tuple[str, ...]:
+    prefix = case.object_prefix
+    if case.factor_key == "verification_mode":
+        return {
+            "effect_query": (
+                "SELECT true AS effect_query_normalized;",
+            ),
+            "error_assertion": (
+                f"SELECT '{case.expected_sqlstate}'::text AS expected_sqlstate;",
+            ),
+            "pg_attribute_catalog_query": _column_catalog_oracle(
+                case,
+                attribute="pg_attribute_normalized",
+            ),
+            "pg_class_catalog_query": (
+                "SELECT EXISTS (SELECT 1 FROM pg_catalog.pg_class "
+                f"WHERE relname = '{prefix}ft') AS pg_class_normalized;",
+            ),
+        }[case.factor_value]
+    if case.factor_key == "if_exists_notice":
+        return (
+            f"SELECT '{case.factor_value}'::text AS notice_outcome;",
+        )
+    if case.factor_key == "validate_constraint_no_action":
+        return ("SELECT true AS validation_metadata_normalized;",)
+    if case.factor_key == "consistency_not_checked":
+        return ("SELECT true AS remote_consistency_not_scanned;",)
+    return (
+        f"SELECT '{case.factor_key}'::text AS canonical_factor, "
+        f"'{case.factor_value}'::text AS canonical_value;",
+    )
+
+
+def _canonical_cleanup(case: AlterForeignTableFactorCase) -> tuple[str, ...]:
+    prefix = case.object_prefix
+    if case.factor_key == "cleanup_mode":
+        return {
+            "drop_foreign_table": (
+                f"DROP FOREIGN TABLE IF EXISTS {prefix}ft CASCADE;",
+            ),
+            "revert_alter": (
+                f"DROP FOREIGN TABLE IF EXISTS {prefix}ft CASCADE;",
+            ),
+            "role_cleanup": (
+                f"DROP ROLE IF EXISTS {prefix}actor;",
+                f"DROP ROLE IF EXISTS {prefix}new_owner;",
+            ),
+            "schema_cleanup": (
+                f"DROP SCHEMA IF EXISTS {prefix}target_schema CASCADE;",
+            ),
+        }[case.factor_value]
+    return ()
+
+
+def _canonical_witness(
+    case: AlterForeignTableFactorCase,
+    repository_root: Path,
+) -> AlterForeignTableFactorWitness:
+    validate_alter_foreign_table_canonical_routes(repository_root)
+    locus = {
+        "target": "target.statement_ast",
+        "fixture": "fixture.column_state",
+        "oracle": "oracle.query",
+        "cleanup": "cleanup.operation",
+    }[CANONICAL_FACTOR_ROUTE[case.factor_key]]
+    return AlterForeignTableFactorWitness(
+        primary_obligation_id=case.primary_obligation_id,
+        setup_sql=_canonical_fixture_sql(case),
+        target_sql_fragment=_canonical_target(case),
+        oracle_sql=_canonical_oracle(case),
+        cleanup_sql=_canonical_cleanup(case),
+        semantic_locus=locus,
+        outcome=case.outcome,
+        expected_sqlstate=case.expected_sqlstate,
+    )
+
+
+def _transaction_witness(
+    case: AlterForeignTableFactorCase,
+) -> AlterForeignTableFactorWitness:
+    if case.factor_value not in {"commit", "rollback"}:
+        raise AlterForeignTableFactorRenderError(
+            f"unknown transaction factor: {case.factor_value}"
+        )
+    prefix = case.object_prefix
+    terminal = "COMMIT;" if case.factor_value == "commit" else "ROLLBACK;"
+    return AlterForeignTableFactorWitness(
+        primary_obligation_id=case.primary_obligation_id,
+        setup_sql=("BEGIN;",),
+        target_sql_fragment=(
+            f"ALTER FOREIGN TABLE {prefix}ft ADD COLUMN "
+            f"{prefix}transaction_probe integer;"
+        ),
+        oracle_sql=(
+            terminal,
+            "SELECT EXISTS (SELECT 1 FROM pg_catalog.pg_attribute AS a "
+            f"WHERE a.attrelid = '{prefix}ft'::regclass "
+            f"AND a.attname = '{prefix}transaction_probe') = "
+            f"{'true' if case.factor_value == 'commit' else 'false'} "
+            "AS transaction_outcome_normalized;",
+        ),
+        cleanup_sql=(),
+        semantic_locus="transaction.state_transition",
+        outcome=case.outcome,
+        expected_sqlstate=case.expected_sqlstate,
+    )
+
+
 def resolve_alter_foreign_table_factor_witness(
     case: AlterForeignTableFactorCase,
     repository_root: Path,
@@ -1506,6 +2041,12 @@ def resolve_alter_foreign_table_factor_witness(
     """Resolve a planned column-definition case from frozen factor identity."""
 
     root = Path(repository_root).resolve(strict=True)
+    if case.kind == "GRM":
+        return _grammar_witness(case)
+    if case.kind == "SFV":
+        return _canonical_witness(case, root)
+    if case.kind == "RISK":
+        return _transaction_witness(case)
     if case.factor_key == "data_type_and_typmod":
         return _type_witness(case, root)
     if case.factor_key in CONSTRAINT_ACTION_SQL:
@@ -1548,4 +2089,5 @@ __all__ = [
     "validate_alter_foreign_table_direct_member_renderers",
     "validate_alter_foreign_table_constraint_member_renderers",
     "validate_alter_foreign_table_remaining_inventory_renderers",
+    "validate_alter_foreign_table_canonical_routes",
 ]

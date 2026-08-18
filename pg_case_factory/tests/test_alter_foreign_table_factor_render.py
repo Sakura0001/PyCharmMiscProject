@@ -6,6 +6,9 @@ import unittest
 from pg_case_factory.alter_foreign_table_factor_loop import (
     build_alter_foreign_table_factor_loop_plan,
 )
+from pg_case_factory.alter_foreign_table_regress import (
+    load_alter_foreign_table_grammar_actions,
+)
 from pg_case_factory.alter_foreign_table_factor_render import (
     AlterForeignTableFactorRenderError,
     direct_member_renderer_registry,
@@ -157,6 +160,46 @@ class AlterForeignTableColumnFactorRenderTest(unittest.TestCase):
             witness = resolve_alter_foreign_table_factor_witness(case, ROOT)
             self.assertTrue(witness.target_sql_fragment)
             self.assertEqual("fixture.column_state", witness.semantic_locus)
+
+    def test_all_27_official_actions_render_once_as_primary(self) -> None:
+        plan = build_alter_foreign_table_factor_loop_plan(ROOT)
+        action_cases = [
+            row
+            for row in plan.cases
+            if row.kind == "GRM" and row.factor_key == "target_action"
+        ]
+        self.assertEqual(27, len(action_cases))
+        self.assertEqual(
+            {
+                row.action_id
+                for row in load_alter_foreign_table_grammar_actions()
+            },
+            {row.factor_value for row in action_cases},
+        )
+        for case in action_cases:
+            witness = resolve_alter_foreign_table_factor_witness(case, ROOT)
+            self.assertTrue(witness.target_sql_fragment.startswith("ALTER FOREIGN TABLE"))
+            self.assertNotRegex(witness.target_sql_fragment, r"\{[A-Za-z_]\w*\}")
+
+    def test_every_grammar_canonical_and_transaction_case_renders(self) -> None:
+        plan = build_alter_foreign_table_factor_loop_plan(ROOT)
+        rows = [row for row in plan.cases if row.kind in {"GRM", "SFV", "RISK"}]
+        self.assertEqual(241, len(rows))
+        for case in rows:
+            with self.subTest(case_id=case.case_id):
+                witness = resolve_alter_foreign_table_factor_witness(case, ROOT)
+                self.assertTrue(witness.target_sql_fragment.strip())
+                self.assertEqual(case.outcome, witness.outcome)
+                self.assertEqual(case.expected_sqlstate, witness.expected_sqlstate)
+
+    def test_transaction_witnesses_have_distinct_commit_and_rollback_oracles(self) -> None:
+        plan = build_alter_foreign_table_factor_loop_plan(ROOT)
+        rows = {row.factor_value: row for row in plan.cases if row.kind == "RISK"}
+        self.assertEqual({"commit", "rollback"}, set(rows))
+        commit = resolve_alter_foreign_table_factor_witness(rows["commit"], ROOT)
+        rollback = resolve_alter_foreign_table_factor_witness(rows["rollback"], ROOT)
+        self.assertIn("COMMIT;", commit.oracle_sql)
+        self.assertIn("ROLLBACK;", rollback.oracle_sql)
 
 
 if __name__ == "__main__":
