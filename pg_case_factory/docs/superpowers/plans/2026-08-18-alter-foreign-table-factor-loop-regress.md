@@ -254,7 +254,7 @@ git commit -m "feat: plan one alter foreign table case per factor"
 
 This task covers `data_type_and_typmod`, `collation`, `nullability`, `default_state`, `generation_mode`, `identity_mode`, and `storage_and_compression` for their real consumer actions.
 
-- [ ] **Step 1: Write failing tests for all column-definition members**
+- [x] **Step 1: Write failing tests for all column-definition members**
 
 ```python
 def test_every_column_definition_obligation_has_a_real_target_fragment(self) -> None:
@@ -289,11 +289,11 @@ storage/compression     11 × 2 =  22
 total                              853
 ```
 
-- [ ] **Step 2: Run the test and verify RED**
+- [x] **Step 2: Run the test and verify RED**
 
 Expected: import failure for `resolve_alter_foreign_table_factor_witness`.
 
-- [ ] **Step 3: Implement the witness record and type-member resolver**
+- [x] **Step 3: Implement the witness record and type-member resolver**
 
 ```python
 @dataclass(frozen=True)
@@ -310,7 +310,7 @@ class AlterForeignTableFactorWitness:
 
 For `data_type_and_typmod`, look up the selector-qualified `AlterForeignTableTypeWitness` and use its frozen `declaration_sql`. Preserve selector identity even when two declarations resolve to the same `pg_type`. ADD uses `ADD COLUMN <name> <declaration>`; TYPE uses `ALTER COLUMN <name> TYPE <declaration>`.
 
-- [ ] **Step 4: Implement total direct-member fragment maps**
+- [x] **Step 4: Implement total direct-member fragment maps**
 
 Define dictionaries whose key sets are asserted against the catalog. Required entries include:
 
@@ -343,11 +343,11 @@ IDENTITY_SQL = {
 
 Use calibrated maps in `alter_foreign_table_regress.py` for default, generated, storage, compression, and collation outcomes. LZ4 retains a build-capability prerequisite and the current local `0A000`; it must not be labeled as a PostgreSQL-wide semantic rejection.
 
-- [ ] **Step 5: Add totality and mutation tests**
+- [x] **Step 5: Add totality and mutation tests**
 
 For each direct dimension, delete one mapping in a copied registry and assert `AlterForeignTableFactorRenderError("missing member renderer")`. Mutate one type declaration to an empty string and assert rendering fails.
 
-- [ ] **Step 6: Run tests and commit**
+- [x] **Step 6: Run tests and commit**
 
 ```bash
 uv run python -m unittest -v \

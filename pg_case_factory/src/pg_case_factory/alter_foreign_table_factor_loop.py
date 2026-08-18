@@ -283,6 +283,93 @@ def _expected_failure_details(
         "statistics_target": "22023",
         "dropped_or_existing_column_state": "42703",
     }
+    direct_failure = {
+        ("collation", "nonexistent_collation"): (
+            "42704",
+            "collation_not_found",
+        ),
+        ("collation", "collation_on_noncollatable_type"): (
+            "42804",
+            "collation_not_supported_by_type",
+        ),
+        ("collation", "encoding_incompatible_collation"): (
+            "42704",
+            "collation_not_available_for_database_encoding",
+        ),
+        ("nullability", "not_null_enforced"): (
+            "42601",
+            "invalid_nullability_constraint_combination",
+        ),
+        ("nullability", "not_null_not_enforced"): (
+            "42601",
+            "invalid_nullability_constraint_combination",
+        ),
+        ("nullability", "explicit_null_with_not_null"): (
+            "42601",
+            "invalid_nullability_constraint_combination",
+        ),
+        ("default_state", "incompatible_type_default"): (
+            "42804",
+            "default_expression_type_mismatch",
+        ),
+        ("default_state", "self_column_reference_default"): (
+            "0A000",
+            "column_reference_not_allowed_in_default",
+        ),
+        ("default_state", "other_column_reference_default"): (
+            "0A000",
+            "column_reference_not_allowed_in_default",
+        ),
+        ("default_state", "subquery_default"): (
+            "0A000",
+            "subquery_not_allowed_in_default",
+        ),
+        ("generation_mode", "volatile_generation_expression"): (
+            "42P17",
+            "generation_expression_not_immutable",
+        ),
+        ("generation_mode", "stable_generation_expression"): (
+            "42P17",
+            "generation_expression_not_immutable",
+        ),
+        ("generation_mode", "self_reference_generation_expression"): (
+            "42P17",
+            "generation_expression_self_reference",
+        ),
+        ("generation_mode", "generated_column_reference"): (
+            "42P17",
+            "generation_expression_references_generated_column",
+        ),
+        ("generation_mode", "subquery_generation_expression"): (
+            "0A000",
+            "subquery_not_allowed_in_generation_expression",
+        ),
+        ("generation_mode", "incompatible_generation_result_type"): (
+            "42804",
+            "generation_expression_type_mismatch",
+        ),
+        ("identity_mode", "identity_on_non_integer_type"): (
+            "22023",
+            "identity_column_type_not_integer",
+        ),
+        ("storage_and_compression", "compression_lz4"): (
+            "0A000",
+            "compression_method_not_supported_by_current_build",
+        ),
+        ("storage_and_compression", "unknown_compression_method"): (
+            "22023",
+            "unknown_compression_method",
+        ),
+        (
+            "storage_and_compression",
+            "incompatible_fixed_length_storage_mode",
+        ): (
+            "0A000",
+            "storage_mode_not_supported_by_fixed_length_type",
+        ),
+    }
+    if (obligation.factor_key, obligation.value) in direct_failure:
+        return direct_failure[(obligation.factor_key, obligation.value)]
     sqlstate = inventory_sqlstate.get(obligation.factor_key, "0A000")
     return (
         sqlstate,
@@ -445,6 +532,12 @@ def _compile_column_obligations(
     ):
         delegated = column_row.consumer_action_id.startswith("handoff:")
         consumer = column_row.consumer_action_id
+        disposition = "delegated" if delegated else column_row.disposition
+        if (
+            column_row.dimension_id == "storage_and_compression"
+            and column_row.member_qualified_id == "compression_lz4"
+        ):
+            disposition = "expected_failure"
         rows.append(
             AlterForeignTableFactorObligation(
                 ordinal=0,
@@ -457,7 +550,7 @@ def _compile_column_obligations(
                 factor_key=column_row.dimension_id,
                 value=column_row.member_qualified_id,
                 consumer_action_id=consumer,
-                disposition=("delegated" if delegated else column_row.disposition),
+                disposition=disposition,
                 source_locator=(
                     f"{source}#dimension={column_row.dimension_id};"
                     f"member={column_row.member_qualified_id}"
