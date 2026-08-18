@@ -540,7 +540,7 @@ git commit -m "feat: render all alter foreign table factor values"
 - Modify: `src/pg_case_factory/alter_foreign_table_factor_render.py`
 - Modify: `tests/test_alter_foreign_table_factor_render.py`
 
-- [ ] **Step 1: Write the failing full-program contract test**
+- [x] **Step 1: Write the failing full-program contract test**
 
 ```python
 def test_all_programs_are_complete_and_have_one_target(self) -> None:
@@ -555,11 +555,11 @@ def test_all_programs_are_complete_and_have_one_target(self) -> None:
         self.assertFalse(sql.endswith("\n\n"))
 ```
 
-- [ ] **Step 2: Run the test and verify RED**
+- [x] **Step 2: Run the test and verify RED**
 
 Expected: missing `render_alter_foreign_table_factor_case`.
 
-- [ ] **Step 3: Implement the complete common fixture**
+- [x] **Step 3: Implement the complete common fixture**
 
 Every program creates unique no-handler FDW/server objects and a complete structure using the case prefix. For `ALTERFOREIGNTABLE0001.sql`, the first executable statement after the header is `DROP TABLE IF EXISTS alterforeigntable_0001_base CASCADE;`; later files substitute only their frozen numbered prefix. The target foreign table includes an identifier column, primary test column, auxiliary text column, status/check column, and deterministic data when the action permits it.
 
@@ -578,11 +578,11 @@ reverse dependency cleanup
 final DROP TABLE IF EXISTS
 ```
 
-- [ ] **Step 4: Implement expected-failure continuation**
+- [x] **Step 4: Implement expected-failure continuation**
 
 Expected-failure files set `\set ON_ERROR_STOP off` immediately before target, print `target_sqlstate :SQLSTATE`, assert equality with `case.expected_sqlstate`, then restore `\set ON_ERROR_STOP on` before cleanup. Success files keep `ON_ERROR_STOP on` and assert `:SQLSTATE = '00000'` after target.
 
-- [ ] **Step 5: Render all 1,805 programs twice in memory**
+- [x] **Step 5: Render all 1,805 programs twice in memory**
 
 ```python
 first = [render_alter_foreign_table_factor_case(plan, row, ROOT) for row in plan.cases]
@@ -591,7 +591,7 @@ self.assertEqual(first, second)
 self.assertEqual(1_805, len(first))
 ```
 
-- [ ] **Step 6: Run tests and commit**
+- [x] **Step 6: Run tests and commit**
 
 ```bash
 uv run python -m unittest -v tests.test_alter_foreign_table_factor_render

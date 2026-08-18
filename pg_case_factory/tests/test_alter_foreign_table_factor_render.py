@@ -12,6 +12,8 @@ from pg_case_factory.alter_foreign_table_regress import (
 from pg_case_factory.alter_foreign_table_factor_render import (
     AlterForeignTableFactorRenderError,
     direct_member_renderer_registry,
+    count_primary_alter_foreign_table,
+    render_alter_foreign_table_factor_case,
     resolve_alter_foreign_table_factor_witness,
     validate_alter_foreign_table_constraint_member_renderers,
     validate_alter_foreign_table_direct_member_renderers,
@@ -200,6 +202,48 @@ class AlterForeignTableColumnFactorRenderTest(unittest.TestCase):
         rollback = resolve_alter_foreign_table_factor_witness(rows["rollback"], ROOT)
         self.assertIn("COMMIT;", commit.oracle_sql)
         self.assertIn("ROLLBACK;", rollback.oracle_sql)
+
+    def test_all_programs_are_complete_and_have_one_target(self) -> None:
+        plan = build_alter_foreign_table_factor_loop_plan(ROOT)
+        for case in plan.cases:
+            with self.subTest(case_id=case.case_id):
+                sql = render_alter_foreign_table_factor_case(plan, case, ROOT)
+                self.assertTrue(sql.startswith("-- --------------------------------------------------------\n"))
+                self.assertEqual(1, count_primary_alter_foreign_table(sql))
+                self.assertIn(
+                    f"-- primary_obligation_id: {case.primary_obligation_id}",
+                    sql,
+                )
+                self.assertNotRegex(sql, r"\{[A-Za-z_]\w*\}")
+                self.assertTrue(sql.endswith(";\n"))
+                self.assertFalse(sql.endswith("\n\n"))
+
+    def test_all_programs_are_deterministic_in_memory(self) -> None:
+        plan = build_alter_foreign_table_factor_loop_plan(ROOT)
+        first = [
+            render_alter_foreign_table_factor_case(plan, row, ROOT)
+            for row in plan.cases
+        ]
+        second = [
+            render_alter_foreign_table_factor_case(plan, row, ROOT)
+            for row in plan.cases
+        ]
+        self.assertEqual(first, second)
+        self.assertEqual(1_805, len(first))
+
+    def test_expected_failure_programs_capture_and_restore_error_mode(self) -> None:
+        plan = build_alter_foreign_table_factor_loop_plan(ROOT)
+        failures = [row for row in plan.cases if row.outcome == "expected_failure"]
+        self.assertTrue(failures)
+        for case in failures:
+            sql = render_alter_foreign_table_factor_case(plan, case, ROOT)
+            self.assertIn("\\set ON_ERROR_STOP off", sql)
+            self.assertIn("\\set target_sqlstate :SQLSTATE", sql)
+            self.assertIn(
+                f"SELECT :'target_sqlstate' = '{case.expected_sqlstate}'",
+                sql,
+            )
+            self.assertIn("\\set ON_ERROR_STOP on", sql)
 
 
 if __name__ == "__main__":

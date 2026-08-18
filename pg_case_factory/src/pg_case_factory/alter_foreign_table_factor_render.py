@@ -5,11 +5,15 @@ from __future__ import annotations
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
+import re
 from typing import Mapping
 
 import yaml
 
-from .alter_foreign_table_factor_loop import AlterForeignTableFactorCase
+from .alter_foreign_table_factor_loop import (
+    AlterForeignTableFactorCase,
+    AlterForeignTableFactorLoopPlan,
+)
 from .applicability import load_shipped_applicability_universe
 from .alter_foreign_table_regress import load_alter_foreign_table_type_witnesses
 
@@ -620,14 +624,15 @@ def _column_catalog_oracle(
     case: AlterForeignTableFactorCase,
     *,
     attribute: str,
+    column_name: str | None = None,
 ) -> tuple[str, ...]:
     table_name = f"{case.object_prefix}ft"
-    column_name = f"{case.object_prefix}factor_col"
+    actual_column_name = column_name or f"{case.object_prefix}factor_col"
     return (
         "SELECT EXISTS ("
         "SELECT 1 FROM pg_catalog.pg_attribute AS a "
         f"WHERE a.attrelid = '{table_name}'::regclass "
-        f"AND a.attname = '{column_name}' AND NOT a.attisdropped"
+        f"AND a.attname = '{actual_column_name}' AND NOT a.attisdropped"
         f") AS {attribute};",
     )
 
@@ -711,7 +716,11 @@ def _type_witness(
     declaration = _format_sql(type_witness.declaration_sql, case).strip()
     if not declaration:
         raise AlterForeignTableFactorRenderError("empty type declaration")
-    column_name = f"{case.object_prefix}factor_col"
+    column_name = (
+        f"{case.object_prefix}added_factor_col"
+        if case.consumer_action_id == "add_column"
+        else f"{case.object_prefix}factor_col"
+    )
     if case.consumer_action_id == "add_column":
         target = f"ADD COLUMN {column_name} {declaration}"
     elif case.consumer_action_id == "alter_column_type":
@@ -724,7 +733,11 @@ def _type_witness(
         primary_obligation_id=case.primary_obligation_id,
         setup_sql=_format_sql_rows(type_witness.setup_sql, case),
         target_sql_fragment=target,
-        oracle_sql=_column_catalog_oracle(case, attribute="type_factor_applied"),
+        oracle_sql=_column_catalog_oracle(
+            case,
+            attribute="type_factor_applied",
+            column_name=column_name,
+        ),
         cleanup_sql=_format_sql_rows(type_witness.cleanup_sql, case),
         semantic_locus="target.type_name",
         outcome=case.outcome,
@@ -745,7 +758,11 @@ def _direct_witness(
             f"missing member renderer: {dimension_id}={member}"
         ) from exc
     fragment = _format_sql(raw_fragment, case).strip()
-    column_name = f"{case.object_prefix}factor_col"
+    column_name = (
+        f"{case.object_prefix}added_factor_col"
+        if case.consumer_action_id == "add_column"
+        else f"{case.object_prefix}factor_col"
+    )
     setup_sql, cleanup_sql = _dependency_sql(case, dimension_id, member)
     semantic_locus = "target.column_definition"
 
@@ -834,7 +851,11 @@ def _direct_witness(
         primary_obligation_id=case.primary_obligation_id,
         setup_sql=setup_sql,
         target_sql_fragment=target,
-        oracle_sql=_column_catalog_oracle(case, attribute="column_factor_applied"),
+        oracle_sql=_column_catalog_oracle(
+            case,
+            attribute="column_factor_applied",
+            column_name=column_name,
+        ),
         cleanup_sql=cleanup_sql,
         semantic_locus=semantic_locus,
         outcome=case.outcome,
@@ -1187,7 +1208,11 @@ def _column_position_witness(
         )
     target = _column_action_target(
         case,
-        column_identifier=f"{case.object_prefix}factor_col",
+        column_identifier=(
+            f"{case.object_prefix}position_probe"
+            if case.consumer_action_id == "add_column"
+            else f"{case.object_prefix}factor_col"
+        ),
     )
     setup: list[str] = []
     if case.factor_value == "zero_column_table":
@@ -1283,7 +1308,11 @@ def _partition_or_inheritance_witness(
         )
     target = _column_action_target(
         case,
-        column_identifier=f"{prefix}factor_col",
+        column_identifier=(
+            f"{prefix}role_probe"
+            if case.consumer_action_id == "add_column"
+            else f"{prefix}factor_col"
+        ),
     )
     return AlterForeignTableFactorWitness(
         primary_obligation_id=case.primary_obligation_id,
@@ -1406,6 +1435,8 @@ def _dropped_existing_witness(
         setup.append(
             f"CREATE VIEW {prefix}whole_row_view AS SELECT ft FROM {prefix}ft AS ft;"
         )
+    if case.consumer_action_id == "add_column" and member != "duplicate_new_column_target":
+        identifier = f"{prefix}state_probe"
     target = _column_action_target(case, column_identifier=identifier)
     return AlterForeignTableFactorWitness(
         primary_obligation_id=case.primary_obligation_id,
@@ -1889,13 +1920,6 @@ def _canonical_fixture_sql(case: AlterForeignTableFactorCase) -> tuple[str, ...]
     factor = case.factor_key
     value = case.factor_value
     rows: list[str] = []
-    if factor == "table_name_shape" and value == "schema_qualified":
-        rows.append(f"CREATE SCHEMA {prefix}source_schema;")
-    if factor in {"new_schema_name_shape", "schema_existence"} and value in {
-        "simple_id",
-        "schema_exists",
-    }:
-        rows.append(f"CREATE SCHEMA {prefix}target_schema;")
     if factor in {
         "owner_name_shape",
         "set_role_capability",
@@ -1904,7 +1928,6 @@ def _canonical_fixture_sql(case: AlterForeignTableFactorCase) -> tuple[str, ...]
     }:
         rows.extend(
             (
-                f"CREATE ROLE {prefix}new_owner NOLOGIN;",
                 f"CREATE ROLE {prefix}actor NOLOGIN;",
             )
         )
@@ -2032,6 +2055,356 @@ def _transaction_witness(
     )
 
 
+_PRIMARY_BEGIN = "-- primary-target-begin"
+_PRIMARY_END = "-- primary-target-end"
+
+
+def count_primary_alter_foreign_table(sql: str) -> int:
+    """Count target statements only inside the immutable credit boundary."""
+
+    if sql.count(_PRIMARY_BEGIN) != 1 or sql.count(_PRIMARY_END) != 1:
+        return 0
+    target_region = sql.split(_PRIMARY_BEGIN, 1)[1].split(_PRIMARY_END, 1)[0]
+    return len(
+        re.findall(
+            r"(?im)^\s*ALTER\s+FOREIGN\s+TABLE\b",
+            target_region,
+        )
+    )
+
+
+def _fixture_foreign_table_name(case: AlterForeignTableFactorCase) -> str:
+    prefix = case.object_prefix
+    if case.kind == "SFV" and case.factor_key == "table_name_shape":
+        if case.factor_value == "quoted_id":
+            return f'"{prefix}Mixed Foreign Table"'
+        if case.factor_value == "schema_qualified":
+            return f"{prefix}source_schema.{prefix}ft"
+    return f"{prefix}ft"
+
+
+def _fixture_column_name(case: AlterForeignTableFactorCase) -> str:
+    if (
+        case.kind == "SFV"
+        and case.factor_key == "column_name_shape"
+        and case.factor_value == "quoted_id"
+    ):
+        return f'"{case.object_prefix}Factor Column"'
+    return f"{case.object_prefix}factor_col"
+
+
+def _pre_cleanup_sql(case: AlterForeignTableFactorCase) -> tuple[str, ...]:
+    prefix = case.object_prefix
+    base = f"{prefix}base"
+    return (
+        f"DROP TABLE IF EXISTS {base} CASCADE;",
+        "RESET ROLE;",
+        f"DROP VIEW IF EXISTS {prefix}dependent_view CASCADE;",
+        f"DROP VIEW IF EXISTS {prefix}whole_row_view CASCADE;",
+        f"DROP MATERIALIZED VIEW IF EXISTS {prefix}dependent_matview CASCADE;",
+        f"DROP SCHEMA IF EXISTS {prefix}source_schema CASCADE;",
+        f'DROP FOREIGN TABLE IF EXISTS "{prefix}Mixed Foreign Table" CASCADE;',
+        f"DROP FOREIGN TABLE IF EXISTS {prefix}ft CASCADE;",
+        f"DROP TABLE IF EXISTS {prefix}remote_table CASCADE;",
+        f"DROP TABLE IF EXISTS {prefix}referenced_table CASCADE;",
+        f"DROP TABLE IF EXISTS {prefix}fk_dependent CASCADE;",
+        f"DROP TABLE IF EXISTS {prefix}fk_target CASCADE;",
+        f"DROP TABLE IF EXISTS {prefix}partition_context CASCADE;",
+        f"DROP TABLE IF EXISTS {prefix}partition_parent CASCADE;",
+        f"DROP TABLE IF EXISTS {prefix}inheritance_parent CASCADE;",
+        f"DROP TABLE IF EXISTS {prefix}child_marker CASCADE;",
+        f"DROP TABLE IF EXISTS {prefix}parent_marker CASCADE;",
+        f"DROP TABLE IF EXISTS {prefix}range_parent CASCADE;",
+        f"DROP TABLE IF EXISTS {prefix}list_parent CASCADE;",
+        f"DROP TABLE IF EXISTS {prefix}hash_parent CASCADE;",
+        f"DROP TABLE IF EXISTS {prefix}zero_column_ft CASCADE;",
+        f"DROP SEQUENCE IF EXISTS {prefix}default_seq CASCADE;",
+        f"DROP SEQUENCE IF EXISTS {prefix}dependency_seq CASCADE;",
+        f"DROP FUNCTION IF EXISTS {prefix}default_fn() CASCADE;",
+        f"DROP FUNCTION IF EXISTS {prefix}dependency_fn(integer) CASCADE;",
+        f"DROP FUNCTION IF EXISTS {prefix}trigger_fn() CASCADE;",
+        f"DROP FUNCTION IF EXISTS {prefix}base_in(cstring) CASCADE;",
+        f"DROP TYPE IF EXISTS {prefix}base_type CASCADE;",
+        f"DROP TYPE IF EXISTS {prefix}mood CASCADE;",
+        f"DROP TYPE IF EXISTS {prefix}positive_integer CASCADE;",
+        f"DROP TYPE IF EXISTS {prefix}address CASCADE;",
+        f"DROP TYPE IF EXISTS {prefix}enum_type CASCADE;",
+        f"DROP DOMAIN IF EXISTS {prefix}domain_type CASCADE;",
+        f"DROP TYPE IF EXISTS {prefix}composite_type CASCADE;",
+        f"DROP TABLE IF EXISTS {prefix}row_table CASCADE;",
+        f"DROP TYPE IF EXISTS {prefix}range_type CASCADE;",
+        f"DROP TYPE IF EXISTS {prefix}multirange_type CASCADE;",
+        f"DROP TYPE IF EXISTS {prefix}range_for_multi CASCADE;",
+        f"DROP TYPE IF EXISTS {prefix}array_element_type CASCADE;",
+        f"DROP DOMAIN IF EXISTS {prefix}dependency_domain CASCADE;",
+        f"DROP COLLATION IF EXISTS {prefix}collation CASCADE;",
+        f'DROP COLLATION IF EXISTS "{prefix}Mixed Collation" CASCADE;',
+        f"DROP COLLATION IF EXISTS {prefix}encoding_collation CASCADE;",
+        f"DROP COLLATION IF EXISTS {prefix}dependency_collation CASCADE;",
+        f"DROP SCHEMA IF EXISTS {prefix}collation_schema CASCADE;",
+        f"DROP SCHEMA IF EXISTS {prefix}target_schema CASCADE;",
+        f"DROP ROLE IF EXISTS {prefix}actor;",
+        f"DROP ROLE IF EXISTS {prefix}new_owner;",
+        f"DROP SERVER IF EXISTS {prefix}server CASCADE;",
+        f"DROP FOREIGN DATA WRAPPER IF EXISTS {prefix}fdw CASCADE;",
+    )
+
+
+def _pre_foreign_fixture_sql(case: AlterForeignTableFactorCase) -> tuple[str, ...]:
+    prefix = case.object_prefix
+    rows: list[str] = []
+    if (
+        case.kind == "SFV"
+        and case.factor_key == "table_name_shape"
+        and case.factor_value == "schema_qualified"
+    ):
+        rows.append(f"CREATE SCHEMA {prefix}source_schema;")
+    if case.consumer_action_id == "owner":
+        rows.append(f"CREATE ROLE {prefix}new_owner NOLOGIN;")
+    if case.consumer_action_id == "set_schema" and not (
+        case.kind == "SFV"
+        and case.factor_key in {"new_schema_name_shape", "schema_existence"}
+        and case.factor_value in {"nonexistent_schema", "schema_not_exists"}
+    ):
+        rows.append(f"CREATE SCHEMA {prefix}target_schema;")
+    if case.consumer_action_id in {"inherit", "no_inherit"} and case.factor_key not in {
+        "inheritance_role",
+        "dependency_state",
+    }:
+        rows.append(
+            f"CREATE TABLE {prefix}inheritance_parent "
+            f"({prefix}inherited_marker integer);"
+        )
+    return tuple(rows)
+
+
+def _common_fixture_sql(case: AlterForeignTableFactorCase) -> tuple[str, ...]:
+    prefix = case.object_prefix
+    base = f"{prefix}base"
+    foreign_table = _fixture_foreign_table_name(case)
+    factor_column = _fixture_column_name(case)
+    inheritance = (
+        f" INHERITS ({prefix}inheritance_parent)"
+        if case.consumer_action_id == "no_inherit"
+        else ""
+    )
+    rows: list[str] = [
+        f"CREATE FOREIGN DATA WRAPPER {prefix}fdw NO HANDLER;",
+        f"CREATE SERVER {prefix}server FOREIGN DATA WRAPPER {prefix}fdw;",
+        f"CREATE TABLE {base} ("
+        "id bigint NOT NULL PRIMARY KEY, "
+        "factor_col integer, drop_col text, base_col integer NOT NULL, "
+        "period_col int4range NOT NULL, status smallint NOT NULL DEFAULT 0, "
+        "payload varchar(128) NOT NULL DEFAULT '', "
+        "CONSTRAINT "
+        f"{prefix}base_status_check CHECK (status BETWEEN 0 AND 9));",
+        f"INSERT INTO {base} "
+        "(id, factor_col, drop_col, base_col, period_col, status, payload) "
+        "VALUES (1, 1, 'drop-me', 2, int4range(1, 5), 1, 'baseline');",
+    ]
+    rows.extend(_pre_foreign_fixture_sql(case))
+    rows.append(
+        f"CREATE FOREIGN TABLE {foreign_table} ("
+        f"{prefix}id bigint NOT NULL, "
+        f"{factor_column} integer, "
+        f"{prefix}drop_col text, "
+        f"{prefix}base_col integer NOT NULL, "
+        f"{prefix}period_col int4range NOT NULL, "
+        f"{prefix}status smallint NOT NULL DEFAULT 0, "
+        f"{prefix}payload varchar(128) NOT NULL DEFAULT '', "
+        f"CONSTRAINT {prefix}base_check CHECK ({prefix}status BETWEEN 0 AND 9)"
+        f"){inheritance} SERVER {prefix}server;"
+    )
+    if case.consumer_action_id in {
+        "disable_trigger",
+        "enable_trigger",
+        "enable_replica_trigger",
+        "enable_always_trigger",
+    }:
+        rows.extend(
+            (
+                f"CREATE FUNCTION {prefix}trigger_fn() RETURNS trigger "
+                "LANGUAGE plpgsql AS 'BEGIN RETURN NEW; END';",
+                f"CREATE TRIGGER {prefix}trigger BEFORE UPDATE ON {foreign_table} "
+                f"FOR EACH ROW EXECUTE FUNCTION {prefix}trigger_fn();",
+            )
+        )
+    return tuple(rows)
+
+
+def _primary_statement(
+    case: AlterForeignTableFactorCase,
+    witness: AlterForeignTableFactorWitness,
+) -> str:
+    target = witness.target_sql_fragment.strip()
+    if target.upper().startswith("ALTER FOREIGN TABLE"):
+        return target if target.endswith(";") else target + ";"
+    return (
+        f"ALTER FOREIGN TABLE {_fixture_foreign_table_name(case)} "
+        f"{target.rstrip(';')};"
+    )
+
+
+def _ordered_witness_cleanup(rows: tuple[str, ...]) -> tuple[str, ...]:
+    priority = {
+        "DROP VIEW": 0,
+        "DROP MATERIALIZED VIEW": 0,
+        "DROP TRIGGER": 0,
+        "DROP FUNCTION": 1,
+        "DROP TABLE": 2,
+        "DROP FOREIGN TABLE": 2,
+        "DROP SEQUENCE": 3,
+        "DROP COLLATION": 3,
+        "DROP DOMAIN": 4,
+        "DROP TYPE": 4,
+        "DROP SCHEMA": 5,
+        "DROP ROLE": 6,
+    }
+    return tuple(
+        row
+        for _index, row in sorted(
+            enumerate(rows),
+            key=lambda item: (
+                next(
+                    (
+                        value
+                        for prefix, value in priority.items()
+                        if item[1].lstrip().upper().startswith(prefix)
+                    ),
+                    3,
+                ),
+                item[0],
+            ),
+        )
+    )
+
+
+def _final_cleanup_sql(
+    case: AlterForeignTableFactorCase,
+    witness: AlterForeignTableFactorWitness,
+) -> tuple[str, ...]:
+    prefix = case.object_prefix
+    rows: list[str] = ["RESET ROLE;"]
+    rows.extend(_ordered_witness_cleanup(witness.cleanup_sql))
+    rows.extend(
+        (
+            f"DROP VIEW IF EXISTS {prefix}dependent_view CASCADE;",
+            f"DROP VIEW IF EXISTS {prefix}whole_row_view CASCADE;",
+            f"DROP MATERIALIZED VIEW IF EXISTS {prefix}dependent_matview CASCADE;",
+            f"DROP SCHEMA IF EXISTS {prefix}source_schema CASCADE;",
+            f'DROP FOREIGN TABLE IF EXISTS "{prefix}Mixed Foreign Table" CASCADE;',
+            f"DROP FOREIGN TABLE IF EXISTS {prefix}ft CASCADE;",
+            f"DROP TABLE IF EXISTS {prefix}remote_table CASCADE;",
+            f"DROP TABLE IF EXISTS {prefix}referenced_table CASCADE;",
+            f"DROP TABLE IF EXISTS {prefix}fk_dependent CASCADE;",
+            f"DROP TABLE IF EXISTS {prefix}fk_target CASCADE;",
+            f"DROP TABLE IF EXISTS {prefix}partition_context CASCADE;",
+            f"DROP TABLE IF EXISTS {prefix}partition_parent CASCADE;",
+            f"DROP TABLE IF EXISTS {prefix}inheritance_parent CASCADE;",
+            f"DROP TABLE IF EXISTS {prefix}child_marker CASCADE;",
+            f"DROP TABLE IF EXISTS {prefix}parent_marker CASCADE;",
+            f"DROP TABLE IF EXISTS {prefix}range_parent CASCADE;",
+            f"DROP TABLE IF EXISTS {prefix}list_parent CASCADE;",
+            f"DROP TABLE IF EXISTS {prefix}hash_parent CASCADE;",
+            f"DROP TABLE IF EXISTS {prefix}zero_column_ft CASCADE;",
+            f"DROP SEQUENCE IF EXISTS {prefix}default_seq CASCADE;",
+            f"DROP SEQUENCE IF EXISTS {prefix}dependency_seq CASCADE;",
+            f"DROP FUNCTION IF EXISTS {prefix}default_fn() CASCADE;",
+            f"DROP FUNCTION IF EXISTS {prefix}dependency_fn(integer) CASCADE;",
+            f"DROP FUNCTION IF EXISTS {prefix}trigger_fn() CASCADE;",
+            f"DROP TYPE IF EXISTS {prefix}base_type CASCADE;",
+            f"DROP TYPE IF EXISTS {prefix}mood CASCADE;",
+            f"DROP TYPE IF EXISTS {prefix}positive_integer CASCADE;",
+            f"DROP TYPE IF EXISTS {prefix}address CASCADE;",
+            f"DROP TYPE IF EXISTS {prefix}enum_type CASCADE;",
+            f"DROP DOMAIN IF EXISTS {prefix}domain_type CASCADE;",
+            f"DROP TYPE IF EXISTS {prefix}composite_type CASCADE;",
+            f"DROP TABLE IF EXISTS {prefix}row_table CASCADE;",
+            f"DROP TYPE IF EXISTS {prefix}range_type CASCADE;",
+            f"DROP TYPE IF EXISTS {prefix}multirange_type CASCADE;",
+            f"DROP TYPE IF EXISTS {prefix}range_for_multi CASCADE;",
+            f"DROP TYPE IF EXISTS {prefix}array_element_type CASCADE;",
+            f"DROP DOMAIN IF EXISTS {prefix}dependency_domain CASCADE;",
+            f"DROP COLLATION IF EXISTS {prefix}collation CASCADE;",
+            f'DROP COLLATION IF EXISTS "{prefix}Mixed Collation" CASCADE;',
+            f"DROP COLLATION IF EXISTS {prefix}encoding_collation CASCADE;",
+            f"DROP COLLATION IF EXISTS {prefix}dependency_collation CASCADE;",
+            f"DROP SCHEMA IF EXISTS {prefix}collation_schema CASCADE;",
+            f"DROP SCHEMA IF EXISTS {prefix}target_schema CASCADE;",
+            f"DROP ROLE IF EXISTS {prefix}actor;",
+            f"DROP ROLE IF EXISTS {prefix}new_owner;",
+            f"DROP SERVER IF EXISTS {prefix}server CASCADE;",
+            f"DROP FOREIGN DATA WRAPPER IF EXISTS {prefix}fdw CASCADE;",
+            f"DROP TABLE IF EXISTS {prefix}base CASCADE;",
+        )
+    )
+    return tuple(rows)
+
+
+def render_alter_foreign_table_factor_case(
+    plan: AlterForeignTableFactorLoopPlan,
+    case: AlterForeignTableFactorCase,
+    repository_root: Path,
+) -> str:
+    """Render one complete, rerunnable, file-scoped regress program."""
+
+    if case not in plan.cases:
+        raise AlterForeignTableFactorRenderError("case is not part of plan")
+    witness = resolve_alter_foreign_table_factor_witness(case, repository_root)
+    if witness.primary_obligation_id != case.primary_obligation_id:
+        raise AlterForeignTableFactorRenderError("witness obligation mismatch")
+    lines = [
+        "-- --------------------------------------------------------",
+        "-- 版权所有(C)  2021-2030 华为技术有限公司",
+        "--",
+        "-- --",
+        "-- author       : codex",
+        "-- create at    : 2026-08-18",
+        "-- version      : 1.0",
+        "-- description  : ALTER FOREIGN TABLE "
+        f"{case.factor_key}={case.factor_value}",
+        "-- FE           :",
+        "-- ++",
+        "-- --------------------------------------------------------",
+        f"-- case_id: {case.case_id}",
+        f"-- primary_obligation_id: {case.primary_obligation_id}",
+        f"-- expected_outcome: {case.outcome}",
+        f"-- expected_sqlstate: {case.expected_sqlstate}",
+        "\\set ON_ERROR_STOP on",
+    ]
+    lines.extend(_pre_cleanup_sql(case))
+    lines.extend(_common_fixture_sql(case))
+    lines.extend(witness.setup_sql)
+    if case.outcome == "expected_failure":
+        lines.append("\\set ON_ERROR_STOP off")
+    lines.append(_PRIMARY_BEGIN)
+    lines.append(_primary_statement(case, witness))
+    lines.append(_PRIMARY_END)
+    lines.append("\\set target_sqlstate :SQLSTATE")
+    if case.outcome == "expected_failure":
+        lines.append("\\set ON_ERROR_STOP on")
+    lines.append(
+        f"SELECT :'target_sqlstate' = '{case.expected_sqlstate}' "
+        "AS target_sqlstate_matches_expected;"
+    )
+    lines.extend(witness.oracle_sql)
+    lines.extend(_final_cleanup_sql(case, witness))
+    rendered = "\n".join(row.rstrip() for row in lines) + "\n"
+    if "{" in rendered or "}" in rendered:
+        placeholder = re.search(r"\{[A-Za-z_]\w*\}", rendered)
+        if placeholder:
+            raise AlterForeignTableFactorRenderError(
+                f"unresolved SQL placeholder: {placeholder.group(0)}"
+            )
+    if count_primary_alter_foreign_table(rendered) != 1:
+        raise AlterForeignTableFactorRenderError(
+            "program must contain exactly one credited target"
+        )
+    if rendered.endswith("\n\n"):
+        raise AlterForeignTableFactorRenderError("program has trailing blank line")
+    return rendered
+
+
 def resolve_alter_foreign_table_factor_witness(
     case: AlterForeignTableFactorCase,
     repository_root: Path,
@@ -2085,6 +2458,8 @@ __all__ = [
     "IDENTITY_SQL",
     "STORAGE_COMPRESSION_SQL",
     "direct_member_renderer_registry",
+    "count_primary_alter_foreign_table",
+    "render_alter_foreign_table_factor_case",
     "resolve_alter_foreign_table_factor_witness",
     "validate_alter_foreign_table_direct_member_renderers",
     "validate_alter_foreign_table_constraint_member_renderers",
