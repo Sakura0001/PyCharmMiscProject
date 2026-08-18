@@ -60,16 +60,23 @@ class AlterFunctionFactorLoopLedgerTest(unittest.TestCase):
         self.assertEqual(85, sum(seen.values()))
         self.assertEqual(85, len(seen))
 
-    def test_expected_failure_dispositions_are_exhaustive_and_nonempty(self) -> None:
+    def test_expected_failure_dispositions_are_frozen(self) -> None:
         rows = compile_alter_function_factor_loop_obligations(ROOT)
         failures = [
             (row.factor_key, row.value)
             for row in rows
             if row.disposition == "expected_failure"
         ]
-        self.assertGreater(len(failures), 0)
+        covered = sum(row.disposition == "covered" for row in rows)
+        # 24 canonical values reach the PG target check and are rejected;
+        # the remaining 61 SFV + 36 GRM + 2 RISK = 99 are covered.
+        self.assertEqual(24, len(failures))
+        self.assertEqual(99, covered)
         # no duplicate failure obligation
         self.assertEqual(len(failures), len(set(failures)))
+        # without_signature and over_63_chars are NOT failures (legal / truncated)
+        self.assertNotIn(("argtype_specification", "without_signature"), failures)
+        self.assertNotIn(("identifier_length_exceeded", "over_63_chars"), failures)
 
 
 if __name__ == "__main__":

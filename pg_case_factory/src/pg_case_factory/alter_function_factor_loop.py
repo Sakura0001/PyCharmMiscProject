@@ -113,7 +113,9 @@ _PERMISSION_INSUFFICIENT_CONSUMER = {
 }
 
 # Canonical (factor, value) pairs that reach the PostgreSQL target check and
-# are rejected.  Each becomes an isolated expected-failure program.
+# are rejected (verified against PG 18.4).  ``without_signature`` is a legal
+# success for a unique-name function, and ``over_63_chars`` succeeds via
+# NAMEDATALEN truncation, so neither is an expected failure.
 _SFV_FAILURE_VALUES = frozenset(
     {
         ("expected_status", "failure"),
@@ -126,7 +128,6 @@ _SFV_FAILURE_VALUES = frozenset(
         ("schema_target", "information_schema_reserved"),
         ("extension_target", "extension_not_exists"),
         ("argtype_specification", "with_partial_signature"),
-        ("argtype_specification", "without_signature"),
         ("configuration_parameter_shape", "invalid_parameter"),
         ("privilege_level", "non_owner_no_privilege"),
         ("schema_dependency", "target_schema_not_exists"),
@@ -141,7 +142,6 @@ _SFV_FAILURE_VALUES = frozenset(
         ("permission_insufficient", "not_owner_for_OWNER_TO"),
         ("permission_insufficient", "not_owner_for_SET_SCHEMA"),
         ("conflicting_action", "multiple_conflicting_volatility"),
-        ("identifier_length_exceeded", "over_63_chars"),
     }
 )
 
