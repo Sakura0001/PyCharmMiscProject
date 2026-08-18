@@ -184,7 +184,13 @@ def _compile_grammar_obligations() -> list[AlterForeignTableFactorObligation]:
                     factor_key=factor_key,
                     value=value,
                     consumer_action_id=consumer,
-                    disposition="covered",
+                    disposition=(
+                        "expected_failure"
+                        if consumer == "set_storage"
+                        and factor_key == "local:storage_mode"
+                        and value in {"main", "extended", "external"}
+                        else "covered"
+                    ),
                     source_locator=axis.source_locator,
                 )
             )
@@ -228,6 +234,18 @@ def _baseline_assignments(
         elif axis.action_id == action.action_id:
             assignments[f"local:{axis.axis_id}"] = axis.values[0]
     assignments[obligation.factor_key] = obligation.value
+    if obligation.consumer_action_id in {"column_options", "options"}:
+        option_action = assignments["local:option_action"]
+        value_presence = assignments["local:option_value_presence"]
+        if obligation.factor_key == "local:option_action":
+            value_presence = "omitted" if option_action == "drop" else "present"
+        elif obligation.factor_key == "local:option_value_presence":
+            option_action = "drop" if value_presence == "omitted" else "add"
+        else:
+            option_action = "add"
+            value_presence = "present"
+        assignments["local:option_action"] = option_action
+        assignments["local:option_value_presence"] = value_presence
     if len(assignments) != len(set(assignments)):
         raise AlterForeignTableFactorLoopError("duplicate baseline factor key")
     return tuple(assignments.items())
@@ -238,6 +256,23 @@ def _expected_failure_details(
     obligation: AlterForeignTableFactorObligation,
     type_expectations: dict[tuple[str, str, str], tuple[str, str]],
 ) -> tuple[str, str]:
+    if (
+        obligation.consumer_action_id == "set_storage"
+        and (
+            obligation.factor_key == "local:storage_mode"
+            and obligation.value in {"main", "extended", "external"}
+            or obligation.factor_key == "storage_and_compression"
+            and obligation.value in {
+                "storage_main",
+                "storage_extended",
+                "storage_external",
+            }
+        )
+    ):
+        return (
+            "0A000",
+            "alter_foreign_table_set_storage_not_supported",
+        )
     if obligation.kind == "INV" and obligation.factor_key == "data_type_and_typmod":
         selector, member = obligation.value.split("::", 1)
         try:
@@ -250,6 +285,52 @@ def _expected_failure_details(
                 f"{selector}::{member}/{obligation.consumer_action_id}"
             ) from exc
 
+    if obligation.kind == "INV" and obligation.factor_key == "column_name_shape":
+        if obligation.value == "zero_length_quoted_identifier":
+            return "42601", "zero_length_identifier_rejected_by_parser"
+        if (
+            obligation.value
+            in {
+                "overlength_identifier_truncation_collision",
+                "duplicate_existing_column_name",
+            }
+            and obligation.consumer_action_id == "add_column"
+        ):
+            return "42701", "column_name_collides_after_normalization"
+
+    if (
+        obligation.kind == "INV"
+        and obligation.factor_key == "dropped_or_existing_column_state"
+        and obligation.value == "duplicate_new_column_target"
+        and obligation.consumer_action_id == "add_column"
+    ):
+        return "42701", "duplicate_new_column_target"
+    if (
+        obligation.kind == "INV"
+        and obligation.factor_key
+        in {"column_name_shape", "dropped_or_existing_column_state"}
+        and obligation.value
+        in {"reserved_system_column_name", "system_column"}
+    ):
+        if obligation.consumer_action_id == "add_column":
+            return "42701", "system_column_name_conflict"
+        return "0A000", "system_column_alter_not_supported"
+    if obligation.kind == "INV" and obligation.factor_key == "dependency_state":
+        dependency_failures = {
+            ("dependent_view", "alter_column_type"): "0A000",
+            ("dependent_materialized_view", "alter_column_type"): "0A000",
+            ("generated_function_dependency", "alter_column_type"): "0A000",
+            ("check_function_dependency", "alter_column_type"): "42883",
+            ("inheritance_dependency", "drop_column"): "42P16",
+            ("inheritance_dependency", "alter_column_type"): "42P16",
+            ("inheritance_dependency", "rename_column"): "42P16",
+        }
+        sqlstate = dependency_failures.get(
+            (obligation.value, obligation.consumer_action_id)
+        )
+        if sqlstate is not None:
+            return sqlstate, "dependency_blocks_requested_column_change"
+
     sfv_sqlstate = {
         ("column_name_shape", "nonexistent_column"): "42703",
         ("new_schema_name_shape", "nonexistent_schema"): "3F000",
@@ -260,6 +341,13 @@ def _expected_failure_details(
         ("privilege_level", "non_owner"): "42501",
         ("set_role_capability", "cannot_set_role"): "42501",
         ("type_usage_privilege", "lacks_usage"): "42501",
+        ("expected_status", "failure"): "42P01",
+        ("nonexistent_parent_table", "parent_missing"): "42P01",
+        ("nonexistent_table", "table_missing_no_if_exists"): "42P01",
+        ("object_state", "not_exists"): "42P01",
+        ("parent_table_existence", "parent_not_exists"): "42P01",
+        ("parent_table_name_shape", "nonexistent_parent"): "42P01",
+        ("table_name_shape", "nonexistent_name"): "42P01",
     }
     if obligation.kind == "SFV":
         sqlstate = sfv_sqlstate.get(
@@ -284,6 +372,7 @@ def _expected_failure_details(
         "storage_and_compression": "0A000",
         "statistics_target": "22023",
         "dropped_or_existing_column_state": "42703",
+        "column_count_and_position": "42703",
     }
     direct_failure = {
         ("collation", "nonexistent_collation"): (
@@ -311,8 +400,8 @@ def _expected_failure_details(
             "invalid_nullability_constraint_combination",
         ),
         ("default_state", "incompatible_type_default"): (
-            "42804",
-            "default_expression_type_mismatch",
+            "22P02",
+            "default_expression_literal_rejected",
         ),
         ("default_state", "self_column_reference_default"): (
             "0A000",
@@ -347,8 +436,8 @@ def _expected_failure_details(
             "subquery_not_allowed_in_generation_expression",
         ),
         ("generation_mode", "incompatible_generation_result_type"): (
-            "42804",
-            "generation_expression_type_mismatch",
+            "22P02",
+            "generation_expression_literal_rejected",
         ),
         ("identity_mode", "identity_on_non_integer_type"): (
             "22023",
@@ -535,6 +624,59 @@ def _compile_column_obligations(
         delegated = column_row.consumer_action_id.startswith("handoff:")
         consumer = column_row.consumer_action_id
         disposition = "delegated" if delegated else column_row.disposition
+        if column_row.dimension_id == "column_name_shape":
+            member = column_row.member_qualified_id
+            if member in {
+                "overlength_identifier_truncation_collision",
+                "duplicate_existing_column_name",
+            }:
+                disposition = (
+                    "expected_failure" if consumer == "add_column" else "covered"
+                )
+            elif member == "nonexistent_column_name":
+                disposition = (
+                    "covered" if consumer == "add_column" else "expected_failure"
+                )
+            elif member == "reserved_system_column_name":
+                disposition = "expected_failure"
+        if column_row.dimension_id == "dropped_or_existing_column_state":
+            member = column_row.member_qualified_id
+            if member == "nonexistent_column":
+                disposition = (
+                    "covered" if consumer == "add_column" else "expected_failure"
+                )
+            elif member == "duplicate_new_column_target":
+                disposition = (
+                    "expected_failure" if consumer == "add_column" else "covered"
+                )
+            elif member == "system_column":
+                disposition = "expected_failure"
+        if column_row.dimension_id == "dependency_state" and (
+            column_row.member_qualified_id,
+            consumer,
+        ) in {
+            ("dependent_view", "alter_column_type"),
+            ("dependent_materialized_view", "alter_column_type"),
+            ("generated_function_dependency", "alter_column_type"),
+            ("check_function_dependency", "alter_column_type"),
+            ("inheritance_dependency", "drop_column"),
+            ("inheritance_dependency", "alter_column_type"),
+            ("inheritance_dependency", "rename_column"),
+        }:
+            disposition = "expected_failure"
+        if (
+            consumer == "set_storage"
+            and column_row.dimension_id == "storage_and_compression"
+            and column_row.member_qualified_id
+            in {"storage_main", "storage_extended", "storage_external"}
+        ):
+            disposition = "expected_failure"
+        if (
+            column_row.dimension_id == "column_count_and_position"
+            and column_row.member_qualified_id == "zero_column_table"
+            and consumer == "drop_column"
+        ):
+            disposition = "expected_failure"
         if (
             column_row.dimension_id == "storage_and_compression"
             and column_row.member_qualified_id == "compression_lz4"

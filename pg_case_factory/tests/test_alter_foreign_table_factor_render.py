@@ -245,6 +245,64 @@ class AlterForeignTableColumnFactorRenderTest(unittest.TestCase):
             )
             self.assertIn("\\set ON_ERROR_STOP on", sql)
 
+    def test_runtime_calibrated_fixtures_preserve_the_primary_factor(self) -> None:
+        plan = build_alter_foreign_table_factor_loop_plan(ROOT)
+
+        inherit = next(
+            row
+            for row in plan.cases
+            if row.kind == "GRM" and row.factor_value == "inherit"
+        )
+        inherit_sql = render_alter_foreign_table_factor_case(plan, inherit, ROOT)
+        self.assertGreaterEqual(inherit_sql.count("inherited_marker integer"), 2)
+
+        non_owner = next(
+            row
+            for row in plan.cases
+            if (row.factor_key, row.factor_value)
+            == ("privilege_level", "non_owner")
+        )
+        non_owner_sql = render_alter_foreign_table_factor_case(
+            plan, non_owner, ROOT
+        )
+        self.assertIn(f"SET ROLE {non_owner.object_prefix}actor;", non_owner_sql)
+
+        lacks_usage = next(
+            row
+            for row in plan.cases
+            if (row.factor_key, row.factor_value)
+            == ("type_usage_privilege", "lacks_usage")
+        )
+        lacks_usage_sql = render_alter_foreign_table_factor_case(
+            plan, lacks_usage, ROOT
+        )
+        self.assertIn(f"{lacks_usage.object_prefix}enum_type", lacks_usage_sql)
+        self.assertIn(f"SET ROLE {lacks_usage.object_prefix}actor;", lacks_usage_sql)
+
+        drop_name = next(
+            row
+            for row in plan.cases
+            if row.factor_key == "column_name_shape"
+            and row.factor_value == "quoted_mixed_case_identifier"
+            and row.consumer_action_id == "drop_column"
+        )
+        drop_name_sql = render_alter_foreign_table_factor_case(
+            plan, drop_name, ROOT
+        )
+        self.assertIn("NOT EXISTS (SELECT 1 FROM pg_catalog.pg_attribute", drop_name_sql)
+
+        zero = next(
+            row
+            for row in plan.cases
+            if (row.factor_key, row.factor_value)
+            == ("column_count_and_position", "zero_column_table")
+        )
+        zero_sql = render_alter_foreign_table_factor_case(plan, zero, ROOT)
+        self.assertIn(
+            f"DROP FOREIGN TABLE IF EXISTS {zero.object_prefix}zero_column_ft CASCADE;",
+            zero_sql,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

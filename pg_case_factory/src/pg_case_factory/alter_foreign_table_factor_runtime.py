@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+import os
 import re
 import subprocess
 from typing import Any, Mapping, Sequence
@@ -244,6 +245,14 @@ class AlterForeignTablePg18Runner:
             "ON_ERROR_STOP=1",
         ]
 
+    @staticmethod
+    def _environment() -> dict[str, str]:
+        environment = dict(os.environ)
+        existing = environment.get("PGOPTIONS", "").strip()
+        setting = "-c client_min_messages=warning"
+        environment["PGOPTIONS"] = f"{existing} {setting}".strip()
+        return environment
+
     def verify_server(self) -> int:
         if not self.psql.is_file():
             raise AlterForeignTableRuntimeError(
@@ -255,6 +264,7 @@ class AlterForeignTablePg18Runner:
             stderr=subprocess.PIPE,
             timeout=min(self.timeout_seconds, 10),
             check=False,
+            env=self._environment(),
         )
         if result.returncode != 0:
             raise AlterForeignTableRuntimeError(
@@ -296,6 +306,7 @@ class AlterForeignTablePg18Runner:
                 stderr=subprocess.PIPE,
                 timeout=min(self.timeout_seconds, 10),
                 check=False,
+                env=self._environment(),
             )
         except subprocess.TimeoutExpired:
             return False
@@ -337,6 +348,7 @@ class AlterForeignTablePg18Runner:
                     stderr=subprocess.PIPE,
                     timeout=self.timeout_seconds,
                     check=False,
+                    env=self._environment(),
                 )
                 exit_code = execution.returncode
                 stdout = execution.stdout
@@ -360,6 +372,7 @@ class AlterForeignTablePg18Runner:
                 stderr=subprocess.PIPE,
                 timeout=self.timeout_seconds,
                 check=False,
+                env=self._environment(),
             )
             cleanup_exit_code = cleanup.returncode
         except subprocess.TimeoutExpired:

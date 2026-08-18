@@ -90,6 +90,66 @@ class AlterForeignTableFactorLoopLedgerTest(unittest.TestCase):
                 self.assertIn(case.factor_key, assignments)
                 self.assertEqual(case.factor_value, assignments[case.factor_key])
 
+    def test_runtime_calibrated_branch_expectations_are_fail_closed(self) -> None:
+        plan = build_alter_foreign_table_factor_loop_plan(ROOT)
+        storage_cases = [
+            row
+            for row in plan.cases
+            if row.consumer_action_id == "set_storage"
+            and (
+                row.factor_key == "local:storage_mode"
+                and row.factor_value in {"main", "extended", "external"}
+                or row.factor_key == "storage_and_compression"
+                and row.factor_value
+                in {"storage_main", "storage_extended", "storage_external"}
+            )
+        ]
+        self.assertEqual(6, len(storage_cases))
+        self.assertTrue(
+            all(
+                (row.outcome, row.expected_sqlstate)
+                == ("expected_failure", "0A000")
+                for row in storage_cases
+            )
+        )
+
+        missing_relation_values = {
+            ("expected_status", "failure"),
+            ("nonexistent_table", "table_missing_no_if_exists"),
+            ("object_state", "not_exists"),
+            ("table_name_shape", "nonexistent_name"),
+            ("nonexistent_parent_table", "parent_missing"),
+            ("parent_table_existence", "parent_not_exists"),
+            ("parent_table_name_shape", "nonexistent_parent"),
+        }
+        missing_cases = [
+            row
+            for row in plan.cases
+            if (row.factor_key, row.factor_value) in missing_relation_values
+        ]
+        self.assertEqual(len(missing_relation_values), len(missing_cases))
+        self.assertTrue(
+            all(row.expected_sqlstate == "42P01" for row in missing_cases)
+        )
+
+    def test_option_axes_use_a_legal_conditional_baseline(self) -> None:
+        plan = build_alter_foreign_table_factor_loop_plan(ROOT)
+        option_cases = [
+            row
+            for row in plan.cases
+            if row.consumer_action_id in {"column_options", "options"}
+        ]
+        self.assertTrue(option_cases)
+        for case in option_cases:
+            with self.subTest(case_id=case.case_id):
+                assignments = dict(case.baseline_assignments)
+                action = assignments["local:option_action"]
+                presence = assignments["local:option_value_presence"]
+                if action == "drop":
+                    self.assertEqual("omitted", presence)
+                else:
+                    self.assertEqual("present", presence)
+
     def test_case_plan_is_byte_stable_in_memory(self) -> None:
         first = build_alter_foreign_table_factor_loop_plan(ROOT)
         second = build_alter_foreign_table_factor_loop_plan(ROOT)

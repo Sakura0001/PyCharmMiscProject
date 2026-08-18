@@ -52,7 +52,9 @@ COLLATION_SQL = {
     ),
     "nonexistent_collation": "COLLATE {prefix}missing_collation",
     "collation_on_noncollatable_type": 'COLLATE pg_catalog."C"',
-    "encoding_incompatible_collation": "COLLATE {prefix}encoding_collation",
+    "encoding_incompatible_collation": (
+        'COLLATE pg_catalog."en_SG.ISO8859-1"'
+    ),
 }
 
 NULLABILITY_SQL = {
@@ -72,7 +74,9 @@ DEFAULT_SQL = {
     "explicit_default_null": "DEFAULT NULL",
     "type_literal_default": "DEFAULT 7",
     "immutable_expression_default": "DEFAULT (2 + 3)",
-    "stable_expression_default": "DEFAULT CURRENT_DATE",
+    "stable_expression_default": (
+        "DEFAULT date_part('day', CURRENT_DATE)::integer"
+    ),
     "volatile_expression_default": "DEFAULT random()",
     "sequence_nextval_dependency": "DEFAULT nextval('{prefix}default_seq')",
     "user_function_dependency": "DEFAULT {prefix}default_fn()",
@@ -625,13 +629,20 @@ def _column_catalog_oracle(
     *,
     attribute: str,
     column_name: str | None = None,
+    table_name: str | None = None,
+    should_exist: bool = True,
 ) -> tuple[str, ...]:
-    table_name = f"{case.object_prefix}ft"
-    actual_column_name = column_name or f"{case.object_prefix}factor_col"
+    actual_table_name = table_name or f"{case.object_prefix}ft"
+    actual_column_name = (
+        column_name
+        if column_name is not None
+        else f"{case.object_prefix}factor_col"
+    )
+    predicate = "EXISTS" if should_exist else "NOT EXISTS"
     return (
-        "SELECT EXISTS ("
+        f"SELECT {predicate} ("
         "SELECT 1 FROM pg_catalog.pg_attribute AS a "
-        f"WHERE a.attrelid = '{table_name}'::regclass "
+        f"WHERE a.attrelid = '{actual_table_name}'::regclass "
         f"AND a.attname = '{actual_column_name}' AND NOT a.attisdropped"
         f") AS {attribute} "
         "FROM (VALUES (1)) AS deterministic_probe(value) "
@@ -671,13 +682,7 @@ def _dependency_sql(
                 ),
             )
         if member == "encoding_incompatible_collation":
-            return (
-                (
-                    f"CREATE COLLATION {prefix}encoding_collation "
-                    "(provider = libc, locale = 'C');",
-                ),
-                (f"DROP COLLATION IF EXISTS {prefix}encoding_collation;",),
-            )
+            return (), ()
     if dimension_id == "default_state":
         if member == "sequence_nextval_dependency":
             return (
@@ -739,6 +744,10 @@ def _type_witness(
             case,
             attribute="type_factor_applied",
             column_name=column_name,
+            should_exist=(
+                case.outcome == "success"
+                or case.consumer_action_id != "add_column"
+            ),
         ),
         cleanup_sql=_format_sql_rows(type_witness.cleanup_sql, case),
         semantic_locus="target.type_name",
@@ -815,6 +824,11 @@ def _direct_witness(
         else:
             raise AlterForeignTableFactorRenderError("invalid default action")
     elif dimension_id == "generation_mode":
+        if member == "self_reference_generation_expression":
+            fragment = fragment.replace(
+                f"{case.object_prefix}factor_col",
+                column_name,
+            )
         target = f"ADD COLUMN {column_name} integer {fragment}".strip()
     elif dimension_id == "identity_mode":
         base_type = "text" if member == "identity_on_non_integer_type" else "bigint"
@@ -857,6 +871,10 @@ def _direct_witness(
             case,
             attribute="column_factor_applied",
             column_name=column_name,
+            should_exist=(
+                case.outcome == "success"
+                or case.consumer_action_id != "add_column"
+            ),
         ),
         cleanup_sql=cleanup_sql,
         semantic_locus=semantic_locus,
@@ -924,6 +942,22 @@ def _constraint_witness(
     target = _ensure_constraint_consumer_action(fragment, case)
     setup: list[str] = []
     cleanup: list[str] = []
+    if (
+        case.factor_key == "check_constraint"
+        and case.consumer_action_id == "drop_constraint"
+    ):
+        drop_name = f"{tokens['constraint']}_drop"
+        setup.append(
+            f"ALTER FOREIGN TABLE {case.object_prefix}ft "
+            f"ADD CONSTRAINT {drop_name} CHECK ({tokens['column']} > -100);"
+        )
+        if case.factor_value == "subquery_check_expression":
+            target = f"{fragment}, DROP CONSTRAINT {drop_name}"
+        else:
+            setup.append(
+                f"ALTER FOREIGN TABLE {case.object_prefix}ft {fragment};"
+            )
+            target = f"DROP CONSTRAINT {drop_name}"
     if case.factor_key == "foreign_key_role" and case.factor_value not in {
         "no_foreign_key_role",
         "nonexistent_referenced_relation",
@@ -1227,6 +1261,9 @@ def _column_position_witness(
             f"CREATE FOREIGN TABLE {case.object_prefix}zero_column_ft () "
             f"SERVER {case.object_prefix}server;"
         )
+        target = (
+            f"ALTER FOREIGN TABLE {case.object_prefix}zero_column_ft {target};"
+        )
     elif case.factor_value == "dropped_slot_preserved":
         setup.extend(
             (
@@ -1240,7 +1277,21 @@ def _column_position_witness(
         primary_obligation_id=case.primary_obligation_id,
         setup_sql=tuple(setup),
         target_sql_fragment=target,
-        oracle_sql=_column_catalog_oracle(case, attribute="column_position_normalized"),
+        oracle_sql=_column_catalog_oracle(
+            case,
+            attribute="column_position_normalized",
+            column_name=(
+                f"{case.object_prefix}position_probe"
+                if case.consumer_action_id == "add_column"
+                else f"{case.object_prefix}factor_col"
+            ),
+            table_name=(
+                f"{case.object_prefix}zero_column_ft"
+                if case.factor_value == "zero_column_table"
+                else None
+            ),
+            should_exist=case.consumer_action_id != "drop_column",
+        ),
         cleanup_sql=(),
         semantic_locus="fixture.column_state",
         outcome=case.outcome,
@@ -1257,7 +1308,13 @@ def _column_name_witness(
             f"missing member renderer: column_name_shape={member}"
         )
     identifier = _column_identifier(case, member)
+    if (
+        member == "simple_lowercase_identifier"
+        and case.consumer_action_id == "add_column"
+    ):
+        identifier = f"{case.object_prefix}simple_factor_col"
     setup: list[str] = []
+    renamed_in_setup = False
     if member == "overlength_identifier_truncation_collision":
         setup.append(
             f"ALTER FOREIGN TABLE {case.object_prefix}ft ADD COLUMN "
@@ -1267,6 +1324,7 @@ def _column_name_witness(
         case.consumer_action_id != "add_column"
         and member
         not in {
+            "simple_lowercase_identifier",
             "zero_length_quoted_identifier",
             "nonexistent_column_name",
             "duplicate_existing_column_name",
@@ -1277,12 +1335,43 @@ def _column_name_witness(
             f"ALTER FOREIGN TABLE {case.object_prefix}ft RENAME COLUMN "
             f"{case.object_prefix}factor_col TO {identifier};"
         )
+        renamed_in_setup = True
     target = _column_action_target(case, column_identifier=identifier)
+    normalized_identifier = identifier
+    if identifier.startswith('"') and identifier.endswith('"'):
+        normalized_identifier = identifier[1:-1].replace('""', '"')
+    else:
+        normalized_identifier = identifier.lower()
+    normalized_identifier = normalized_identifier.encode("utf-8")[:63].decode(
+        "utf-8", errors="ignore"
+    )
+    oracle_column = normalized_identifier
+    should_exist = case.consumer_action_id != "drop_column"
+    if case.consumer_action_id == "rename_column" and case.outcome == "success":
+        oracle_column = f"{case.object_prefix}renamed_factor_col"
+    if case.outcome == "expected_failure" and case.consumer_action_id == "add_column":
+        should_exist = member in {
+            "duplicate_existing_column_name",
+            "overlength_identifier_truncation_collision",
+            "reserved_system_column_name",
+        }
+    elif case.outcome == "expected_failure":
+        oracle_column = (
+            normalized_identifier
+            if renamed_in_setup
+            else f"{case.object_prefix}factor_col"
+        )
+        should_exist = True
     return AlterForeignTableFactorWitness(
         primary_obligation_id=case.primary_obligation_id,
         setup_sql=tuple(setup),
         target_sql_fragment=target,
-        oracle_sql=_column_catalog_oracle(case, attribute="column_name_normalized"),
+        oracle_sql=_column_catalog_oracle(
+            case,
+            attribute="column_name_normalized",
+            column_name=oracle_column,
+            should_exist=should_exist,
+        ),
         cleanup_sql=(),
         semantic_locus="target.column_definition",
         outcome=case.outcome,
@@ -1309,10 +1398,7 @@ def _partition_or_inheritance_witness(
             raise AlterForeignTableFactorRenderError(
                 f"missing member renderer: inheritance_role={case.factor_value}"
             )
-        setup = (
-            f"CREATE TABLE {prefix}inheritance_parent ("
-            f"{prefix}factor_col integer, {prefix}base_col integer);",
-        )
+        setup = ()
     target = _column_action_target(
         case,
         column_identifier=(
@@ -1358,7 +1444,15 @@ def _statistics_fragment(case: AlterForeignTableFactorCase) -> str:
         "n_distinct_inherited_negative_fraction": "-0.5",
     }
     if member == "statistics_target_by_attribute_number":
-        primary = "ALTER COLUMN 1 SET STATISTICS 10"
+        primary = {
+            "set_statistics": f"ALTER COLUMN {column} SET STATISTICS 10",
+            "set_attribute_options": (
+                f"ALTER COLUMN {column} SET (n_distinct = 0.5)"
+            ),
+            "reset_attribute_options": (
+                f"ALTER COLUMN {column} RESET (n_distinct)"
+            ),
+        }[case.consumer_action_id]
     elif member in statistic_value:
         primary = f"ALTER COLUMN {column} SET STATISTICS {statistic_value[member]}"
     elif member in option_value:
@@ -1442,14 +1536,29 @@ def _dropped_existing_witness(
         setup.append(
             f"CREATE VIEW {prefix}whole_row_view AS SELECT ft FROM {prefix}ft AS ft;"
         )
-    if case.consumer_action_id == "add_column" and member != "duplicate_new_column_target":
+    if case.consumer_action_id == "add_column" and member not in {
+        "duplicate_new_column_target",
+        "system_column",
+    }:
         identifier = f"{prefix}state_probe"
     target = _column_action_target(case, column_identifier=identifier)
+    oracle_column = identifier
+    should_exist = case.consumer_action_id != "drop_column"
+    if case.consumer_action_id == "rename_column" and case.outcome == "success":
+        oracle_column = f"{prefix}renamed_factor_col"
+    elif case.outcome == "expected_failure" and case.consumer_action_id != "add_column":
+        oracle_column = f"{prefix}factor_col"
+        should_exist = True
     return AlterForeignTableFactorWitness(
         primary_obligation_id=case.primary_obligation_id,
         setup_sql=tuple(setup),
         target_sql_fragment=target,
-        oracle_sql=_column_catalog_oracle(case, attribute="column_state_normalized"),
+        oracle_sql=_column_catalog_oracle(
+            case,
+            attribute="column_state_normalized",
+            column_name=oracle_column,
+            should_exist=should_exist,
+        ),
         cleanup_sql=(f"DROP VIEW IF EXISTS {prefix}whole_row_view CASCADE;",),
         semantic_locus="fixture.column_state",
         outcome=case.outcome,
@@ -1588,7 +1697,12 @@ def _option_action_sql(
             "drop": "DROP ",
         }[action]
         value = " 'enabled'" if value_present == "present" else ""
-        return f"{keyword}{prefix}option_{index}{value}"
+        option_name = (
+            f"{prefix}existing_option_{index}"
+            if action in {"set", "drop"}
+            else f"{prefix}option_{index}"
+        )
+        return f"{keyword}{option_name}{value}"
 
     count = 2 if cardinality == "many" else 1
     return ", ".join(item(index) for index in range(1, count + 1))
@@ -1830,6 +1944,11 @@ def _canonical_target(case: AlterForeignTableFactorCase) -> str:
             f"ALTER FOREIGN TABLE {table_name} ADD COLUMN "
             f"{prefix}canonical_col {value};"
         )
+    if factor in {"type_usage_privilege", "no_type_usage_privilege"}:
+        return (
+            f"ALTER FOREIGN TABLE {table_name} ADD COLUMN "
+            f"{prefix}usage_probe {prefix}enum_type;"
+        )
     if factor in {"column_name_shape", "nonexistent_column"}:
         column = {
             "simple_id": f"{prefix}factor_col",
@@ -1927,30 +2046,44 @@ def _canonical_fixture_sql(case: AlterForeignTableFactorCase) -> tuple[str, ...]
     factor = case.factor_key
     value = case.factor_value
     rows: list[str] = []
-    if factor in {
-        "owner_name_shape",
-        "set_role_capability",
-        "privilege_level",
-        "non_owner_attempt",
+    if factor in {"privilege_level", "non_owner_attempt"} and value not in {
+        "superuser",
+        "superuser_execution",
     }:
+        rows.append(f"CREATE ROLE {prefix}actor NOLOGIN;")
+        if value in {"table_owner", "owner_execution"}:
+            rows.append(
+                f"ALTER FOREIGN TABLE {_fixture_foreign_table_name(case)} "
+                f"OWNER TO {prefix}actor;"
+            )
+        rows.append(f"SET ROLE {prefix}actor;")
+    if factor == "set_role_capability":
         rows.extend(
             (
                 f"CREATE ROLE {prefix}actor NOLOGIN;",
+                f"ALTER FOREIGN TABLE {_fixture_foreign_table_name(case)} "
+                f"OWNER TO {prefix}actor;",
+                f"GRANT CREATE ON SCHEMA public TO {prefix}new_owner;",
             )
         )
-        if value in {"can_set_role", "table_owner", "owner_execution"}:
+        if value == "can_set_role":
             rows.append(
                 f"GRANT {prefix}new_owner TO {prefix}actor WITH SET TRUE;"
             )
+        rows.append(f"SET ROLE {prefix}actor;")
     if factor in {"type_usage_privilege", "no_type_usage_privilege"}:
         rows.extend(
             (
                 f"CREATE ROLE {prefix}actor NOLOGIN;",
                 f"CREATE TYPE {prefix}enum_type AS ENUM ('one', 'two');",
+                f"REVOKE USAGE ON TYPE {prefix}enum_type FROM PUBLIC;",
+                f"ALTER FOREIGN TABLE {_fixture_foreign_table_name(case)} "
+                f"OWNER TO {prefix}actor;",
             )
         )
-        if value == "lacks_usage":
-            rows.append(f"REVOKE USAGE ON TYPE {prefix}enum_type FROM {prefix}actor;")
+        if value in {"has_usage", "owner_has_usage"}:
+            rows.append(f"GRANT USAGE ON TYPE {prefix}enum_type TO {prefix}actor;")
+        rows.append(f"SET ROLE {prefix}actor;")
     return tuple(rows)
 
 
@@ -1991,6 +2124,14 @@ def _canonical_oracle(case: AlterForeignTableFactorCase) -> tuple[str, ...]:
 
 def _canonical_cleanup(case: AlterForeignTableFactorCase) -> tuple[str, ...]:
     prefix = case.object_prefix
+    if case.factor_key == "set_role_capability":
+        return (
+            "DO $pgcf$ BEGIN "
+            "IF EXISTS (SELECT 1 FROM pg_catalog.pg_roles "
+            f"WHERE rolname = '{prefix}new_owner') THEN "
+            f"EXECUTE 'REVOKE CREATE ON SCHEMA public FROM {prefix}new_owner'; "
+            "END IF; END $pgcf$;",
+        )
     if case.factor_key == "cleanup_mode":
         return {
             "drop_foreign_table": (
@@ -2122,7 +2263,6 @@ def _ordinary_table_names(case: AlterForeignTableFactorCase) -> tuple[str, ...]:
             "range_parent",
             "list_parent",
             "hash_parent",
-            "zero_column_ft",
             "row_table",
         )
     )
@@ -2143,6 +2283,7 @@ def _pre_cleanup_sql(case: AlterForeignTableFactorCase) -> tuple[str, ...]:
         f"DROP SCHEMA IF EXISTS {prefix}source_schema CASCADE;",
         f'DROP FOREIGN TABLE IF EXISTS "{prefix}Mixed Foreign Table" CASCADE;',
         f"DROP FOREIGN TABLE IF EXISTS {prefix}ft CASCADE;",
+        f"DROP FOREIGN TABLE IF EXISTS {prefix}zero_column_ft CASCADE;",
         f"DROP TABLE IF EXISTS {prefix}remote_table CASCADE;",
         f"DROP TABLE IF EXISTS {prefix}referenced_table CASCADE;",
         f"DROP TABLE IF EXISTS {prefix}fk_dependent CASCADE;",
@@ -2155,7 +2296,6 @@ def _pre_cleanup_sql(case: AlterForeignTableFactorCase) -> tuple[str, ...]:
         f"DROP TABLE IF EXISTS {prefix}range_parent CASCADE;",
         f"DROP TABLE IF EXISTS {prefix}list_parent CASCADE;",
         f"DROP TABLE IF EXISTS {prefix}hash_parent CASCADE;",
-        f"DROP TABLE IF EXISTS {prefix}zero_column_ft CASCADE;",
         f"DROP SEQUENCE IF EXISTS {prefix}default_seq CASCADE;",
         f"DROP SEQUENCE IF EXISTS {prefix}dependency_seq CASCADE;",
         f"DROP FUNCTION IF EXISTS {prefix}default_fn() CASCADE;",
@@ -2171,8 +2311,8 @@ def _pre_cleanup_sql(case: AlterForeignTableFactorCase) -> tuple[str, ...]:
         f"DROP TYPE IF EXISTS {prefix}composite_type CASCADE;",
         f"DROP TABLE IF EXISTS {prefix}row_table CASCADE;",
         f"DROP TYPE IF EXISTS {prefix}range_type CASCADE;",
-        f"DROP TYPE IF EXISTS {prefix}multirange_type CASCADE;",
         f"DROP TYPE IF EXISTS {prefix}range_for_multi CASCADE;",
+        f"DROP TYPE IF EXISTS {prefix}multirange_type CASCADE;",
         f"DROP TYPE IF EXISTS {prefix}array_element_type CASCADE;",
         f"DROP DOMAIN IF EXISTS {prefix}dependency_domain CASCADE;",
         f"DROP COLLATION IF EXISTS {prefix}collation CASCADE;",
@@ -2205,13 +2345,15 @@ def _pre_foreign_fixture_sql(case: AlterForeignTableFactorCase) -> tuple[str, ..
         and case.factor_value in {"nonexistent_schema", "schema_not_exists"}
     ):
         rows.append(f"CREATE SCHEMA {prefix}target_schema;")
-    if case.consumer_action_id in {"inherit", "no_inherit"} and case.factor_key not in {
-        "inheritance_role",
-        "dependency_state",
-    }:
+    if case.consumer_action_id in {"inherit", "no_inherit"} and case.factor_key != "dependency_state":
+        columns = (
+            f"{prefix}factor_col integer, {prefix}base_col integer"
+            if case.consumer_action_id == "no_inherit"
+            else f"{prefix}inherited_marker integer"
+        )
         rows.append(
             f"CREATE TABLE {prefix}inheritance_parent "
-            f"({prefix}inherited_marker integer);"
+            f"({columns});"
         )
     return tuple(rows)
 
@@ -2224,6 +2366,11 @@ def _common_fixture_sql(case: AlterForeignTableFactorCase) -> tuple[str, ...]:
     inheritance = (
         f" INHERITS ({prefix}inheritance_parent)"
         if case.consumer_action_id == "no_inherit"
+        else ""
+    )
+    inherited_marker = (
+        f"{prefix}inherited_marker integer, "
+        if case.consumer_action_id == "inherit"
         else ""
     )
     rows: list[str] = [
@@ -2244,14 +2391,19 @@ def _common_fixture_sql(case: AlterForeignTableFactorCase) -> tuple[str, ...]:
     rows.append(
         f"CREATE FOREIGN TABLE {foreign_table} ("
         f"{prefix}id bigint NOT NULL, "
-        f"{factor_column} integer, "
+        f"{factor_column} integer OPTIONS ("
+        f"{prefix}existing_option_1 'old', "
+        f"{prefix}existing_option_2 'old'), "
+        f"{inherited_marker}"
         f"{prefix}drop_col text, "
         f"{prefix}base_col integer NOT NULL, "
         f"{prefix}period_col int4range NOT NULL, "
         f"{prefix}status smallint NOT NULL DEFAULT 0, "
         f"{prefix}payload varchar(128) NOT NULL DEFAULT '', "
         f"CONSTRAINT {prefix}base_check CHECK ({prefix}status BETWEEN 0 AND 9)"
-        f"){inheritance} SERVER {prefix}server;"
+        f"){inheritance} SERVER {prefix}server OPTIONS ("
+        f"{prefix}existing_option_1 'old', "
+        f"{prefix}existing_option_2 'old');"
     )
     if case.consumer_action_id in {
         "disable_trigger",
@@ -2298,21 +2450,25 @@ def _ordered_witness_cleanup(rows: tuple[str, ...]) -> tuple[str, ...]:
         "DROP SCHEMA": 5,
         "DROP ROLE": 6,
     }
+    def cleanup_key(item: tuple[int, str]) -> tuple[int, int, int]:
+        index, row = item
+        upper = row.lstrip().upper()
+        base_priority = next(
+            (
+                value
+                for statement_prefix, value in priority.items()
+                if upper.startswith(statement_prefix)
+            ),
+            3,
+        )
+        range_owner_first = 0 if "range_for_multi" in row else 1
+        return base_priority, range_owner_first, index
+
     return tuple(
         row
         for _index, row in sorted(
             enumerate(rows),
-            key=lambda item: (
-                next(
-                    (
-                        value
-                        for prefix, value in priority.items()
-                        if item[1].lstrip().upper().startswith(prefix)
-                    ),
-                    3,
-                ),
-                item[0],
-            ),
+            key=cleanup_key,
         )
     )
 
@@ -2322,7 +2478,16 @@ def _final_cleanup_sql(
     witness: AlterForeignTableFactorWitness,
 ) -> tuple[str, ...]:
     prefix = case.object_prefix
-    rows: list[str] = ["RESET ROLE;"]
+    rows: list[str] = [
+        "RESET ROLE;",
+        f'DROP FOREIGN TABLE IF EXISTS "{prefix}New Foreign Table" CASCADE;',
+        f"DROP FOREIGN TABLE IF EXISTS {prefix}renamed_ft CASCADE;",
+        f"DROP FOREIGN TABLE IF EXISTS {prefix}target_schema.{prefix}ft CASCADE;",
+        f"DROP FOREIGN TABLE IF EXISTS {prefix}source_schema.{prefix}ft CASCADE;",
+        f'DROP FOREIGN TABLE IF EXISTS "{prefix}Mixed Foreign Table" CASCADE;',
+        f"DROP FOREIGN TABLE IF EXISTS {prefix}zero_column_ft CASCADE;",
+        f"DROP FOREIGN TABLE IF EXISTS {prefix}ft CASCADE;",
+    ]
     rows.extend(_ordered_witness_cleanup(witness.cleanup_sql))
     rows.extend(
         (
@@ -2332,6 +2497,7 @@ def _final_cleanup_sql(
             f"DROP SCHEMA IF EXISTS {prefix}source_schema CASCADE;",
             f'DROP FOREIGN TABLE IF EXISTS "{prefix}Mixed Foreign Table" CASCADE;',
             f"DROP FOREIGN TABLE IF EXISTS {prefix}ft CASCADE;",
+            f"DROP FOREIGN TABLE IF EXISTS {prefix}zero_column_ft CASCADE;",
             f"DROP TABLE IF EXISTS {prefix}remote_table CASCADE;",
             f"DROP TABLE IF EXISTS {prefix}referenced_table CASCADE;",
             f"DROP TABLE IF EXISTS {prefix}fk_dependent CASCADE;",
@@ -2344,7 +2510,6 @@ def _final_cleanup_sql(
             f"DROP TABLE IF EXISTS {prefix}range_parent CASCADE;",
             f"DROP TABLE IF EXISTS {prefix}list_parent CASCADE;",
             f"DROP TABLE IF EXISTS {prefix}hash_parent CASCADE;",
-            f"DROP TABLE IF EXISTS {prefix}zero_column_ft CASCADE;",
             f"DROP SEQUENCE IF EXISTS {prefix}default_seq CASCADE;",
             f"DROP SEQUENCE IF EXISTS {prefix}dependency_seq CASCADE;",
             f"DROP FUNCTION IF EXISTS {prefix}default_fn() CASCADE;",
@@ -2359,8 +2524,8 @@ def _final_cleanup_sql(
             f"DROP TYPE IF EXISTS {prefix}composite_type CASCADE;",
             f"DROP TABLE IF EXISTS {prefix}row_table CASCADE;",
             f"DROP TYPE IF EXISTS {prefix}range_type CASCADE;",
-            f"DROP TYPE IF EXISTS {prefix}multirange_type CASCADE;",
             f"DROP TYPE IF EXISTS {prefix}range_for_multi CASCADE;",
+            f"DROP TYPE IF EXISTS {prefix}multirange_type CASCADE;",
             f"DROP TYPE IF EXISTS {prefix}array_element_type CASCADE;",
             f"DROP DOMAIN IF EXISTS {prefix}dependency_domain CASCADE;",
             f"DROP COLLATION IF EXISTS {prefix}collation CASCADE;",
