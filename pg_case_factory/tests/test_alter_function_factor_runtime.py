@@ -14,6 +14,7 @@ from pg_case_factory.alter_function_factor_runtime import (
     AlterFunctionCaseRuntimeResult,
     AlterFunctionPg18Runner,
     AlterFunctionSuiteRun,
+    build_alter_function_runtime_case_set,
     compare_alter_function_runs,
 )
 
@@ -21,12 +22,15 @@ from pg_case_factory.alter_function_factor_runtime import (
 ROOT = Path(__file__).resolve().parents[1]
 PG18_BIN = Path("/tmp/pgcf-postgresql-18.4-install/bin")
 PG18_SOCKET = Path("/tmp/pgcf-pg18-af-sock-20260819")
+_BASELINE_COUNT = 123
+_EXTENSION_COUNT = 13140
+_TOTAL = _BASELINE_COUNT + _EXTENSION_COUNT
 
 
 def _sample_case(stdout: bytes) -> AlterFunctionCaseRuntimeResult:
     return AlterFunctionCaseRuntimeResult(
-        case_id="ALTERFUNCTION0001",
-        sql_filename="ALTERFUNCTION0001.sql",
+        case_id="ALTERFUNCTION00001",
+        sql_filename="ALTERFUNCTION00001.sql",
         expected_sqlstate="00000",
         target_sqlstate="00000",
         exit_code=0,
@@ -57,9 +61,39 @@ class AlterFunctionFactorRuntimeTest(unittest.TestCase):
         )
         self.assertFalse(changed.passed)
         self.assertEqual(
-            ("ALTERFUNCTION0001",),
+            ("ALTERFUNCTION00001",),
             changed.transcript_mismatch_case_ids,
         )
+
+    def test_runtime_case_set_combines_baseline_and_extension(self) -> None:
+        # The case-set combiner must merge the frozen 123-case baseline with
+        # the bounded 13,140-case extension into a single ordinal-sorted
+        # sequence and map every case to its SQL file path.  This is a pure
+        # structural contract (no cluster, no SQL files required on disk).
+        with tempfile.TemporaryDirectory() as temporary:
+            sql_dir = Path(temporary)
+            cases, sql_paths = build_alter_function_runtime_case_set(
+                ROOT, sql_dir
+            )
+            self.assertEqual(_TOTAL, len(cases))
+            ordinals = [getattr(case, "ordinal") for case in cases]
+            self.assertEqual(
+                list(range(1, _TOTAL + 1)),
+                ordinals,
+                "ordinals must form a contiguous 1..13263 sequence",
+            )
+            self.assertEqual(1, ordinals[0])
+            self.assertEqual(_TOTAL, ordinals[-1])
+            # baseline (ordinal 1) is not an extension; last (13263) is.
+            self.assertFalse(getattr(cases[0], "is_extension", False))
+            self.assertTrue(getattr(cases[-1], "is_extension", False))
+            self.assertEqual(len(cases), len(sql_paths))
+            case_ids = {case.case_id for case in cases}
+            self.assertEqual(case_ids, set(sql_paths))
+            for case in cases:
+                path = sql_paths[case.case_id]
+                self.assertEqual(sql_dir / case.sql_filename, path)
+                self.assertEqual(case.sql_filename, path.name)
 
     @unittest.skipUnless(
         (PG18_BIN / "psql").is_file() and PG18_SOCKET.is_dir(),
@@ -99,7 +133,7 @@ class AlterFunctionFactorRuntimeTest(unittest.TestCase):
             for case in selected:
                 path = sql_dir / case.sql_filename
                 path.write_text(
-                    render_alter_function_factor_case(plan, case, ROOT),
+                    render_alter_function_factor_case(case, ROOT),
                     encoding="utf-8",
                 )
                 paths[case.case_id] = path

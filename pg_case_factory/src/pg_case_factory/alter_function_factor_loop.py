@@ -397,6 +397,21 @@ _SFV_FAILURE_SQLSTATE: dict[tuple[str, str], tuple[str, str]] = {
         "42501",
         "must_be_owner_of_function",
     ),
+    # Sentinel attribution keys (not real crossed-axis (factor, value)) for
+    # two privilege walls that fire only under a non-superuser function owner:
+    # LEAKPROOF requires superuser, and OWNER TO <role> requires the issuer
+    # to be a member of that role (SESSION_USER resolves to the login role,
+    # which function_owner is not a member of).  Both surface 42501 before
+    # the action takes effect.  Surfaced by _present_failure_pair in the
+    # extension expander.
+    ("target_action", "leakproof_under_function_owner"): (
+        "42501",
+        "leakproof_requires_superuser",
+    ),
+    ("owner_target", "membership_required_under_function_owner"): (
+        "42501",
+        "owner_change_requires_role_membership",
+    ),
     ("schema_dependency", "target_schema_not_exists"): (
         "3F000",
         "schema_does_not_exist",
@@ -525,9 +540,9 @@ def build_alter_function_factor_loop_plan(
         cases.append(
             AlterFunctionFactorCase(
                 ordinal=ordinal,
-                case_id=f"ALTERFUNCTION{ordinal:04d}",
-                sql_filename=f"ALTERFUNCTION{ordinal:04d}.sql",
-                object_prefix=f"alterfunction_{ordinal:04d}_",
+                case_id=f"ALTERFUNCTION{ordinal:05d}",
+                sql_filename=f"ALTERFUNCTION{ordinal:05d}.sql",
+                object_prefix=f"alterfunction_{ordinal:05d}_",
                 primary_obligation_id=obligation.obligation_id,
                 kind=obligation.kind,
                 factor_key=_renderer_factor_key(obligation.factor_key),

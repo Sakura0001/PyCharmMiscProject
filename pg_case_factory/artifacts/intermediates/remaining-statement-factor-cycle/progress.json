@@ -88,9 +88,9 @@
     "alter_function": {
       "status": "completed",
       "package_path": "artifacts/regress/by-factor/ddl/function/alter_function",
-      "sql_file_count": 123,
+      "sql_file_count": 13263,
       "validation_evidence": "/Users/yuyu/PyCharmMiscProject/pg_case_factory/artifacts/intermediates/remaining-statement-factor-cycle/alter_function/validation.json",
-      "validation_evidence_sha256": "eef6f0f42c4e47fd373a7e89f978914c9d22a304b626f2a7898af4f062cfa2a0"
+      "validation_evidence_sha256": "509ebdfec770482369ccaafdf655af4ada2e0e148993fb796178ebcff3cbc41c"
     },
     "alter_group": {
       "status": "completed",

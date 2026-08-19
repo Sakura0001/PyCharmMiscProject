@@ -797,14 +797,19 @@ def _alter_function_factor_plan(repository_root: str):
     return build_alter_function_factor_loop_plan(Path(repository_root))
 
 
-def _build_alter_function_plan_lazily(
-    snapshot: StatementFactorCycleSnapshot,
-    entry: StatementCycleEntry,
-) -> StatementRegressPlan:
-    factor_plan = _alter_function_factor_plan(
-        str(snapshot.repository_root.resolve())
+@lru_cache(maxsize=4)
+def _alter_function_extension_plan(repository_root: str):
+    from .alter_function_factor_extension import (
+        build_alter_function_factor_extension_plan,
     )
-    cases = tuple(
+
+    return build_alter_function_factor_extension_plan(Path(repository_root))
+
+
+def _alter_function_baseline_cases(
+    factor_plan: object,
+) -> tuple[StatementRegressCase, ...]:
+    return tuple(
         StatementRegressCase(
             ordinal=case.ordinal,
             case_id=case.case_id,
@@ -834,7 +839,46 @@ def _build_alter_function_plan_lazily(
         )
         for case in factor_plan.cases
     )
-    standard_case_by_id = {case.case_id: case for case in cases}
+
+
+def _alter_function_extension_cases(
+    extension_plan: object,
+) -> tuple[StatementRegressCase, ...]:
+    return tuple(
+        StatementRegressCase(
+            ordinal=case.ordinal,
+            case_id=case.case_id,
+            sql_filename=case.sql_filename,
+            object_prefix=case.object_prefix,
+            case_group="factor_extension_cross",
+            case_type="bounded_post_coverage_extension",
+            outcome=case.outcome,
+            execution_profile="same_session_multiphase",
+            derived_axes={
+                "derivation_id": case.derivation_id,
+                "combination_group": case.derived_from_combination_group,
+                "consumer_action_id": case.consumer_action_id,
+                "expected_sqlstate": case.expected_sqlstate,
+                "derivation_reason": case.derivation_reason,
+            },
+            factor_values=tuple(
+                f"{key}={value}" for key, value in case.factor_assignment
+            ),
+            combination_strategy="bounded_post_coverage_extension",
+            description=case.derivation_reason,
+            expected_anchor=(
+                f"SQLSTATE {case.expected_sqlstate}; actual-byte semantic locus"
+            ),
+        )
+        for case in extension_plan.cases
+    )
+
+
+def _alter_function_factor_decisions(
+    factor_plan: object,
+    entry: StatementCycleEntry,
+) -> list[FactorValueDecision]:
+    standard_case_by_id = {case.case_id: case for case in factor_plan.cases}
     factor_case_by_obligation = {
         case.primary_obligation_id: case for case in factor_plan.cases
     }
@@ -871,6 +915,28 @@ def _build_alter_function_plan_lazily(
                     case_ids=(standard_case.case_id,),
                 )
             )
+    return decisions
+
+
+def _build_alter_function_plan_lazily(
+    snapshot: StatementFactorCycleSnapshot,
+    entry: StatementCycleEntry,
+) -> StatementRegressPlan:
+    factor_plan = _alter_function_factor_plan(
+        str(snapshot.repository_root.resolve())
+    )
+    extension_plan = _alter_function_extension_plan(
+        str(snapshot.repository_root.resolve())
+    )
+    baseline_cases = _alter_function_baseline_cases(factor_plan)
+    extension_cases = _alter_function_extension_cases(extension_plan)
+    cases = tuple(
+        sorted(
+            (*baseline_cases, *extension_cases),
+            key=lambda case: case.ordinal,
+        )
+    )
+    decisions = _alter_function_factor_decisions(factor_plan, entry)
     return StatementRegressPlan(
         statement_key="alter_function",
         file_prefix="ALTERFUNCTION",
@@ -1483,16 +1549,20 @@ def render_statement_regress_case(
             else Path(__file__).resolve().parents[2]
         )
         factor_plan = _alter_function_factor_plan(str(root))
-        matches = [row for row in factor_plan.cases if row.case_id == case.case_id]
-        if len(matches) != 1:
+        extension_plan = _alter_function_extension_plan(str(root))
+        found = next(
+            (c for c in factor_plan.cases if c.case_id == case.case_id), None
+        )
+        if found is None:
+            found = next(
+                (c for c in extension_plan.cases if c.case_id == case.case_id),
+                None,
+            )
+        if found is None:
             raise RemainingStatementRegressError(
                 f"ALTER FUNCTION case mapping is not unique: {case.case_id}"
             )
-        return render_alter_function_factor_case(
-            factor_plan,
-            matches[0],
-            root,
-        )
+        return render_alter_function_factor_case(found, root)
     if plan.statement_key == "alter_group":
         from .alter_group_factor_render import render_alter_group_factor_case
 
@@ -1651,11 +1721,13 @@ def _coverage_document(
             else Path(__file__).resolve().parents[2]
         )
         factor_plan = _alter_function_factor_plan(str(root))
+        extension_plan = _alter_function_extension_plan(str(root))
         document.update(
             {
                 "generation_mode": "factor_value_independent_loop_v1",
                 "decision_count": len(factor_plan.obligations),
                 "local_sql_decision_count": len(factor_plan.cases),
+                "extension_case_count": len(extension_plan.cases),
                 "delegated_decision_count": len(factor_plan.delegated),
                 "obligation_multiset_sha256": (
                     factor_plan.obligation_multiset_sha256
@@ -1772,7 +1844,8 @@ def _alter_function_factor_documents(
     )
 
     root = Path(repository_root).resolve(strict=True)
-    factor_plan = _alter_function_factor_plan(str(root))
+    baseline_plan = _alter_function_factor_plan(str(root))
+    extension_plan = _alter_function_extension_plan(str(root))
     obligations = [
         {
             "ordinal": row.ordinal,
@@ -1785,9 +1858,9 @@ def _alter_function_factor_documents(
             "source_locator": row.source_locator,
             "delegated_statement_key": row.delegated_statement_key,
         }
-        for row in factor_plan.obligations
+        for row in baseline_plan.obligations
     ]
-    cases = [
+    baseline_case_rows = [
         {
             "ordinal": row.ordinal,
             "case_id": row.case_id,
@@ -1801,27 +1874,49 @@ def _alter_function_factor_documents(
             "outcome": row.outcome,
             "expected_sqlstate": row.expected_sqlstate,
             "expected_failure_reason": row.expected_failure_reason,
-            "baseline_assignments": [list(item) for item in row.baseline_assignments],
+            "baseline_assignments": [
+                list(item) for item in row.baseline_assignments
+            ],
             "execution_profile": row.execution_profile,
         }
-        for row in factor_plan.cases
+        for row in baseline_plan.cases
+    ]
+    extension_case_rows = [
+        {
+            "ordinal": row.ordinal,
+            "case_id": row.case_id,
+            "sql_filename": row.sql_filename,
+            "object_prefix": row.object_prefix,
+            "derivation_id": row.derivation_id,
+            "derived_from_combination_group": row.derived_from_combination_group,
+            "derivation_reason": row.derivation_reason,
+            "factor_assignment": [
+                list(item) for item in row.factor_assignment
+            ],
+            "consumer_action_id": row.consumer_action_id,
+            "outcome": row.outcome,
+            "expected_sqlstate": row.expected_sqlstate,
+            "expected_failure_reason": row.expected_failure_reason,
+        }
+        for row in extension_plan.cases
     ]
     factor_plan_document = {
         "schema_version": 1,
         "kind": "alter_function_factor_value_loop_plan",
         "generation_mode": "factor_value_independent_loop_v1",
-        "decision_count": len(factor_plan.obligations),
-        "sql_file_count": len(factor_plan.cases),
-        "delegated_count": len(factor_plan.delegated),
-        "obligation_multiset_sha256": factor_plan.obligation_multiset_sha256,
+        "decision_count": len(baseline_plan.obligations),
+        "sql_file_count": len(baseline_case_rows) + len(extension_case_rows),
+        "delegated_count": len(baseline_plan.delegated),
+        "obligation_multiset_sha256": baseline_plan.obligation_multiset_sha256,
+        "extension_multiset_sha256": extension_plan.extension_multiset_sha256,
         "obligations": obligations,
-        "cases": cases,
+        "cases": baseline_case_rows + extension_case_rows,
     }
     handoff_document = {
         "schema_version": 1,
         "kind": "alter_function_factor_handoff_ledger",
         "generation_mode": "factor_value_independent_loop_v1",
-        "delegated_count": len(factor_plan.delegated),
+        "delegated_count": len(baseline_plan.delegated),
         "owner_statement_key": "create_function",
         "decisions": [
             row
@@ -1830,7 +1925,8 @@ def _alter_function_factor_documents(
         ],
     }
     actual_report = validate_alter_function_factor_programs(
-        factor_plan,
+        baseline_plan,
+        extension_plan,
         {
             name: payload
             for name, payload in output_files.items()
@@ -2160,6 +2256,9 @@ def _package_document(
                 "delegated_count": handoff["delegated_count"],
                 "obligation_multiset_sha256": factor_plan[
                     "obligation_multiset_sha256"
+                ],
+                "extension_multiset_sha256": factor_plan[
+                    "extension_multiset_sha256"
                 ],
                 "factor_loop_plan_sha256": _sha256(_json_bytes(factor_plan)),
                 "handoff_ledger_sha256": _sha256(_json_bytes(handoff)),

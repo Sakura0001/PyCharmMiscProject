@@ -12,6 +12,9 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 
+from .alter_function_factor_extension import (
+    AlterFunctionFactorExtensionCase,
+)
 from .alter_function_factor_loop import (
     AlterFunctionFactorCase,
     AlterFunctionFactorLoopPlan,
@@ -47,6 +50,73 @@ _SIGNATURE_MISMATCH_PRIMARIES = {
     ("target_function_not_exists", "function_signature_not_found"),
     ("argtype_specification", "with_partial_signature"),
 }
+
+# For an extension SUCCESS case (no present failure pair) the synthetic
+# primary must be the factor each branch's success probe depends on, so the
+# v1 helpers read the crossed axes from ``a`` correctly.  branch_rename needs
+# (new_name_shape, <crossed value>) so _probe_name/_new_name return the
+# renamed name; every other branch uses (object_state, "exists") as a neutral
+# success primary whose helpers fall through to the assignment.
+_BRANCH_RENAME_SUCCESS_KEY = "new_name_shape"
+_BRANCH_NEUTRAL_SUCCESS = ("object_state", "exists")
+
+
+def _synthetic_case(
+    ext: AlterFunctionFactorExtensionCase,
+) -> AlterFunctionFactorCase:
+    """Build a byte-safe baseline-shaped case from an extension case.
+
+    The v1 helpers are primary-driven (they read ``case.factor_key`` /
+    ``case.factor_value``), so an extension case is rendered by constructing a
+    synthetic :class:`AlterFunctionFactorCase` whose primary is the extension's
+    single attributable failure pair (for failures) or the branch's success
+    primary (for successes), with ``kind = "EXT"`` so the two patched helpers
+    (_effective_role, _ext_clause) read the crossed privilege / extension axes
+    from the assignment instead of the primary.  Baseline cases (kind in
+    GRM/SFV/RISK) are never routed through here, so their bytes are untouched.
+    """
+
+    # Local import to avoid an import cycle: the extension module imports
+    # this module's neighbours, not this module, but keep it lazy for clarity.
+    from .alter_function_factor_extension import _present_failure_pair
+
+    assignment = dict(ext.factor_assignment)
+    branch = assignment["grammar_branch"]
+    pair = _present_failure_pair(assignment)
+    if pair is not None:
+        factor_key, factor_value = pair
+    elif branch == _BRANCH_RENAME and ext.outcome == "success":
+        factor_key = _BRANCH_RENAME_SUCCESS_KEY
+        factor_value = assignment["new_name_shape"]
+    else:
+        factor_key, factor_value = _BRANCH_NEUTRAL_SUCCESS
+    return AlterFunctionFactorCase(
+        ordinal=ext.ordinal,
+        case_id=ext.case_id,
+        sql_filename=ext.sql_filename,
+        object_prefix=ext.object_prefix,
+        primary_obligation_id=ext.derivation_id,
+        kind="EXT",
+        factor_key=factor_key,
+        factor_value=factor_value,
+        consumer_action_id=ext.consumer_action_id,
+        outcome=ext.outcome,
+        expected_sqlstate=ext.expected_sqlstate,
+        expected_failure_reason=ext.expected_failure_reason,
+        baseline_assignments=ext.factor_assignment,
+        execution_profile="default",
+    )
+
+
+def _as_render_case(
+    case: AlterFunctionFactorCase | AlterFunctionFactorExtensionCase,
+) -> AlterFunctionFactorCase:
+    """Return the case to feed to the v1 helpers: unchanged for baseline,
+    or a byte-safe synthetic for an extension case."""
+
+    if isinstance(case, AlterFunctionFactorExtensionCase):
+        return _synthetic_case(case)
+    return case
 
 
 class AlterFunctionFactorRenderError(ValueError):
@@ -191,7 +261,9 @@ def _new_name(case: AlterFunctionFactorCase, a: dict[str, str], p: str) -> str:
     if form == "quoted":
         return f'"{p}Mixed Name"'
     if form == "reserved_word":
-        return f'"{p}select"'
+        # Distinct reserved word from the fixture name ("select") so a
+        # reserved_word x reserved_word rename does not self-collide (42723).
+        return f'"{p}from"'
     if form == "duplicate_name":
         return f"{p}dup_fn"
     return f"{p}renamed"
@@ -234,6 +306,21 @@ def _schema_target(case: AlterFunctionFactorCase, a: dict[str, str], p: str) -> 
 
 
 def _ext_clause(case: AlterFunctionFactorCase, a: dict[str, str], p: str) -> str:
+    # Extension cases carry extension_target / extension_dependency as crossed
+    # axes in `a`; the NO_DEPENDS polarity is signalled by extension_target
+    # (depends_polarity stays at the baseline "depends").  Baseline cases fall
+    # through to the primary-driven logic below unchanged.
+    if case.kind == "EXT":
+        target = a.get("extension_target", "extension_exists")
+        dep = a.get("extension_dependency", "extension_installed")
+        if target == "extension_not_exists" or dep == "extension_not_installed":
+            ext = f"{p}no_such_ext"
+        else:
+            ext = "plpgsql"
+        if target == "NO_DEPENDS":
+            return f"NO DEPENDS ON EXTENSION {ext}"
+        return f"DEPENDS ON EXTENSION {ext}"
+
     polarity = a.get("depends_polarity", "depends")
     if case.factor_key == "extension_target":
         if case.factor_value == "extension_not_exists":
@@ -255,6 +342,19 @@ def _effective_role(
     case: AlterFunctionFactorCase, a: dict[str, str], p: str
 ) -> str:
     """The session role under which the target ALTER FUNCTION runs."""
+
+    # Extension cases carry the privilege level as a crossed axis in `a`, not
+    # as the primary, so read it directly.  Baseline cases (kind in
+    # GRM/SFV/RISK) fall through to the primary-driven logic below unchanged.
+    if case.kind == "EXT":
+        level = a.get("privilege_level", "superuser")
+        if level == "function_owner":
+            return f"{p}owner"
+        if level == "non_owner_with_alter":
+            return f"{p}alter"
+        if level == "non_owner_no_privilege":
+            return f"{p}actor"
+        return ""  # superuser
 
     primary = (case.factor_key, case.factor_value)
     if case.factor_key == "privilege_level":
@@ -355,10 +455,8 @@ def _routine_candidates(
     candidates.append(("FUNCTION", f"{orig_prefix}{name}(integer)"))
     if branch == _BRANCH_RENAME:
         new = _new_name(case, a, p)
-        if case.factor_key == "identifier_length_exceeded":
-            candidates.append(("FUNCTION", f"{new[:63]}(integer)"))
-        else:
-            candidates.append(("FUNCTION", f"{new}(integer)"))
+        short = new[:63] if case.factor_key == "identifier_length_exceeded" else new
+        candidates.append(("FUNCTION", f"{orig_prefix}{short}(integer)"))
     if needs_dst_schema:
         candidates.append(("FUNCTION", f"{p}dst_schema.{name}(integer)"))
     if (
@@ -388,15 +486,19 @@ def _surviving_target(
         return ("PROCEDURE", f"{name}()")
     if fixture_kind != "function":
         return ("", "")
+    orig_prefix = f"{p}src_schema." if needs_src_schema else ""
     if case.kind == "RISK":
         return ("FUNCTION", f"{name}(integer)")
+    # RENAME success: the routine keeps its original schema, under the new name.
     if branch == _BRANCH_RENAME and case.outcome == "success":
         new = _new_name(case, a, p)
-        if case.factor_key == "identifier_length_exceeded":
-            return ("FUNCTION", f"{new[:63]}(integer)")
-        return ("FUNCTION", f"{new}(integer)")
-    if needs_dst_schema:
+        short = new[:63] if case.factor_key == "identifier_length_exceeded" else new
+        return ("FUNCTION", f"{orig_prefix}{short}(integer)")
+    # SET SCHEMA success: the routine moved to the destination schema.
+    if needs_dst_schema and case.outcome == "success":
         return ("FUNCTION", f"{p}dst_schema.{name}(integer)")
+    # Everything else (rename failure, set_schema failure, other branches):
+    # the routine never moved, so it is still under its original schema.
     if needs_src_schema:
         return ("FUNCTION", f"{p}src_schema.{name}(integer)")
     return ("FUNCTION", f"{name}(integer)")
@@ -457,6 +559,21 @@ def _resolve_case(case: AlterFunctionFactorCase) -> _CasePlan:
     if effective:
         setup.append(f"CREATE ROLE {p}owner LOGIN;")
         setup.append(f"GRANT CREATE ON SCHEMA public TO {p}owner;")
+        # The schema-qualified routine is created in {p}src_schema (and the
+        # set-schema branch moves it into {p}dst_schema), so the owner under
+        # SET ROLE needs CREATE there too -- otherwise CREATE FUNCTION dies
+        # with 42501 before the target is reached.  Unqualified fixture
+        # objects (dup_fn, support_fn) still land in public, hence both.
+        if needs_src_schema:
+            setup.append(f"GRANT CREATE ON SCHEMA {p}src_schema TO {p}owner;")
+            # CREATE on a schema lets the owner CREATE a routine there, but
+            # looking the routine up by its schema-qualified name (RENAME,
+            # SET SCHEMA, DEPENDS ON EXTENSION) needs USAGE -- without it the
+            # lookup dies 42501 before the target semantics ever fire.
+            setup.append(f"GRANT USAGE ON SCHEMA {p}src_schema TO {p}owner;")
+        if needs_dst_schema:
+            setup.append(f"GRANT CREATE ON SCHEMA {p}dst_schema TO {p}owner;")
+            setup.append(f"GRANT USAGE ON SCHEMA {p}dst_schema TO {p}owner;")
         if effective == f"{p}alter":
             setup.append(f"CREATE ROLE {p}alter LOGIN;")
         elif effective == f"{p}actor":
@@ -507,8 +624,12 @@ def _resolve_case(case: AlterFunctionFactorCase) -> _CasePlan:
 
     # --- duplicate-name fixture for RENAME failure -----------------------
     if case.factor_key == "rename_target" and case.factor_value == "duplicate_name":
+        # The dup_fn must share the target routine's schema so the bare
+        # RENAME TO dup_fn collides in-schema (42723); a public-only dup_fn
+        # leaves a schema-qualified target collision-free (42883 / success).
+        dup_schema = f"{p}src_schema." if needs_src_schema else ""
         setup.append(
-            f"CREATE FUNCTION {p}dup_fn(integer) RETURNS integer "
+            f"CREATE FUNCTION {dup_schema}{p}dup_fn(integer) RETURNS integer "
             "AS $$ SELECT 1 $$ LANGUAGE sql;"
         )
 
@@ -517,9 +638,19 @@ def _resolve_case(case: AlterFunctionFactorCase) -> _CasePlan:
         if effective == f"{p}alter":
             # Functions only grant EXECUTE; GRANT ALTER ON FUNCTION is not
             # valid syntax.  A non-owner granted EXECUTE still cannot ALTER
-            # FUNCTION (only the owner can), surfacing 42501.
+            # FUNCTION (only the owner can), surfacing 42501.  The grant must
+            # reference the routine's actual schema: when the fixture
+            # function lives in {p}src_schema the unqualified name is not on
+            # the alter role's search_path, so the GRANT would die 42883 and
+            # abort the fixture before the target is reached.
+            grant_schema = (
+                f"{p}src_schema."
+                if (needs_src_schema and fixture_kind == "function")
+                else ""
+            )
             setup.append(
-                f"GRANT EXECUTE ON FUNCTION {name}(integer) TO {p}alter;"
+                f"GRANT EXECUTE ON FUNCTION {grant_schema}{name}(integer) "
+                f"TO {p}alter;"
             )
         setup.append("RESET ROLE;")
         setup.append(f"SET ROLE {effective};")
@@ -627,17 +758,18 @@ def _resolve_case(case: AlterFunctionFactorCase) -> _CasePlan:
 
 
 def resolve_alter_function_factor_witness(
-    case: AlterFunctionFactorCase,
+    case: AlterFunctionFactorCase | AlterFunctionFactorExtensionCase,
     repository_root: Path,
 ) -> AlterFunctionFactorWitness:
     """Return the byte-level witness fragments for one case."""
 
-    plan = _resolve_case(case)
+    rc = _as_render_case(case)
+    plan = _resolve_case(rc)
     return AlterFunctionFactorWitness(
-        primary_obligation_id=case.primary_obligation_id,
+        primary_obligation_id=rc.primary_obligation_id,
         target_sql_fragment=plan.target_fragment,
-        outcome=case.outcome,
-        expected_sqlstate=case.expected_sqlstate,
+        outcome=rc.outcome,
+        expected_sqlstate=rc.expected_sqlstate,
         setup_sql=plan.setup_lines,
         oracle_sql=plan.assert_lines,
         cleanup_sql=plan.cleanup_lines,
@@ -680,14 +812,20 @@ def _header(case: AlterFunctionFactorCase) -> list[str]:
 
 
 def render_alter_function_factor_case(
-    plan: AlterFunctionFactorLoopPlan,
-    case: AlterFunctionFactorCase,
+    case: AlterFunctionFactorCase | AlterFunctionFactorExtensionCase,
     repository_root: Path,
 ) -> str:
-    """Render one complete, deterministic ALTER FUNCTION regress program."""
+    """Render one complete, deterministic ALTER FUNCTION regress program.
 
-    resolved = _resolve_case(case)
-    lines: list[str] = list(_header(case))
+    Baseline cases (kind in GRM/SFV/RISK) are rendered by the v1 path
+    unchanged; extension cases are rendered via a byte-safe synthetic
+    baseline-shaped case (see :func:`_as_render_case`).  ``repository_root``
+    is accepted for API symmetry with the sibling statement renderers.
+    """
+
+    rc = _as_render_case(case)
+    resolved = _resolve_case(rc)
+    lines: list[str] = list(_header(rc))
     lines.append("-- 1. 清理本编号对象，保证脚本可重复执行。")
     lines.extend(resolved.pre_cleanup_lines)
     lines.append("\\set ON_ERROR_STOP on")
@@ -713,10 +851,39 @@ def render_alter_function_factor_case(
     return text + "\n"
 
 
+def generate_alter_function_factor_programs(
+    baseline_plan: AlterFunctionFactorLoopPlan,
+    extension_plan: object,
+    out_dir: Path,
+) -> int:
+    """Write every baseline + extension program; return the file count."""
+
+    out = Path(out_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    count = 0
+    for case in baseline_plan.cases:
+        _write_program(case, out)
+        count += 1
+    for case in extension_plan.cases:
+        _write_program(case, out)
+        count += 1
+    return count
+
+
+def _write_program(
+    case: AlterFunctionFactorCase | AlterFunctionFactorExtensionCase,
+    out: Path,
+) -> None:
+    text = render_alter_function_factor_case(case, Path("."))
+    rc = _as_render_case(case)
+    (out / rc.sql_filename).write_text(text, encoding="utf-8")
+
+
 __all__ = [
     "AlterFunctionFactorRenderError",
     "AlterFunctionFactorWitness",
     "count_primary_alter_function",
+    "generate_alter_function_factor_programs",
     "render_alter_function_factor_case",
     "resolve_alter_function_factor_witness",
 ]

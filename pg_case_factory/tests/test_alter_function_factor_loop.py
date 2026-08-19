@@ -94,16 +94,16 @@ class AlterFunctionFactorLoopPlanTest(unittest.TestCase):
         self.assertEqual(
             list(range(1, 124)), [row.ordinal for row in plan.cases]
         )
-        # case_id / sql_filename / object_prefix follow the 4-digit scheme
-        self.assertEqual("ALTERFUNCTION0001", plan.cases[0].case_id)
-        self.assertEqual("ALTERFUNCTION0123", plan.cases[-1].case_id)
-        self.assertEqual("ALTERFUNCTION0001.sql", plan.cases[0].sql_filename)
-        self.assertEqual("ALTERFUNCTION0123.sql", plan.cases[-1].sql_filename)
+        # case_id / sql_filename / object_prefix follow the 5-digit scheme
+        self.assertEqual("ALTERFUNCTION00001", plan.cases[0].case_id)
+        self.assertEqual("ALTERFUNCTION00123", plan.cases[-1].case_id)
+        self.assertEqual("ALTERFUNCTION00001.sql", plan.cases[0].sql_filename)
+        self.assertEqual("ALTERFUNCTION00123.sql", plan.cases[-1].sql_filename)
         self.assertEqual(
-            "alterfunction_0001_", plan.cases[0].object_prefix
+            "alterfunction_00001_", plan.cases[0].object_prefix
         )
         self.assertEqual(
-            "alterfunction_0123_", plan.cases[-1].object_prefix
+            "alterfunction_00123_", plan.cases[-1].object_prefix
         )
         # every case maps to exactly one obligation
         self.assertEqual(

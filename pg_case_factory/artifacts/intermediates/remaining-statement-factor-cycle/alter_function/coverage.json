@@ -18,7 +18,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0037"
+        "ALTERFUNCTION00037"
       ]
     },
     {
@@ -28,7 +28,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0038"
+        "ALTERFUNCTION00038"
       ]
     },
     {
@@ -38,7 +38,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0039"
+        "ALTERFUNCTION00039"
       ]
     },
     {
@@ -48,7 +48,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0040"
+        "ALTERFUNCTION00040"
       ]
     },
     {
@@ -58,7 +58,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0041"
+        "ALTERFUNCTION00041"
       ]
     },
     {
@@ -68,7 +68,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0042"
+        "ALTERFUNCTION00042"
       ]
     },
     {
@@ -78,7 +78,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0043"
+        "ALTERFUNCTION00043"
       ]
     },
     {
@@ -88,7 +88,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0044"
+        "ALTERFUNCTION00044"
       ]
     },
     {
@@ -98,7 +98,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0045"
+        "ALTERFUNCTION00045"
       ]
     },
     {
@@ -108,7 +108,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0046"
+        "ALTERFUNCTION00046"
       ]
     },
     {
@@ -118,7 +118,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0047"
+        "ALTERFUNCTION00047"
       ]
     },
     {
@@ -128,7 +128,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0048"
+        "ALTERFUNCTION00048"
       ]
     },
     {
@@ -138,7 +138,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0049"
+        "ALTERFUNCTION00049"
       ]
     },
     {
@@ -148,7 +148,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0050"
+        "ALTERFUNCTION00050"
       ]
     },
     {
@@ -158,7 +158,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0051"
+        "ALTERFUNCTION00051"
       ]
     },
     {
@@ -168,7 +168,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0052"
+        "ALTERFUNCTION00052"
       ]
     },
     {
@@ -178,7 +178,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0053"
+        "ALTERFUNCTION00053"
       ]
     },
     {
@@ -188,7 +188,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0054"
+        "ALTERFUNCTION00054"
       ]
     },
     {
@@ -198,7 +198,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0055"
+        "ALTERFUNCTION00055"
       ]
     },
     {
@@ -208,7 +208,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0056"
+        "ALTERFUNCTION00056"
       ]
     },
     {
@@ -218,7 +218,7 @@
       "disposition": "expected_failure",
       "reason": "function_signature_does_not_exist",
       "case_ids": [
-        "ALTERFUNCTION0057"
+        "ALTERFUNCTION00057"
       ]
     },
     {
@@ -228,7 +228,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0058"
+        "ALTERFUNCTION00058"
       ]
     },
     {
@@ -238,7 +238,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0059"
+        "ALTERFUNCTION00059"
       ]
     },
     {
@@ -248,7 +248,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0060"
+        "ALTERFUNCTION00060"
       ]
     },
     {
@@ -258,7 +258,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0061"
+        "ALTERFUNCTION00061"
       ]
     },
     {
@@ -268,7 +268,7 @@
       "disposition": "expected_failure",
       "reason": "unrecognized_configuration_parameter",
       "case_ids": [
-        "ALTERFUNCTION0062"
+        "ALTERFUNCTION00062"
       ]
     },
     {
@@ -278,7 +278,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0063"
+        "ALTERFUNCTION00063"
       ]
     },
     {
@@ -288,7 +288,7 @@
       "disposition": "expected_failure",
       "reason": "conflicting_or_redundant_options",
       "case_ids": [
-        "ALTERFUNCTION0064"
+        "ALTERFUNCTION00064"
       ]
     },
     {
@@ -298,7 +298,7 @@
       "disposition": "expected_failure",
       "reason": "expected_status_failure_function_not_found",
       "case_ids": [
-        "ALTERFUNCTION0065"
+        "ALTERFUNCTION00065"
       ]
     },
     {
@@ -308,7 +308,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0066"
+        "ALTERFUNCTION00066"
       ]
     },
     {
@@ -318,7 +318,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0067"
+        "ALTERFUNCTION00067"
       ]
     },
     {
@@ -328,7 +328,7 @@
       "disposition": "expected_failure",
       "reason": "extension_does_not_exist",
       "case_ids": [
-        "ALTERFUNCTION0068"
+        "ALTERFUNCTION00068"
       ]
     },
     {
@@ -338,7 +338,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0069"
+        "ALTERFUNCTION00069"
       ]
     },
     {
@@ -348,7 +348,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0070"
+        "ALTERFUNCTION00070"
       ]
     },
     {
@@ -358,7 +358,7 @@
       "disposition": "expected_failure",
       "reason": "extension_does_not_exist",
       "case_ids": [
-        "ALTERFUNCTION0071"
+        "ALTERFUNCTION00071"
       ]
     },
     {
@@ -368,7 +368,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0072"
+        "ALTERFUNCTION00072"
       ]
     },
     {
@@ -378,7 +378,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0073"
+        "ALTERFUNCTION00073"
       ]
     },
     {
@@ -388,7 +388,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0074"
+        "ALTERFUNCTION00074"
       ]
     },
     {
@@ -398,7 +398,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0075"
+        "ALTERFUNCTION00075"
       ]
     },
     {
@@ -408,7 +408,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0076"
+        "ALTERFUNCTION00076"
       ]
     },
     {
@@ -418,7 +418,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0077"
+        "ALTERFUNCTION00077"
       ]
     },
     {
@@ -428,7 +428,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0078"
+        "ALTERFUNCTION00078"
       ]
     },
     {
@@ -438,7 +438,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0079"
+        "ALTERFUNCTION00079"
       ]
     },
     {
@@ -448,7 +448,7 @@
       "disposition": "expected_failure",
       "reason": "function_signature_does_not_exist",
       "case_ids": [
-        "ALTERFUNCTION0080"
+        "ALTERFUNCTION00080"
       ]
     },
     {
@@ -458,7 +458,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0081"
+        "ALTERFUNCTION00081"
       ]
     },
     {
@@ -468,7 +468,7 @@
       "disposition": "expected_failure",
       "reason": "function_does_not_exist",
       "case_ids": [
-        "ALTERFUNCTION0082"
+        "ALTERFUNCTION00082"
       ]
     },
     {
@@ -478,7 +478,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0083"
+        "ALTERFUNCTION00083"
       ]
     },
     {
@@ -488,7 +488,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0084"
+        "ALTERFUNCTION00084"
       ]
     },
     {
@@ -498,7 +498,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0085"
+        "ALTERFUNCTION00085"
       ]
     },
     {
@@ -508,7 +508,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0086"
+        "ALTERFUNCTION00086"
       ]
     },
     {
@@ -518,7 +518,7 @@
       "disposition": "expected_failure",
       "reason": "role_does_not_exist",
       "case_ids": [
-        "ALTERFUNCTION0087"
+        "ALTERFUNCTION00087"
       ]
     },
     {
@@ -528,7 +528,7 @@
       "disposition": "expected_failure",
       "reason": "must_be_owner_of_function",
       "case_ids": [
-        "ALTERFUNCTION0088"
+        "ALTERFUNCTION00088"
       ]
     },
     {
@@ -538,7 +538,7 @@
       "disposition": "expected_failure",
       "reason": "must_be_owner_of_function",
       "case_ids": [
-        "ALTERFUNCTION0089"
+        "ALTERFUNCTION00089"
       ]
     },
     {
@@ -548,7 +548,7 @@
       "disposition": "expected_failure",
       "reason": "must_be_owner_of_function",
       "case_ids": [
-        "ALTERFUNCTION0090"
+        "ALTERFUNCTION00090"
       ]
     },
     {
@@ -558,7 +558,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0091"
+        "ALTERFUNCTION00091"
       ]
     },
     {
@@ -568,7 +568,7 @@
       "disposition": "expected_failure",
       "reason": "must_be_owner_of_function",
       "case_ids": [
-        "ALTERFUNCTION0092"
+        "ALTERFUNCTION00092"
       ]
     },
     {
@@ -578,7 +578,7 @@
       "disposition": "expected_failure",
       "reason": "must_be_owner_of_function",
       "case_ids": [
-        "ALTERFUNCTION0093"
+        "ALTERFUNCTION00093"
       ]
     },
     {
@@ -588,7 +588,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0094"
+        "ALTERFUNCTION00094"
       ]
     },
     {
@@ -598,7 +598,7 @@
       "disposition": "expected_failure",
       "reason": "function_already_exists_in_schema",
       "case_ids": [
-        "ALTERFUNCTION0095"
+        "ALTERFUNCTION00095"
       ]
     },
     {
@@ -608,7 +608,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0096"
+        "ALTERFUNCTION00096"
       ]
     },
     {
@@ -618,7 +618,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0097"
+        "ALTERFUNCTION00097"
       ]
     },
     {
@@ -628,7 +628,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0098"
+        "ALTERFUNCTION00098"
       ]
     },
     {
@@ -638,7 +638,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0099"
+        "ALTERFUNCTION00099"
       ]
     },
     {
@@ -648,7 +648,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0100"
+        "ALTERFUNCTION00100"
       ]
     },
     {
@@ -658,7 +658,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0101"
+        "ALTERFUNCTION00101"
       ]
     },
     {
@@ -668,7 +668,7 @@
       "disposition": "expected_failure",
       "reason": "role_does_not_exist",
       "case_ids": [
-        "ALTERFUNCTION0102"
+        "ALTERFUNCTION00102"
       ]
     },
     {
@@ -678,7 +678,7 @@
       "disposition": "expected_failure",
       "reason": "permission_denied_for_reserved_schema",
       "case_ids": [
-        "ALTERFUNCTION0103"
+        "ALTERFUNCTION00103"
       ]
     },
     {
@@ -688,7 +688,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0104"
+        "ALTERFUNCTION00104"
       ]
     },
     {
@@ -698,7 +698,7 @@
       "disposition": "expected_failure",
       "reason": "schema_does_not_exist",
       "case_ids": [
-        "ALTERFUNCTION0105"
+        "ALTERFUNCTION00105"
       ]
     },
     {
@@ -708,7 +708,7 @@
       "disposition": "expected_failure",
       "reason": "permission_denied_for_reserved_schema",
       "case_ids": [
-        "ALTERFUNCTION0106"
+        "ALTERFUNCTION00106"
       ]
     },
     {
@@ -718,7 +718,7 @@
       "disposition": "expected_failure",
       "reason": "permission_denied_for_reserved_schema",
       "case_ids": [
-        "ALTERFUNCTION0107"
+        "ALTERFUNCTION00107"
       ]
     },
     {
@@ -728,7 +728,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0108"
+        "ALTERFUNCTION00108"
       ]
     },
     {
@@ -738,7 +738,7 @@
       "disposition": "expected_failure",
       "reason": "schema_does_not_exist",
       "case_ids": [
-        "ALTERFUNCTION0109"
+        "ALTERFUNCTION00109"
       ]
     },
     {
@@ -748,7 +748,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0110"
+        "ALTERFUNCTION00110"
       ]
     },
     {
@@ -758,7 +758,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0111"
+        "ALTERFUNCTION00111"
       ]
     },
     {
@@ -768,7 +768,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0112"
+        "ALTERFUNCTION00112"
       ]
     },
     {
@@ -778,7 +778,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0113"
+        "ALTERFUNCTION00113"
       ]
     },
     {
@@ -788,7 +788,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0114"
+        "ALTERFUNCTION00114"
       ]
     },
     {
@@ -798,7 +798,7 @@
       "disposition": "expected_failure",
       "reason": "not_a_function_is_aggregate",
       "case_ids": [
-        "ALTERFUNCTION0115"
+        "ALTERFUNCTION00115"
       ]
     },
     {
@@ -808,7 +808,7 @@
       "disposition": "expected_failure",
       "reason": "not_a_function_is_procedure",
       "case_ids": [
-        "ALTERFUNCTION0116"
+        "ALTERFUNCTION00116"
       ]
     },
     {
@@ -818,7 +818,7 @@
       "disposition": "expected_failure",
       "reason": "function_does_not_exist",
       "case_ids": [
-        "ALTERFUNCTION0117"
+        "ALTERFUNCTION00117"
       ]
     },
     {
@@ -828,7 +828,7 @@
       "disposition": "expected_failure",
       "reason": "function_signature_does_not_exist",
       "case_ids": [
-        "ALTERFUNCTION0118"
+        "ALTERFUNCTION00118"
       ]
     },
     {
@@ -838,7 +838,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0119"
+        "ALTERFUNCTION00119"
       ]
     },
     {
@@ -848,7 +848,7 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0120"
+        "ALTERFUNCTION00120"
       ]
     },
     {
@@ -858,13 +858,14 @@
       "disposition": "covered",
       "reason": null,
       "case_ids": [
-        "ALTERFUNCTION0121"
+        "ALTERFUNCTION00121"
       ]
     }
   ],
   "generation_mode": "factor_value_independent_loop_v1",
   "decision_count": 123,
   "local_sql_decision_count": 123,
+  "extension_case_count": 13140,
   "delegated_decision_count": 0,
   "obligation_multiset_sha256": "a7db663a3f9e551a70e52664114eaa74ac89188c0eb32e67aa1d053ed41633ce"
 }

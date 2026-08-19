@@ -7,7 +7,7 @@ from pathlib import Path
 import os
 import re
 import subprocess
-from typing import Any, Mapping, Sequence
+from typing import Any, Mapping, Protocol, Sequence
 
 from .alter_function_factor_loop import AlterFunctionFactorCase
 
@@ -201,6 +201,50 @@ def compare_alter_function_runs(
     )
 
 
+class AlterFunctionRuntimeCase(Protocol):
+    """Structural contract for a case the runner can execute.
+
+    Satisfied by both the frozen baseline :class:`AlterFunctionFactorCase`
+    and the bounded extension case; the runner only reads the identity +
+    expected-state attributes, which both carry.
+    """
+
+    case_id: str
+    sql_filename: str
+    object_prefix: str
+    expected_sqlstate: str
+    ordinal: int
+
+
+def build_alter_function_runtime_case_set(
+    repository_root: Path,
+    sql_dir: Path,
+) -> tuple[tuple[AlterFunctionRuntimeCase, ...], dict[str, Path]]:
+    """Combine baseline + extension cases and map each to its SQL file.
+
+    Cases are sorted by ordinal so the baseline (0001-0123) precedes the
+    extension (0124-13839) in a stable, human-auditable order.
+    """
+
+    from .alter_function_factor_extension import (
+        build_alter_function_factor_extension_plan,
+    )
+    from .alter_function_factor_loop import build_alter_function_factor_loop_plan
+
+    root = Path(repository_root).resolve(strict=True)
+    sql_dir = Path(sql_dir)
+    baseline = build_alter_function_factor_loop_plan(root).cases
+    extensions = build_alter_function_factor_extension_plan(root).cases
+    cases: list[AlterFunctionRuntimeCase] = [*baseline, *extensions]
+    cases.sort(key=lambda case: _case_ordinal(case))
+    sql_paths = {case.case_id: sql_dir / case.sql_filename for case in cases}
+    return tuple(cases), sql_paths
+
+
+def _case_ordinal(case: AlterFunctionRuntimeCase) -> int:
+    return getattr(case, "ordinal")  # type: ignore[no-any-return]
+
+
 class AlterFunctionPg18Runner:
     """Serial, bounded psql executor for an isolated PostgreSQL 18.4 server."""
 
@@ -356,7 +400,7 @@ class AlterFunctionPg18Runner:
 
     def _execute_case(
         self,
-        case: AlterFunctionFactorCase,
+        case: AlterFunctionRuntimeCase,
         sql_path: Path,
     ) -> AlterFunctionCaseRuntimeResult:
         sql = sql_path.read_text(encoding="utf-8")
@@ -426,14 +470,20 @@ class AlterFunctionPg18Runner:
 
     def run_cases(
         self,
-        cases: Sequence[AlterFunctionFactorCase],
+        cases: Sequence[AlterFunctionRuntimeCase],
         sql_paths: Mapping[str, Path],
         *,
         run_ordinal: int,
+        selected_case_ids: Sequence[str] | None = None,
     ) -> AlterFunctionSuiteRun:
         self.verify_server()
+        selected = (
+            set(selected_case_ids) if selected_case_ids is not None else None
+        )
         results: list[AlterFunctionCaseRuntimeResult] = []
         for case in cases:
+            if selected is not None and case.case_id not in selected:
+                continue
             try:
                 path = Path(sql_paths[case.case_id])
             except KeyError as exc:
@@ -454,6 +504,7 @@ class AlterFunctionPg18Runner:
 __all__ = [
     "AlterFunctionCaseRuntimeResult",
     "AlterFunctionPg18Runner",
+    "AlterFunctionRuntimeCase",
     "AlterFunctionRuntimeError",
     "AlterFunctionSuiteRun",
     "AlterFunctionTwoRunComparison",
@@ -464,5 +515,6 @@ __all__ = [
     "PG18_PORT",
     "PG18_SOCKET",
     "PG18_SUPERUSER",
+    "build_alter_function_runtime_case_set",
     "compare_alter_function_runs",
 ]
