@@ -300,6 +300,7 @@ def _build_fixture(
         # name_shape is schema_qualified the tables live in src_schema so the
         # plain-named indexes land there and the schema-qualified ATTACH
         # reference resolves.
+        invalid = a.get("invalid_combination", "none")
         parent = _qualify(a, p, f"{p}parent")
         part = _qualify(a, p, f"{p}part")
         setup.append(
@@ -308,14 +309,31 @@ def _build_fixture(
         setup.append(
             f"CREATE TABLE {part} PARTITION OF {parent} FOR VALUES FROM (0) TO (1000);"
         )
+        # PG18.4: CREATE INDEX on a partitioned parent ALWAYS auto-attaches the
+        # partition index, pre-empting an explicit ATTACH (55000 "Another index
+        # is already attached").  Use ON ONLY to create a partitioned index
+        # without propagation so the explicit ATTACH is the genuine operation
+        # under test (success 00000 or definition-mismatch 42P17).  The
+        # already-attached failure case keeps the propagating CREATE INDEX so
+        # the explicit ATTACH genuinely raises 55000.
+        already_attached = (
+            case.outcome == "expected_failure"
+            and invalid == "already_attached_partition_parent_invalid"
+        )
+        only_clause = "" if already_attached else " ONLY"
         setup.append(
-            f"CREATE INDEX {p}parent_idx ON {parent} (id);"
+            f"CREATE INDEX {p}parent_idx ON{only_clause} {parent} (id);"
         )
         if _fixture_exists(a):
             part_idx = _fixture_index_name(a, p)
-            setup.append(
-                f"CREATE INDEX {part_idx} ON {part} (id);"
-            )
+            if case.outcome == "expected_failure" and invalid == "attach_partition_definition_mismatch":
+                setup.append(
+                    f"CREATE INDEX {part_idx} ON {part} (id, id);"
+                )
+            else:
+                setup.append(
+                    f"CREATE INDEX {part_idx} ON {part} (id);"
+                )
         locus = "fixture.partition_index"
         return setup, locus
 
@@ -325,6 +343,11 @@ def _build_fixture(
     setup.append(
         f"CREATE TABLE {table} (id integer, tsv tsvector, pt point, rng int4range);"
     )
+    perm_boundary = a.get("permission_boundary", "owner")
+    needs_set_role = action == "all_in_tablespace" and perm_boundary in (
+        "insufficient_tablespace_privilege",
+        "non_owner",
+    )
     if _fixture_exists(a):
         col = _method_column(method)
         fname = _fixture_index_name(a, p)
@@ -332,11 +355,32 @@ def _build_fixture(
         # strips redundant parens around a bare column reference, so ((col)) is
         # still treated as a plain column; use a genuine expression (id+1).
         key_expr = "(id+1)" if action == "set_statistics" else col
-        setup.append(
-            f"CREATE INDEX {fname} ON {table} USING {method} ({key_expr});"
-        )
+        # all_in_tablespace: the index must reside in the source tablespace so
+        # ALTER INDEX ALL IN TABLESPACE <src> finds it; otherwise the move is
+        # a silent no-op (00000) even as superuser.
+        if action == "all_in_tablespace":
+            setup.append(
+                f"CREATE INDEX {fname} ON {table} USING {method} ({key_expr}) "
+                f"TABLESPACE {p}dst_tbs;"
+            )
+        else:
+            setup.append(
+                f"CREATE INDEX {fname} ON {table} USING {method} ({key_expr});"
+            )
     else:
         setup.append("SELECT 1 AS target_index_intentionally_absent;")
+    if needs_set_role:
+        # Inject a non-privileged role so the ALTER INDEX ALL IN TABLESPACE
+        # genuinely hits the 42501 privilege/ownership check.  PG18.4 checks
+        # tablespace CREATE before ownership, so a role lacking CREATE on the
+        # destination yields "permission denied for tablespace" (42501) even
+        # without ownership transfer; a non-owner WITH CREATE on the
+        # destination yields "must be owner of index" (42501).
+        role = f"{p}nopriv"
+        setup.append(f"CREATE ROLE {role};")
+        if perm_boundary == "non_owner":
+            setup.append(f"GRANT CREATE ON TABLESPACE {p}move_tbs TO {role};")
+        setup.append(f"SET ROLE {role};")
     locus = "fixture.index_state"
     return setup, locus
 
@@ -352,6 +396,12 @@ def _build_oracle(
     # The bare index name (strip quotes/schema) for catalog lookup.
     bare = idx.replace('"', "").split(".")[-1]
     lines: list[str] = []
+    # Reset to superuser before the catalog-audit oracle so it runs with full
+    # visibility (permission_boundary cases SET ROLE in setup).
+    if action == "all_in_tablespace" and a.get(
+        "permission_boundary", "owner"
+    ) in ("insufficient_tablespace_privilege", "non_owner"):
+        lines.append("RESET ROLE;")
     lines.append(
         f"SELECT :'target_sqlstate' = '{case.expected_sqlstate}' "
         "AS target_sqlstate_matches_expected;"
@@ -414,6 +464,15 @@ def _build_cleanup(
         tbs_drops.append(f"DROP TABLESPACE IF EXISTS {p}dst_tbs;")
         if action == "all_in_tablespace":
             tbs_drops.append(f"DROP TABLESPACE IF EXISTS {p}move_tbs;")
+    # The permission_boundary cases create a non-privileged role that must be
+    # dropped in both pre-cleanup and final cleanup so the residual-object
+    # probe stays clean.  The role owns nothing (the table is superuser-owned),
+    # so DROP ROLE succeeds after the CASCADE DROP TABLE.
+    role_drops: list[str] = []
+    if action == "all_in_tablespace" and a.get(
+        "permission_boundary", "owner"
+    ) in ("insufficient_tablespace_privilege", "non_owner"):
+        role_drops.append(f"DROP ROLE IF EXISTS {p}nopriv;")
 
     # The table-based style contract keys on created TABLE names: the first
     # executable statement (section 1) and the last (section 5) must each be a
@@ -454,13 +513,13 @@ def _build_cleanup(
     )
 
     # Section 1: DROP TABLE (all created tables) leads so it is statement[0];
-    # the redundant index/schema/tablespace drops follow (CASCADE already
+    # the redundant index/schema/tablespace/role drops follow (CASCADE already
     # removes dependent indexes, but explicit IF EXISTS keeps re-runs
     # idempotent).
-    pre: list[str] = [pre_drop, *idx_drops, *schema_drops, *tbs_drops]
-    # Section 5: index/schema/tablespace drops first; DROP TABLE (all created,
-    # reverse creation order) is last so it is statement[-1].
-    cleanup: list[str] = [*idx_drops, *schema_drops, *tbs_drops, final_drop]
+    pre: list[str] = [pre_drop, *idx_drops, *schema_drops, *tbs_drops, *role_drops]
+    # Section 5: index/schema/tablespace/role drops first; DROP TABLE (all
+    # created, reverse creation order) is last so it is statement[-1].
+    cleanup: list[str] = [*idx_drops, *schema_drops, *tbs_drops, *role_drops, final_drop]
     return pre, cleanup
 
 

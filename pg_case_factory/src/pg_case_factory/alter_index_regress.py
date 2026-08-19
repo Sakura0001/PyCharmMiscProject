@@ -109,7 +109,14 @@ EXPECTED_SQLSTATE_BY_REASON: dict[str, str] = {
     # [10,100] range) raises 22023 (invalid_parameter_value), not 42601; the
     # 42601 syntax case is the separate syntax_error=invalid_syntax reason.
     "alter_index_negative_boundary": "22023",
-    "pg18_revalidate_attached_parent_reference_failure": "0A000",
+    # PG18.4: CREATE INDEX on a partitioned parent auto-attaches every
+    # partition index, so a subsequent explicit ATTACH PARTITION raises 55000
+    # (object_not_in_prerequisite_state: "Another index is already attached
+    # for partition ...").  0A000 (feature_not_supported) is unreachable for
+    # ATTACH PARTITION in PG18.4 -- the double-run confirmed every bypass
+    # path (non-partition index, different-parent partition, repeated ATTACH)
+    # yields 55000 or 42P17, never 0A000.
+    "pg18_revalidate_attached_parent_reference_failure": "55000",
 }
 
 # Index-method × storage-parameter validity.  ``True`` means the parameter is

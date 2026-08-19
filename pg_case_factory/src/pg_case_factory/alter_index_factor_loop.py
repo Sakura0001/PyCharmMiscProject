@@ -133,7 +133,7 @@ _SFV_FAILURE_SQLSTATE: dict[tuple[str, str], tuple[str, str]] = {
         "alter_index_syntax_is_invalid",
     ),
     ("invalid_combination", "already_attached_partition_parent_invalid"): (
-        "0A000",
+        "55000",
         "pg18_revalidate_attached_parent_reference_failure",
     ),
     ("invalid_combination", "attach_partition_definition_mismatch"): (
