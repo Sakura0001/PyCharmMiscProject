@@ -279,9 +279,10 @@ Cursor 和 DCL 已生成并整理到统一 regress 范围，当前 statement cyc
 | 009 | `alter_extension` | 24 / 67 | 416 | completed |
 | 010 | `alter_foreign_data_wrapper` | 26 / 67 | 155 | completed |
 | 011 | `alter_foreign_table` | 32 / 103 | 1,805 | completed |
-| 012 | `alter_function` | 24 / 85 | — | next pending |
+| 012 | `alter_function` | 24 / 85 | 123 | completed |
+| 013 | `alter_group` | — | — | next pending |
 
-`progress.json.next_pending_statement` 当前必须为 `alter_function`。
+`progress.json.next_pending_statement` 当前必须为 `alter_group`。
 
 ## 9. ALTER FOREIGN TABLE 已完成工作
 
@@ -502,6 +503,15 @@ ddc368f feat: render all alter foreign table factor values
 - DEFAULT conversion 移入已有同编码对的目标 schema 是成功边界，不是唯一约束失败；
 - 未限定 conversion lookup 会跳过 temp namespace。
 
+### 13.5 ALTER FUNCTION
+
+- 85 个 canonical values 已结算（24 因子 / 85 值），外加 GRM（5 synopsis 分支、23 target actions、RESTRICT/EXTERNAL/SET-form/depends/list 轴）与 RISK（commit/rollback 事务边界），正式 ledger = 123；
+- 当前正式包 123 SQL，零 delegated；
+- `non_owner_with_alter` 是 expected_failure（42501）——非 owner 即使被授予 EXECUTE 也不能 ALTER FUNCTION；ledger = 25 expected_failure / 98 covered；
+- signature identity 经 `argtype_specification` 与 `routine_signature_resolution_manifest` 消费，同名不同签名用稳定 identity argument oracle；
+- OWNER-branch new_owner 角色必须由 superuser 在 `SET ROLE owner` 之前创建（plain LOGIN owner 无 CREATEROLE）；
+- PG18.4 双跑 246 次执行，零失败/零 SQLSTATE 不匹配/零 oracle/零 cleanup/零两轮不一致。
+
 其余已完成语句以各自 `package.json`、`validation.json` 和 `progress.json` 为准，不要仅凭本段摘要修改其状态。
 
 ## 14. 当前工作树与 Git 注意事项
@@ -517,42 +527,128 @@ Git 顶层实际在 `/Users/yuyu/PyCharmMiscProject`，当前工作目录是其�
 - artifacts 默认被忽略，如需提交，只对当前 statement 目录使用 `git add -f`；
 - 提交前统计 staged 文件，确认没有跨语句或无关文件。
 
-当前 ALTER FOREIGN TABLE 相关路径在提交 `729835e` 后没有未提交变化；工作树中的其他 dirty 状态不属于该提交。
+当前 ALTER FOREIGN TABLE 相关路径在提交 `729835e` 后没有未提交变化；`ALTER FUNCTION` 相关路径在提交 `4a39451` 后没有未提交变化；工作树中的其他 dirty 状态不属于上述任一提交。
 
-## 15. 下一步：ALTER FUNCTION
+## 15. ALTER FUNCTION 完成记录 + 下一步：ALTER GROUP
 
-下一条语句已经由机器状态冻结为：
+`alter_function`（序号 012，ddl/function）已正式完成、提交并在循环计划打勾。下一条已由机器状态冻结为 `alter_group`（序号 013）。
+
+### 15.1 采用的方法与账本
+
+专用实现计划：
+
+`docs/superpowers/plans/2026-08-19-alter-function-factor-loop-regress.md`
+
+该语句将 GRM（5 synopsis 分支、23 target actions、RESTRICT/EXTERNAL/SET-form/depends/list 轴）+ 85 SFV canonical + RISK（commit/rollback 事务边界）编译为一义务一主用例。`alter_function.yaml` 声明 `column_type_coverage`/`table_coverage`/`target_relation_coverage` 均 `not_applicable`，故无列/表/关系 INV 扫描。最终账本：
 
 ```text
-statement_key  = alter_function
-ordinal        = 012
-category/domain= ddl/function
-factor_count   = 24
-factor_values  = 85
+required decisions       123
+local SQL programs       123
+delegated handoffs         0
+canonical factor rows     85 / 85
+expected_failure          25
+covered                   98
 ```
 
-官方/项目输入：
+零 delegated：T5 边界（owner/schema/extension/dependency/signature）都是真实 ALTER FUNCTION 错误 → expected_failure；SUPPORT 是 fixture 依赖。`handoff_ledger.owner_statement_key` 标 `create_function`（零委托占位）。
 
-- `skills/pg-sql-generation/references/statements/ddl/function/alter_function.md`；
-- `skills/pg-sql-generation/references/combinations/ddl/function/alter_function.yaml`；
-- `docs/superpowers/specs/2026-08-10-remaining-statement-factor-inventory.md` 中 `alter_function` 小节。
+### 15.2 生成目录与静态结果
 
-下一步不得直接凭 raw matrix 做自由笛卡尔积。正确流程：
+SQL 与 schedules：
 
-1. 读取官方 PostgreSQL 18 ALTER FUNCTION 语法和本地 reference/matrix；
-2. 冻结全部 GRM/SFV/INV/RISK 义务；
-3. 根据 function branch/signature/attribute 适用域确定 consumer；
-4. 每个本地义务建立唯一主 case，其他维度用合法 baseline；
-5. 非法值独立 expected-failure；
-6. routine signature/type/role/schema/dependency 等共享库存只在真实适用 role 中消费；
-7. renderer 输出完整 function/support schema/role/table fixture、目标、oracle、cleanup；
-8. 从最终字节重建 actual witness report；
-9. 静态门禁与 style 通过后，在隔离 PG18.4 执行两遍；
-10. 固化 package/runtime evidence；
-11. 调用 statement cycle completion，勾选 `alter_function`；
-12. 将 next pointer 推进到 `alter_group`，然后通知用户检查。
+`artifacts/regress/by-factor/ddl/function/alter_function/`
 
-ALTER FUNCTION 可能涉及函数签名、参数类型、routine kind、owner/schema、security、volatility、parallel、leakproof、support、cost/rows、configuration、dependency 等语义。不能把普通 function、procedure、aggregate 当作同一对象；同名不同签名必须使用稳定 identity argument oracle。具体数量必须由义务账本编译得出，不能先定目标数字。
+其中 `ALTERFUNCTION0001.sql` 至 `ALTERFUNCTION0123.sql` + `serial_schedule` + `external_schedule`。
+
+证据目录：
+
+`artifacts/intermediates/remaining-statement-factor-cycle/alter_function/`
+
+11 份 JSON：`plan`、`coverage`、`package`、`validation`、`factor-loop-plan`、`handoff`、`actual-factor-witness-report` + `runtime-run-01`、`runtime-run-02`、`runtime-two-run-comparison`、`runtime-validation`。
+
+```text
+SQL files                         123
+decisions                         123
+delegated                           0
+canonical factor rows              85 / 85
+actual primary witnesses         123 / 123
+missing / duplicate / unknown       0 / 0 / 0
+semantic witness mismatch             0
+style validator                    PASS
+runtime_status              not_run_static_sql_only
+```
+
+静态 package SHA-256：
+
+`99a0da31efe43601351c684b2629037ad7b86a91a28824ac649f85de72b73abd`
+
+`package.json`/`validation.json` 的 `runtime_status = not_run_static_sql_only` 是有意静态边界；runtime 结论在独立 `runtime-validation.json`，勿篡改静态 package。
+
+### 15.3 PG18.4 双轮结果
+
+```text
+planned programs                    123
+run-01 executions                   123
+run-02 executions                   123
+total executions                    246
+missing / unexpected executions        0 / 0
+execution failures                      0
+SQLSTATE mismatches                     0
+oracle failures                         0
+cleanup failures                         0
+transcript / structured mismatches   0 / 0
+server_version_num                 180004
+```
+
+证据 SHA-256：
+
+| 文件 | SHA-256 |
+|---|---|
+| `validation.json` | `eef6f0f42c4e47fd373a7e89f978914c9d22a304b626f2a7898af4f062cfa2a0` |
+| `actual-factor-witness-report.json` | `9f352580ca5e0bcab7a3353ffa322fe68087d44e7d5709c2fa2db072d794f752` |
+| `runtime-run-01.json` | `fa3b9735349f59653b65f971011a95fa3986ecac18c0f292f612b5165d534296` |
+| `runtime-run-02.json` | `1321c36f4b772fd55b705aacc9100397a023be0706f023a74f9a1bd087a4fc35` |
+| `runtime-two-run-comparison.json` | `44c066d6325934a692ed72aa67da96227d2b7964cb362ae2c691c76e6221ea61` |
+| `runtime-validation.json` | `65fba9cac8bf3ee74898d409de6a04212a1e8a1ecb9b6250e2b771c630e87725` |
+
+### 15.4 实现文件与提交记录
+
+| 文件 | 作用 |
+|---|---|
+| `src/pg_case_factory/alter_function_regress.py` | 官方 grammar、5 synopsis 分支、PG18 outcome helper |
+| `src/pg_case_factory/alter_function_factor_loop.py` | 编译 123 决定，形成 123 cases + 0 handoffs |
+| `src/pg_case_factory/alter_function_factor_render.py` | 渲染完整 SQL program |
+| `src/pg_case_factory/alter_function_factor_validate.py` | 从最终字节提取主见证并做守恒 |
+| `src/pg_case_factory/alter_function_factor_runtime.py` | PostgreSQL 18.4 串行双跑与比较 |
+| `tests/test_alter_function_factor_loop.py` | ledger、ID、baseline、disposition、守恒、grammar |
+| `tests/test_alter_function_factor_render.py` | renderer、完整 program、fixture、oracle、cleanup |
+| `tests/test_alter_function_factor_runtime.py` | 双跑、SQLSTATE、cleanup、确定性 |
+
+提交记录（从计划到发布）：
+
+```text
+15a9b52 test: add alter function pg18 runtime
+4a39451 test: publish alter function factor regress
+```
+
+`remaining_statement_regress.py` 在 10 个分发点镜像 `alter_foreign_table`：cached factor-plan helper、lazy plan builder、`_PLAN_BUILDERS` 条目、renderer/coverage/factor-documents/package/generate/validate dispatch，以及 `ALTER FUNCTION` SQL-header regex。
+
+### 15.5 运行校准中解决的问题（FIX 1-8）
+
+完整 123-case 双跑前曾发现并修复：
+
+- FIX 1：rows-target fixture 用 `RETURNS SETOF integer`；
+- FIX 2/3/4：support_fn 与 new_owner 角色删除排在 target routine 删除之后；角色删除用 `DROP OWNED BY` + `DROP ROLE`；
+- FIX 5：`non_owner_with_alter` 是 expected_failure（42501）——非 owner 即使被授予 EXECUTE 也不能 ALTER FUNCTION；ledger 调整为 25 expected_failure / 98 covered；
+- FIX 6：section 1 为完全幂等 pre-cleanup 超集；safety-net 用 `ON_ERROR_STOP=0`；
+- FIX 7：procedure-mismatch case 的 target args 折叠为 `()`；
+- FIX 8：OWNER-branch new_owner 角色由 superuser 在 `SET ROLE owner` 之前创建（plain LOGIN owner 无 CREATEROLE）。
+
+所有修复已进入最终 SQL、单元测试与双轮运行证据。
+
+### 15.6 下一条语句
+
+下一条已由机器状态冻结为 `alter_group`（序号 013）。尚未研究其 grammar/coverage_scope；不得先定目标数字。续接时先读官方 `ALTER GROUP` 语法、本地 `combinations/ddl/<category>/<domain>/alter_group.yaml` 与 inventory `alter_group` 小节，编译 factor-loop ledger（GRM + SFV + RISK），再按 §16 模板逐条推进。
 
 ## 16. 每条后续语句的完成模板
 
@@ -602,7 +698,7 @@ from pathlib import Path
 import json
 p = Path('artifacts/intermediates/remaining-statement-factor-cycle/progress.json')
 doc = json.loads(p.read_text(encoding='utf-8'))
-print(doc['statements']['alter_foreign_table']['status'])
+print(doc['statements']['alter_function']['status'])
 print(doc['next_pending_statement'])
 PY
 ```
@@ -611,15 +707,18 @@ PY
 
 ```text
 completed
-alter_function
+alter_group
 ```
 
-复核 ALTER FOREIGN TABLE 静态/运行证据时，不需要重新生成 SQL；先读取：
+复核 ALTER FOREIGN TABLE / ALTER FUNCTION 静态/运行证据时，不需要重新生成 SQL；先读取：
 
 ```text
 artifacts/intermediates/remaining-statement-factor-cycle/alter_foreign_table/validation.json
 artifacts/intermediates/remaining-statement-factor-cycle/alter_foreign_table/actual-factor-witness-report.json
 artifacts/intermediates/remaining-statement-factor-cycle/alter_foreign_table/runtime-validation.json
+artifacts/intermediates/remaining-statement-factor-cycle/alter_function/validation.json
+artifacts/intermediates/remaining-statement-factor-cycle/alter_function/actual-factor-witness-report.json
+artifacts/intermediates/remaining-statement-factor-cycle/alter_function/runtime-validation.json
 ```
 
 如果正式 SQL 任一字节变化，旧 package SHA、actual witness report 和 runtime evidence 都视为失效，必须重新生成、静态验证并双跑。
@@ -628,8 +727,8 @@ artifacts/intermediates/remaining-statement-factor-cycle/alter_foreign_table/run
 
 截至本文档写入时：
 
-- `ALTER FOREIGN TABLE` 已正式完成、提交并在循环计划打勾；
-- 下一条是 `ALTER FUNCTION`；
-- 尚未开始生成 ALTER FUNCTION 正式 SQL；
+- `ALTER FOREIGN TABLE` 与 `ALTER FUNCTION` 均已正式完成、提交并在循环计划打勾；
+- 下一条是 `alter_group`；
+- 尚未开始研究 `alter_group` 的 grammar/coverage_scope，更未生成正式 SQL；
 - 用户要求继续按同一简化因子值循环顺序生成剩余语句；
 - 每完成一条后应先通知用户检查，不得一次性把多条语句状态无证据地全部勾选。
