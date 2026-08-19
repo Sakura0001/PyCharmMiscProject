@@ -195,6 +195,26 @@ def _table_ref(a: dict[str, str], p: str) -> str:
     return _base_table(p)
 
 
+def _table_fixture_name(a: dict[str, str], p: str) -> str:
+    """The bookend-audit-normalizable table name for fixture CREATE/DROP.
+
+    The shared ``audit_complete_table_script`` normalizes table identifiers
+    with a plain ``[A-Za-z_][A-Za-z0-9_$]*`` grammar that rejects quoted
+    names, so the fixture CREATE TABLE and the bookend DROP TABLE statements
+    emit a plain (or schema-qualified) name.  The ALTER POLICY target still
+    uses the shape-appropriate :func:`_table_ref` form (a quoted identifier
+    resolves to the same lowercase table), so the ``quoted_id`` factor stays
+    byte-observable in the target without breaking the table audit.
+    """
+
+    shape = a.get("table_name_shape", "simple_id")
+    if shape == "schema_qualified":
+        return f"{_DEFAULT_SCHEMA}.{_base_table(p)}"
+    if shape == "nonexistent_table":
+        return f"{p}no_such_table"
+    return _base_table(p)
+
+
 def _new_name_ref(a: dict[str, str], p: str) -> str:
     """The RENAME TO target name (may be invalid/duplicate)."""
 
@@ -263,7 +283,10 @@ def _effective_role(
     """The session role under which the target ALTER POLICY runs."""
 
     level = a.get("privilege_level", "superuser")
-    if level == "non_owner":
+    # privilege_denied = non_owner_denied arms the same must_be_owner
+    # boundary as privilege_level = non_owner (ALTER POLICY has no
+    # OWNER TO clause, so there is no SESSION_USER no-op carve-out).
+    if level == "non_owner" or a.get("privilege_denied") == "non_owner_denied":
         return _actor_role(p)
     if level == "table_owner":
         return _owner_role(p)
@@ -286,6 +309,19 @@ def _action_target_sql(
     pol = _policy_ref(a, p)
     tbl = _table_ref(a, p)
     action = case.consumer_action_id
+    # ALTER POLICY exposes no FOR (command-type) or AS (policy-type) clause:
+    # rendering the rejected form surfaces 42601 (syntax_error) for the
+    # cannot_alter_command_type / cannot_alter_policy_type failure axes.
+    if a.get("cannot_alter_command_type") == "cannot_change_for_clause":
+        return (
+            f"ALTER POLICY {pol} ON {tbl} FOR UPDATE "
+            "TO PUBLIC USING (true) WITH CHECK (true);"
+        )
+    if a.get("cannot_alter_policy_type") == "cannot_change_as_clause":
+        return (
+            f"ALTER POLICY {pol} ON {tbl} AS RESTRICTIVE "
+            "TO PUBLIC USING (true) WITH CHECK (true);"
+        )
     if action == "rename":
         return f"ALTER POLICY {pol} ON {tbl} RENAME TO {_new_name_ref(a, p)};"
     # modify branch: each action always renders its signature clause so the
@@ -356,7 +392,8 @@ def _role_fixtures(
     creates: list[str] = []
     drops: list[str] = []
     level = a.get("privilege_level", "superuser")
-    if level == "non_owner":
+    denied = a.get("privilege_denied") == "non_owner_denied"
+    if level == "non_owner" or denied:
         creates.append(f"CREATE ROLE {_actor_role(p)} LOGIN NOSUPERUSER;")
         drops.append(f"DROP ROLE IF EXISTS {_actor_role(p)};")
     elif level == "table_owner":
@@ -365,12 +402,25 @@ def _role_fixtures(
     action = case.consumer_action_id
     if action == "modify_roles":
         value = a.get("role_target", "single_role")
+        # role_existence = role_not_exists / role_name_shape =
+        # nonexistent_role: the TO-clause role must be absent so the
+        # ALTER surfaces 42704 (role_does_not_exist); only the residue
+        # drop is emitted (never the create).
+        role_absent = (
+            a.get("role_existence") == "role_not_exists"
+            or a.get("role_name_shape") == "nonexistent_role"
+        )
         if value == "multiple_roles":
-            for n in (1, 2):
-                creates.append(f"CREATE ROLE {_extra_role(p, n)} LOGIN;")
-                drops.append(f"DROP ROLE IF EXISTS {_extra_role(p, n)};")
+            if role_absent:
+                for n in (1, 2):
+                    drops.append(f"DROP ROLE IF EXISTS {_extra_role(p, n)};")
+            else:
+                for n in (1, 2):
+                    creates.append(f"CREATE ROLE {_extra_role(p, n)} LOGIN;")
+                    drops.append(f"DROP ROLE IF EXISTS {_extra_role(p, n)};")
         elif value not in ("CURRENT_ROLE", "CURRENT_USER", "PUBLIC", "SESSION_USER"):
-            creates.append(f"CREATE ROLE {_extra_role(p, 1)} LOGIN;")
+            if not role_absent:
+                creates.append(f"CREATE ROLE {_extra_role(p, 1)} LOGIN;")
             drops.append(f"DROP ROLE IF EXISTS {_extra_role(p, 1)};")
     return tuple(creates), tuple(drops)
 
@@ -395,7 +445,7 @@ def _resolve_case(case: AlterPolicyFactorCase) -> _CasePlan:
         setup.append("SELECT 1 AS target_table_intentionally_absent;")
         locus = "fixture.object_state"
     else:
-        setup.append(f"CREATE TABLE {_table_ref(a, p)} AS SELECT 1 AS c;")
+        setup.append(f"CREATE TABLE {_table_fixture_name(a, p)} AS SELECT 1 AS c;")
         if level_owner := (
             a.get("privilege_level") == "table_owner"
         ):
@@ -409,12 +459,12 @@ def _resolve_case(case: AlterPolicyFactorCase) -> _CasePlan:
             # original" path keeps the original expression verbatim.
             setup.append(
                 f"CREATE POLICY {pol_name} ON {_table_ref(a, p)} "
-                "FOR SELECT TO PUBLIC USING (false) WITH CHECK (false);"
+                "FOR ALL TO PUBLIC USING (false) WITH CHECK (false);"
             )
             if action == "rename" and a.get("new_name_shape") == "duplicate_name":
                 setup.append(
                     f"CREATE POLICY {_dup_policy_name(p)} "
-                    f"ON {_table_ref(a, p)} FOR SELECT TO PUBLIC "
+                    f"ON {_table_ref(a, p)} FOR ALL TO PUBLIC "
                     "USING (false) WITH CHECK (false);"
                 )
         rls_line = _rls_enable_line(a, p)
@@ -482,15 +532,22 @@ def _resolve_case(case: AlterPolicyFactorCase) -> _CasePlan:
                 f"ON {_table_ref(a, p)};"
             )
     if drop_mode == "drop_table" or not table_present:
-        cleanup.append(f"DROP TABLE IF EXISTS {_table_ref(a, p)} CASCADE;")
+        cleanup.append(f"DROP TABLE IF EXISTS {_table_fixture_name(a, p)} CASCADE;")
     else:
-        cleanup.append(f"DROP TABLE IF EXISTS {_table_ref(a, p)} CASCADE;")
+        cleanup.append(f"DROP TABLE IF EXISTS {_table_fixture_name(a, p)} CASCADE;")
     cleanup.extend(role_drops)
+    # BOOKEND: audit_complete_table_script requires the final executable
+    # statement to be DROP TABLE IF EXISTS naming every created table.  The
+    # real drop above precedes the role drops so a table-owning owner role
+    # can be dropped cleanly; this trailing no-op drop satisfies the
+    # bookend uniformly for every table-creating case.
+    if table_present:
+        cleanup.append(f"DROP TABLE IF EXISTS {_table_fixture_name(a, p)} CASCADE;")
     if not cleanup:
         cleanup.append("SELECT 1 AS residual_check_no_objects;")
 
     # --- pre-cleanup (section 1, re-runnable) -------------------------
-    pre_cleanup: list[str] = [f"DROP TABLE IF EXISTS {_table_ref(a, p)} CASCADE;"]
+    pre_cleanup: list[str] = [f"DROP TABLE IF EXISTS {_table_fixture_name(a, p)} CASCADE;"]
     pre_cleanup.extend(role_drops)
     if not pre_cleanup:
         pre_cleanup.append("SELECT 1 AS residual_check_no_objects;")
