@@ -39,7 +39,7 @@ _TOTAL_COUNT = _BASELINE_COUNT + _EXTENSION_COUNT  # 366
 _SUCCESS_EXTENSIONS = 120
 _FAILURE_EXTENSIONS = 216
 _EXTENSION_MULTISET_SHA256 = (
-    "8238990a740b2e0c33e2e23c66e0610dbfcc1f64e37d2ae6fb5b71a82ba1b5c9"
+    "eee4da2990edc92a4fd21deb8347f56b946f4929a1eda35b403d95e5f3045341"
 )
 
 # Behaviour-negative (factor, value) pairs that are CROSSED in extensions.
@@ -270,7 +270,7 @@ class DropCollationFactorExtensionPlanTest(unittest.TestCase):
                     "expected_failure", case.outcome, case.case_id
                 )
                 self.assertEqual(
-                    "2BPQ1", case.expected_sqlstate, case.case_id
+                    "2BP01", case.expected_sqlstate, case.case_id
                 )
 
     def test_branch_grammar_and_consumer_action_are_consistent(self) -> None:

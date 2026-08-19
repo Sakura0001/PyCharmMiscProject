@@ -285,15 +285,15 @@ _SFV_FAILURE_SQLSTATE: dict[tuple[str, str], tuple[str, str]] = {
         "missing_collation_without_if_exists",
     ),
     ("dependency_state", "referenced_by_table_column"): (
-        "2BPQ1",
+        "2BP01",
         "dependent_objects_restricted",
     ),
     ("dependency_state", "referenced_by_index"): (
-        "2BPQ1",
+        "2BP01",
         "dependent_objects_restricted",
     ),
     ("dependent_objects_exist", "restrict_with_dependencies"): (
-        "2BPQ1",
+        "2BP01",
         "dependent_objects_restricted",
     ),
     ("privilege_level", "non_owner"): (

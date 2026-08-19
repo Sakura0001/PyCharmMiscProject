@@ -295,16 +295,16 @@ def _resolve_case(case: DropCollationFactorCase) -> _CasePlan:
     if needs_schema:
         setup.append(f"CREATE SCHEMA IF NOT EXISTS {p}schema;")
 
-    # --- role fixtures --------------------------------------------------
+    # --- role fixtures (CREATE only; SET ROLE deferred to after the
+    # collation and dependent fixtures so they run as the superuser) ---
     effective = _effective_role(case, a, p)
     if effective:
-        setup.append(f"CREATE ROLE {p}actor LOGIN;")
+        setup.append(f"CREATE ROLE {p}actor LOGIN NOSUPERUSER;")
         if needs_schema:
             setup.append(f"GRANT USAGE ON SCHEMA {p}schema TO {p}actor;")
-        setup.append(f"SET ROLE {p}actor;")
         locus = "fixture.privilege_state"
 
-    # --- the target collation fixture -----------------------------------
+    # --- the target collation fixture (as superuser, before SET ROLE) -
     if fixture_kind == "collation":
         setup.append(
             f"CREATE COLLATION {coll_ref} "
@@ -316,7 +316,7 @@ def _resolve_case(case: DropCollationFactorCase) -> _CasePlan:
         setup.append("SELECT 1 AS target_collation_intentionally_absent;")
         locus = "fixture.object_state"
 
-    # --- dependent object fixture ---------------------------------------
+    # --- dependent object fixture (as superuser, before SET ROLE) -------
     if needs_dep:
         if dep_kind == "index":
             setup.append(f"CREATE TABLE {p}t (c text);")
@@ -327,8 +327,12 @@ def _resolve_case(case: DropCollationFactorCase) -> _CasePlan:
             setup.append(f"CREATE TABLE {p}t (c text COLLATE {coll_ref});")
         locus = "fixture.dependency_state"
 
-    # --- close the actor fixture (RESET before oracle) is in assert ----
-    # The primary target statement runs under the armed role.
+    # --- arm the non-owner role (AFTER collation/dependent creation) -----
+    # The collation and any dependents were created by the superuser; the
+    # non-owner actor now attempts the DROP and is rejected with 42501
+    # because only the owner (the superuser) may drop a collation.
+    if effective:
+        setup.append(f"SET ROLE {p}actor;")
     if_exists = "IF EXISTS " if _if_exists_present(case, a) else ""
     cascade = _cascade_clause(a)
     target = f"DROP COLLATION {if_exists}{coll_ref}"
@@ -363,6 +367,11 @@ def _resolve_case(case: DropCollationFactorCase) -> _CasePlan:
         collation_drop = f"DROP COLLATION IF EXISTS {coll_ref};"
     else:
         collation_drop = f"DROP COLLATION IF EXISTS {coll_ref} CASCADE;"
+    # The final safety-net cleanup always uses CASCADE so the collation is
+    # removed even when dependents persist (the cleanup_mode axis only
+    # models the pre-cleanup strategy; the section-5 safety net must
+    # guarantee a clean state for the post_clean probe).
+    cleanup_collation_drop = f"DROP COLLATION IF EXISTS {coll_ref} CASCADE;"
     roles = _role_names(case, p, effective)
     schema_drop = (
         [f"DROP SCHEMA IF EXISTS {p}schema CASCADE;"] if needs_schema else []
@@ -379,18 +388,31 @@ def _resolve_case(case: DropCollationFactorCase) -> _CasePlan:
         )
     ]
 
-    idempotent_object_drops = dep_drops + [collation_drop] + schema_drop
+    # Pre-cleanup: DROP TABLE first (table audit requires it as the first
+    # executable statement), then collation, schema, and role drops.
     pre_cleanup: list[str] = []
-    pre_cleanup.extend(idempotent_object_drops)
+    pre_cleanup.extend(dep_drops)
+    pre_cleanup.append(collation_drop)
+    pre_cleanup.extend(schema_drop)
+    # DROP ROLE IF EXISTS is safe for non-existent roles (NOTICE, not
+    # error); DROP OWNED BY is NOT safe (42704 if role missing) so it
+    # stays only in the cleanup section where the role always exists.
     pre_cleanup.extend(f"DROP ROLE IF EXISTS {role};" for role in roles)
     if not pre_cleanup:
         pre_cleanup.append("SELECT 1 AS residual_check_no_objects;")
 
+    # Cleanup: RESET ROLE, then collation/schema/role drops, then DROP
+    # TABLE last (the table audit requires the final executable statement
+    # to be DROP TABLE IF EXISTS for scripts that create tables).  The
+    # collation drop always uses CASCADE here so it succeeds even when
+    # the dependent table has not yet been dropped.
     cleanup: list[str] = []
     if effective:
         cleanup.append("RESET ROLE;")
-    cleanup.extend(idempotent_object_drops)
+    cleanup.append(cleanup_collation_drop)
+    cleanup.extend(schema_drop)
     cleanup.extend(role_drops)
+    cleanup.extend(dep_drops)
     if not cleanup:
         cleanup.append("SELECT 1 AS residual_check_no_objects;")
 

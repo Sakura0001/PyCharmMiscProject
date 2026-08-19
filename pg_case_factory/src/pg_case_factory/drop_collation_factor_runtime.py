@@ -13,7 +13,7 @@ from .drop_collation_factor_loop import DropCollationFactorCase
 
 
 PG18_BIN = Path("/tmp/pgcf-postgresql-18.4-install/bin")
-PG18_SOCKET = Path("/tmp/pgcf-pg18-dc-sock-20260819")
+PG18_SOCKET = Path("/tmp/pgcf-pg18-dc-sock-20260820")
 PG18_PORT = 55489
 PG18_DATABASE = "pgcf_dc"
 PG18_SUPERUSER = "pgcf_superuser"
