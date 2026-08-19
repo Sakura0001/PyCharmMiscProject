@@ -216,7 +216,14 @@ def _present_failure_pair(
     # 1. Privilege wall (owner-transfer boundary, when it fires).
     if _privilege_cluster_fires(branch, assignment):
         return _SQLSTATE_BY_REASON["insufficient_operator_class_privilege"]
-    if branch == "branch_owner" and _ownership_fires(assignment):
+    # The ownership boundary counts toward failure-unit validity above, but
+    # SESSION_USER owner target is a permitted no-op transfer (PG 18.4) that
+    # succeeds even under a non-owner actor, so it produces no failure outcome.
+    if (
+        branch == "branch_owner"
+        and _ownership_fires(assignment)
+        and assignment.get("new_owner_shape") != "session_user"
+    ):
         return _SQLSTATE_BY_REASON["insufficient_operator_class_privilege"]
     # 2. Remaining behaviour negatives.
     if assignment.get("target_object_state") == "missing":

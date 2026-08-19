@@ -335,8 +335,8 @@ _SFV_FAILURE_SQLSTATE: dict[tuple[str, str], tuple[str, str]] = {
         "invalid_operator_class_alter_combination",
     ),
     ("invalid_combination", "object_type_mismatch"): (
-        "42809",
-        "wrong_object_type",
+        "42704",
+        "operator_class_does_not_exist",
     ),
     ("privilege_context", "non_owner"): (
         "42501",

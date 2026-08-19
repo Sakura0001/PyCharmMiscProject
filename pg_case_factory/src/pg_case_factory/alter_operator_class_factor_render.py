@@ -33,6 +33,7 @@ from .alter_operator_class_factor_loop import (
     AlterOperatorClassFactorLoopPlan,
     build_alter_operator_class_factor_loop_plan,
 )
+from .regression_style import HuaweiSqlHeader, render_huawei_sql_header
 
 
 class AlterOperatorClassFactorRenderError(ValueError):
@@ -42,10 +43,18 @@ class AlterOperatorClassFactorRenderError(ValueError):
 _PRIMARY_BEGIN = "-- primary-target-begin"
 _PRIMARY_END = "-- primary-target-end"
 
-_DOC_SOURCE = "postgresql-18.4-doc:sql-alteropclass"
-_VERSION = "1.0.0"
+_DOC_SOURCE = (
+    "skills/pg-sql-generation/references/statements/ddl/operator_class/"
+    "alter_operator_class.md"
+)
+_FACTOR_SOURCE = (
+    "skills/pg-sql-generation/references/combinations/ddl/operator_class/"
+    "alter_operator_class.yaml"
+)
 _AUTHOR = "pg_case_factory"
-_COPYRIGHT = "Copyright (c) 2026 pg_case_factory"
+_CREATE_AT = "2026-08-20"
+_VERSION = "1.0.0"
+_FE = "PG18-STATEMENT-FACTOR-LOOP"
 
 
 def _index_method(case_assignments: dict[str, str]) -> str:
@@ -86,7 +95,10 @@ def _owner_target(shape: str, prefix: str) -> str:
 
 def _effective_role(case_assignments: dict[str, str], prefix: str) -> str:
     privilege = case_assignments.get("privilege_context", "superuser")
-    if privilege in ("non_owner", "insufficient_privilege"):
+    ownership = case_assignments.get("ownership_boundary", "superuser")
+    # Either a privilege-context non-owner OR an ownership-boundary non-owner
+    # must run the ALTER under a non-owning actor role so 42501 fires.
+    if privilege in ("non_owner", "insufficient_privilege") or ownership == "non_owner":
         return f"{prefix}actor"
     return ""
 
@@ -144,16 +156,31 @@ def _fixture_lines(
     if schema_state in ("target_schema_exists", "target_schema_conflict"):
         setup.append(f"CREATE SCHEMA IF NOT EXISTS {target_sch};")
     cleanup.append(f"DROP SCHEMA IF EXISTS {target_sch} CASCADE;")
+    # Explicit operator-class drops: a plain/quoted opclass lives in the
+    # default schema (public), so the schema CASCADE above cannot reach it.
+    # The original name, the rename target, and the rename-conflict peer are
+    # all dropped defensively (IF EXISTS makes each an idempotent no-op).
+    cleanup.append(f"DROP OPERATOR CLASS IF EXISTS {opclass_name} USING {method};")
+    cleanup.append(f"DROP OPERATOR CLASS IF EXISTS {prefix}new_opc USING {method};")
+    cleanup.append(f"DROP OPERATOR CLASS IF EXISTS {prefix}conflict_opc USING {method};")
     # A conflicting operator class in the target schema (SET SCHEMA conflict).
     if schema_state == "target_schema_conflict":
         setup.append(
             f"CREATE OPERATOR CLASS {target_sch}.{prefix}opc "
             f"FOR TYPE integer USING {method} AS STORAGE integer;"
         )
-    # A conflicting operator class for the RENAME conflict.
+    # A conflicting operator class for the RENAME conflict.  For a
+    # schema-qualified opclass the conflict peer must live in the same
+    # namespace, otherwise RENAME (which keeps the namespace) would not hit
+    # the pg_opclass unique index and the conflict would never fire.
     if case_assignments.get("rename_conflict") == "new_name_conflict":
+        conflict_name = (
+            f"{op_schema}.{prefix}conflict_opc"
+            if name_shape == "schema_qualified"
+            else f"{prefix}conflict_opc"
+        )
         setup.append(
-            f"CREATE OPERATOR CLASS {prefix}conflict_opc "
+            f"CREATE OPERATOR CLASS {conflict_name} "
             f"FOR TYPE integer USING {method} AS STORAGE integer;"
         )
     # Roles for the owner-transfer / privilege fixture.
@@ -170,7 +197,15 @@ def _fixture_lines(
         cleanup.append(f"DROP ROLE IF EXISTS {effective};")
     object_state = case_assignments.get("target_object_state", "exists")
     invalid = case_assignments.get("invalid_combination", "none")
-    if object_state == "exists" and invalid != "object_type_mismatch":
+    expected_status = case_assignments.get("expected_status", "success")
+    # The abstract expected_status=failure SFV row has no concrete failure
+    # trigger, so it is witnessed as a missing-operator-class case (42704).
+    opclass_exists = (
+        object_state == "exists"
+        and invalid != "object_type_mismatch"
+        and expected_status != "failure"
+    )
+    if opclass_exists:
         setup.append(
             f"CREATE OPERATOR CLASS {opclass_name} "
             f"FOR TYPE integer USING {method} AS STORAGE integer;"
@@ -213,17 +248,17 @@ def _oracle_lines(
         owner_shape = case_assignments.get("new_owner_shape", "plain_role")
         if owner_shape in ("current_role", "current_user"):
             owner_clause = (
-                "opcowner = (SELECT oid FROM pg_roles "
+                "opcowner = (SELECT oid FROM pg_catalog.pg_roles "
                 "WHERE rolname = current_role)"
             )
         elif owner_shape == "session_user":
             owner_clause = (
-                "opcowner = (SELECT oid FROM pg_roles "
+                "opcowner = (SELECT oid FROM pg_catalog.pg_roles "
                 "WHERE rolname = session_user)"
             )
         elif owner_shape == "plain_role":
             owner_clause = (
-                f"opcowner = (SELECT oid FROM pg_roles "
+                f"opcowner = (SELECT oid FROM pg_catalog.pg_roles "
                 f"WHERE rolname = '{prefix}new_owner')"
             )
         else:
@@ -239,7 +274,7 @@ def _oracle_lines(
             f"SELECT count(*) AS opc_schema_changed FROM pg_catalog.pg_opclass "
             f"WHERE opcname = '{base_name}' "
             f"AND opcmethod = {method_oid} "
-            f"AND opcnamespace = (SELECT oid FROM pg_namespace "
+            f"AND opcnamespace = (SELECT oid FROM pg_catalog.pg_namespace "
             f"WHERE nspname = '{prefix}target_sch') ORDER BY count(*) LIMIT 1;"
         )
     else:
@@ -301,7 +336,7 @@ def _primary_id(case) -> str:
     return getattr(case, "primary_obligation_id")
 
 
-def _header(case, plan: AlterOperatorClassFactorLoopPlan | None) -> str:
+def _header(case) -> list[str]:
     primary = _primary_id(case)
     factor_key = getattr(
         case, "factor_key", getattr(case, "derived_from_combination_group", "")
@@ -309,21 +344,23 @@ def _header(case, plan: AlterOperatorClassFactorLoopPlan | None) -> str:
     factor_value = getattr(
         case, "factor_value", getattr(case, "derivation_reason", "")
     )
-    lines = [
-        f"-- copyright: {_COPYRIGHT}",
-        f"-- author: {_AUTHOR}",
-        f"-- create_at: 2026-08-20",
-        f"-- version: {_VERSION}",
-        f"-- feature: alter_operator_class",
-        f"-- source: {_DOC_SOURCE}",
+    header = render_huawei_sql_header(
+        HuaweiSqlHeader(
+            author=_AUTHOR,
+            create_at=_CREATE_AT,
+            version=_VERSION,
+            description=f"ALTER OPERATOR CLASS {factor_key}={factor_value}",
+            fe=_FE,
+        )
+    ).rstrip("\n")
+    return header.splitlines() + [
         f"-- case_id: {case.case_id}",
-        f"-- source_md: {primary}",
-        f"-- factor_md: {factor_key}={factor_value}",
+        f"-- source_md: {_DOC_SOURCE}",
+        f"-- factor_md: {_FACTOR_SOURCE}",
         f"-- primary_obligation_id: {primary}",
         f"-- expected_outcome: {case.outcome}",
         f"-- expected_sqlstate: {case.expected_sqlstate}",
     ]
-    return "\n".join(lines) + "\n"
 
 
 def render_alter_operator_class_factor_case(
@@ -334,7 +371,7 @@ def render_alter_operator_class_factor_case(
     del repository_root  # cases are self-describing; root reserved for API parity
     plan = _resolve_case(case)
     sections: list[str] = []
-    sections.append(_header(case, None))
+    sections.extend(_header(case))
     # Section 1: pre-cleanup.
     sections.append("-- 1. 预清理本编号对象。")
     sections.append(plan.cleanup_lines[0] if plan.cleanup_lines else "")
