@@ -358,18 +358,21 @@ def _oracle(
             original = _group_role_name(p, a["group_name_shape"]).strip('"')
             if rc.outcome == "success":
                 lines.append(
-                    "SELECT EXISTS(SELECT 1 FROM pg_catalog.pg_roles "
-                    f"WHERE rolname = '{new_target}') AS rename_target_exists;"
+                    "SELECT count(*) > 0 AS rename_target_exists "
+                    "FROM pg_catalog.pg_roles "
+                    f"WHERE rolname = '{new_target}' ORDER BY count(*);"
                 )
             elif _group_exists(a):
                 lines.append(
-                    "SELECT EXISTS(SELECT 1 FROM pg_catalog.pg_roles "
-                    f"WHERE rolname = '{original}') AS rename_source_exists;"
+                    "SELECT count(*) > 0 AS rename_source_exists "
+                    "FROM pg_catalog.pg_roles "
+                    f"WHERE rolname = '{original}' ORDER BY count(*);"
                 )
             else:
                 lines.append(
-                    "SELECT NOT EXISTS(SELECT 1 FROM pg_catalog.pg_roles "
-                    f"WHERE rolname = '{original}') AS rename_source_absent;"
+                    "SELECT count(*) = 0 AS rename_source_absent "
+                    "FROM pg_catalog.pg_roles "
+                    f"WHERE rolname = '{original}' ORDER BY count(*);"
                 )
         return tuple(lines)
     grp = _group_role_name(p, a["group_name_shape"]).strip('"')
@@ -395,17 +398,24 @@ def _oracle(
             expect_member = a["duplicate_add_user"] == "existing_member"
         else:  # drop_user expected_failure
             expect_member = a["drop_non_member_user"] == "existing_member"
-        membership = (
-            "SELECT 1 FROM pg_catalog.pg_auth_members m "
+        membership_from = (
+            "FROM pg_catalog.pg_auth_members m "
             "JOIN pg_catalog.pg_roles g ON g.oid = m.roleid "
             "JOIN pg_catalog.pg_roles u ON u.oid = m.member "
-            f"WHERE g.rolname = '{grp}' AND u.rolname = '{usr}'"
+            f"WHERE g.rolname = '{grp}' AND u.rolname = '{usr}' "
+            "ORDER BY count(*)"
         )
         if expect_member:
-            lines.append("SELECT EXISTS(" + membership + ") AS membership_present;")
+            lines.append(
+                "SELECT count(*) > 0 AS membership_present "
+                + membership_from
+                + ";"
+            )
         else:
             lines.append(
-                "SELECT NOT EXISTS(" + membership + ") AS membership_absent;"
+                "SELECT count(*) = 0 AS membership_absent "
+                + membership_from
+                + ";"
             )
     return tuple(lines)
 

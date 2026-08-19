@@ -30,7 +30,7 @@ ALTER GROUP altergroup_3567_grp RENAME TO altergroup_3567_renamed;
 \set ON_ERROR_STOP on
 -- 4. 验证 SQLSTATE、目录状态和数据行为。
 SELECT :'target_sqlstate' = '42704' AS target_sqlstate_matches_expected;
-SELECT NOT EXISTS(SELECT 1 FROM pg_catalog.pg_roles WHERE rolname = 'altergroup_3567_grp') AS rename_source_absent;
+SELECT count(*) = 0 AS rename_source_absent FROM pg_catalog.pg_roles WHERE rolname = 'altergroup_3567_grp' ORDER BY count(*);
 -- 5. 清理全部本编号对象。
 DROP ROLE IF EXISTS altergroup_3567_grp;
 DROP ROLE IF EXISTS altergroup_3567_renamed;

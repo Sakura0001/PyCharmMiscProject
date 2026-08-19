@@ -37,7 +37,7 @@ ALTER GROUP "altergroup_3099_Grp" DROP USER altergroup_3099_usr, altergroup_3099
 -- 4. 验证 SQLSTATE、目录状态和数据行为。
 RESET ROLE;
 SELECT :'target_sqlstate' = '42704' AS target_sqlstate_matches_expected;
-SELECT NOT EXISTS(SELECT 1 FROM pg_catalog.pg_auth_members m JOIN pg_catalog.pg_roles g ON g.oid = m.roleid JOIN pg_catalog.pg_roles u ON u.oid = m.member WHERE g.rolname = 'altergroup_3099_Grp' AND u.rolname = 'altergroup_3099_usr') AS membership_absent;
+SELECT count(*) = 0 AS membership_absent FROM pg_catalog.pg_auth_members m JOIN pg_catalog.pg_roles g ON g.oid = m.roleid JOIN pg_catalog.pg_roles u ON u.oid = m.member WHERE g.rolname = 'altergroup_3099_Grp' AND u.rolname = 'altergroup_3099_usr' ORDER BY count(*);
 -- 5. 清理全部本编号对象。
 RESET ROLE;
 DROP ROLE IF EXISTS "altergroup_3099_Grp";

@@ -204,21 +204,24 @@ class AlterGroupCalibratedSemanticsTest(unittest.TestCase):
 
     def test_add_user_success_membership_oracle_asserts_present(self) -> None:
         sql = render_alter_group_factor_case(self._by_id("ALTERGROUP0001"), ROOT)
-        self.assertIn("SELECT EXISTS(", sql)
-        self.assertIn("AS membership_present;", sql)
+        # The membership oracle is a top-level-FROM catalog SELECT (the
+        # catalog-audit compliant form); count(*) > 0 is the present assertion.
+        self.assertIn("SELECT count(*) > 0 AS membership_present", sql)
+        self.assertIn("ORDER BY count(*)", sql)
         self.assertNotIn("membership_absent", sql)
 
     def test_drop_user_success_membership_oracle_asserts_absent(self) -> None:
         # ALTERGROUP0013 = drop_non_member_user=non_member -> success 00000
         sql = render_alter_group_factor_case(self._by_id("ALTERGROUP0013"), ROOT)
-        self.assertIn("SELECT NOT EXISTS(", sql)
-        self.assertIn("AS membership_absent;", sql)
+        self.assertIn("SELECT count(*) = 0 AS membership_absent", sql)
+        self.assertIn("ORDER BY count(*)", sql)
+        self.assertNotIn("membership_present", sql)
 
     def test_rename_name_conflict_oracle_probes_source(self) -> None:
         # ALTERGROUP0025 = new_name_shape=duplicate_name -> 42710; the
         # source group survives the failed rename, so assert it exists.
         sql = render_alter_group_factor_case(self._by_id("ALTERGROUP0025"), ROOT)
-        self.assertIn("AS rename_source_exists;", sql)
+        self.assertIn("count(*) > 0 AS rename_source_exists", sql)
         self.assertIn("WHERE rolname = 'altergroup_0025_grp'", sql)
 
 

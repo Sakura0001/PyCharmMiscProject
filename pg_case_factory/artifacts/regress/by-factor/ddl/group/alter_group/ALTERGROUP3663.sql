@@ -39,7 +39,7 @@ ALTER GROUP altergroup_3663_grp RENAME TO altergroup_3663_conflict_grp;
 -- 4. 验证 SQLSTATE、目录状态和数据行为。
 RESET ROLE;
 SELECT :'target_sqlstate' = '42710' AS target_sqlstate_matches_expected;
-SELECT EXISTS(SELECT 1 FROM pg_catalog.pg_roles WHERE rolname = 'altergroup_3663_grp') AS rename_source_exists;
+SELECT count(*) > 0 AS rename_source_exists FROM pg_catalog.pg_roles WHERE rolname = 'altergroup_3663_grp' ORDER BY count(*);
 -- 5. 清理全部本编号对象。
 RESET ROLE;
 DROP ROLE IF EXISTS altergroup_3663_grp;

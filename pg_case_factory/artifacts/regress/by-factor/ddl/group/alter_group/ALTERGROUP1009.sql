@@ -40,7 +40,7 @@ ALTER GROUP altergroup_1009_grp ADD USER altergroup_1009_usr, altergroup_1009_us
 -- 4. 验证 SQLSTATE、目录状态和数据行为。
 RESET ROLE;
 SELECT :'target_sqlstate' = '42501' AS target_sqlstate_matches_expected;
-SELECT EXISTS(SELECT 1 FROM pg_catalog.pg_auth_members m JOIN pg_catalog.pg_roles g ON g.oid = m.roleid JOIN pg_catalog.pg_roles u ON u.oid = m.member WHERE g.rolname = 'altergroup_1009_grp' AND u.rolname = 'altergroup_1009_usr') AS membership_present;
+SELECT count(*) > 0 AS membership_present FROM pg_catalog.pg_auth_members m JOIN pg_catalog.pg_roles g ON g.oid = m.roleid JOIN pg_catalog.pg_roles u ON u.oid = m.member WHERE g.rolname = 'altergroup_1009_grp' AND u.rolname = 'altergroup_1009_usr' ORDER BY count(*);
 -- 5. 清理全部本编号对象。
 RESET ROLE;
 ALTER GROUP altergroup_1009_grp ADD USER altergroup_1009_usr;
