@@ -36,10 +36,10 @@ ROOT = Path(__file__).resolve().parents[1]
 _BASELINE_COUNT = 61
 _EXTENSION_COUNT = 8424
 _TOTAL_COUNT = _BASELINE_COUNT + _EXTENSION_COUNT  # 8485
-_SUCCESS_EXTENSIONS = 3348
-_FAILURE_EXTENSIONS = 5076
+_SUCCESS_EXTENSIONS = 3924
+_FAILURE_EXTENSIONS = 4500
 _EXTENSION_MULTISET_SHA256 = (
-    "7c68d6ffd8e3554d3a51b4d5ab890bb53fd6bc714082756ae3b93d707e9ee9e5"
+    "b30bf50ef955b9a7ca8245b87ca4899ba4f4c51ada0bcdc5a863b059836ca1ec"
 )
 
 # Behaviour-negative (factor, value) pairs that are CROSSED in extensions.
@@ -143,6 +143,24 @@ def _target_missing_fires(assignment: dict[str, str]) -> bool:
     )
 
 
+def _if_exists_missing_noop(assignment: dict[str, str]) -> bool:
+    """Whether IF EXISTS short-circuits a missing target to a no-op success.
+
+    Mirrors the module: ALTER MATERIALIZED VIEW IF EXISTS on a missing mview
+    never reaches the privilege/role/object-type checks (PG 18.4 emits a 01000
+    NOTICE, 00000), so no failure pair is attributable.  This governs only the
+    *disposition* (expected_sqlstate) — the failure-unit count (potential
+    failures) is unchanged, so the at-most-one filter and frozen case count are
+    stable; a no-op success may therefore carry a non-zero failure-unit count
+    (a masked would-be failure).
+    """
+
+    return (
+        assignment.get("target_object_state") == "missing"
+        and assignment.get("if_exists_clause") == "present"
+    )
+
+
 def _failure_unit_count(assignment: dict[str, str]) -> int:
     """Privilege cluster (1) + behaviour negatives; must stay at most one."""
 
@@ -170,9 +188,12 @@ def _present_failure_pair(
 
     Mirrors the module's attribution order: privilege cluster (when the
     boundary fires), then wrong_object_type, then target_missing (only
-    without IF EXISTS), then missing_role.
+    without IF EXISTS), then missing_role.  IF EXISTS on a missing target
+    short-circuits to a no-op success (no failure pair).
     """
 
+    if _if_exists_missing_noop(assignment):
+        return None
     level = assignment.get("privilege_context")
     if (
         level in _PRIVILEGE_CLUSTER_VALUES
@@ -263,13 +284,18 @@ class AlterMaterializedViewFactorExtensionPlanTest(unittest.TestCase):
             self.assertLessEqual(count, 1, case.case_id)
             if case.outcome == "expected_failure":
                 self.assertEqual(1, count, case.case_id)
+            elif _if_exists_missing_noop(assignment):
+                # IF EXISTS on a missing target is a no-op success, but it may
+                # still carry a masked failure-unit (e.g. insufficient_privilege
+                # would fire without the no-op); the disposition (pair=None, not
+                # the potential count) is the source of truth for the outcome.
+                self.assertLessEqual(count, 1, case.case_id)
             else:
                 # The privilege-cluster term is gated on the boundary
                 # actually firing, so insufficient_privilege + SESSION_USER
                 # (owner_to) has count=0 and is a no-op success.  Because the
                 # failure-unit conditions are exactly the present-failure
-                # conditions, every success case has count=0 and every
-                # failure case has count=1.
+                # conditions, every non-no-op success case has count=0.
                 self.assertEqual(0, count, case.case_id)
 
     def test_expected_status_is_derived_from_present_failure_pair(self) -> None:
@@ -320,7 +346,7 @@ class AlterMaterializedViewFactorExtensionPlanTest(unittest.TestCase):
         for case in self.plan.cases:
             a = dict(case.factor_assignment)
             if a["privilege_context"] in _PRIVILEGE_CLUSTER_VALUES:
-                if _privilege_boundary_fires(a):
+                if _privilege_boundary_fires(a) and not _if_exists_missing_noop(a):
                     self.assertEqual(
                         "expected_failure", case.outcome, case.case_id
                     )
@@ -328,15 +354,14 @@ class AlterMaterializedViewFactorExtensionPlanTest(unittest.TestCase):
                         "42501", case.expected_sqlstate, case.case_id
                     )
                 else:
-                    # SESSION_USER resolves to the session user (the owner),
-                    # making OWNER TO a no-op that PG allows even for
+                    # Two sub-cases short-circuit to success without a 42501:
+                    # (1) SESSION_USER resolves to the session user (the
+                    # owner), making OWNER TO a no-op that PG allows even for
                     # non-owners, so the privilege boundary does not fire and
-                    # a 42501 failure is impossible.  Because AMV's
-                    # _failure_unit_count gates the cluster on the boundary
-                    # actually firing, insufficient_privilege + SESSION_USER
-                    # has cluster=0; the case may still fail due to another
-                    # single negative (e.g. target_missing -> 42P01), but
-                    # never with sqlstate 42501.
+                    # a 42501 failure is impossible; (2) IF EXISTS on a
+                    # missing target never reaches the privilege check (no-op
+                    # success), so even a boundary that would otherwise fire
+                    # is masked.  In both, a 42501 failure is impossible.
                     self.assertNotEqual(
                         "42501", case.expected_sqlstate, case.case_id
                     )

@@ -191,6 +191,25 @@ def _target_missing_fires(assignment: dict[str, str]) -> bool:
     )
 
 
+def _if_exists_missing_noop(assignment: dict[str, str]) -> bool:
+    """Whether IF EXISTS short-circuits a missing target to a no-op success.
+
+    ``ALTER MATERIALIZED VIEW IF EXISTS`` on a missing materialized view never
+    reaches the privilege, role, or object-type checks (PG 18.4 emits a 01000
+    NOTICE and returns 00000), so no failure pair is attributable regardless of
+    the co-occurring privilege_context / new_owner_shape / target_object_state
+    values.  This only governs the *disposition* (expected_sqlstate) — the
+    at-most-one failure-unit count is unchanged, so previously-excluded
+    double-failure combinations stay excluded and the frozen case count is
+    stable.
+    """
+
+    return (
+        assignment.get("target_object_state") == "missing"
+        and assignment.get("if_exists_clause") == "present"
+    )
+
+
 def _failure_unit_count(assignment: dict[str, str]) -> int:
     """Privilege cluster (1) + behaviour negatives; must stay at most one."""
 
@@ -223,6 +242,8 @@ def _present_failure_pair(
     is a no-op success (no failure pair).
     """
 
+    if _if_exists_missing_noop(assignment):
+        return None
     level = assignment.get("privilege_context")
     if (
         level in _PRIVILEGE_CLUSTER_VALUES

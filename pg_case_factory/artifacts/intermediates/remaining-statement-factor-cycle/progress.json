@@ -6,7 +6,7 @@
   "statement_count": 183,
   "retained_statement_count": 6,
   "pending_statement_count": 177,
-  "next_pending_statement": "alter_materialized_view",
+  "next_pending_statement": "alter_operator_class",
   "statements": {
     "abort": {
       "status": "completed",
@@ -121,18 +121,18 @@
       "validation_evidence_sha256": "6c1a34ef259c90f110c8e6a114194bafbb1408ebf22a10ec0b3f4c99792e6c14"
     },
     "alter_materialized_view": {
-      "status": "pending",
-      "package_path": null,
-      "sql_file_count": null,
-      "validation_evidence": null,
-      "validation_evidence_sha256": null
+      "status": "completed",
+      "package_path": "artifacts/regress/by-factor/ddl/materialized_view/alter_materialized_view",
+      "sql_file_count": 8485,
+      "validation_evidence": "/Users/yuyu/PyCharmMiscProject/pg_case_factory/artifacts/intermediates/remaining-statement-factor-cycle/alter_materialized_view/validation.json",
+      "validation_evidence_sha256": "a09d710cd9a164f8a8dbb405c732fe520b9a4fd6c5aea1ac1375501ce2640228"
     },
     "alter_operator": {
-      "status": "pending",
-      "package_path": null,
-      "sql_file_count": null,
-      "validation_evidence": null,
-      "validation_evidence_sha256": null
+      "status": "completed",
+      "package_path": "artifacts/regress/by-factor/ddl/operator/alter_operator",
+      "sql_file_count": 2355,
+      "validation_evidence": "/Users/yuyu/PyCharmMiscProject/pg_case_factory/artifacts/intermediates/remaining-statement-factor-cycle/alter_operator/validation.json",
+      "validation_evidence_sha256": "2f75fcd89ca19d39ab7431f402a41a5385b4a902bdf077d911f5adf073af291a"
     },
     "alter_operator_class": {
       "status": "pending",

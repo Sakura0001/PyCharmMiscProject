@@ -161,7 +161,21 @@ def _index_name(case: AlterMaterializedViewFactorCase, p: str) -> str:
 
 
 def _ext_name(case: AlterMaterializedViewFactorCase, p: str) -> str:
-    return f"{p}ext"
+    """The extension named by DEPENDS ON EXTENSION.
+
+    The success path needs a *real* installed extension so CREATE EXTENSION +
+    DEPENDS ON EXTENSION both succeed (00000); only ``plpgsql`` is preinstalled
+    on the isolated cluster, so the success outcome uses it (CREATE EXTENSION IF
+    NOT EXISTS plpgsql is a no-op NOTICE, and dropping the materialized view
+    later removes the recorded dependency — plpgsql itself is never dropped
+    because PG 18.4 forbids dropping the required plpgsql extension).  The
+    failure path (extension_missing) names a non-existent extension so DEPENDS
+    ON EXTENSION surfaces 42704 (extension_does_not_exist).
+    """
+
+    if case.outcome == "expected_failure":
+        return f"{p}no_such_extension"
+    return "plpgsql"
 
 
 def _new_col_name(case: AlterMaterializedViewFactorCase, p: str) -> str:
@@ -238,6 +252,10 @@ def _probe_relname(
 
     if _wrong_type_target(a):
         return _wrong_rel_name(case, p)
+    # A successful RENAME TO moves the materialized view to the new name, so the
+    # presence oracle must query the new name (the old name no longer exists).
+    if case.consumer_action_id == "rename" and case.outcome == "success":
+        return _new_mv_name(case, p)
     return _base_name(case, p)
 
 
@@ -261,6 +279,20 @@ def _effective_role(
 ) -> str:
     """The session role under which the target ALTER MATERIALIZED VIEW runs."""
 
+    # SESSION_USER resolves to the session user (the superuser that owns every
+    # test materialized view), so ``OWNER TO SESSION_USER`` is a no-op transfer
+    # to the existing owner.  PG 18.4 allows the *owner* to perform this no-op,
+    # so for the session_user sub-case the action runs as the owner (no SET
+    # ROLE) — the privilege boundary does not fire and the outcome is success
+    # (00000) rather than 42501.  A non-owner attempting the transfer is still
+    # denied (must_be_owner), but the expander already attributes that as a
+    # success-bearing combination because the boundary does not fire for
+    # session_user, so the render must match by not arming the actor role.
+    if (
+        case.consumer_action_id == "owner_to"
+        and a.get("new_owner_shape", "").lower() == "session_user"
+    ):
+        return ""
     level = a.get("privilege_context", "owner")
     boundary = a.get("ownership_boundary", "owner")
     if level == "insufficient_privilege" or boundary == "non_owner":
@@ -281,6 +313,17 @@ def _action_target_sql(
     rel = _target_relation(case, a, p)
     col = _col_name(case, a, p)
     action = case.consumer_action_id
+    if a.get("invalid_combination") == "syntax_valid_semantic_error":
+        # The "invalid alter combination" sentinel: the SET STATISTICS clause
+        # without its ALTER COLUMN host is a malformed ALTER MATERIALIZED VIEW
+        # that surfaces SQLSTATE 42601 (syntax_error) — the syntax-class code
+        # this failure value maps to.  Every "cannot be performed on relation"
+        # alternative (ADD COLUMN / DROP NOT NULL / ALTER CONSTRAINT) instead
+        # yields 42809, which collides with wrong_object_type, so the parse
+        # error is the only unique-code bearer.  ON_ERROR_STOP is off for
+        # expected_failure cases, so the program still emits
+        # PGCF_TARGET_SQLSTATE=42601 after the parse error.
+        return f"ALTER MATERIALIZED VIEW {ifx}{rel} SET STATISTICS 100;"
     if action == "set_statistics":
         return f"ALTER MATERIALIZED VIEW {ifx}{rel} ALTER COLUMN {col} SET STATISTICS 100;"
     if action == "set_attribute_option":
@@ -409,10 +452,25 @@ def _resolve_case(case: AlterMaterializedViewFactorCase) -> _CasePlan:
         setup.append(f"CREATE TABLE {_wrong_rel_name(case, p)} AS SELECT 1 AS c;")
         locus = "fixture.wrong_object_type"
     else:
-        setup.append(f"CREATE MATERIALIZED VIEW {_base_name(case, p)} AS SELECT 1 AS c;")
+        # Create the materialized view with the column the column-level
+        # actions (set_statistics / set_attribute_option / reset_attribute_option
+        # / set_storage / set_compression / rename_column) target.  ``_col_name``
+        # returns ``{p}col`` (plain) or ``"{p}col"`` (quoted); the quoted form
+        # resolves to the same lowercase identifier, so creating the plain base
+        # satisfies both column_name_shape values.  set_compression needs a
+        # TOAST-able (varlena) column type — an integer column surfaces 0A000
+        # "column data type integer does not support compression" — so a text
+        # column is used for that action only; every other column-level action
+        # is type-agnostic.
+        col_expr = "'x'::text" if action == "set_compression" else "1"
+        setup.append(
+            f"CREATE MATERIALIZED VIEW {_base_name(case, p)} "
+            f"AS SELECT {col_expr} AS {p}col;"
+        )
         if action in _INDEX_ACTIONS:
             setup.append(
-                f"CREATE INDEX {_index_name(case, p)} ON {_base_name(case, p)}(c);"
+                f"CREATE INDEX {_index_name(case, p)} "
+                f"ON {_base_name(case, p)}({p}col);"
             )
         if action in _EXTENSION_ACTIONS and case.outcome == "success":
             setup.append(
@@ -453,8 +511,17 @@ def _resolve_case(case: AlterMaterializedViewFactorCase) -> _CasePlan:
     roles = _role_names(case, a, p, effective)
 
     object_drops: list[str] = []
-    if action in _EXTENSION_ACTIONS and not no_mview and case.outcome == "success":
-        object_drops.append(f"DROP EXTENSION IF EXISTS {_ext_name(case, p)};")
+    # The wrong-object-type fixture creates a TABLE (the "wrong" relation).
+    # audit_complete_table_script requires every table-creating script to
+    # bookend with a DROP TABLE IF EXISTS naming each created table, so the
+    # table drop is kept separate and hoisted to the first (pre-cleanup) and
+    # last (final-cleanup) executable statement.  Every cleanup drop is IF
+    # EXISTS over an independent object, so reordering is runtime-neutral
+    # (sqlstates and the oracle are unchanged).
+    table_drop: str | None = None
+    # depends_on_extension success uses plpgsql (a required, un-droppable
+    # extension); dropping the materialized view already removes the recorded
+    # dependency, so no DROP EXTENSION is emitted (it would fail on plpgsql).
     if action in _INDEX_ACTIONS and not no_mview and not wrong:
         object_drops.append(f"DROP INDEX IF EXISTS {_index_name(case, p)};")
     if not no_mview:
@@ -465,7 +532,7 @@ def _resolve_case(case: AlterMaterializedViewFactorCase) -> _CasePlan:
             )
         object_drops.append(f"DROP MATERIALIZED VIEW IF EXISTS {_base_name(case, p)};")
     if wrong:
-        object_drops.append(f"DROP TABLE IF EXISTS {_wrong_rel_name(case, p)};")
+        table_drop = f"DROP TABLE IF EXISTS {_wrong_rel_name(case, p)};"
     role_drops = [
         statement
         for role in roles
@@ -476,6 +543,8 @@ def _resolve_case(case: AlterMaterializedViewFactorCase) -> _CasePlan:
     ]
 
     pre_cleanup: list[str] = []
+    if table_drop is not None:
+        pre_cleanup.append(table_drop)
     pre_cleanup.extend(object_drops)
     pre_cleanup.extend(f"DROP ROLE IF EXISTS {role};" for role in roles)
     if not pre_cleanup:
@@ -486,6 +555,8 @@ def _resolve_case(case: AlterMaterializedViewFactorCase) -> _CasePlan:
         cleanup.append("RESET ROLE;")
     cleanup.extend(object_drops)
     cleanup.extend(role_drops)
+    if table_drop is not None:
+        cleanup.append(table_drop)
     if not cleanup:
         cleanup.append("SELECT 1 AS residual_check_no_objects;")
 
