@@ -16,7 +16,7 @@ from pg_case_factory.alter_operator_family_factor_loop import (
 ROOT = Path(__file__).resolve().parents[1]
 
 _EXPECTED_EXTENSION_MULTISETS_SHA256 = (
-    "1e0033cc5148ef2570ba9c5f6702595813576038c9aee85438314db6eaf4b6a6"
+    "e491d77d29f89bf41d4947de162d55da13e04979ab0bff4cfdd19da7f2acb7bc"
 )
 _EXPECTED_BASELINE_COUNT = 59
 _EXPECTED_EXTENSION_COUNT = 4464
@@ -49,8 +49,8 @@ class AlterOperatorFamilyFactorExtensionPlanTests(unittest.TestCase):
 
     def test_outcome_counts_are_frozen(self) -> None:
         outcomes = Counter(case.outcome for case in self.plan.cases)
-        self.assertEqual(outcomes["expected_failure"], 3480)
-        self.assertEqual(outcomes["success"], 984)
+        self.assertEqual(outcomes["expected_failure"], 3408)
+        self.assertEqual(outcomes["success"], 1056)
 
     def test_each_case_has_derivation_record(self) -> None:
         for case in self.plan.cases:

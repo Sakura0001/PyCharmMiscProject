@@ -302,31 +302,38 @@ def _obligation_multiset_sha256(
 
 
 # Canonical (factor, value) pairs that reach the PostgreSQL target check and
-# are rejected (verified against PG 18.4 best-effort; the DB doublerun fork
-# calibrates the exact SQLSTATEs).  ``index_method_compatibility`` and
-# ``element_op_type`` are intentionally absent: PG accepts the element
-# membership at ALTER time without deep semantic validation, so they are
-# labelled success variants (the DB doublerun fork calibrates if a variant
-# surfaces a real rejection).
+# are rejected (calibrated against PG 18.4 cluster 55494 via the byte-
+# correspondent full-case extraction).  The ADD-OPERATOR clause validates the
+# named operator/function at ALTER time, so ``add_operator_for_order_by`` (a
+# btree family cannot hold ordering operators -> 42P17) and the
+# ``custom_type`` / ``none_prefix_operator`` element-op variants (the named
+# operator does not exist for that type -> 42883) are genuine rejections.
+# ``index_method_compatibility`` alone stays success (PG accepts the membership
+# without deep validation when the operator itself exists).  ``missing_function``
+# is irrelevant when adding an operator (stays success), and a privileged
+# executor can always transfer ownership (``ownership_boundary=non_owner`` stays
+# success), so neither is a failure value here.
 _SFV_FAILURE_VALUES: frozenset[tuple[str, str]] = frozenset(
     {
         ("expected_status", "failure"),
         ("target_object_state", "missing"),
         ("dependency_state", "missing_operator"),
-        ("dependency_state", "missing_function"),
         ("dependency_state", "missing_family"),
         ("new_owner_shape", "missing_role"),
         ("invalid_combination", "syntax_valid_semantic_error"),
         ("invalid_combination", "object_type_mismatch"),
         ("privilege_context", "non_owner"),
         ("privilege_context", "insufficient_privilege"),
-        ("ownership_boundary", "non_owner"),
+        ("add_element_type", "add_operator_for_order_by"),
+        ("element_op_type", "custom_type"),
+        ("element_op_type", "none_prefix_operator"),
     }
 )
 
-# Best-effort PG 18.4 SQLSTATE attribution for each reachable expected-failure
-# value.  The DB doublerun fork calibrates these via a two-run comparison; the
-# frozen counts and sha256s in the companion tests are the spec.
+# Calibrated PG 18.4 SQLSTATE attribution for each reachable expected-failure
+# value (cluster 55494 byte-correspondent full-case extraction).  The frozen
+# counts and sha256s in the companion tests are the spec; the DB doublerun
+# fork re-freezes them honestly whenever a disposition changes.
 _SFV_FAILURE_SQLSTATE: dict[tuple[str, str], tuple[str, str]] = {
     ("expected_status", "failure"): (
         "42704",
@@ -340,10 +347,6 @@ _SFV_FAILURE_SQLSTATE: dict[tuple[str, str], tuple[str, str]] = {
         "42883",
         "missing_operator_element",
     ),
-    ("dependency_state", "missing_function"): (
-        "42883",
-        "missing_function_element",
-    ),
     ("dependency_state", "missing_family"): (
         "42704",
         "operator_family_does_not_exist",
@@ -353,9 +356,11 @@ _SFV_FAILURE_SQLSTATE: dict[tuple[str, str], tuple[str, str]] = {
         "42601",
         "invalid_operator_family_alter_combination",
     ),
+    # The named target is a table, not an operator family; PG's opfamily lookup
+    # finds nothing -> 42704 (NOT 42809 wrong_object_type).
     ("invalid_combination", "object_type_mismatch"): (
-        "42809",
-        "wrong_object_type",
+        "42704",
+        "operator_family_does_not_exist",
     ),
     ("privilege_context", "non_owner"): (
         "42501",
@@ -365,9 +370,18 @@ _SFV_FAILURE_SQLSTATE: dict[tuple[str, str], tuple[str, str]] = {
         "42501",
         "insufficient_operator_family_privilege",
     ),
-    ("ownership_boundary", "non_owner"): (
-        "42501",
-        "insufficient_operator_family_privilege",
+    # Calibrated ADD-time rejections (see _SFV_FAILURE_VALUES comment).
+    ("add_element_type", "add_operator_for_order_by"): (
+        "42P17",
+        "btree_does_not_support_ordering_operators",
+    ),
+    ("element_op_type", "custom_type"): (
+        "42883",
+        "missing_operator_element",
+    ),
+    ("element_op_type", "none_prefix_operator"): (
+        "42883",
+        "missing_operator_element",
     ),
 }
 

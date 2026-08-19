@@ -15,7 +15,7 @@ from pg_case_factory.alter_operator_family_factor_loop import (
 ROOT = Path(__file__).resolve().parents[1]
 
 _EXPECTED_OBLIGATION_MULTISETS_SHA256 = (
-    "5c336c12ebc3c544db9ddbb7f3f085ed9c60528db3eba0478b1003d78d2074a6"
+    "9afb44979da4b2ebb47190dd0128d4b440f3cf7c86e31165e0c7443a75756cd8"
 )
 
 
@@ -41,7 +41,7 @@ class AlterOperatorFamilyFactorLoopPlanTests(unittest.TestCase):
     def test_outcome_counts_are_frozen(self) -> None:
         self.assertEqual(
             Counter(case.outcome for case in self.plan.cases),
-            {"success": 48, "expected_failure": 11},
+            {"success": 47, "expected_failure": 12},
         )
 
     def test_obligation_multiset_sha256_is_frozen(self) -> None:

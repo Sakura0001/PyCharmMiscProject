@@ -221,10 +221,20 @@ _SQLSTATE_BY_REASON: dict[str, tuple[str, str]] = {
         "42601",
         "invalid_operator_family_alter_combination",
     ),
-    "wrong_object_type": ("42809", "wrong_object_type"),
     "insufficient_operator_family_privilege": (
         "42501",
         "insufficient_operator_family_privilege",
+    ),
+    # Calibrated against PG 18.4 (cluster 55494) via the byte-correspondent
+    # full-case extraction: a btree family cannot hold ordering operators
+    # (42P17), and DROP of a non-member operator/function is 42704 (NOT 42883).
+    "btree_does_not_support_ordering_operators": (
+        "42P17",
+        "btree_does_not_support_ordering_operators",
+    ),
+    "operator_family_member_does_not_exist": (
+        "42704",
+        "operator_family_member_does_not_exist",
     ),
 }
 
@@ -277,15 +287,30 @@ def _present_failure_pair(
     branch: str,
     assignment: dict[str, str],
 ) -> tuple[str, str] | None:
-    # 1. Privilege wall (owner-transfer boundary, when it fires).
+    # 0. Parse-time syntax error: `DROP OPERATOR 1 (NONE, integer)` raises
+    #    42601 at parse time, BEFORE privilege or semantic checks (verified:
+    #    it dominates privilege, family-absence and element-absence).  Only
+    #    the DROP-OPERATOR clause uses the bare (NONE, typ) member form; ADD
+    #    resolves NONE as a unary op (42883) and DROP-FUNCTION uses (typ, typ).
+    if (
+        branch == "branch_drop"
+        and assignment.get("drop_element_type") == "drop_operator"
+        and assignment.get("element_op_type") == "none_prefix_operator"
+    ):
+        return _SQLSTATE_BY_REASON["invalid_operator_family_alter_combination"]
+    # 1. Privilege wall (non-owner / insufficient executor).  ownership_boundary
+    #    is still counted as a failure unit by _failure_unit_count (so the
+    #    non_owner x ownership_boundary=non_owner cross stays invalid), but a
+    #    privileged executor (owner/superuser) can always transfer ownership,
+    #    so the boundary never independently rejects here -- only the wall does.
     if _privilege_cluster_fires(branch, assignment):
-        return _SQLSTATE_BY_REASON["insufficient_operator_family_privilege"]
-    if branch == "branch_owner" and _ownership_fires(assignment):
         return _SQLSTATE_BY_REASON["insufficient_operator_family_privilege"]
     # 2. Object-type / syntax-semantic negatives.
     invalid = assignment.get("invalid_combination", "none")
     if invalid == "object_type_mismatch":
-        return _SQLSTATE_BY_REASON["wrong_object_type"]
+        # The named target is a table, not an operator family; PG's opfamily
+        # lookup finds nothing -> 42704 (NOT 42809).
+        return _SQLSTATE_BY_REASON["operator_family_does_not_exist"]
     if invalid == "syntax_valid_semantic_error":
         return _SQLSTATE_BY_REASON["invalid_operator_family_alter_combination"]
     # 3. Family-absence negatives (missing family or missing_family dependency).
@@ -293,13 +318,53 @@ def _present_failure_pair(
         return _SQLSTATE_BY_REASON["operator_family_does_not_exist"]
     if assignment.get("target_object_state") == "missing":
         return _SQLSTATE_BY_REASON["operator_family_does_not_exist"]
-    # 4. Element-absence negatives (ADD/DROP of a missing operator/function).
-    if assignment.get("dependency_state") == "missing_operator":
-        return _SQLSTATE_BY_REASON["missing_operator_element"]
-    if assignment.get("dependency_state") == "missing_function":
-        return _SQLSTATE_BY_REASON["missing_function_element"]
-    # 5. Remaining rename / schema negatives.
+    add_type = assignment.get("add_element_type")
+    op_type = assignment.get("element_op_type")
+    dep = assignment.get("dependency_state")
+    # 4. ADD-branch operator / function semantics.
+    if branch == "branch_add":
+        if add_type in ("add_operator_for_search", "add_operator_for_order_by"):
+            # missing_operator -> the ~# symbol never exists -> 42883.
+            if dep == "missing_operator":
+                return _SQLSTATE_BY_REASON["missing_operator_element"]
+            # custom_type / none_prefix -> the named operator does not exist
+            # for that type -> 42883 (checked before btree-ordering).
+            if op_type in ("custom_type", "none_prefix_operator"):
+                return _SQLSTATE_BY_REASON["missing_operator_element"]
+            # for_order_by + integer/text -> the operator exists, but a btree
+            # family cannot hold ordering operators -> 42P17.
+            if (
+                add_type == "add_operator_for_order_by"
+                and op_type in ("integer", "text")
+            ):
+                return _SQLSTATE_BY_REASON[
+                    "btree_does_not_support_ordering_operators"
+                ]
+        elif add_type == "add_function":
+            # missing_function -> the support function does not exist -> 42883.
+            # missing_operator is irrelevant when adding a function -> success.
+            if dep == "missing_function":
+                return _SQLSTATE_BY_REASON["missing_function_element"]
+    # 5. DROP-branch element-absence (asymmetric: a non-member operator OR
+    #    function drops as 42704, NOT 42883; none_prefix was caught at step 0).
+    if branch == "branch_drop":
+        if dep in ("missing_operator", "missing_function"):
+            return _SQLSTATE_BY_REASON["operator_family_member_does_not_exist"]
+        # drop_operator + custom_type + ready: the pre-add is skipped (the =
+        # operator for the domain does not exist), so the DROP targets a
+        # non-member -> 42704.
+        if (
+            assignment.get("drop_element_type") == "drop_operator"
+            and op_type == "custom_type"
+        ):
+            return _SQLSTATE_BY_REASON["operator_family_member_does_not_exist"]
+    # 6. Remaining rename / schema negatives.
     if assignment.get("rename_conflict") == "new_name_conflict":
+        # RENAME keeps the object in its own schema; when the family is
+        # schema-qualified the conflict family lives in another schema, so
+        # there is no name clash -> success.
+        if assignment.get("name_shape") == "schema_qualified":
+            return None
         return _SQLSTATE_BY_REASON["operator_family_name_conflict"]
     schema = assignment.get("schema_migration_state")
     if schema == "target_schema_missing":

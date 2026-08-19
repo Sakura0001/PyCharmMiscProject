@@ -35,6 +35,8 @@ from .alter_operator_family_factor_loop import (
     build_alter_operator_family_factor_loop_plan,
 )
 
+from .regression_style import HuaweiSqlHeader, render_huawei_sql_header
+
 
 class AlterOperatorFamilyFactorRenderError(ValueError):
     """Raised when a case cannot be rendered to canonical bytes."""
@@ -43,10 +45,18 @@ class AlterOperatorFamilyFactorRenderError(ValueError):
 _PRIMARY_BEGIN = "-- primary-target-begin"
 _PRIMARY_END = "-- primary-target-end"
 
-_DOC_SOURCE = "postgresql-18.4-doc:sql-alteropfamily"
-_VERSION = "1.0.0"
+_DOC_SOURCE = (
+    "skills/pg-sql-generation/references/statements/ddl/operator_family/"
+    "alter_operator_family.md"
+)
+_FACTOR_SOURCE = (
+    "skills/pg-sql-generation/references/combinations/ddl/operator_family/"
+    "alter_operator_family.yaml"
+)
 _AUTHOR = "pg_case_factory"
-_COPYRIGHT = "Copyright (c) 2026 pg_case_factory"
+_CREATE_AT = "2026-08-20"
+_VERSION = "1.0.0"
+_FE = "PG18-STATEMENT-FACTOR-LOOP"
 
 
 def _index_method(case_assignments: dict[str, str]) -> str:
@@ -110,6 +120,7 @@ def _type_name(op_type: str, prefix: str) -> str:
 def _element_add_clause(
     case_assignments: dict[str, str],
     prefix: str,
+    family_name: str = "",
 ) -> str:
     add_type = case_assignments.get("add_element_type", "add_operator_for_search")
     op_type = case_assignments.get("element_op_type", "integer")
@@ -123,10 +134,16 @@ def _element_add_clause(
             if dep == "missing_function"
             else f"{prefix}supportfn"
         )
-        return f"FUNCTION 1 {fn}({typ})"
+        # btree support function 1 (compare) MUST be a 2-arg, 2-type entry:
+        # a 1-type `FUNCTION 1 fn(typ)` fails "function fn(typ) does not exist"
+        # and a 1-arg compare fails "ordering comparison functions must have two
+        # arguments".  Match the fixture's 2-arg `supportfn(typ, typ)`.
+        return f"FUNCTION 1 {fn}({typ}, {typ})"
     if add_type == "add_operator_for_order_by":
         op = "<"
-        mode = "FOR ORDER BY"
+        # FOR ORDER BY requires a sort operator family name; use the case's
+        # own btree family (created in setup before the primary target).
+        mode = f"FOR ORDER BY {family_name}"
     else:
         op = "=" if compat == "compatible" else "<>"
         mode = "FOR SEARCH"
@@ -146,7 +163,9 @@ def _element_drop_clause(
     typ = _type_name(op_type, prefix)
     is_none = op_type == "none_prefix_operator"
     if drop_type == "drop_function":
-        return f"FUNCTION 1 ({typ})"
+        # Match the 2-type ADD form: DROP must reference (typ, typ) to remove a
+        # 2-type support-function entry.
+        return f"FUNCTION 1 ({typ}, {typ})"
     if is_none:
         return "OPERATOR 1 (NONE, integer)"
     return f"OPERATOR 1 ({typ}, {typ})"
@@ -155,6 +174,7 @@ def _element_drop_clause(
 def _alter_clause(
     case_assignments: dict[str, str],
     prefix: str,
+    family_name: str = "",
 ) -> str:
     branch = case_assignments.get("target_action", "add_elements")
     if branch == "owner_change":
@@ -167,7 +187,7 @@ def _alter_clause(
     if branch == "drop_elements":
         return f"DROP {_element_drop_clause(case_assignments, prefix)}"
     if branch == "add_elements":
-        return f"ADD {_element_add_clause(case_assignments, prefix)}"
+        return f"ADD {_element_add_clause(case_assignments, prefix, family_name)}"
     raise AlterOperatorFamilyFactorRenderError(f"unknown branch: {branch}")
 
 
@@ -178,6 +198,7 @@ class _CasePlan:
     oracle_lines: tuple[str, ...]
     cleanup_lines: tuple[str, ...]
     expected_failure: bool
+    pre_cleanup_prefix: tuple[str, ...] = ()
 
 
 def _family_present(case_assignments: dict[str, str]) -> bool:
@@ -198,16 +219,38 @@ def _preadd_element_for_drop(
     case_assignments: dict[str, str],
     family_name: str,
     method: str,
+    prefix: str,
 ) -> str | None:
-    """For the DROP branch with a present family + ready element, pre-add it."""
+    """For the DROP branch with a present family + ready element, pre-add it.
 
+    The pre-add is an ADD statement, so it must use the ADD clause form
+    (OPERATOR 1 <symbol>(typ, typ) FOR SEARCH | FUNCTION 1 fn(typ)), NOT the
+    DROP clause form (OPERATOR 1 (typ, typ)) which is a syntax error inside
+    ADD.  add_element_type is routed by _resolve_case (drop_function ->
+    add_function, so the fixture also creates {prefix}supportfn); pass the real
+    prefix so the function name is schema-correct.
+    """
     if case_assignments.get("target_action") != "drop_elements":
         return None
     if not _family_present(case_assignments):
         return None
     if case_assignments.get("dependency_state") != "ready":
         return None
-    clause = _element_drop_clause(case_assignments, "")
+    # DROP-OPERATOR + {none_prefix_operator, custom_type} cannot be pre-added:
+    # the pre-add ADD clause resolves (NONE, integer) as a unary op, or targets
+    # the =(custype,custype) operator, neither of which exists -> 42883, halting
+    # the ON_ERROR_STOP-on setup block before the DROP target ever runs.  Skip
+    # the pre-add so the DROP target itself executes (and errors as a
+    # non-member drop).  DROP-FUNCTION is unaffected: its pre-add
+    # `ADD FUNCTION 1 supportfn(typ,typ)` always succeeds and MUST run, else
+    # the DROP targets a non-member -> 42704 (expected would be 00000).
+    if (
+        case_assignments.get("drop_element_type") == "drop_operator"
+        and case_assignments.get("element_op_type")
+        in ("none_prefix_operator", "custom_type")
+    ):
+        return None
+    clause = _element_add_clause(case_assignments, prefix)
     return f"ALTER OPERATOR FAMILY {family_name} USING {method} ADD {clause};"
 
 
@@ -220,6 +263,28 @@ def _fixture_lines(
 ) -> tuple[tuple[str, ...], tuple[str, ...]]:
     setup: list[str] = []
     cleanup: list[str] = []
+    # Drop every operator family this case may have created before the schema
+    # drops, so schema-qualified families are still addressable.  A single DO
+    # block scans pg_opfamily for the case prefix and drops each family with its
+    # own access method; this covers the main family, a rename target (which may
+    # keep the prefix while moving names), a set-schema move, the conflict
+    # family, and quoted/plain/schema-qualified name shapes uniformly, without
+    # guessing which name survived the primary target.  PG18.4 requires the
+    # USING <method> token in DROP OPERATOR FAMILY.  Mirrors the runtime
+    # _clean_probe which uses the same prefix LIKE pattern.
+    cleanup.append(
+        "DO $$ DECLARE r record; BEGIN\n"
+        "  FOR r IN SELECT n.nspname, o.opfname, a.amname\n"
+        "    FROM pg_catalog.pg_opfamily o\n"
+        "    JOIN pg_catalog.pg_namespace n ON o.opfnamespace = n.oid\n"
+        "    JOIN pg_catalog.pg_am a ON o.opfmethod = a.oid\n"
+        f"    WHERE o.opfname LIKE '{prefix}%'\n"
+        "  LOOP\n"
+        "    EXECUTE format('DROP OPERATOR FAMILY IF EXISTS %I.%I USING %s"
+        " CASCADE', r.nspname, r.opfname, r.amname);\n"
+        "  END LOOP;\n"
+        "END $$;"
+    )
     op_schema = f"{prefix}sch"
     setup.append(f"CREATE SCHEMA IF NOT EXISTS {op_schema};")
     cleanup.append(f"DROP SCHEMA IF EXISTS {op_schema} CASCADE;")
@@ -248,21 +313,46 @@ def _fixture_lines(
         cleanup.append(f"DROP OWNED BY {effective};")
         cleanup.append(f"DROP ROLE IF EXISTS {effective};")
     if case_assignments.get("element_op_type") == "custom_type":
-        setup.append(f"CREATE DOMAIN IF NOT EXISTS {prefix}custype AS integer;")
-        cleanup.append(f"DROP DOMAIN IF EXISTS {prefix}custype;")
+        # PG does not support CREATE DOMAIN IF NOT EXISTS (syntax error at
+        # "NOT", same class as CREATE FUNCTION IF NOT EXISTS).  Drop-then-create
+        # is the idempotent form; pre_clean guarantees absence, so the DROP is a
+        # harmless no-op and CREATE always succeeds.  CASCADE guards the rare
+        # case where a leaked supportfn(custype, custype) still depends on the
+        # domain (e.g. a prior run's cleanup dropped the domain before the
+        # function and left it behind): without CASCADE the DROP DOMAIN would
+        # fail "other objects depend on it" and halt the ON_ERROR_STOP-on setup.
+        setup.append(
+            f"DROP DOMAIN IF EXISTS {prefix}custype CASCADE; "
+            f"CREATE DOMAIN {prefix}custype AS integer;"
+        )
+        # Cleanup must drop the supportfn's dependency on the domain, else
+        # DROP DOMAIN fails and the domain leaks into pg_type, poisoning this
+        # case's pre-run clean-state probe on every subsequent doublerun.  The
+        # opfamilies are already gone (the DO block above ran first), so the
+        # only dependent is this case's supportfn, which CASCADE removes; the
+        # explicit DROP FUNCTION below then becomes a harmless no-op.
+        cleanup.append(f"DROP DOMAIN IF EXISTS {prefix}custype CASCADE;")
     if case_assignments.get("add_element_type") == "add_function":
         if case_assignments.get("dependency_state") != "missing_function":
+            # PG does not support CREATE FUNCTION IF NOT EXISTS (syntax error
+            # at "NOT"); CREATE OR REPLACE FUNCTION is the idempotent form.
+            typ = _type_name(case_assignments.get("element_op_type", "integer"), prefix)
+            # btree support function 1 is a COMPARE: must be 2-arg + IMMUTABLE.
+            # A 1-arg supportfn fails "ordering comparison functions must have two
+            # arguments".  Create the 2-arg form per case type so the ADD clause
+            # `FUNCTION 1 supportfn(typ, typ)` resolves.
             setup.append(
-                f"CREATE FUNCTION IF NOT EXISTS {prefix}supportfn(integer) "
-                f"RETURNS integer AS 'SELECT $1' LANGUAGE SQL;"
+                f"CREATE OR REPLACE FUNCTION {prefix}supportfn({typ}, {typ}) "
+                f"RETURNS integer AS 'SELECT CASE WHEN $1<$2 THEN -1 "
+                f"WHEN $1>$2 THEN 1 ELSE 0 END' LANGUAGE SQL IMMUTABLE;"
             )
-            cleanup.append(f"DROP FUNCTION IF EXISTS {prefix}supportfn(integer);")
+            cleanup.append(f"DROP FUNCTION IF EXISTS {prefix}supportfn({typ}, {typ});")
     if case_assignments.get("invalid_combination") == "object_type_mismatch":
         setup.append(f"CREATE TABLE IF NOT EXISTS {prefix}mismatch_obj (id int);")
         cleanup.append(f"DROP TABLE IF EXISTS {prefix}mismatch_obj;")
     if _family_present(case_assignments):
         setup.append(f"CREATE OPERATOR FAMILY {family_name} USING {method};")
-        preadd = _preadd_element_for_drop(case_assignments, family_name, method)
+        preadd = _preadd_element_for_drop(case_assignments, family_name, method, prefix)
         if preadd is not None:
             setup.append(preadd)
     return (tuple(setup), tuple(cleanup))
@@ -302,17 +392,17 @@ def _oracle_lines(
         owner_shape = case_assignments.get("new_owner_shape", "plain_role")
         if owner_shape in ("current_role", "current_user"):
             owner_clause = (
-                "opfowner = (SELECT oid FROM pg_roles "
+                "opfowner = (SELECT oid FROM pg_catalog.pg_roles "
                 "WHERE rolname = current_role)"
             )
         elif owner_shape == "session_user":
             owner_clause = (
-                "opfowner = (SELECT oid FROM pg_roles "
+                "opfowner = (SELECT oid FROM pg_catalog.pg_roles "
                 "WHERE rolname = session_user)"
             )
         elif owner_shape == "plain_role":
             owner_clause = (
-                f"opfowner = (SELECT oid FROM pg_roles "
+                f"opfowner = (SELECT oid FROM pg_catalog.pg_roles "
                 f"WHERE rolname = '{case_assignments.get('object_prefix', '')}new_owner')"
             )
         else:
@@ -329,7 +419,7 @@ def _oracle_lines(
             f"SELECT count(*) AS opf_schema_changed FROM pg_catalog.pg_opfamily "
             f"WHERE opfname = '{base_name}' "
             f"AND opfmethod = {method_oid} "
-            f"AND opfnamespace = (SELECT oid FROM pg_namespace "
+            f"AND opfnamespace = (SELECT oid FROM pg_catalog.pg_namespace "
             f"WHERE nspname = '{prefix}target_sch') ORDER BY count(*) LIMIT 1;"
         )
     else:
@@ -351,13 +441,21 @@ def _resolve_case(case) -> _CasePlan:
     effective = _effective_role(assignment, prefix)
     method = _index_method(assignment)
     family_name = _family_name(assignment, prefix)
+    # Route drop_function (present family) to add_function so the fixture
+    # creates {prefix}supportfn AND the pre-add adds a matching function for
+    # the DROP to remove.  Uses the local assignment copy (immutability).
+    if (
+        assignment.get("drop_element_type") == "drop_function"
+        and _family_present(assignment)
+    ):
+        assignment["add_element_type"] = "add_function"
     setup_lines, cleanup_lines = _fixture_lines(
         assignment, prefix, family_name, method, effective
     )
     if effective:
         setup_lines = setup_lines + (f"SET ROLE {effective};",)
         cleanup_lines = ("RESET ROLE;",) + cleanup_lines
-    clause = _alter_clause(assignment, prefix)
+    clause = _alter_clause(assignment, prefix, family_name)
     invalid = assignment.get("invalid_combination", "none")
     if invalid == "syntax_valid_semantic_error":
         target_sql = (
@@ -375,12 +473,18 @@ def _resolve_case(case) -> _CasePlan:
         )
     oracle = _oracle_lines(assignment, family_name, method, case.expected_sqlstate)
     expected_failure = case.outcome == "expected_failure"
+    pre_cleanup_prefix: tuple[str, ...] = ()
+    if invalid == "object_type_mismatch":
+        pre_cleanup_prefix = (
+            f"DROP TABLE IF EXISTS {prefix}mismatch_obj CASCADE;",
+        )
     return _CasePlan(
         setup_lines=setup_lines,
         target_sql=target_sql,
         oracle_lines=oracle,
         cleanup_lines=cleanup_lines,
         expected_failure=expected_failure,
+        pre_cleanup_prefix=pre_cleanup_prefix,
     )
 
 
@@ -390,7 +494,7 @@ def _primary_id(case) -> str:
     return getattr(case, "primary_obligation_id")
 
 
-def _header(case, plan: AlterOperatorFamilyFactorLoopPlan | None) -> str:
+def _header(case) -> list[str]:
     primary = _primary_id(case)
     factor_key = getattr(
         case, "factor_key", getattr(case, "derived_from_combination_group", "")
@@ -398,22 +502,23 @@ def _header(case, plan: AlterOperatorFamilyFactorLoopPlan | None) -> str:
     factor_value = getattr(
         case, "factor_value", getattr(case, "derivation_reason", "")
     )
-    lines = [
-        f"-- copyright: {_COPYRIGHT}",
-        f"-- author: {_AUTHOR}",
-        f"-- create_at: 2026-08-20",
-        f"-- version: {_VERSION}",
-        f"-- feature: alter_operator_family",
-        f"-- source: {_DOC_SOURCE}",
+    header = render_huawei_sql_header(
+        HuaweiSqlHeader(
+            author=_AUTHOR,
+            create_at=_CREATE_AT,
+            version=_VERSION,
+            description=f"ALTER OPERATOR FAMILY {factor_key}={factor_value}",
+            fe=_FE,
+        )
+    ).rstrip("\n")
+    return header.splitlines() + [
         f"-- case_id: {case.case_id}",
-        f"-- source_md: {primary}",
-        f"-- factor_md: {factor_key}={factor_value}",
+        f"-- source_md: {_DOC_SOURCE}",
+        f"-- factor_md: {_FACTOR_SOURCE}",
         f"-- primary_obligation_id: {primary}",
         f"-- expected_outcome: {case.outcome}",
         f"-- expected_sqlstate: {case.expected_sqlstate}",
     ]
-    del plan
-    return "\n".join(lines) + "\n"
 
 
 def render_alter_operator_family_factor_case(
@@ -424,9 +529,12 @@ def render_alter_operator_family_factor_case(
     del repository_root  # cases are self-describing; root reserved for API parity
     plan = _resolve_case(case)
     sections: list[str] = []
-    sections.append(_header(case, None))
+    sections.extend(_header(case))
     sections.append("-- 1. 预清理本编号对象。")
-    sections.append(plan.cleanup_lines[0] if plan.cleanup_lines else "")
+    pre_cleanup_lines = plan.pre_cleanup_prefix
+    if plan.cleanup_lines:
+        pre_cleanup_lines = pre_cleanup_lines + (plan.cleanup_lines[0],)
+    sections.extend(pre_cleanup_lines)
     sections.append("\\set ON_ERROR_STOP on")
     sections.append("-- 2. 构造本编号对象与角色。")
     sections.extend(plan.setup_lines)
