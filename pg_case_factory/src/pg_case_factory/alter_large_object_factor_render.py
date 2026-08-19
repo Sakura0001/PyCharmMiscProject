@@ -434,7 +434,7 @@ def _resolve_case(case: AlterLargeObjectFactorCase) -> _CasePlan:
 
     object_drops = [
         f"SELECT lo_unlink(oid) FROM pg_catalog.pg_largeobject_metadata "
-        f"WHERE oid = {valid};"
+        f"WHERE oid = {valid} ORDER BY oid;"
     ]
     role_drops = [
         statement

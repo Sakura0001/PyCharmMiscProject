@@ -1,0 +1,301 @@
+{
+  "schema_version": 1,
+  "statement_key": "alter_large_object",
+  "cycle_fingerprint": "606b9e710210e50ff88b14de7052163f9ee31f6f1d1e744bc0bd9935f399a9d9",
+  "factor_value_count": 28,
+  "factor_disposition_counts": {
+    "covered": 20,
+    "expected_failure": 8,
+    "justified_na": 0
+  },
+  "missing_row_ids": [],
+  "duplicate_row_ids": [],
+  "decisions": [
+    {
+      "row_id": "sfv-186f9c5372ff321c54e2f089",
+      "factor": "cleanup_mode",
+      "value": "drop_objects",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERLARGEOBJECT00002"
+      ]
+    },
+    {
+      "row_id": "sfv-754d3ac45a695c7f336194ec",
+      "factor": "cleanup_mode",
+      "value": "reset_state",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERLARGEOBJECT00003"
+      ]
+    },
+    {
+      "row_id": "sfv-6bb6c88f54c0819f745d5e81",
+      "factor": "dependency_state",
+      "value": "missing_dependency",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERLARGEOBJECT00004"
+      ]
+    },
+    {
+      "row_id": "sfv-2122fc1439e84d8588cb8520",
+      "factor": "dependency_state",
+      "value": "ready",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERLARGEOBJECT00005"
+      ]
+    },
+    {
+      "row_id": "sfv-e5e5e16fbb1212c07c99c60d",
+      "factor": "expected_status",
+      "value": "failure",
+      "disposition": "expected_failure",
+      "reason": "large_object_does_not_exist",
+      "case_ids": [
+        "ALTERLARGEOBJECT00006"
+      ]
+    },
+    {
+      "row_id": "sfv-dc3f9755dc0fa5860b951b4b",
+      "factor": "expected_status",
+      "value": "success",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERLARGEOBJECT00007"
+      ]
+    },
+    {
+      "row_id": "sfv-a0028cf7d554ccaf9e115456",
+      "factor": "invalid_combination",
+      "value": "none",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERLARGEOBJECT00008"
+      ]
+    },
+    {
+      "row_id": "sfv-220fce64efbcbcb57fd996a1",
+      "factor": "invalid_combination",
+      "value": "syntax_valid_semantic_error",
+      "disposition": "expected_failure",
+      "reason": "invalid_large_object_alter_combination",
+      "case_ids": [
+        "ALTERLARGEOBJECT00009"
+      ]
+    },
+    {
+      "row_id": "sfv-04cc5f0102a396936099785c",
+      "factor": "new_owner_shape",
+      "value": "current_role",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERLARGEOBJECT00010"
+      ]
+    },
+    {
+      "row_id": "sfv-4c61be79614ba978378dac24",
+      "factor": "new_owner_shape",
+      "value": "current_user",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERLARGEOBJECT00011"
+      ]
+    },
+    {
+      "row_id": "sfv-e1f121c2523701defe2a7840",
+      "factor": "new_owner_shape",
+      "value": "missing_role",
+      "disposition": "expected_failure",
+      "reason": "role_does_not_exist",
+      "case_ids": [
+        "ALTERLARGEOBJECT00012"
+      ]
+    },
+    {
+      "row_id": "sfv-0e7b0539ce6a08902b5e2602",
+      "factor": "new_owner_shape",
+      "value": "plain_role",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERLARGEOBJECT00013"
+      ]
+    },
+    {
+      "row_id": "sfv-4b17129bb79cdaf02b8504c5",
+      "factor": "new_owner_shape",
+      "value": "session_user",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERLARGEOBJECT00014"
+      ]
+    },
+    {
+      "row_id": "sfv-4a8b6b045938760e938243ef",
+      "factor": "oid_shape",
+      "value": "nonexistent_oid",
+      "disposition": "expected_failure",
+      "reason": "large_object_does_not_exist",
+      "case_ids": [
+        "ALTERLARGEOBJECT00015"
+      ]
+    },
+    {
+      "row_id": "sfv-588c2936bd32a4c5d5957740",
+      "factor": "oid_shape",
+      "value": "valid_oid",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERLARGEOBJECT00016"
+      ]
+    },
+    {
+      "row_id": "sfv-f177c5d4c7f2b8f1a0d5c1f8",
+      "factor": "ownership_boundary",
+      "value": "non_owner",
+      "disposition": "expected_failure",
+      "reason": "must_be_owner_of_large_object",
+      "case_ids": [
+        "ALTERLARGEOBJECT00017"
+      ]
+    },
+    {
+      "row_id": "sfv-96c8d66bf4bbd3fcc78b6dff",
+      "factor": "ownership_boundary",
+      "value": "owner",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERLARGEOBJECT00018"
+      ]
+    },
+    {
+      "row_id": "sfv-6068f2886be6d143a638edac",
+      "factor": "ownership_boundary",
+      "value": "superuser",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERLARGEOBJECT00019"
+      ]
+    },
+    {
+      "row_id": "sfv-9700bb52c14c57d2466bdddb",
+      "factor": "privilege_context",
+      "value": "insufficient_privilege",
+      "disposition": "expected_failure",
+      "reason": "must_be_owner_of_large_object",
+      "case_ids": [
+        "ALTERLARGEOBJECT00020"
+      ]
+    },
+    {
+      "row_id": "sfv-c20107d3de6fceac45771ec8",
+      "factor": "privilege_context",
+      "value": "non_owner",
+      "disposition": "expected_failure",
+      "reason": "must_be_owner_of_large_object",
+      "case_ids": [
+        "ALTERLARGEOBJECT00021"
+      ]
+    },
+    {
+      "row_id": "sfv-4671d7fa57de2d34727b8034",
+      "factor": "privilege_context",
+      "value": "owner",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERLARGEOBJECT00022"
+      ]
+    },
+    {
+      "row_id": "sfv-83e8f9d9e665540ed06ab23b",
+      "factor": "privilege_context",
+      "value": "superuser",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERLARGEOBJECT00023"
+      ]
+    },
+    {
+      "row_id": "sfv-88e709dca72dfc0081b5d5a2",
+      "factor": "statement_branch",
+      "value": "branch_owner",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERLARGEOBJECT00024"
+      ]
+    },
+    {
+      "row_id": "sfv-349dd20fea304dbe2e922121",
+      "factor": "target_object_state",
+      "value": "exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERLARGEOBJECT00025"
+      ]
+    },
+    {
+      "row_id": "sfv-604c3420b72cea535bcebf4d",
+      "factor": "target_object_state",
+      "value": "missing",
+      "disposition": "expected_failure",
+      "reason": "large_object_does_not_exist",
+      "case_ids": [
+        "ALTERLARGEOBJECT00026"
+      ]
+    },
+    {
+      "row_id": "sfv-8495f5a78c278e4099efc497",
+      "factor": "verification_mode",
+      "value": "catalog_query",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERLARGEOBJECT00027"
+      ]
+    },
+    {
+      "row_id": "sfv-22ddd0baf6c038eab1ff38ba",
+      "factor": "verification_mode",
+      "value": "effect_query",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERLARGEOBJECT00028"
+      ]
+    },
+    {
+      "row_id": "sfv-d41a5e1683bc7fa419a28b1e",
+      "factor": "verification_mode",
+      "value": "error_assertion",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERLARGEOBJECT00029"
+      ]
+    }
+  ],
+  "generation_mode": "factor_value_independent_loop_v1",
+  "decision_count": 31,
+  "local_sql_decision_count": 31,
+  "extension_case_count": 204,
+  "delegated_decision_count": 0,
+  "obligation_multiset_sha256": "43e757c568d525fcae3ba49f4d7efc7890abce3de46653cf8878c1a168c9b03b"
+}
