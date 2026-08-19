@@ -29,6 +29,7 @@ MAX_PARALLELISM = 1
 _TARGET_SQLSTATE = re.compile(rb"(?m)^PGCF_TARGET_SQLSTATE=([0-9A-Z]{5})\s*$")
 _PREFIX = re.compile(r"^[a-z][a-z0-9_]*_$")
 _CLEANUP_MARKER = "-- 5. 清理全部本编号对象。"
+_TABLESPACE_LOCATION = re.compile(r"(?i)LOCATION\s+'([^']+)'")
 
 
 class AlterIndexRuntimeError(RuntimeError):
@@ -399,12 +400,27 @@ class AlterIndexPg18Runner:
         )
         return normalized
 
+    @staticmethod
+    def _ensure_tablespace_dirs(sql: str) -> None:
+        """Create ``LOCATION`` directories the program references.
+
+        ``CREATE TABLESPACE ... LOCATION '<dir>'`` requires ``<dir>`` to
+        already exist on the filesystem, so materialize every referenced
+        path before the program runs.
+        """
+        for raw in _TABLESPACE_LOCATION.findall(sql):
+            directory = Path(raw)
+            if not directory.is_absolute():
+                continue
+            directory.mkdir(parents=True, exist_ok=True)
+
     def _execute_case(
         self,
         case: AlterIndexRuntimeCase,
         sql_path: Path,
     ) -> AlterIndexCaseRuntimeResult:
         sql = sql_path.read_text(encoding="utf-8")
+        self._ensure_tablespace_dirs(sql)
         pre_clean = self._clean_probe(case.object_prefix)
         timed_out = False
         if pre_clean:

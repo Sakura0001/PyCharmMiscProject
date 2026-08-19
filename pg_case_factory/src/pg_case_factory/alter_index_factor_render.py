@@ -105,7 +105,12 @@ def _index_name(a: dict[str, str], p: str) -> str:
 
 
 def _fixture_index_name(a: dict[str, str], p: str) -> str:
-    """The name used in the fixture CREATE INDEX (unqualified form)."""
+    """The name used in the fixture CREATE INDEX.
+
+    Matches ``_index_name`` for quoted/reserved shapes; schema_qualified uses
+    a plain name (CREATE INDEX cannot schema-qualify) and the index lands in
+    the schema-qualified table's schema.
+    """
     shape = a.get("name_shape", "plain_identifier")
     if shape == "quoted_identifier":
         return f'"{p}idx"'
@@ -118,8 +123,10 @@ def _new_index_name(a: dict[str, str], p: str) -> str:
     shape = a.get("name_shape", "plain_identifier")
     if shape == "quoted_identifier":
         return f'"{p}renamed"'
+    # RENAME TO takes a bare name (not schema-qualified); the renamed index
+    # stays in the same namespace as the original schema-qualified target.
     if shape == "schema_qualified":
-        return f"{p}src_schema.{p}renamed"
+        return f"{p}renamed"
     if shape == "reserved_word":
         return f'"{p}from"'
     return f"{p}renamed"
@@ -129,12 +136,27 @@ def _tablespace_name(a: dict[str, str], p: str) -> str:
     return f"{p}dst_tbs"
 
 
+def _qualify(a: dict[str, str], p: str, base: str) -> str:
+    """Schema-qualify ``base`` when the name_shape is schema_qualified.
+
+    PostgreSQL places an index in the *table's* schema (``CREATE INDEX
+    schema.name`` is a syntax error), so the table itself is created in
+    ``src_schema`` and every reference to it (and to its indexes) is
+    schema-qualified.
+    """
+    if a.get("name_shape") == "schema_qualified":
+        return f"{p}src_schema.{base}"
+    return base
+
+
 def _method_column(method: str) -> str:
     """The fixture column compatible with the index method."""
     if method == "gist":
         return "pt"
     if method == "gin":
         return "tsv"
+    if method == "spgist":
+        return "pt"
     return "id"
 
 
@@ -183,19 +205,29 @@ def _action_target(
             a.get("index_method", "btree"), "fillfactor"))
         return f"ALTER INDEX {iff}{idx} RESET ({param});"
     if action == "set_statistics":
-        col = a.get("column_number_value", "1")
-        col_no = "1" if col == "valid_position" else col
+        col = a.get("column_number_value", "valid_position")
+        col_no = {"valid_position": "1", "out_of_range": "2", "zero": "0"}.get(
+            col, "1"
+        )
         stat = a.get("statistics_value", "positive_integer")
-        stat_val = "1000" if stat == "positive_integer" else stat
+        stat_val = {
+            "positive_integer": "1000",
+            "negative_one": "-1",
+            "zero": "0",
+            "out_of_range": "2147483647",
+        }.get(stat, "1000")
         return f"ALTER INDEX {iff}{idx} ALTER COLUMN {col_no} SET STATISTICS {stat_val};"
     if action == "depends_on_extension":
         return f"ALTER INDEX {iff}{idx} DEPENDS ON EXTENSION plpgsql;"
     if action == "no_depends_on_extension":
         return f"ALTER INDEX {iff}{idx} NO DEPENDS ON EXTENSION plpgsql;"
     if action == "attach_partition":
-        # Attach a partition index to the parent partitioned index.
+        # Attach a partition index to the parent partitioned index. The parent
+        # index reference is schema-qualified when the name_shape requires it,
+        # matching the (schema-qualified) table the index was created on.
         return (
-            f"ALTER INDEX {iff}{p}parent_idx ATTACH PARTITION {idx};"
+            f"ALTER INDEX {iff}{_qualify(a, p, f'{p}parent_idx')} "
+            f"ATTACH PARTITION {idx};"
         )
     if action == "all_in_tablespace":
         return (
@@ -227,38 +259,44 @@ def _build_fixture(
     locus = "target.index"
 
     if action == "attach_partition":
-        # Partitioned parent table + partition + matching indexes.
+        # Partitioned parent table + partition + matching indexes. When the
+        # name_shape is schema_qualified the tables live in src_schema so the
+        # plain-named indexes land there and the schema-qualified ATTACH
+        # reference resolves.
+        parent = _qualify(a, p, f"{p}parent")
+        part = _qualify(a, p, f"{p}part")
         setup.append(
-            f"CREATE TABLE {p}parent (id integer) PARTITION BY RANGE (id);"
+            f"CREATE TABLE {parent} (id integer) PARTITION BY RANGE (id);"
         )
         setup.append(
-            f"CREATE TABLE {p}part PARTITION OF {p}parent FOR VALUES FROM (0) TO (1000);"
+            f"CREATE TABLE {part} PARTITION OF {parent} FOR VALUES FROM (0) TO (1000);"
         )
         setup.append(
-            f"CREATE INDEX {p}parent_idx ON {p}parent (id);"
+            f"CREATE INDEX {p}parent_idx ON {parent} (id);"
         )
         if _fixture_exists(a):
+            part_idx = _fixture_index_name(a, p)
             setup.append(
-                f"CREATE INDEX {_fixture_index_name(a, p)} ON {p}part (id);"
+                f"CREATE INDEX {part_idx} ON {part} (id);"
             )
         locus = "fixture.partition_index"
         return setup, locus
 
     # Standard fixture table carries one column per method family so every
     # method can build a compatible index on the same table.
+    table = _qualify(a, p, f"{p}t")
     setup.append(
-        f"CREATE TABLE {p}t (id integer, tsv tsvector, pt point, rng int4range);"
+        f"CREATE TABLE {table} (id integer, tsv tsvector, pt point, rng int4range);"
     )
     if _fixture_exists(a):
         col = _method_column(method)
-        schema_prefix = f"{p}src_schema." if needs_src_schema else ""
         fname = _fixture_index_name(a, p)
-        # reserved_word / quoted names are not schema-qualified at CREATE time.
-        create_name = fname if needs_src_schema and not fname.startswith('"') else fname
-        if needs_src_schema and not fname.startswith('"'):
-            create_name = f"{schema_prefix}{fname}"
+        # set_statistics can only target *expression* index columns. PostgreSQL
+        # strips redundant parens around a bare column reference, so ((col)) is
+        # still treated as a plain column; use a genuine expression (id+1).
+        key_expr = "(id+1)" if action == "set_statistics" else col
         setup.append(
-            f"CREATE INDEX {create_name} ON {p}t USING {method} ({col});"
+            f"CREATE INDEX {fname} ON {table} USING {method} ({key_expr});"
         )
     else:
         setup.append("SELECT 1 AS target_index_intentionally_absent;")
@@ -318,7 +356,6 @@ def _build_cleanup(
 ) -> tuple[list[str], list[str]]:
     """Return (pre_cleanup_lines, cleanup_lines) for sections 1 and 5."""
     action = case.consumer_action_id
-    method = a.get("index_method", "btree")
     needs_src_schema = a.get("name_shape") == "schema_qualified"
     needs_dst_tbs = action in ("set_tablespace", "all_in_tablespace")
 
@@ -331,33 +368,52 @@ def _build_cleanup(
         if action == "all_in_tablespace":
             tbs_drops.append(f"DROP TABLESPACE IF EXISTS {p}move_tbs;")
 
-    # Idempotent index/table drops (superset so the file is re-runnable).
+    # The table-based style contract keys on created TABLE names: the first
+    # executable statement (section 1) and the last (section 5) must each be a
+    # single ``DROP TABLE IF EXISTS <all created tables>`` so the validator
+    # credits every created table in both pre-cleanup and final-cleanup.
+    # Tables and indexes are schema-qualified for schema_qualified so the
+    # DROPs resolve in src_schema (search_path does not include it).
     if action == "attach_partition":
-        idempotent = [
-            f"DROP INDEX IF EXISTS {p}parent_idx CASCADE;",
-            f"DROP INDEX IF EXISTS {_fixture_index_name(a, p)} CASCADE;",
-            f"DROP TABLE IF EXISTS {p}part CASCADE;",
-            f"DROP TABLE IF EXISTS {p}parent CASCADE;",
+        created_tables = [_qualify(a, p, f"{p}parent"), _qualify(a, p, f"{p}part")]
+        idx_drops = [
+            f"DROP INDEX IF EXISTS {_qualify(a, p, f'{p}parent_idx')} CASCADE;",
+            f"DROP INDEX IF EXISTS {_index_name(a, p)} CASCADE;",
         ]
     else:
-        idx = _fixture_index_name(a, p)
-        # Rename success: the index now lives under the new name.
+        created_tables = [_qualify(a, p, f"{p}t")]
+        # _index_name is schema-qualified for schema_qualified, matching the
+        # ALTER INDEX reference; the fixture CREATE used the plain form which
+        # landed in the (schema-qualified) table's schema.
         if action == "rename":
-            new = _new_index_name(a, p)
-            idempotent = [
-                f"DROP INDEX IF EXISTS {new} CASCADE;",
-                f"DROP INDEX IF EXISTS {idx} CASCADE;",
+            # Rename success: the index now lives under the new name.
+            renamed = _qualify(a, p, _new_index_name(a, p))
+            idx_drops = [
+                f"DROP INDEX IF EXISTS {renamed} CASCADE;",
+                f"DROP INDEX IF EXISTS {_index_name(a, p)} CASCADE;",
             ]
         else:
-            idempotent = [f"DROP INDEX IF EXISTS {idx} CASCADE;"]
-        idempotent.append(f"DROP TABLE IF EXISTS {p}t CASCADE;")
+            idx_drops = [f"DROP INDEX IF EXISTS {_index_name(a, p)} CASCADE;"]
 
-    pre = list(idempotent) + schema_drops + tbs_drops
-    cleanup = list(idempotent) + schema_drops + tbs_drops
-    if not pre:
-        pre.append("SELECT 1 AS residual_check_no_objects;")
-    if not cleanup:
-        cleanup.append("SELECT 1 AS residual_check_no_objects;")
+    pre_drop = (
+        f"DROP TABLE IF EXISTS {', '.join(created_tables)} CASCADE;"
+        if created_tables
+        else "SELECT 1 AS residual_check_no_objects;"
+    )
+    final_drop = (
+        f"DROP TABLE IF EXISTS {', '.join(reversed(created_tables))} CASCADE;"
+        if created_tables
+        else "SELECT 1 AS residual_check_no_objects;"
+    )
+
+    # Section 1: DROP TABLE (all created tables) leads so it is statement[0];
+    # the redundant index/schema/tablespace drops follow (CASCADE already
+    # removes dependent indexes, but explicit IF EXISTS keeps re-runs
+    # idempotent).
+    pre: list[str] = [pre_drop, *idx_drops, *schema_drops, *tbs_drops]
+    # Section 5: index/schema/tablespace drops first; DROP TABLE (all created,
+    # reverse creation order) is last so it is statement[-1].
+    cleanup: list[str] = [*idx_drops, *schema_drops, *tbs_drops, final_drop]
     return pre, cleanup
 
 
