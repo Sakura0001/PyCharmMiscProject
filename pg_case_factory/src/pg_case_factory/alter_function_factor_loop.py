@@ -156,6 +156,11 @@ _SFV_FAILURE_VALUES = frozenset(
         ("argtype_specification", "with_partial_signature"),
         ("configuration_parameter_shape", "invalid_parameter"),
         ("privilege_level", "non_owner_no_privilege"),
+        # A non-owner granted EXECUTE (the only grantable function privilege)
+        # still cannot ALTER FUNCTION: only the owner can.  Probed on PG 18.4
+        # (GRANT ALTER ON FUNCTION is not valid syntax, so membership/EXECUTE
+        # is the faithful non-owner-with-privilege setup).
+        ("privilege_level", "non_owner_with_alter"),
         ("schema_dependency", "target_schema_not_exists"),
         ("schema_dependency", "reserved_schema"),
         ("role_dependency", "owner_role_not_exists"),
@@ -385,6 +390,10 @@ _SFV_FAILURE_SQLSTATE: dict[tuple[str, str], tuple[str, str]] = {
         "unrecognized_configuration_parameter",
     ),
     ("privilege_level", "non_owner_no_privilege"): (
+        "42501",
+        "must_be_owner_of_function",
+    ),
+    ("privilege_level", "non_owner_with_alter"): (
         "42501",
         "must_be_owner_of_function",
     ),

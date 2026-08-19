@@ -70,6 +70,7 @@ class _CasePlan:
     target_fragment: str
     setup_lines: tuple[str, ...]
     assert_lines: tuple[str, ...]
+    pre_cleanup_lines: tuple[str, ...]
     cleanup_lines: tuple[str, ...]
     on_error_off: bool
     semantic_locus: str
@@ -104,6 +105,13 @@ def _fixture_name(case: AlterFunctionFactorCase, a: dict[str, str], p: str) -> s
 
 
 def _target_args(case: AlterFunctionFactorCase, a: dict[str, str]) -> str:
+    # The procedure fixture is created with no parameters; ALTER FUNCTION
+    # must resolve to that empty signature to surface 42809 (not a function).
+    if (
+        case.factor_key == "target_function_different_type"
+        and case.factor_value == "same_name_is_procedure"
+    ):
+        return "()"
     primary = (case.factor_key, case.factor_value)
     if primary in _SIGNATURE_MISMATCH_PRIMARIES:
         return "(integer, text)"
@@ -323,6 +331,98 @@ def _fixture_kind(case: AlterFunctionFactorCase) -> str:
     return "function"
 
 
+def _routine_candidates(
+    case: AlterFunctionFactorCase,
+    a: dict[str, str],
+    p: str,
+    fixture_kind: str,
+    branch: str,
+    needs_src_schema: bool,
+    needs_dst_schema: bool,
+) -> tuple[tuple[str, str], ...]:
+    """Every (drop_kind, qualified_name_with_args) the target routine could
+    be found under before or after the target, for idempotent re-drops."""
+
+    name = _fixture_name(case, a, p)
+    if fixture_kind == "aggregate":
+        return (("AGGREGATE", f"{name}(integer)"),)
+    if fixture_kind == "procedure":
+        return (("PROCEDURE", f"{name}()"),)
+    if fixture_kind != "function":
+        return ()
+    candidates: list[tuple[str, str]] = []
+    orig_prefix = f"{p}src_schema." if needs_src_schema else ""
+    candidates.append(("FUNCTION", f"{orig_prefix}{name}(integer)"))
+    if branch == _BRANCH_RENAME:
+        new = _new_name(case, a, p)
+        if case.factor_key == "identifier_length_exceeded":
+            candidates.append(("FUNCTION", f"{new[:63]}(integer)"))
+        else:
+            candidates.append(("FUNCTION", f"{new}(integer)"))
+    if needs_dst_schema:
+        candidates.append(("FUNCTION", f"{p}dst_schema.{name}(integer)"))
+    if (
+        case.factor_key == "rename_target"
+        and case.factor_value == "duplicate_name"
+    ):
+        candidates.append(("FUNCTION", f"{p}dup_fn(integer)"))
+    return tuple(candidates)
+
+
+def _surviving_target(
+    case: AlterFunctionFactorCase,
+    a: dict[str, str],
+    p: str,
+    fixture_kind: str,
+    branch: str,
+    needs_src_schema: bool,
+    needs_dst_schema: bool,
+) -> tuple[str, str]:
+    """The (drop_kind, qualified_name_with_args) the target routine is under
+    AFTER the target statement, for the factor-form teardown witness."""
+
+    name = _fixture_name(case, a, p)
+    if fixture_kind == "aggregate":
+        return ("AGGREGATE", f"{name}(integer)")
+    if fixture_kind == "procedure":
+        return ("PROCEDURE", f"{name}()")
+    if fixture_kind != "function":
+        return ("", "")
+    if case.kind == "RISK":
+        return ("FUNCTION", f"{name}(integer)")
+    if branch == _BRANCH_RENAME and case.outcome == "success":
+        new = _new_name(case, a, p)
+        if case.factor_key == "identifier_length_exceeded":
+            return ("FUNCTION", f"{new[:63]}(integer)")
+        return ("FUNCTION", f"{new}(integer)")
+    if needs_dst_schema:
+        return ("FUNCTION", f"{p}dst_schema.{name}(integer)")
+    if needs_src_schema:
+        return ("FUNCTION", f"{p}src_schema.{name}(integer)")
+    return ("FUNCTION", f"{name}(integer)")
+
+
+def _role_names(
+    case: AlterFunctionFactorCase,
+    a: dict[str, str],
+    p: str,
+    branch: str,
+    effective: str,
+) -> tuple[str, ...]:
+    """Roles to tear down, ordered members/grantees before the owner role."""
+
+    roles: list[str] = []
+    if effective == f"{p}alter":
+        roles.append(f"{p}alter")
+    elif effective == f"{p}actor":
+        roles.append(f"{p}actor")
+    if branch == _BRANCH_OWNER and _owner_target(case, a, p) == f"{p}new_owner":
+        roles.append(f"{p}new_owner")
+    if effective:
+        roles.append(f"{p}owner")
+    return tuple(roles)
+
+
 def _resolve_case(case: AlterFunctionFactorCase) -> _CasePlan:
     a = _baseline(case)
     p = case.object_prefix
@@ -333,7 +433,6 @@ def _resolve_case(case: AlterFunctionFactorCase) -> _CasePlan:
     name = _fixture_name(case, a, p)
 
     setup: list[str] = []
-    drops: list[str] = []
     locus = "target.function"
 
     # --- schema fixtures -------------------------------------------------
@@ -343,13 +442,18 @@ def _resolve_case(case: AlterFunctionFactorCase) -> _CasePlan:
     ) == f"{p}dst_schema"
     if needs_src_schema:
         setup.append(f"CREATE SCHEMA IF NOT EXISTS {p}src_schema;")
-        drops.append(f"DROP SCHEMA IF EXISTS {p}src_schema CASCADE;")
     if needs_dst_schema:
         setup.append(f"CREATE SCHEMA IF NOT EXISTS {p}dst_schema;")
-        drops.append(f"DROP SCHEMA IF EXISTS {p}dst_schema CASCADE;")
 
     # --- role fixtures ---------------------------------------------------
     effective = _effective_role(case, a, p)
+    # The OWNER-branch new_owner role must be created by the superuser:
+    # a plain LOGIN owner role lacks CREATEROLE and would reject
+    # CREATE ROLE with 42501 once SET ROLE owner has taken effect.
+    if branch == _BRANCH_OWNER:
+        owner = _owner_target(case, a, p)
+        if owner == f"{p}new_owner":
+            setup.append(f"CREATE ROLE {p}new_owner LOGIN;")
     if effective:
         setup.append(f"CREATE ROLE {p}owner LOGIN;")
         setup.append(f"GRANT CREATE ON SCHEMA public TO {p}owner;")
@@ -360,18 +464,20 @@ def _resolve_case(case: AlterFunctionFactorCase) -> _CasePlan:
             setup.append(f"GRANT USAGE ON SCHEMA public TO {p}actor;")
         setup.append(f"SET ROLE {p}owner;")
         locus = "fixture.privilege_state"
-    if branch == _BRANCH_OWNER:
-        owner = _owner_target(case, a, p)
-        if owner == f"{p}new_owner":
-            setup.append(f"CREATE ROLE {p}new_owner LOGIN;")
-            drops.append(f"DROP ROLE IF EXISTS {p}new_owner;")
 
     # --- the target routine fixture -------------------------------------
     if fixture_kind == "function":
         volatility = " IMMUTABLE" if case.kind == "RISK" else ""
         schema_prefix = f"{p}src_schema." if needs_src_schema else ""
+        # ROWS is only applicable to set-returning functions; a scalar
+        # RETURNS integer fixture would reject ROWS with SQLSTATE 22023.
+        returns_clause = (
+            "RETURNS SETOF integer"
+            if case.consumer_action_id == "rows"
+            else "RETURNS integer"
+        )
         setup.append(
-            f"CREATE FUNCTION {schema_prefix}{name}(integer) RETURNS integer "
+            f"CREATE FUNCTION {schema_prefix}{name}(integer) {returns_clause} "
             f"AS $$ SELECT $1 $$ LANGUAGE sql{volatility};"
         )
     elif fixture_kind == "aggregate":
@@ -398,7 +504,6 @@ def _resolve_case(case: AlterFunctionFactorCase) -> _CasePlan:
             f"CREATE FUNCTION {p}support_fn(internal) RETURNS internal "
             "LANGUAGE internal AS 'int4inc';"
         )
-        drops.append(f"DROP FUNCTION IF EXISTS {p}support_fn(internal);")
 
     # --- duplicate-name fixture for RENAME failure -----------------------
     if case.factor_key == "rename_target" and case.factor_value == "duplicate_name":
@@ -410,8 +515,11 @@ def _resolve_case(case: AlterFunctionFactorCase) -> _CasePlan:
     # --- close the owner fixture and arm the effective role --------------
     if effective:
         if effective == f"{p}alter":
+            # Functions only grant EXECUTE; GRANT ALTER ON FUNCTION is not
+            # valid syntax.  A non-owner granted EXECUTE still cannot ALTER
+            # FUNCTION (only the owner can), surfacing 42501.
             setup.append(
-                f"GRANT ALTER ON FUNCTION {name}(integer) TO {p}alter;"
+                f"GRANT EXECUTE ON FUNCTION {name}(integer) TO {p}alter;"
             )
         setup.append("RESET ROLE;")
         setup.append(f"SET ROLE {effective};")
@@ -446,54 +554,64 @@ def _resolve_case(case: AlterFunctionFactorCase) -> _CasePlan:
     )
     assert_lines.append(_probe_select(case, a, p))
 
-    # --- cleanup (RESET ROLE first so superuser can drop everything) -----
+    # --- cleanup construction ------------------------------------------
+    # Section 1 (pre-cleanup) is a fully idempotent superset so the file is
+    # re-runnable from a clean state under ON_ERROR_STOP=on.  Section 5
+    # (final cleanup) keeps the factor-form teardown as the byte-level witness
+    # and follows it with the same idempotent re-drops; the runtime re-runs
+    # section 5 as a best-effort safety net with ON_ERROR_STOP=off, so the
+    # non-idempotent bare / CASCADE factor forms are tolerated on re-run.
     drop_mode = a.get("cleanup_mode", "DROP_FUNCTION_IF_EXISTS")
     if case.factor_key == "cleanup_mode":
         drop_mode = case.factor_value
     cascade = " CASCADE" if drop_mode == "DROP_FUNCTION_CASCADE" else ""
     if_exists = "IF EXISTS " if drop_mode == "DROP_FUNCTION_IF_EXISTS" else ""
-    if fixture_kind == "aggregate":
-        drops.append(f"DROP AGGREGATE {if_exists}{name}(integer){cascade};")
-    elif fixture_kind == "procedure":
-        drops.append(f"DROP PROCEDURE {if_exists}{name}(){cascade};")
-    elif fixture_kind == "function":
-        if case.kind == "RISK":
-            drops.append(f"DROP FUNCTION {if_exists}{name}(integer){cascade};")
-        elif (
-            case.factor_key in {"rename_target", "new_name_shape"}
-            and case.outcome == "success"
-        ):
-            new = _new_name(case, a, p)
-            drops.append(f"DROP FUNCTION {if_exists}{new}(integer){cascade};")
-        elif case.factor_key == "identifier_length_exceeded":
-            trunc = _new_name(case, a, p)[:63]
-            drops.append(f"DROP FUNCTION {if_exists}{trunc}(integer){cascade};")
-        elif needs_dst_schema:
-            drops.append(
-                f"DROP FUNCTION {if_exists}{p}dst_schema.{name}(integer){cascade};"
-            )
-        elif needs_src_schema:
-            drops.append(
-                f"DROP FUNCTION {if_exists}{p}src_schema.{name}(integer){cascade};"
-            )
-        else:
-            drops.append(f"DROP FUNCTION {if_exists}{name}(integer){cascade};")
-    if case.factor_key == "rename_target" and case.factor_value == "duplicate_name":
-        drops.append(f"DROP FUNCTION {if_exists}{p}dup_fn(integer){cascade};")
+    kind, surviving = _surviving_target(
+        case, a, p, fixture_kind, branch, needs_src_schema, needs_dst_schema
+    )
+    candidates = _routine_candidates(
+        case, a, p, fixture_kind, branch, needs_src_schema, needs_dst_schema
+    )
+    roles = _role_names(case, a, p, branch, effective)
+    schema_drops: list[str] = []
+    if needs_src_schema:
+        schema_drops.append(f"DROP SCHEMA IF EXISTS {p}src_schema CASCADE;")
+    if needs_dst_schema:
+        schema_drops.append(f"DROP SCHEMA IF EXISTS {p}dst_schema CASCADE;")
+    support_drop = (
+        [f"DROP FUNCTION IF EXISTS {p}support_fn(internal) CASCADE;"]
+        if case.consumer_action_id == "support"
+        else []
+    )
+    idempotent_object_drops = [
+        f"DROP {cand_kind} IF EXISTS {cand_name} CASCADE;"
+        for cand_kind, cand_name in candidates
+    ] + support_drop
+    role_drops = [
+        statement
+        for role in roles
+        for statement in (
+            f"DROP OWNED BY {role};",
+            f"DROP ROLE IF EXISTS {role};",
+        )
+    ]
+
+    pre_cleanup: list[str] = []
+    pre_cleanup.extend(idempotent_object_drops)
+    pre_cleanup.extend(f"DROP ROLE IF EXISTS {role};" for role in roles)
+    pre_cleanup.extend(schema_drops)
+    if not pre_cleanup:
+        pre_cleanup.append("SELECT 1 AS residual_check_no_objects;")
 
     cleanup: list[str] = []
     if effective:
         cleanup.append("RESET ROLE;")
-    cleanup.extend(drops)
-    if effective:
-        cleanup.append(f"DROP ROLE IF EXISTS {p}owner;")
-        if effective == f"{p}alter":
-            cleanup.append(f"DROP ROLE IF EXISTS {p}alter;")
-        elif effective == f"{p}actor":
-            cleanup.append(f"DROP ROLE IF EXISTS {p}actor;")
+    if kind:
+        cleanup.append(f"DROP {kind} {if_exists}{surviving}{cascade};")
+    cleanup.extend(idempotent_object_drops)
+    cleanup.extend(role_drops)
+    cleanup.extend(schema_drops)
     if not cleanup:
-        # No fixture object exists to drop; emit a deterministic residual
-        # probe so the program still ends with a verifiable statement.
         cleanup.append("SELECT 1 AS residual_check_no_objects;")
 
     on_error_off = case.outcome == "expected_failure"
@@ -501,6 +619,7 @@ def _resolve_case(case: AlterFunctionFactorCase) -> _CasePlan:
         target_fragment=target,
         setup_lines=tuple(setup),
         assert_lines=tuple(assert_lines),
+        pre_cleanup_lines=tuple(pre_cleanup),
         cleanup_lines=tuple(cleanup),
         on_error_off=on_error_off,
         semantic_locus=locus,
@@ -570,7 +689,7 @@ def render_alter_function_factor_case(
     resolved = _resolve_case(case)
     lines: list[str] = list(_header(case))
     lines.append("-- 1. 清理本编号对象，保证脚本可重复执行。")
-    lines.extend(resolved.cleanup_lines)
+    lines.extend(resolved.pre_cleanup_lines)
     lines.append("\\set ON_ERROR_STOP on")
     lines.append("-- 2. 创建完整本地函数和因子专用夹具。")
     lines.extend(resolved.setup_lines)

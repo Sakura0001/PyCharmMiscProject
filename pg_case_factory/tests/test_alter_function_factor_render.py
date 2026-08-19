@@ -85,7 +85,7 @@ class AlterFunctionFactorRenderTest(unittest.TestCase):
     def test_expected_failure_programs_capture_and_restore_error_mode(self) -> None:
         plan = build_alter_function_factor_loop_plan(ROOT)
         failures = [row for row in plan.cases if row.outcome == "expected_failure"]
-        self.assertEqual(24, len(failures))
+        self.assertEqual(25, len(failures))
         for case in failures:
             with self.subTest(case_id=case.case_id):
                 sql = render_alter_function_factor_case(plan, case, ROOT)
@@ -102,7 +102,7 @@ class AlterFunctionFactorRenderTest(unittest.TestCase):
         successes = [
             row for row in plan.cases if row.outcome == "success"
         ]
-        self.assertEqual(99, len(successes))
+        self.assertEqual(98, len(successes))
         for case in successes:
             with self.subTest(case_id=case.case_id):
                 sql = render_alter_function_factor_case(plan, case, ROOT)

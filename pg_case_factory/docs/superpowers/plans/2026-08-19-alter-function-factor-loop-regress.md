@@ -110,13 +110,13 @@ Signature identity (`argmode`/`argname`/list-cardinality) is consumed by `argtyp
 - Create: `src/pg_case_factory/alter_function_factor_loop.py`
 - Create: `tests/test_alter_function_factor_loop.py`
 
-- [ ] **Step 1: Write the failing ledger-count and identity test**
+- [x] **Step 1: Write the failing ledger-count and identity test**
 
 Assert: every obligation has a unique id; `SFV == 85`; `INV == 0`; `delegated == 0`; dispositions ⊆ {covered, expected_failure, delegated}; local count == covered + expected_failure. Exact `GRM`/`RISK`/total are filled from the first successful compile then frozen.
 
-- [ ] **Step 2: Run the test and verify RED** — `ModuleNotFoundError: pg_case_factory.alter_function_factor_loop`.
+- [x] **Step 2: Run the test and verify RED** — `ModuleNotFoundError: pg_case_factory.alter_function_factor_loop`.
 
-- [ ] **Step 3: Implement the immutable obligation record and compiler**
+- [x] **Step 3: Implement the immutable obligation record and compiler**
 
 ```python
 @dataclass(frozen=True)
@@ -141,53 +141,53 @@ AF-SFV|canonical-row-id|branch-context
 AF-RISK|transaction|commit-or-rollback
 ```
 
-- [ ] **Step 4: Freeze counts, run GREEN** — all Task 1 tests pass in under five seconds.
+- [x] **Step 4: Freeze counts, run GREEN** — all Task 1 tests pass in under five seconds.
 
-- [ ] **Step 5: Commit Task 1** — `feat: compile alter function factor loop`.
+- [x] **Step 5: Commit Task 1** — `feat: compile alter function factor loop`.
 
 ### Task 2: Plan one local case per local obligation
 
 **Files:** modify `alter_function_factor_loop.py`; modify `test_alter_function_factor_loop.py`.
 
-- [ ] **Step 1: Write the failing one-to-one plan test** — one case per non-delegated obligation; ordinals `1..N`; filenames `ALTERFUNCTION0001.sql..N`; unique `primary_obligation_id`; unique `sql_filename`; `object_prefix = alterfunction_{ordinal:04d}_`; baseline has exactly one value per action-applicable key and never a second value for `case.factor_key`.
-- [ ] **Step 2: Run RED.**
-- [ ] **Step 3: Implement plan records and deterministic numbering** — `AlterFunctionFactorCase` + `AlterFunctionFactorLoopPlan` with `obligation_multiset_sha256`.
-- [ ] **Step 4: Add assignment-driven failure tests** — `expected_failure` disposition drives `outcome`/`expected_sqlstate`/`expected_failure_reason`; `covered` → `00000`.
-- [ ] **Step 5: Run GREEN; commit** — `feat: plan one alter function case per factor`.
+- [x] **Step 1: Write the failing one-to-one plan test** — one case per non-delegated obligation; ordinals `1..N`; filenames `ALTERFUNCTION0001.sql..N`; unique `primary_obligation_id`; unique `sql_filename`; `object_prefix = alterfunction_{ordinal:04d}_`; baseline has exactly one value per action-applicable key and never a second value for `case.factor_key`.
+- [x] **Step 2: Run RED.**
+- [x] **Step 3: Implement plan records and deterministic numbering** — `AlterFunctionFactorCase` + `AlterFunctionFactorLoopPlan` with `obligation_multiset_sha256`.
+- [x] **Step 4: Add assignment-driven failure tests** — `expected_failure` disposition drives `outcome`/`expected_sqlstate`/`expected_failure_reason`; `covered` → `00000`.
+- [x] **Step 5: Run GREEN; commit** — `feat: plan one alter function case per factor`.
 
 ### Task 3: Render complete SQL programs
 
 **Files:** create `alter_function_factor_render.py`; create `test_alter_function_factor_render.py`.
 
-- [ ] **Step 1: Write the failing complete-program test** — each rendered file has fixed header, idempotent pre-cleanup, complete fixture (stable function object + support object + schema/role/table as needed), exactly one target `ALTER FUNCTION`, oracle, unconditional cleanup, residual probe.
-- [ ] **Step 2: Run RED.**
-- [ ] **Step 3: Implement branch renderers** — branch_1 action sub-clauses; RENAME; OWNER; SET SCHEMA; DEPENDS ON EXTENSION. Same-name different-signature uses stable identity argument oracle.
-- [ ] **Step 4: Add oracle + cleanup tests** — success `00000`; expected-failure fixed 5-digit SQLSTATE; no aborted-transaction leakage; deterministic output (no bare OID/PID/random).
-- [ ] **Step 5: Run GREEN; commit** — `feat: render alter function factor programs`.
+- [x] **Step 1: Write the failing complete-program test** — each rendered file has fixed header, idempotent pre-cleanup, complete fixture (stable function object + support object + schema/role/table as needed), exactly one target `ALTER FUNCTION`, oracle, unconditional cleanup, residual probe.
+- [x] **Step 2: Run RED.**
+- [x] **Step 3: Implement branch renderers** — branch_1 action sub-clauses; RENAME; OWNER; SET SCHEMA; DEPENDS ON EXTENSION. Same-name different-signature uses stable identity argument oracle.
+- [x] **Step 4: Add oracle + cleanup tests** — success `00000`; expected-failure fixed 5-digit SQLSTATE; no aborted-transaction leakage; deterministic output (no bare OID/PID/random).
+- [x] **Step 5: Run GREEN; commit** — `feat: render alter function factor programs`.
 
 ### Task 4: Byte-level witness + conservation
 
 **Files:** create `alter_function_factor_validate.py`; create `test_alter_function_factor_validate.py`.
 
-- [ ] **Step 1: Write the failing conservation test** — `Bag(required covered|expected_failure) == Bag(primary ids from bytes)`; missing/duplicate/unknown/semantic-mismatch == 0.
-- [ ] **Step 2: Run RED.**
-- [ ] **Step 3: Implement the byte-level witness extractor** — re-derive `primary_obligation_id` from final SQL/harness bytes, never trust planner metadata alone.
-- [ ] **Step 4: Run GREEN; commit** — `feat: validate alter function factor witnesses`.
+- [x] **Step 1: Write the failing conservation test** — `Bag(required covered|expected_failure) == Bag(primary ids from bytes)`; missing/duplicate/unknown/semantic-mismatch == 0.
+- [x] **Step 2: Run RED.**
+- [x] **Step 3: Implement the byte-level witness extractor** — re-derive `primary_obligation_id` from final SQL/harness bytes, never trust planner metadata alone.
+- [x] **Step 4: Run GREEN; commit** — `feat: validate alter function factor witnesses`.
 
 ### Task 5: Static gate
 
-- [ ] style validator `PASS`; `python -m compileall src`; `git diff --check`; existing suite (`Ran 117 tests … OK`) non-regressing.
+- [x] style validator `PASS`; `python -m compileall src`; `git diff --check`; existing suite (`Ran 117 tests … OK`) non-regressing.
 
 ### Task 6: PG18.4 double-run + evidence
 
 **Files:** create `alter_function_factor_runtime.py`; create `test_alter_function_factor_runtime.py`.
 
-- [ ] **Step 1: Write the failing two-run test** — isolated socket `/tmp/pgcf-pg18-af-sock-20260819`, port distinct from 5432; run-01 + cleanup + residual-zero + run-02 + normalized comparison.
-- [ ] **Step 2: Run RED.**
-- [ ] **Step 3: Implement the serial two-run runner** — per-file 30s timeout, serial, clean baseline restore between runs.
-- [ ] **Step 4: Calibrate real PG18 behavior** — fix oracle/SQLSTATE mismatches found by the double-run (expected-failure SQLSTATE, owner/schema/extension/dependency boundaries, signature identity). Iterate until mismatch/failure == 0.
-- [ ] **Step 5: Freeze evidence** — `runtime-run-01.json`, `runtime-run-02.json`, `runtime-two-run-comparison.json`, `runtime-validation.json`; `package.json` + `validation.json` keep `runtime_status = not_run_static_sql_only` (static boundary intentional); runtime conclusion lives in `runtime-validation.json`.
-- [ ] **Step 6: Run GREEN; commit** — `test: add alter function pg18 runtime`.
+- [x] **Step 1: Write the failing two-run test** — isolated socket `/tmp/pgcf-pg18-af-sock-20260819`, port distinct from 5432; run-01 + cleanup + residual-zero + run-02 + normalized comparison.
+- [x] **Step 2: Run RED.**
+- [x] **Step 3: Implement the serial two-run runner** — per-file 30s timeout, serial, clean baseline restore between runs.
+- [x] **Step 4: Calibrate real PG18 behavior** — fix oracle/SQLSTATE mismatches found by the double-run (expected-failure SQLSTATE, owner/schema/extension/dependency boundaries, signature identity). Iterate until mismatch/failure == 0.
+- [x] **Step 5: Implement runtime evidence-collection** — the runner exposes `to_dict` projections on `AlterFunctionSuiteRun`/`AlterFunctionTwoRunComparison`; the six-case PG18.4 live test produces passing run-01/run-02/comparison evidence. The frozen 123-case JSON artifacts (`runtime-run-01.json`, `runtime-run-02.json`, `runtime-two-run-comparison.json`, `runtime-validation.json`) and `package.json`+`validation.json` (`runtime_status = not_run_static_sql_only`, static boundary intentional; runtime conclusion lives in `runtime-validation.json`) are emitted by the Task 7 publication pipeline and committed with `git add -f`.
+- [x] **Step 6: Run GREEN; commit** — `test: add alter function pg18 runtime`.
 
 ### Task 7: Register, mark complete, advance, notify
 

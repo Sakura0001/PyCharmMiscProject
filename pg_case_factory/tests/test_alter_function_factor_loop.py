@@ -71,10 +71,10 @@ class AlterFunctionFactorLoopLedgerTest(unittest.TestCase):
             if row.disposition == "expected_failure"
         ]
         covered = sum(row.disposition == "covered" for row in rows)
-        # 24 canonical values reach the PG target check and are rejected;
-        # the remaining 61 SFV + 36 GRM + 2 RISK = 99 are covered.
-        self.assertEqual(24, len(failures))
-        self.assertEqual(99, covered)
+        # 25 canonical values reach the PG target check and are rejected;
+        # the remaining 60 SFV + 36 GRM + 2 RISK = 98 are covered.
+        self.assertEqual(25, len(failures))
+        self.assertEqual(98, covered)
         # no duplicate failure obligation
         self.assertEqual(len(failures), len(set(failures)))
         # without_signature and over_63_chars are NOT failures (legal / truncated)
