@@ -103,8 +103,8 @@
       "status": "completed",
       "package_path": "artifacts/regress/by-factor/ddl/index/alter_index",
       "sql_file_count": 6873,
-      "validation_evidence": "/Users/yuyu/PyCharmMiscProject/pg_case_factory/artifacts/intermediates/remaining-statement-factor-cycle/alter_index",
-      "validation_evidence_sha256": "c11142295d98f6decaf1b7e6a8ae8740a34ab5f472f5518e078ab5a2ef091a60"
+      "validation_evidence": "/Users/yuyu/PyCharmMiscProject/pg_case_factory/artifacts/intermediates/remaining-statement-factor-cycle/alter_index/validation.json",
+      "validation_evidence_sha256": "b1b6052991ae3da5ca1bde757b6ed03a0aa5413820e8a01b5f43fdd0683e94af"
     },
     "alter_language": {
       "status": "completed",
