@@ -161,8 +161,22 @@ def _method_column(method: str) -> str:
 
 
 def _fixture_exists(a: dict[str, str]) -> bool:
-    """Whether the target index fixture is created (object_state == exists)."""
-    return a.get("object_state", "exists") == "exists"
+    """Whether the target index fixture is created (object_state == exists).
+
+    The fixture index is suppressed when the obligation is calibrated to target
+    a non-existent index so the primary target raises ``42P01``: the
+    ``object_state == not_exists`` value, the ``name_shape == missing_object``
+    obligation, and the ``invalid_combination == nonexistent_index_no_if_exists``
+    obligation.  The fixture table is still created (every other action needs a
+    table for the catalog-audit oracle) but the index is left absent.
+    """
+    if a.get("object_state", "exists") != "exists":
+        return False
+    if a.get("name_shape") == "missing_object":
+        return False
+    if a.get("invalid_combination") == "nonexistent_index_no_if_exists":
+        return False
+    return True
 
 
 def _if_exists_clause(a: dict[str, str]) -> str:
@@ -199,7 +213,21 @@ def _action_target(
     if action == "set_storage":
         param = a.get("storage_parameter", _PARAM_VALUE_BY_METHOD.get(
             a.get("index_method", "btree"), "fillfactor"))
-        return f"ALTER INDEX {iff}{idx} SET ({param}={_storage_param_value(a)});"
+        val = _storage_param_value(a)
+        # Materialize the invalid_combination=system_catalog_index obligation:
+        # target a built-in system catalog index (a btree) so PostgreSQL raises
+        # 42501 "permission denied: ... is a system catalog" even as superuser.
+        if a.get("invalid_combination") == "system_catalog_index":
+            return f"ALTER INDEX pg_class_oid_index SET ({param}={val});"
+        # Materialize the syntax_error=invalid_syntax obligation: a missing ``=``
+        # is a parse-time syntax error (42601), distinct from a value boundary.
+        if a.get("syntax_error") == "invalid_syntax":
+            return f"ALTER INDEX {iff}{idx} SET ({param} {val});"
+        # Materialize the expected_status=failure (negative boundary) obligation:
+        # a fillfactor outside the [10,100] range raises 22023.
+        if a.get("expected_status") == "failure":
+            return f"ALTER INDEX {iff}{idx} SET (fillfactor=0);"
+        return f"ALTER INDEX {iff}{idx} SET ({param}={val});"
     if action == "reset_storage":
         param = a.get("storage_parameter", _PARAM_VALUE_BY_METHOD.get(
             a.get("index_method", "btree"), "fillfactor"))
@@ -209,12 +237,21 @@ def _action_target(
         col_no = {"valid_position": "1", "out_of_range": "2", "zero": "0"}.get(
             col, "1"
         )
+        # Materialize the invalid_combination=statistics_column_out_of_range
+        # obligation: the baseline column_number_value is valid_position, but
+        # the obligation's attribution (42703) requires an out-of-range column
+        # number on the single-expression index, so surface column 2.
+        if a.get("invalid_combination") == "statistics_column_out_of_range":
+            col_no = "2"
         stat = a.get("statistics_value", "positive_integer")
         stat_val = {
             "positive_integer": "1000",
             "negative_one": "-1",
             "zero": "0",
-            "out_of_range": "2147483647",
+            # PG18.4: a statistics target below -1 raises 22023 ("statistics
+            # target N is too low"); values above 10000 only WARN and clamp,
+            # so the out_of_range attribution must use a too-low target.
+            "out_of_range": "-2",
         }.get(stat, "1000")
         return f"ALTER INDEX {iff}{idx} ALTER COLUMN {col_no} SET STATISTICS {stat_val};"
     if action == "depends_on_extension":
@@ -321,12 +358,22 @@ def _build_oracle(
     )
     if action == "rename":
         new_bare = _new_index_name(a, p).replace('"', "").split(".")[-1]
-        lines.append(
-            "SELECT count(*) > 0 AS renamed_index_visible "
-            f"FROM pg_catalog.pg_class AS c "
-            f"JOIN pg_catalog.pg_index AS i ON i.indexrelid = c.oid "
-            f"WHERE c.relname = '{new_bare}' ORDER BY count(*) LIMIT 1;"
-        )
+        if case.outcome == "expected_failure":
+            # The rename is calibrated to fail (target index absent), so the
+            # renamed index must NOT be visible: emit ``t`` when it is absent.
+            lines.append(
+                "SELECT count(*) = 0 AS renamed_index_absent "
+                f"FROM pg_catalog.pg_class AS c "
+                f"JOIN pg_catalog.pg_index AS i ON i.indexrelid = c.oid "
+                f"WHERE c.relname = '{new_bare}' ORDER BY count(*) LIMIT 1;"
+            )
+        else:
+            lines.append(
+                "SELECT count(*) > 0 AS renamed_index_visible "
+                f"FROM pg_catalog.pg_class AS c "
+                f"JOIN pg_catalog.pg_index AS i ON i.indexrelid = c.oid "
+                f"WHERE c.relname = '{new_bare}' ORDER BY count(*) LIMIT 1;"
+            )
     elif action in ("set_storage", "reset_storage"):
         lines.append(
             f"SELECT count(*) > 0 AS storage_parameter_visible "

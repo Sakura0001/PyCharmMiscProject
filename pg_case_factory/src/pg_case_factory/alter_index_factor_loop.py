@@ -124,7 +124,7 @@ _INVALID_COMBINATION_CONSUMER = {
 # contract; sqlstates are verified/refined by the downstream PG18.4 double-run).
 _SFV_FAILURE_SQLSTATE: dict[tuple[str, str], tuple[str, str]] = {
     ("expected_status", "failure"): (
-        "42601",
+        "22023",
         "alter_index_negative_boundary",
     ),
     ("object_state", "not_exists"): ("42P01", "relation_does_not_exist"),
@@ -145,8 +145,8 @@ _SFV_FAILURE_SQLSTATE: dict[tuple[str, str], tuple[str, str]] = {
         "relation_does_not_exist",
     ),
     ("invalid_combination", "statistics_column_out_of_range"): (
-        "42P16",
-        "index_column_number_out_of_range",
+        "42703",
+        "index_column_out_of_range",
     ),
     ("invalid_combination", "system_catalog_index"): (
         "42501",
@@ -158,12 +158,12 @@ _SFV_FAILURE_SQLSTATE: dict[tuple[str, str], tuple[str, str]] = {
         "tablespace_permission_denied",
     ),
     ("column_number_value", "zero"): (
-        "42P16",
-        "index_column_number_out_of_range",
+        "22023",
+        "index_column_zero",
     ),
     ("column_number_value", "out_of_range"): (
-        "42P16",
-        "index_column_number_out_of_range",
+        "42703",
+        "index_column_out_of_range",
     ),
     ("statistics_value", "out_of_range"): (
         "22023",

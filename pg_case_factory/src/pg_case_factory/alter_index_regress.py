@@ -90,7 +90,14 @@ EXPECTED_SQLSTATE_BY_REASON: dict[str, str] = {
     "extension_dependency_binding_invalid": "42601",
     "partition_index_definition_mismatch": "42P17",
     "index_storage_parameter_not_supported_by_method": "0A000",
+    # PG18.4 splits the former single ``index_column_number_out_of_range``
+    # attribution across two sqlstates: an out-of-range column number raises
+    # 42703 (column number N does not exist) while column number 0 raises
+    # 22023 (column number must be in range 1 to 32767).  The legacy entry is
+    # retained so the grammar's ``failure_when`` reason still resolves.
     "index_column_number_out_of_range": "42P16",
+    "index_column_out_of_range": "42703",
+    "index_column_zero": "22023",
     "invalid_statistics_target": "22023",
     "set_statistics_binding_invalid": "42601",
     "tablespace_permission_denied": "42501",
@@ -98,7 +105,10 @@ EXPECTED_SQLSTATE_BY_REASON: dict[str, str] = {
     "alter_index_all_in_tablespace_failed": "42501",
     "alter_index_syntax_is_invalid": "42601",
     "cannot_alter_system_catalog_index": "42501",
-    "alter_index_negative_boundary": "42601",
+    # PG18.4: a set_storage value boundary (e.g. fillfactor=0, out of the
+    # [10,100] range) raises 22023 (invalid_parameter_value), not 42601; the
+    # 42601 syntax case is the separate syntax_error=invalid_syntax reason.
+    "alter_index_negative_boundary": "22023",
     "pg18_revalidate_attached_parent_reference_failure": "0A000",
 }
 
