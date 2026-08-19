@@ -30,9 +30,9 @@ from pg_case_factory.alter_index_factor_runtime import (
 
 ROOT = Path(__file__).resolve().parents[1]
 
-_BASELINE_COUNT = 772
+_BASELINE_COUNT = 87
 _EXTENSION_COUNT = 6786
-_TOTAL = _BASELINE_COUNT + _EXTENSION_COUNT  # 7558
+_TOTAL = _BASELINE_COUNT + _EXTENSION_COUNT  # 6873
 
 
 def _sample_case(stdout: bytes) -> AlterIndexCaseRuntimeResult:
@@ -98,7 +98,7 @@ class AlterIndexFactorRuntimeTest(unittest.TestCase):
             AlterIndexSuiteRun(run_ordinal=3, cases=())
 
     def test_runtime_case_set_combines_baseline_and_extension(self) -> None:
-        # The case-set combiner must merge the frozen 772-case baseline with
+        # The case-set combiner must merge the frozen 87-case baseline with
         # the bounded 6,786-case extension into a single ordinal-sorted
         # sequence and map every case to its SQL file path.  This is a pure
         # structural contract (no cluster, no SQL files required on disk).

@@ -1,7 +1,7 @@
 """Tests for the actual-byte ALTER INDEX factor-loop coverage validator.
 
-The validator re-renders the canonical bytes for every case (frozen 772-case
-baseline + 6,786-case bounded extension = 7,558 programs) and compares them
+The validator re-renders the canonical bytes for every case (frozen 87-case
+baseline + 6,786-case bounded extension = 6,873 programs) and compares them
 exactly against the on-disk SQL.  It fails closed on byte drift, header
 mismatch, primary-target cardinality != 1, placeholder leakage,
 missing/duplicate/unknown cases, or an extension case lacking a derivation
@@ -34,9 +34,9 @@ from pg_case_factory.alter_index_factor_validate import (
 
 ROOT = Path(__file__).resolve().parents[1]
 
-_BASELINE_COUNT = 772
+_BASELINE_COUNT = 87
 _EXTENSION_COUNT = 6786
-_TOTAL_COUNT = _BASELINE_COUNT + _EXTENSION_COUNT  # 7558
+_TOTAL_COUNT = _BASELINE_COUNT + _EXTENSION_COUNT  # 6873
 
 
 class AlterIndexFactorValidateTest(unittest.TestCase):

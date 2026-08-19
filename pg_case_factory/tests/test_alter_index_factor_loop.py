@@ -20,11 +20,11 @@ from pg_case_factory.alter_index_regress import (
 ROOT = Path(__file__).resolve().parents[1]
 
 # Frozen marginal ledger totals (alter_index combination matrix).
-_EXPECTED_CASE_COUNT = 772
-_EXPECTED_OBLIGATION_KINDS = {"GRM": 21, "SFV": 751}
-_EXPECTED_OUTCOME_SPLIT = {"success": 485, "expected_failure": 287}
+_EXPECTED_CASE_COUNT = 87
+_EXPECTED_OBLIGATION_KINDS = {"GRM": 21, "SFV": 66}
+_EXPECTED_OUTCOME_SPLIT = {"success": 73, "expected_failure": 14}
 _EXPECTED_MULTISET_SHA256 = (
-    "adf8e0b9a5d1310b93a7764989c95bd55086d89f863da4f3c9275d824b63f7b6"
+    "e5653b9c43e72cbd863a1a5ae9315a376823dc1d64fdafb70f5bcaef70fd5084"
 )
 _EXPECTED_BRANCHES = (
     "all_in_tablespace",
@@ -64,9 +64,11 @@ class AlterIndexRegressGrammarTest(unittest.TestCase):
 class AlterIndexFactorLoopLedgerTest(unittest.TestCase):
     def test_compiles_exact_required_obligation_bag(self) -> None:
         rows = compile_alter_index_factor_loop_obligations(ROOT)
-        # GRM(21 grammar action skeletons) + SFV(751 single factor values)
-        # = 772 ; INV is not applicable (column coverage is conditional, owned
-        # by CREATE INDEX) and RISK is realized as expected-failure SFV values.
+        # GRM(21 grammar action skeletons) + SFV(66 canonical matrix factor
+        # values) = 87 ; INV is not applicable (column coverage is conditional,
+        # owned by CREATE INDEX) and RISK is realized as expected-failure SFV
+        # values.  SFV obligations are 1:1 with the applicability matrix row_ids
+        # so the shared conservation contract credits each row exactly once.
         self.assertEqual(_EXPECTED_CASE_COUNT, len(rows))
         self.assertEqual(
             _EXPECTED_OBLIGATION_KINDS,
@@ -118,11 +120,11 @@ class AlterIndexFactorLoopLedgerTest(unittest.TestCase):
             [row.ordinal for row in plan.cases],
         )
         self.assertEqual("ALTERINDEX00001", plan.cases[0].case_id)
-        self.assertEqual("ALTERINDEX00772", plan.cases[-1].case_id)
+        self.assertEqual("ALTERINDEX00087", plan.cases[-1].case_id)
         self.assertEqual("ALTERINDEX00001.sql", plan.cases[0].sql_filename)
-        self.assertEqual("ALTERINDEX00772.sql", plan.cases[-1].sql_filename)
+        self.assertEqual("ALTERINDEX00087.sql", plan.cases[-1].sql_filename)
         self.assertEqual("alterindex_00001_", plan.cases[0].object_prefix)
-        self.assertEqual("alterindex_00772_", plan.cases[-1].object_prefix)
+        self.assertEqual("alterindex_00087_", plan.cases[-1].object_prefix)
         self.assertEqual(
             _EXPECTED_CASE_COUNT,
             len({row.primary_obligation_id for row in plan.cases}),

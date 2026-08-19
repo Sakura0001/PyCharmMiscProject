@@ -1,9 +1,9 @@
 """Bounded post-coverage cross-factor extension expander for ALTER INDEX.
 
 The marginal factor-value-loop (:mod:`alter_index_factor_loop`) is the
-required baseline: one program per factor value, 772 local cases
-(GRM 21 + SFV 751, 485 success + 287 expected_failure).  This module adds the
-bounded post-coverage extension phase allowed by ``alter_index.yaml``:
+required baseline: one program per canonical matrix factor value, 87 local
+cases (GRM 21 + SFV 66, 73 success + 14 expected_failure).  This module adds
+the bounded post-coverage extension phase allowed by ``alter_index.yaml``:
 cross-factor combinations of the positive (success-path) T1-T4 behaviour axes
 with ``verification_mode`` crossed and ``cleanup_mode`` crossed so every
 declared T6 value is exercised against the positive cross.
@@ -77,7 +77,7 @@ class AlterIndexFactorExtensionPlan:
     raw_combination_count: int
 
 
-_BASELINE_COUNT = 772
+_BASELINE_COUNT = 87
 # Safety backstop only; the natural positive-axis x T6 cross is expected to
 # stay well under this cap so no coverage-losing truncation occurs.  The exact
 # frozen count is asserted in the companion test.

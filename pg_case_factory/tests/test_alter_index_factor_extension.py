@@ -1,7 +1,7 @@
 """Tests for the bounded ALTER INDEX post-coverage extension expander.
 
 The marginal factor-value-loop (``alter_index_factor_loop.py``) is the frozen
-772-case baseline (GRM 21 + SFV 751, 485 success + 287 expected_failure).
+87-case baseline (GRM 21 + SFV 66, 73 success + 14 expected_failure).
 This module's expander adds the bounded post-coverage extension phase:
 cross-factor combinations of the positive (success-path) T1-T4 behaviour
 axes across the nine ALTER INDEX branches, with ``verification_mode`` and
@@ -36,13 +36,13 @@ from pg_case_factory.alter_index_factor_loop import (
 
 ROOT = Path(__file__).resolve().parents[1]
 
-_BASELINE_COUNT = 772
+_BASELINE_COUNT = 87
 _EXTENSION_COUNT = 6786
-_TOTAL_COUNT = _BASELINE_COUNT + _EXTENSION_COUNT  # 7558
+_TOTAL_COUNT = _BASELINE_COUNT + _EXTENSION_COUNT  # 6873
 # Frozen to the empirical expander output (positive-axis x T6 cross, no
 # cap truncation, all success-path outcomes).
 _EXTENSION_SHA256 = (
-    "ce915c5a145df4c3b7fef91d10720655b298608271ac2ce19eb62455ac8d93df"
+    "aff7acd9af139d32c1b3de220145ef2e3903209d2ce54754af0b558430f23c37"
 )
 _EXPECTED_ACTIONS = frozenset(
     {
