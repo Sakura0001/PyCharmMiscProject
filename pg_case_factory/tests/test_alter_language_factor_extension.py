@@ -36,10 +36,10 @@ ROOT = Path(__file__).resolve().parents[1]
 _BASELINE_COUNT = 42
 _EXTENSION_COUNT = 600
 _TOTAL_COUNT = _BASELINE_COUNT + _EXTENSION_COUNT  # 642
-_SUCCESS_EXTENSIONS = 144
-_FAILURE_EXTENSIONS = 456
+_SUCCESS_EXTENSIONS = 168
+_FAILURE_EXTENSIONS = 432
 _EXTENSION_MULTISET_SHA256 = (
-    "31b01ffb7da83da9df7b1f084f59a4e20b28762379e5bceeb233ab8f9c3ffabf"
+    "57a2fcbb5c6a2c1ed42ed340c29870be214305bcfb5a39fcf3f01bf7ad431548"
 )
 
 # Behaviour-negative (factor, value) pairs that are CROSSED in extensions.
@@ -124,13 +124,22 @@ def _failure_unit_count(assignment: dict[str, str]) -> int:
     return cluster + negatives
 
 
+def _privilege_boundary_fires(assignment: dict[str, str]) -> bool:
+    """Whether the must_be_owner_of_language check actually fires."""
+
+    return assignment.get("new_owner_shape") != "session_user"
+
+
 def _present_failure_pair(
     assignment: dict[str, str],
 ) -> tuple[str, str] | None:
     """Return the single attributable failure pair, or None for success."""
 
     level = assignment.get("privilege_context")
-    if level in _PRIVILEGE_CLUSTER_VALUES:
+    if (
+        level in _PRIVILEGE_CLUSTER_VALUES
+        and _privilege_boundary_fires(assignment)
+    ):
         return ("privilege_context", level)
     for neg_factor, neg_value in _CROSSED_BEHAVIOUR_NEGATIVES:
         if assignment.get(neg_factor) == neg_value:
@@ -203,15 +212,15 @@ class AlterLanguageFactorExtensionPlanTest(unittest.TestCase):
             self.assertLessEqual(count, 1, case.case_id)
             if case.outcome == "expected_failure":
                 self.assertEqual(1, count, case.case_id)
-            else:
-                self.assertEqual(0, count, case.case_id)
+            # Success cases may have count=0 (no failure unit) or count=1
+            # (privilege cluster that does not fire for SESSION_USER no-op).
 
-    def test_expected_status_is_derived_from_failure_unit(self) -> None:
+    def test_expected_status_is_derived_from_present_failure_pair(self) -> None:
         for case in self.plan.cases:
             assignment = dict(case.factor_assignment)
-            count = _failure_unit_count(assignment)
+            pair = _present_failure_pair(assignment)
             self.assertEqual(
-                "failure" if count == 1 else "success",
+                "failure" if pair is not None else "success",
                 assignment["expected_status"],
                 case.case_id,
             )
@@ -249,10 +258,23 @@ class AlterLanguageFactorExtensionPlanTest(unittest.TestCase):
         for case in self.plan.cases:
             a = dict(case.factor_assignment)
             if a["privilege_context"] in _PRIVILEGE_CLUSTER_VALUES:
-                self.assertEqual(
-                    "expected_failure", case.outcome, case.case_id
-                )
-                self.assertEqual("42501", case.expected_sqlstate, case.case_id)
+                if _privilege_boundary_fires(a):
+                    self.assertEqual(
+                        "expected_failure", case.outcome, case.case_id
+                    )
+                    self.assertEqual(
+                        "42501", case.expected_sqlstate, case.case_id
+                    )
+                else:
+                    # SESSION_USER resolves to the session user (the owner),
+                    # making OWNER TO a no-op that PG allows even for
+                    # non-owners, so the boundary does not fire.
+                    self.assertEqual(
+                        "success", case.outcome, case.case_id
+                    )
+                    self.assertEqual(
+                        "00000", case.expected_sqlstate, case.case_id
+                    )
 
     def test_branch_grammar_and_consumer_action_are_consistent(self) -> None:
         for case in self.plan.cases:

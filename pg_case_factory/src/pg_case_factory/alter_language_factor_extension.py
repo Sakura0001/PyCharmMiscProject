@@ -194,6 +194,20 @@ def _failure_unit_count(assignment: dict[str, str]) -> int:
     return cluster + negatives
 
 
+def _privilege_boundary_fires(assignment: dict[str, str]) -> bool:
+    """Whether the must_be_owner_of_language privilege check actually fires.
+
+    ``SESSION_USER`` resolves to the session user (the superuser that owns
+    every test language in this framework), making ``OWNER TO SESSION_USER``
+    a no-op transfer to the existing owner that PG 18.4 allows even for
+    non-owners.  Verified on the PG 18.4 cluster (port 55488).  The privilege
+    boundary does not fire for this specific sub-case, so the outcome is
+    success (00000) rather than 42501.
+    """
+
+    return assignment.get("new_owner_shape") != "session_user"
+
+
 def _present_failure_pair(
     assignment: dict[str, str],
 ) -> tuple[str, str] | None:
@@ -202,12 +216,16 @@ def _present_failure_pair(
     ALTER LANGUAGE has no superuser-only action or role-membership wall (the
     only privilege boundary is must_be_owner_of_language, modelled by the
     privilege cluster), so the privilege cluster is attributed first when
-    present, then any single co-occurring behaviour-negative (the at-most-one
-    rule has already excluded double-failure cases from the kept set).
+    present and the boundary actually fires, then any single co-occurring
+    behaviour-negative (the at-most-one rule has already excluded
+    double-failure cases from the kept set).
     """
 
     level = assignment.get("privilege_context")
-    if level in _PRIVILEGE_CLUSTER_VALUES:
+    if (
+        level in _PRIVILEGE_CLUSTER_VALUES
+        and _privilege_boundary_fires(assignment)
+    ):
         return ("privilege_context", level)
     for neg_factor, neg_value in _CROSSED_BEHAVIOUR_NEGATIVES:
         if assignment.get(neg_factor) == neg_value:
@@ -236,9 +254,15 @@ def _behavior_combinations() -> list[dict[str, str]]:
                 assignment[name] = value
             if not _is_valid_combination(assignment):
                 continue
-            unit = _failure_unit_count(assignment)
+            # expected_status follows the ACTUAL outcome (from
+            # _present_failure_pair), not the filter's failure-unit count.
+            # This keeps expected_status consistent with outcome/sqlstate
+            # even when the privilege boundary does not fire (e.g.
+            # new_owner_shape=session_user under a non-owner role, where PG
+            # allows the no-op transfer to the existing owner).
+            pair = _present_failure_pair(assignment)
             assignment["expected_status"] = (
-                "failure" if unit == 1 else "success"
+                "failure" if pair is not None else "success"
             )
             combos.append(assignment)
     return combos

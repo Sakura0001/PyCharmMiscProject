@@ -262,12 +262,16 @@ def _probe_select(
         and branch == _BRANCH_OWNER
     ):
         owner = _owner_target(case, a, p)
+        if owner in ("CURRENT_ROLE", "CURRENT_USER", "SESSION_USER"):
+            role_filter = f"r.rolname = {owner.lower()}"
+        else:
+            role_filter = f"r.rolname = '{owner}'"
         return (
             "SELECT count(*) > 0 AS owner_is_target "
             "FROM pg_catalog.pg_language AS l "
             "JOIN pg_catalog.pg_roles AS r ON l.lanowner = r.oid "
-            f"WHERE l.lanname = '{name}' AND r.rolname = '{owner}' "
-            "ORDER BY count(*)"
+            f"WHERE l.lanname = '{name}' AND {role_filter} "
+            "ORDER BY count(*) LIMIT 1;"
         )
     if mode == "error_assertion":
         comparator = "= 0" if absent else "> 0"
@@ -275,14 +279,14 @@ def _probe_select(
         return (
             f"SELECT count(*) {comparator} AS {alias} "
             "FROM pg_catalog.pg_language "
-            f"WHERE lanname = '{name}' ORDER BY count(*)"
+            f"WHERE lanname = '{name}' ORDER BY count(*) LIMIT 1;"
         )
     comparator = "= 0" if absent else "> 0"
     alias = "language_absent" if absent else "language_present"
     return (
         f"SELECT count(*) {comparator} AS {alias} "
         "FROM pg_catalog.pg_language "
-        f"WHERE lanname = '{name}' ORDER BY count(*)"
+        f"WHERE lanname = '{name}' ORDER BY count(*) LIMIT 1;"
     )
 
 
@@ -300,6 +304,25 @@ def _conflict_fixture_needed(case: AlterLanguageFactorCase) -> bool:
     }
 
 
+def _invalid_combination_primary(
+    case: AlterLanguageFactorCase,
+) -> bool:
+    """The primary is an invalid-combination boundary (not ``none``).
+
+    ALTER LANGUAGE has exactly two legal single-action forms (RENAME TO and
+    OWNER TO); combining both clauses in one statement is a syntax error
+    (42601), which is the only way the matrix's declared
+    ``invalid_language_alter_combination`` boundary is reachable in PG 18.4
+    (the declared 42809 wrong_object_type is unreachable because ALTER LANGUAGE
+    only resolves names in pg_language).
+    """
+
+    return (
+        case.factor_key == "invalid_combination"
+        and case.factor_value != "none"
+    )
+
+
 def _role_names(
     case: AlterLanguageFactorCase,
     a: dict[str, str],
@@ -311,13 +334,15 @@ def _role_names(
 
     The cluster superuser owns every fixture language (CREATE LANGUAGE needs
     superuser), so there is no separate fixture-owner role to drop; only the
-    non-superuser actor (privilege boundary) and the OWNER-branch new-owner
-    role are created and therefore torn down.
+    non-superuser actor (privilege boundary), the OWNER-branch new-owner role,
+    and the invalid-combination owner-target role are created and torn down.
     """
 
     roles: list[str] = []
     if effective == f"{p}actor":
         roles.append(f"{p}actor")
+    if _invalid_combination_primary(case):
+        roles.append(f"{p}icmb_owner")
     if branch == _BRANCH_OWNER and _owner_target(case, a, p) == f"{p}new_owner":
         roles.append(f"{p}new_owner")
     return tuple(roles)
@@ -335,10 +360,16 @@ def _resolve_case(case: AlterLanguageFactorCase) -> _CasePlan:
 
     # --- role fixtures -------------------------------------------------
     effective = _effective_role(case, a, p)
+    invalid_combo = _invalid_combination_primary(case)
     if branch == _BRANCH_OWNER:
         owner = _owner_target(case, a, p)
         if owner == f"{p}new_owner":
             setup.append(f"CREATE ROLE {p}new_owner LOGIN;")
+    if invalid_combo:
+        # The combined RENAME + OWNER clause needs an owner-target role so the
+        # statement is a complete (but invalid) combination that parses far
+        # enough to raise 42601.
+        setup.append(f"CREATE ROLE {p}icmb_owner LOGIN;")
     if effective == f"{p}actor":
         setup.append(f"CREATE ROLE {p}actor LOGIN;")
 
@@ -380,7 +411,15 @@ def _resolve_case(case: AlterLanguageFactorCase) -> _CasePlan:
         locus = "fixture.privilege_state"
 
     # --- the primary target statement ---------------------------------
-    if branch == _BRANCH_RENAME:
+    if invalid_combo:
+        # A combined RENAME + OWNER clause is a syntax error (42601): the
+        # only reachable form of the invalid_combination boundary.
+        target = (
+            f"ALTER LANGUAGE {name} RENAME TO {_new_name(case, a, p)} "
+            f"OWNER TO {p}icmb_owner;"
+        )
+        locus = "fixture.invalid_combination"
+    elif branch == _BRANCH_RENAME:
         target = f"ALTER LANGUAGE {name} RENAME TO {_new_name(case, a, p)};"
     elif branch == _BRANCH_OWNER:
         target = f"ALTER LANGUAGE {name} OWNER TO {_owner_target(case, a, p)};"
@@ -394,6 +433,10 @@ def _resolve_case(case: AlterLanguageFactorCase) -> _CasePlan:
 
     # --- oracle / SQLSTATE assertion ------------------------------------
     assert_lines: list[str] = []
+    # Reset to superuser before the catalog-audit oracle so it runs with full
+    # visibility (privilege_context/ownership_boundary cases SET ROLE in setup).
+    if effective:
+        assert_lines.append("RESET ROLE;")
     if case.kind == "RISK":
         assert_lines.append(
             "COMMIT;" if case.factor_value == "commit" else "ROLLBACK;"
@@ -408,13 +451,21 @@ def _resolve_case(case: AlterLanguageFactorCase) -> _CasePlan:
     drop_mode = a.get("cleanup_mode", "drop_objects")
     if case.factor_key == "cleanup_mode":
         drop_mode = case.factor_value
+    # Object drops are always idempotent (IF EXISTS) so the pre-cleanup
+    # (section 1, which runs under ON_ERROR_STOP) never aborts on an absent
+    # or renamed-away language.  cleanup_mode distinguishes the two modes by
+    # CASCADE only: drop_objects cascades dependents, reset_state drops bare.
     cascade = "" if drop_mode == "reset_state" else " CASCADE"
-    if_exists = "IF EXISTS " if drop_mode == "drop_objects" else ""
+    if_exists = "IF EXISTS "
     roles = _role_names(case, a, p, branch, effective)
 
     candidate_names: list[str] = [name]
     if branch == _BRANCH_RENAME:
-        candidate_names.append(_new_name(case, a, p).strip('"'))
+        # Preserve quoting: a quoted identifier (e.g. "p_Mixed New") MUST
+        # keep its double quotes when used as a SQL identifier in DROP, or the
+        # embedded space breaks the parser.  The probe strips quotes because
+        # it compares against a string literal (pg_language.lanname).
+        candidate_names.append(_new_name(case, a, p))
     if _conflict_fixture_needed(case):
         candidate_names.append(f"{p}conflict")
 

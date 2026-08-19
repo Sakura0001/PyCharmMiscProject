@@ -297,11 +297,11 @@ _SFV_FAILURE_SQLSTATE: dict[tuple[str, str], tuple[str, str]] = {
     ("target_object_state", "missing"): ("42704", "language_does_not_exist"),
     ("name_shape", "missing_object"): ("42704", "language_does_not_exist"),
     ("new_name_shape", "existing_name_conflict"): (
-        "42723",
+        "42710",
         "language_already_exists",
     ),
     ("rename_conflict", "new_name_conflict"): (
-        "42723",
+        "42710",
         "language_already_exists",
     ),
     ("new_owner_shape", "missing_role"): ("42704", "role_does_not_exist"),
@@ -318,12 +318,12 @@ _SFV_FAILURE_SQLSTATE: dict[tuple[str, str], tuple[str, str]] = {
         "must_be_owner_of_language",
     ),
     ("invalid_combination", "object_type_mismatch"): (
-        "42809",
-        "wrong_object_type_for_language",
+        "42601",
+        "invalid_language_alter_combination",
     ),
     ("invalid_combination", "syntax_valid_semantic_error"): (
-        "42809",
-        "invalid_alter_combination",
+        "42601",
+        "invalid_language_alter_combination",
     ),
 }
 

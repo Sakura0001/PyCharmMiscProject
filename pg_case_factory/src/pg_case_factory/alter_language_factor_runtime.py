@@ -14,7 +14,7 @@ from .alter_language_factor_loop import AlterLanguageFactorCase
 
 PG18_BIN = Path("/tmp/pgcf-postgresql-18.4-install/bin")
 PG18_SOCKET = Path("/tmp/pgcf-pg18-al-sock-20260819")
-PG18_PORT = 55486
+PG18_PORT = 55488
 PG18_DATABASE = "pgcf_al"
 PG18_SUPERUSER = "pgcf_superuser"
 PER_FILE_TIMEOUT_SECONDS = 30
