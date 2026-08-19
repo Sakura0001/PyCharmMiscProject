@@ -1,0 +1,48 @@
+-- --------------------------------------------------------
+-- 版权所有(C)  2021-2030 华为技术有限公司
+--
+-- --
+-- author       : codex
+-- create at    : 2026-08-19
+-- version      : 1.0
+-- description  : ALTER GROUP cross-factor extension: statement_branch=branch_rename x verification_mode=pg_auth_members_catalog x cleanup_mode=revert_rename
+-- FE           : PG18-STATEMENT-FACTOR-LOOP
+-- ++
+-- --------------------------------------------------------
+-- case_id: ALTERGROUP3902
+-- source_md: skills/pg-sql-generation/references/statements/ddl/group/alter_group.md
+-- factor_md: skills/pg-sql-generation/references/combinations/ddl/group/alter_group.yaml
+-- primary_obligation_id: AG-EXT|3902|rename|pg_auth_members_catalog|revert_rename
+-- expected_outcome: expected_failure
+-- expected_sqlstate: 42710
+-- 1. 清理本编号对象，保证脚本可重复执行。
+DROP ROLE IF EXISTS altergroup_3902_grp;
+DROP ROLE IF EXISTS altergroup_3902_dup_grp;
+DROP ROLE IF EXISTS altergroup_3902_renamed;
+DROP ROLE IF EXISTS altergroup_3902_admin;
+\set ON_ERROR_STOP on
+-- 2. 创建完整本地角色和因子专用夹具。
+CREATE ROLE altergroup_3902_grp;
+CREATE ROLE altergroup_3902_dup_grp;
+CREATE ROLE altergroup_3902_admin LOGIN;
+GRANT altergroup_3902_grp TO altergroup_3902_admin WITH ADMIN OPTION;
+ALTER ROLE altergroup_3902_admin CREATEROLE;
+SET ROLE altergroup_3902_admin;
+\set ON_ERROR_STOP off
+-- 3. 执行唯一获得覆盖信用的 ALTER GROUP。
+-- primary-target-begin
+ALTER GROUP altergroup_3902_grp RENAME TO altergroup_3902_dup_grp;
+-- primary-target-end
+\set target_sqlstate :SQLSTATE
+\echo PGCF_TARGET_SQLSTATE=:target_sqlstate
+\set ON_ERROR_STOP on
+-- 4. 验证 SQLSTATE、目录状态和数据行为。
+RESET ROLE;
+SELECT :'target_sqlstate' = '42710' AS target_sqlstate_matches_expected;
+SELECT EXISTS(SELECT 1 FROM pg_catalog.pg_roles WHERE rolname = 'altergroup_3902_grp') AS rename_source_exists;
+-- 5. 清理全部本编号对象。
+RESET ROLE;
+DROP ROLE IF EXISTS altergroup_3902_grp;
+DROP ROLE IF EXISTS altergroup_3902_dup_grp;
+DROP ROLE IF EXISTS altergroup_3902_renamed;
+DROP ROLE IF EXISTS altergroup_3902_admin;
