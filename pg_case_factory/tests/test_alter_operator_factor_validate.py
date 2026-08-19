@@ -52,8 +52,8 @@ class AlterOperatorFactorValidateTests(unittest.TestCase):
             result.passed, msg=f"issues: {result.issues[:5]}"
         )
         self.assertEqual(result.baseline_case_count, 63)
-        self.assertEqual(result.extension_case_count, 2772)
-        self.assertEqual(result.sql_file_count, 2835)
+        self.assertEqual(result.extension_case_count, 2292)
+        self.assertEqual(result.sql_file_count, 2355)
 
     def test_no_coverage_gaps(self) -> None:
         result = validate_alter_operator_factor_programs(
@@ -82,7 +82,7 @@ class AlterOperatorFactorValidateTests(unittest.TestCase):
         payload = result.to_dict()
         self.assertEqual(payload["kind"], "alter_operator_actual_factor_witness_report")
         self.assertEqual(payload["baseline_case_count"], 63)
-        self.assertEqual(payload["extension_case_count"], 2772)
+        self.assertEqual(payload["extension_case_count"], 2292)
         self.assertTrue(payload["sql_sha256"])
 
     def test_selected_subset_validation(self) -> None:

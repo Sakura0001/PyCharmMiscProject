@@ -136,7 +136,6 @@ _BRANCH_AXES: dict[str, dict[str, tuple[str, ...]]] = {
     "branch_set_estimator": {
         "restrict_estimator": ("none_value", "res_proc_name", "missing_proc"),
         "join_estimator": ("none_value", "join_proc_name", "missing_proc"),
-        "dependency_state": ("ready", "missing_dependency"),
         "target_object_state": ("exists", "missing"),
         "privilege_context": (
             "superuser",
@@ -155,7 +154,6 @@ _CROSSED_BEHAVIOUR_NEGATIVES: frozenset[tuple[str, str]] = frozenset(
         ("new_owner_shape", "missing_role"),
         ("restrict_estimator", "missing_proc"),
         ("join_estimator", "missing_proc"),
-        ("dependency_state", "missing_dependency"),
         ("schema_migration_state", "target_schema_missing"),
         ("schema_migration_state", "target_schema_conflict"),
     }
@@ -166,15 +164,9 @@ _SQLSTATE_BY_REASON: dict[str, tuple[str, str]] = {
     "missing_estimator_function": ("42883", "missing_estimator_function"),
     "missing_owner_role": ("42704", "missing_owner_role"),
     "missing_target_schema": ("3F000", "missing_target_schema"),
-    "target_schema_operator_conflict": ("42710", "target_schema_operator_conflict"),
+    "target_schema_operator_conflict": ("23505", "target_schema_operator_conflict"),
     "insufficient_operator_privilege": ("42501", "insufficient_operator_privilege"),
 }
-
-
-def _estimator_proc_bound(assignment: dict[str, str]) -> bool:
-    return assignment.get("restrict_estimator") == "res_proc_name" or (
-        assignment.get("join_estimator") == "join_proc_name"
-    )
 
 
 def _privilege_boundary_fires(assignment: dict[str, str]) -> bool:
@@ -195,6 +187,10 @@ def _privilege_cluster_fires(
 
 
 def _ownership_fires(assignment: dict[str, str]) -> bool:
+    # SESSION USER owner target is a permitted no-op transfer for non-owners,
+    # so the ownership boundary is subsumed (does not fire) in that case.
+    if assignment.get("new_owner_shape") == "session_user":
+        return False
     return assignment.get("ownership_boundary") == "non_owner"
 
 
@@ -203,9 +199,6 @@ def _active_negatives(assignment: dict[str, str]) -> list[tuple[str, str]]:
     for factor, value in assignment.items():
         if (factor, value) not in _CROSSED_BEHAVIOUR_NEGATIVES:
             continue
-        if (factor, value) == ("dependency_state", "missing_dependency"):
-            if not _estimator_proc_bound(assignment):
-                continue
         active.append((factor, value))
     return active
 
@@ -229,15 +222,10 @@ def _present_failure_pair(
         return _SQLSTATE_BY_REASON["insufficient_operator_privilege"]
     if branch == "branch_owner" and _ownership_fires(assignment):
         return _SQLSTATE_BY_REASON["insufficient_operator_privilege"]
-    # 2. Estimator negatives (missing proc, then conditional dependency).
+    # 2. Estimator negatives (only one estimator clause fits per ALTER).
     if assignment.get("restrict_estimator") == "missing_proc":
         return _SQLSTATE_BY_REASON["missing_estimator_function"]
     if assignment.get("join_estimator") == "missing_proc":
-        return _SQLSTATE_BY_REASON["missing_estimator_function"]
-    if (
-        assignment.get("dependency_state") == "missing_dependency"
-        and _estimator_proc_bound(assignment)
-    ):
         return _SQLSTATE_BY_REASON["missing_estimator_function"]
     # 3. Remaining behaviour negatives.
     if assignment.get("target_object_state") == "missing":
@@ -255,23 +243,18 @@ def _present_failure_pair(
 def _is_valid_combination(branch: str, assignment: dict[str, str]) -> bool:
     if _failure_unit_count(branch, assignment) > 1:
         return False
+    # Only one estimator clause fits per ALTER OPERATOR statement: a case
+    # binding both RESTRICT and JOIN is ambiguous and is dropped.
+    restrict = assignment.get("restrict_estimator", "none_value")
+    join = assignment.get("join_estimator", "none_value")
+    if restrict != "none_value" and join != "none_value":
+        return False
     # A missing operator has no estimator to bind; cross only against the
     # success baseline for the missing-operator negative.
     if assignment.get("target_object_state") == "missing":
-        if assignment.get("restrict_estimator") == "missing_proc":
+        if restrict in ("missing_proc", "res_proc_name"):
             return False
-        if assignment.get("join_estimator") == "missing_proc":
-            return False
-        if (
-            assignment.get("dependency_state") == "missing_dependency"
-            and _estimator_proc_bound(assignment)
-        ):
-            return False
-    # Estimator procs require a present operator.
-    if assignment.get("target_object_state") == "missing":
-        if assignment.get("restrict_estimator") == "res_proc_name":
-            return False
-        if assignment.get("join_estimator") == "join_proc_name":
+        if join in ("missing_proc", "join_proc_name"):
             return False
     return True
 

@@ -96,7 +96,7 @@ class AlterOperatorFactorRenderTests(unittest.TestCase):
             count = generate_alter_operator_factor_programs(
                 self.baseline, self.extension, Path(td)
             )
-            self.assertEqual(count, 63 + 2772)
+            self.assertEqual(count, 63 + 2292)
 
     def test_escape_sqlstate_rejects_invalid(self) -> None:
         with self.assertRaises(AlterOperatorFactorRenderError):

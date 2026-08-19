@@ -31,6 +31,7 @@ from .alter_operator_factor_loop import (
     AlterOperatorFactorLoopPlan,
     build_alter_operator_factor_loop_plan,
 )
+from .regression_style import HuaweiSqlHeader, render_huawei_sql_header
 
 
 class AlterOperatorFactorRenderError(ValueError):
@@ -40,10 +41,18 @@ class AlterOperatorFactorRenderError(ValueError):
 _PRIMARY_BEGIN = "-- primary-target-begin"
 _PRIMARY_END = "-- primary-target-end"
 
-_DOC_SOURCE = "postgresql-18.4-doc:sql-alteroperator"
-_VERSION = "1.0.0"
-_AUTHOR = "pg_case_factory"
-_COPYRIGHT = "Copyright (c) 2026 pg_case_factory"
+_DOC_SOURCE = (
+    "skills/pg-sql-generation/references/statements/ddl/operator/"
+    "alter_operator.md"
+)
+_FACTOR_SOURCE = (
+    "skills/pg-sql-generation/references/combinations/ddl/operator/"
+    "alter_operator.yaml"
+)
+_AUTHOR = "codex"
+_CREATE_AT = "2026-08-19"
+_VERSION = "1.0"
+_FE = "PG18-STATEMENT-FACTOR-LOOP"
 
 _TYPE_MAP: dict[str, str] = {
     "integer": "integer",
@@ -51,6 +60,15 @@ _TYPE_MAP: dict[str, str] = {
     "boolean": "boolean",
     "custom_type": "custom_type",  # rewritten with prefix by _operand_type
 }
+
+# PostgreSQL operator names are symbol tokens, not identifiers, so a constant
+# non-builtin symbol carries every case; uniqueness comes from the per-case
+# schema.  Estimator procedures use PG's built-in selectivity functions
+# (custom SQL functions cannot take the ``internal`` pseudotype).
+_OPERATOR_SYMBOL = "#~"
+_COMMUTATOR_SYMBOL = "#&"
+_RESTRICT_PROC = "eqsel"
+_JOIN_PROC = "eqjoinsel"
 
 
 def _operand_type(data_type: str, prefix: str) -> str:
@@ -71,12 +89,14 @@ def _operator_signature(case_assignments: dict[str, str], prefix: str) -> tuple[
 
 def _operator_name(case_assignments: dict[str, str], prefix: str) -> str:
     shape = case_assignments.get("name_shape", "plain_identifier")
-    raw = f"{prefix}op"
+    schema = f"{prefix}sch"
     if shape == "quoted_identifier":
-        return f'"{raw}"'
-    if shape == "schema_qualified":
-        return f"{prefix}sch.{raw}"
-    return raw
+        return f'"{schema}".{_OPERATOR_SYMBOL}'
+    return f"{schema}.{_OPERATOR_SYMBOL}"
+
+
+def _operator_symbol() -> str:
+    return _OPERATOR_SYMBOL
 
 
 def _owner_target(shape: str, prefix: str) -> str:
@@ -93,7 +113,10 @@ def _owner_target(shape: str, prefix: str) -> str:
 
 def _effective_role(case_assignments: dict[str, str], prefix: str) -> str:
     privilege = case_assignments.get("privilege_context", "owner")
-    if privilege in ("non_owner", "insufficient_privilege"):
+    ownership = case_assignments.get("ownership_boundary", "owner")
+    # Either a privilege-context non-owner OR an ownership-boundary non-owner
+    # must run the ALTER under a non-owning actor role so 42501 fires.
+    if privilege in ("non_owner", "insufficient_privilege") or ownership == "non_owner":
         return f"{prefix}actor"
     return ""
 
@@ -111,27 +134,32 @@ def _alter_clause(
         return f"SET SCHEMA {prefix}target_sch"
     if branch == "set_estimator":
         restrict = case_assignments.get("restrict_estimator", "none_value")
-        if restrict == "none_value":
-            return "SET RESTRICT = NONE"
-        if restrict == "res_proc_name":
-            return f"SET RESTRICT = {prefix}res_proc"
-        if restrict == "missing_proc":
-            return f"SET RESTRICT = {prefix}missing_res_proc"
         join = case_assignments.get("join_estimator", "none_value")
-        if join == "none_value":
-            return "SET JOIN = NONE"
+        # The estimator/optimizer options share one parenthesised SET(...) list;
+        # the extension filter guarantees at most one of restrict/join is non-none.
+        if restrict == "none_value" and join == "none_value":
+            return "SET (RESTRICT = NONE)"
+        if restrict == "res_proc_name":
+            return f"SET (RESTRICT = {_RESTRICT_PROC})"
+        if restrict == "missing_proc":
+            return f"SET (RESTRICT = {prefix}missing_res_proc)"
         if join == "join_proc_name":
-            return f"SET JOIN = {prefix}join_proc"
+            return f"SET (JOIN = {_JOIN_PROC})"
         if join == "missing_proc":
-            return f"SET JOIN = {prefix}missing_join_proc"
+            return f"SET (JOIN = {prefix}missing_join_proc)"
+        return "SET (RESTRICT = NONE)"
     if branch == "set_commutator":
-        return f"SET COMMUTATOR = {prefix}comm_op"
+        # COMMUTATOR/NEGATOR take an OPERATOR(schema.symbol) reference; the
+        # companion operator is created by _fixture_lines on this branch.
+        comm = f"{prefix}sch.{_COMMUTATOR_SYMBOL}"
+        return f"SET (COMMUTATOR = OPERATOR({comm}))"
     if branch == "set_negator":
-        return f"SET NEGATOR = {prefix}neg_op"
+        comm = f"{prefix}sch.{_COMMUTATOR_SYMBOL}"
+        return f"SET (NEGATOR = OPERATOR({comm}))"
     if branch == "set_hashes":
-        return "SET HASHES"
+        return "SET (HASHES)"
     if branch == "set_merges":
-        return "SET MERGES"
+        return "SET (MERGES)"
     raise AlterOperatorFactorRenderError(f"unknown branch: {branch}")
 
 
@@ -161,32 +189,23 @@ def _fixture_lines(
         setup.append(f"CREATE TYPE {prefix}custom_type AS (val integer);")
         cleanup.append(f"DROP TYPE IF EXISTS {prefix}custom_type CASCADE;")
     target_sch = f"{prefix}target_sch"
-    if case_assignments.get("schema_migration_state") == "target_schema_exists":
+    schema_state = case_assignments.get("schema_migration_state", "target_schema_exists")
+    if schema_state in ("target_schema_exists", "target_schema_conflict"):
         setup.append(f"CREATE SCHEMA IF NOT EXISTS {target_sch};")
     cleanup.append(f"DROP SCHEMA IF EXISTS {target_sch} CASCADE;")
     proc_name = f"{op_schema}.{prefix}op_proc"
-    setup.append(
-        f"CREATE FUNCTION {proc_name}(l {left_type}, r {right_type}) "
-        f"RETURNS boolean LANGUAGE SQL IMMUTABLE AS $$ SELECT false $$;"
-    )
+    is_prefix = left_type == "NONE"
+    if is_prefix:
+        setup.append(
+            f"CREATE FUNCTION {proc_name}(r {right_type}) "
+            f"RETURNS boolean LANGUAGE SQL IMMUTABLE AS $$ SELECT false $$;"
+        )
+    else:
+        setup.append(
+            f"CREATE FUNCTION {proc_name}(l {left_type}, r {right_type}) "
+            f"RETURNS boolean LANGUAGE SQL IMMUTABLE AS $$ SELECT false $$;"
+        )
     cleanup.append(f"DROP FUNCTION IF EXISTS {proc_name} CASCADE;")
-    restrict = case_assignments.get("restrict_estimator", "none_value")
-    if restrict == "res_proc_name":
-        res_proc = f"{op_schema}.{prefix}res_proc"
-        setup.append(
-            f"CREATE FUNCTION {res_proc}(internal, oid, internal, integer) "
-            f"RETURNS double precision LANGUAGE SQL IMMUTABLE AS $$ SELECT 1.0 $$;"
-        )
-        cleanup.append(f"DROP FUNCTION IF EXISTS {res_proc} CASCADE;")
-    join = case_assignments.get("join_estimator", "none_value")
-    if join == "join_proc_name":
-        join_proc = f"{op_schema}.{prefix}join_proc"
-        setup.append(
-            f"CREATE FUNCTION {join_proc}(internal, oid, internal, internal, "
-            f"internal, internal, internal, internal, oid, internal) "
-            f"RETURNS double precision LANGUAGE SQL IMMUTABLE AS $$ SELECT 1.0 $$;"
-        )
-        cleanup.append(f"DROP FUNCTION IF EXISTS {join_proc} CASCADE;")
     # Roles for the owner-transfer / privilege fixture.
     owner_shape = case_assignments.get("new_owner_shape", "plain_role")
     if case_assignments.get("target_action") == "owner_change":
@@ -194,16 +213,23 @@ def _fixture_lines(
             setup.append(f"CREATE ROLE {prefix}new_owner LOGIN;")
             cleanup.append(f"DROP ROLE IF EXISTS {prefix}new_owner;")
         if owner_shape == "missing_role":
-            setup.append(f"CREATE ROLE {prefix}nonexistent_role LOGIN;")
+            # The role is intentionally absent so OWNER TO it fails (42704);
+            # only a defensive cleanup is registered.
             cleanup.append(f"DROP ROLE IF EXISTS {prefix}nonexistent_role;")
     if effective:
         setup.append(f"CREATE ROLE {effective} LOGIN;")
-        setup.append(f"GRANT {op_schema} ON SCHEMA {op_schema} TO {effective};")
+        setup.append(f"GRANT USAGE ON SCHEMA {op_schema} TO {effective};")
         cleanup.append(f"DROP OWNED BY {effective};")
         cleanup.append(f"DROP ROLE IF EXISTS {effective};")
     object_state = case_assignments.get("target_object_state", "exists")
-    if object_state == "exists":
-        if case_assignments.get("operand_type_shape") == "prefix_operator":
+    # The abstract expected_status=failure SFV row has no concrete failure
+    # trigger, so it is witnessed as a missing-operator case (42883).
+    operator_exists = (
+        object_state == "exists"
+        and case_assignments.get("expected_status") != "failure"
+    )
+    if operator_exists:
+        if is_prefix:
             op_def = (
                 f"CREATE OPERATOR {op_name} ( "
                 f"PROCEDURE = {proc_name}, RIGHTARG = {right_type}"
@@ -214,12 +240,53 @@ def _fixture_lines(
                 f"PROCEDURE = {proc_name}, LEFTARG = {left_type}, "
                 f"RIGHTARG = {right_type}"
             )
-        if restrict == "res_proc_name":
-            op_def += f", RESTRICT = {op_schema}.{prefix}res_proc"
-        if join == "join_proc_name":
-            op_def += f", JOIN = {op_schema}.{prefix}join_proc"
         op_def += " );"
         setup.append(op_def)
+        # Companion operator referenced by COMMUTATOR/NEGATOR (same proc).
+        target_action = case_assignments.get("target_action", "owner_change")
+        if target_action in ("set_commutator", "set_negator"):
+            comm_name = f"{op_schema}.{_COMMUTATOR_SYMBOL}"
+            if is_prefix:
+                comm_def = (
+                    f"CREATE OPERATOR {comm_name} ( "
+                    f"PROCEDURE = {proc_name}, RIGHTARG = {right_type}"
+                )
+            else:
+                comm_def = (
+                    f"CREATE OPERATOR {comm_name} ( "
+                    f"PROCEDURE = {proc_name}, LEFTARG = {left_type}, "
+                    f"RIGHTARG = {right_type}"
+                )
+            comm_def += " );"
+            setup.append(comm_def)
+        # Conflicting operator in the target schema so SET SCHEMA hits the
+        # pg_operator unique index (23505 unique_violation).
+        if schema_state == "target_schema_conflict":
+            conflict_proc = f"{target_sch}.{prefix}conflict_proc"
+            if is_prefix:
+                setup.append(
+                    f"CREATE FUNCTION {conflict_proc}(r {right_type}) "
+                    f"RETURNS boolean LANGUAGE SQL IMMUTABLE "
+                    f"AS $$ SELECT false $$;"
+                )
+                conflict_def = (
+                    f"CREATE OPERATOR {target_sch}.{_OPERATOR_SYMBOL} ( "
+                    f"PROCEDURE = {conflict_proc}, RIGHTARG = {right_type}"
+                )
+            else:
+                setup.append(
+                    f"CREATE FUNCTION {conflict_proc}(l {left_type}, r {right_type}) "
+                    f"RETURNS boolean LANGUAGE SQL IMMUTABLE "
+                    f"AS $$ SELECT false $$;"
+                )
+                conflict_def = (
+                    f"CREATE OPERATOR {target_sch}.{_OPERATOR_SYMBOL} ( "
+                    f"PROCEDURE = {conflict_proc}, LEFTARG = {left_type}, "
+                    f"RIGHTARG = {right_type}"
+                )
+            conflict_def += " );"
+            setup.append(conflict_def)
+            cleanup.append(f"DROP FUNCTION IF EXISTS {conflict_proc} CASCADE;")
     return (tuple(setup), tuple(cleanup))
 
 
@@ -233,12 +300,22 @@ def _oracle_lines(
 ) -> tuple[str, ...]:
     mode = case_assignments.get("verification_mode", "catalog_query")
     target_action = case_assignments.get("target_action", "owner_change")
+    # Prefix operators have oprleft = 0 (no left operand); binary operators
+    # carry the left regtype.  The per-case schema makes each ``#~`` signature
+    # unique, so the namespace filter is mandatory to disambiguate.
+    left_pred = "oprleft = 0" if left_type == "NONE" else f"oprleft = '{left_type}'::regtype"
+    schema_filter = (
+        f"AND oprnamespace = (SELECT oid FROM pg_catalog.pg_namespace "
+        f"WHERE nspname = '{prefix}sch')"
+    )
+    symbol = _operator_symbol()
     # catalog-audit probe (always present for semantic locus).
     base = (
         f"SELECT count(*) AS op_present FROM pg_catalog.pg_operator "
-        f"WHERE oprname = '{op_name.split('.')[-1].strip(chr(34))}' "
-        f"AND oprleft = '{left_type}'::regtype "
-        f"AND oprright = '{right_type}'::regtype ORDER BY count(*) LIMIT 1;"
+        f"WHERE oprname = '{symbol}' "
+        f"AND {left_pred} "
+        f"AND oprright = '{right_type}'::regtype {schema_filter} "
+        f"ORDER BY count(*) LIMIT 1;"
     )
     if mode == "error_assertion":
         return (
@@ -249,25 +326,36 @@ def _oracle_lines(
     if target_action == "owner_change":
         owner_shape = case_assignments.get("new_owner_shape", "plain_role")
         if owner_shape in ("current_role", "current_user"):
-            owner_clause = "oprowner = (SELECT oid FROM pg_roles WHERE rolname = current_role)"
+            owner_clause = (
+                "oprowner = (SELECT oid FROM pg_catalog.pg_roles "
+                "WHERE rolname = current_role)"
+            )
         elif owner_shape == "session_user":
-            owner_clause = "oprowner = (SELECT oid FROM pg_roles WHERE rolname = session_user)"
+            owner_clause = (
+                "oprowner = (SELECT oid FROM pg_catalog.pg_roles "
+                "WHERE rolname = session_user)"
+            )
         elif owner_shape == "plain_role":
-            owner_clause = f"oprowner = (SELECT oid FROM pg_roles WHERE rolname = '{prefix}new_owner')"
+            owner_clause = (
+                f"oprowner = (SELECT oid FROM pg_catalog.pg_roles "
+                f"WHERE rolname = '{prefix}new_owner')"
+            )
         else:
             owner_clause = "oprowner IS NOT NULL"
         probe = (
             f"SELECT count(*) AS op_owner_changed FROM pg_catalog.pg_operator "
-            f"WHERE oprname = '{op_name.split('.')[-1].strip(chr(34))}' "
-            f"AND oprleft = '{left_type}'::regtype "
-            f"AND oprright = '{right_type}'::regtype "
+            f"WHERE oprname = '{symbol}' "
+            f"AND {left_pred} "
+            f"AND oprright = '{right_type}'::regtype {schema_filter} "
             f"AND {owner_clause} ORDER BY count(*) LIMIT 1;"
         )
     elif target_action == "set_schema":
         probe = (
             f"SELECT count(*) AS op_schema_changed FROM pg_catalog.pg_operator "
-            f"WHERE oprname = '{op_name.split('.')[-1].strip(chr(34))}' "
-            f"AND oprnamespace = (SELECT oid FROM pg_namespace "
+            f"WHERE oprname = '{symbol}' "
+            f"AND {left_pred} "
+            f"AND oprright = '{right_type}'::regtype "
+            f"AND oprnamespace = (SELECT oid FROM pg_catalog.pg_namespace "
             f"WHERE nspname = '{prefix}target_sch') ORDER BY count(*) LIMIT 1;"
         )
     else:
@@ -329,7 +417,7 @@ def _primary_id(case) -> str:
     return getattr(case, "primary_obligation_id")
 
 
-def _header(case, plan: AlterOperatorFactorLoopPlan | None) -> str:
+def _header(case) -> list[str]:
     primary = _primary_id(case)
     factor_key = getattr(
         case, "factor_key", getattr(case, "derived_from_combination_group", "")
@@ -337,21 +425,23 @@ def _header(case, plan: AlterOperatorFactorLoopPlan | None) -> str:
     factor_value = getattr(
         case, "factor_value", getattr(case, "derivation_reason", "")
     )
-    lines = [
-        f"-- copyright: {_COPYRIGHT}",
-        f"-- author: {_AUTHOR}",
-        f"-- create_at: 2026-08-20",
-        f"-- version: {_VERSION}",
-        f"-- feature: alter_operator",
-        f"-- source: {_DOC_SOURCE}",
+    header = render_huawei_sql_header(
+        HuaweiSqlHeader(
+            author=_AUTHOR,
+            create_at=_CREATE_AT,
+            version=_VERSION,
+            description=f"ALTER OPERATOR {factor_key}={factor_value}",
+            fe=_FE,
+        )
+    ).rstrip("\n")
+    return header.splitlines() + [
         f"-- case_id: {case.case_id}",
-        f"-- source_md: {primary}",
-        f"-- factor_md: {factor_key}={factor_value}",
+        f"-- source_md: {_DOC_SOURCE}",
+        f"-- factor_md: {_FACTOR_SOURCE}",
         f"-- primary_obligation_id: {primary}",
         f"-- expected_outcome: {case.outcome}",
         f"-- expected_sqlstate: {case.expected_sqlstate}",
     ]
-    return "\n".join(lines) + "\n"
 
 
 def render_alter_operator_factor_case(case, repository_root: Path | None = None) -> str:
@@ -360,7 +450,7 @@ def render_alter_operator_factor_case(case, repository_root: Path | None = None)
     del repository_root  # cases are self-describing; root reserved for API parity
     plan = _resolve_case(case)
     sections: list[str] = []
-    sections.append(_header(case, None))
+    sections.extend(_header(case))
     # Section 1: pre-cleanup.
     sections.append("-- 1. 预清理本编号对象。")
     sections.append(plan.cleanup_lines[0] if plan.cleanup_lines else "")

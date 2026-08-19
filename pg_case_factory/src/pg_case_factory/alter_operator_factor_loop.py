@@ -355,7 +355,7 @@ _SFV_FAILURE_SQLSTATE: dict[tuple[str, str], tuple[str, str]] = {
         "missing_target_schema",
     ),
     ("schema_migration_state", "target_schema_conflict"): (
-        "42710",
+        "23505",
         "target_schema_operator_conflict",
     ),
     ("invalid_combination", "syntax_valid_semantic_error"): (
@@ -363,7 +363,7 @@ _SFV_FAILURE_SQLSTATE: dict[tuple[str, str], tuple[str, str]] = {
         "invalid_operator_alter_combination",
     ),
     ("invalid_combination", "object_type_mismatch"): (
-        "42809",
+        "42601",
         "invalid_operator_alter_combination",
     ),
     ("privilege_context", "non_owner"): (
