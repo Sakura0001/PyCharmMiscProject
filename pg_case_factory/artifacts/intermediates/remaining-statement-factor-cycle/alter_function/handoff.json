@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "kind": "alter_function_factor_handoff_ledger",
+  "generation_mode": "factor_value_independent_loop_v1",
+  "delegated_count": 0,
+  "owner_statement_key": "create_function",
+  "decisions": []
+}

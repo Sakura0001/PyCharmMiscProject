@@ -788,6 +788,104 @@ def _build_alter_foreign_table_plan_lazily(
     )
 
 
+@lru_cache(maxsize=4)
+def _alter_function_factor_plan(repository_root: str):
+    from .alter_function_factor_loop import (
+        build_alter_function_factor_loop_plan,
+    )
+
+    return build_alter_function_factor_loop_plan(Path(repository_root))
+
+
+def _build_alter_function_plan_lazily(
+    snapshot: StatementFactorCycleSnapshot,
+    entry: StatementCycleEntry,
+) -> StatementRegressPlan:
+    factor_plan = _alter_function_factor_plan(
+        str(snapshot.repository_root.resolve())
+    )
+    cases = tuple(
+        StatementRegressCase(
+            ordinal=case.ordinal,
+            case_id=case.case_id,
+            sql_filename=case.sql_filename,
+            object_prefix=case.object_prefix,
+            case_group=f"factor_value_loop_{case.kind.lower()}",
+            case_type="factor_value_independent_witness",
+            outcome=case.outcome,
+            execution_profile="same_session_multiphase",
+            derived_axes={
+                "primary_obligation_id": case.primary_obligation_id,
+                "kind": case.kind,
+                "factor_key": case.factor_key,
+                "factor_value": case.factor_value,
+                "consumer_action_id": case.consumer_action_id,
+                "expected_sqlstate": case.expected_sqlstate,
+            },
+            factor_values=(f"{case.factor_key}={case.factor_value}",),
+            combination_strategy="one_primary_factor_value_with_legal_baselines",
+            description=(
+                "Independent ALTER FUNCTION witness for "
+                f"{case.factor_key}={case.factor_value}"
+            ),
+            expected_anchor=(
+                f"SQLSTATE {case.expected_sqlstate}; actual-byte semantic locus"
+            ),
+        )
+        for case in factor_plan.cases
+    )
+    standard_case_by_id = {case.case_id: case for case in cases}
+    factor_case_by_obligation = {
+        case.primary_obligation_id: case for case in factor_plan.cases
+    }
+    decisions: list[FactorValueDecision] = []
+    for factor in entry.factors:
+        for value, row_id in zip(factor.values, factor.row_ids):
+            matches = [
+                obligation
+                for obligation in factor_plan.obligations
+                if obligation.kind == "SFV"
+                and obligation.factor_key == factor.name
+                and obligation.value == value
+                and f"|{row_id}|" in obligation.obligation_id
+            ]
+            if len(matches) != 1:
+                raise RemainingStatementRegressError(
+                    "ALTER FUNCTION canonical factor mapping is not unique: "
+                    f"{factor.name}={value}"
+                )
+            obligation = matches[0]
+            factor_case = factor_case_by_obligation[obligation.obligation_id]
+            standard_case = standard_case_by_id[factor_case.case_id]
+            decisions.append(
+                FactorValueDecision(
+                    row_id=row_id,
+                    factor=factor.name,
+                    value=value,
+                    disposition=obligation.disposition,
+                    reason=(
+                        factor_case.expected_failure_reason
+                        if obligation.disposition == "expected_failure"
+                        else None
+                    ),
+                    case_ids=(standard_case.case_id,),
+                )
+            )
+    return StatementRegressPlan(
+        statement_key="alter_function",
+        file_prefix="ALTERFUNCTION",
+        cycle_fingerprint=snapshot.fingerprint,
+        matrix_path=entry.matrix_path.as_posix(),
+        matrix_sha256=entry.matrix_sha256,
+        reference_path=entry.reference_path.as_posix(),
+        reference_sha256=entry.reference_sha256,
+        universe_semantic_sha256=snapshot.universe_semantic_sha256,
+        official_source=entry.official_source,
+        cases=cases,
+        factor_decisions=tuple(decisions),
+    )
+
+
 _PLAN_BUILDERS: Mapping[
     str,
     Callable[[StatementFactorCycleSnapshot, StatementCycleEntry], StatementRegressPlan],
@@ -803,6 +901,7 @@ _PLAN_BUILDERS: Mapping[
     "alter_extension": _build_alter_extension_plan_lazily,
     "alter_foreign_data_wrapper": _build_alter_foreign_data_wrapper_plan_lazily,
     "alter_foreign_table": _build_alter_foreign_table_plan_lazily,
+    "alter_function": _build_alter_function_plan_lazily,
 }
 
 
@@ -1212,6 +1311,27 @@ def render_statement_regress_case(
             matches[0],
             root,
         )
+    if plan.statement_key == "alter_function":
+        from .alter_function_factor_render import (
+            render_alter_function_factor_case,
+        )
+
+        root = (
+            Path(repository_root).resolve(strict=True)
+            if repository_root is not None
+            else Path(__file__).resolve().parents[2]
+        )
+        factor_plan = _alter_function_factor_plan(str(root))
+        matches = [row for row in factor_plan.cases if row.case_id == case.case_id]
+        if len(matches) != 1:
+            raise RemainingStatementRegressError(
+                f"ALTER FUNCTION case mapping is not unique: {case.case_id}"
+            )
+        return render_alter_function_factor_case(
+            factor_plan,
+            matches[0],
+            root,
+        )
     if plan.statement_key == "alter_aggregate":
         from .alter_aggregate_regress import render_alter_aggregate_case
 
@@ -1340,6 +1460,24 @@ def _coverage_document(
                 ),
             }
         )
+    elif plan.statement_key == "alter_function":
+        root = (
+            Path(repository_root).resolve(strict=True)
+            if repository_root is not None
+            else Path(__file__).resolve().parents[2]
+        )
+        factor_plan = _alter_function_factor_plan(str(root))
+        document.update(
+            {
+                "generation_mode": "factor_value_independent_loop_v1",
+                "decision_count": len(factor_plan.obligations),
+                "local_sql_decision_count": len(factor_plan.cases),
+                "delegated_decision_count": len(factor_plan.delegated),
+                "obligation_multiset_sha256": (
+                    factor_plan.obligation_multiset_sha256
+                ),
+            }
+        )
     return document
 
 
@@ -1410,6 +1548,84 @@ def _alter_foreign_table_factor_documents(
         ],
     }
     actual_report = validate_alter_foreign_table_factor_programs(
+        factor_plan,
+        {
+            name: payload
+            for name, payload in output_files.items()
+            if name.endswith(".sql")
+        },
+        root,
+    ).to_dict()
+    return factor_plan_document, handoff_document, actual_report
+
+
+def _alter_function_factor_documents(
+    repository_root: Path,
+    output_files: Mapping[str, bytes],
+) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+    from .alter_function_factor_validate import (
+        validate_alter_function_factor_programs,
+    )
+
+    root = Path(repository_root).resolve(strict=True)
+    factor_plan = _alter_function_factor_plan(str(root))
+    obligations = [
+        {
+            "ordinal": row.ordinal,
+            "obligation_id": row.obligation_id,
+            "kind": row.kind,
+            "factor_key": row.factor_key,
+            "value": row.value,
+            "consumer_action_id": row.consumer_action_id,
+            "disposition": row.disposition,
+            "source_locator": row.source_locator,
+            "delegated_statement_key": row.delegated_statement_key,
+        }
+        for row in factor_plan.obligations
+    ]
+    cases = [
+        {
+            "ordinal": row.ordinal,
+            "case_id": row.case_id,
+            "sql_filename": row.sql_filename,
+            "object_prefix": row.object_prefix,
+            "primary_obligation_id": row.primary_obligation_id,
+            "kind": row.kind,
+            "factor_key": row.factor_key,
+            "factor_value": row.factor_value,
+            "consumer_action_id": row.consumer_action_id,
+            "outcome": row.outcome,
+            "expected_sqlstate": row.expected_sqlstate,
+            "expected_failure_reason": row.expected_failure_reason,
+            "baseline_assignments": [list(item) for item in row.baseline_assignments],
+            "execution_profile": row.execution_profile,
+        }
+        for row in factor_plan.cases
+    ]
+    factor_plan_document = {
+        "schema_version": 1,
+        "kind": "alter_function_factor_value_loop_plan",
+        "generation_mode": "factor_value_independent_loop_v1",
+        "decision_count": len(factor_plan.obligations),
+        "sql_file_count": len(factor_plan.cases),
+        "delegated_count": len(factor_plan.delegated),
+        "obligation_multiset_sha256": factor_plan.obligation_multiset_sha256,
+        "obligations": obligations,
+        "cases": cases,
+    }
+    handoff_document = {
+        "schema_version": 1,
+        "kind": "alter_function_factor_handoff_ledger",
+        "generation_mode": "factor_value_independent_loop_v1",
+        "delegated_count": len(factor_plan.delegated),
+        "owner_statement_key": "create_function",
+        "decisions": [
+            row
+            for row in obligations
+            if row["disposition"] == "delegated"
+        ],
+    }
+    actual_report = validate_alter_function_factor_programs(
         factor_plan,
         {
             name: payload
@@ -1621,6 +1837,32 @@ def _package_document(
                 "actual_factor_witness_passed": actual["passed"],
             }
         )
+    elif plan.statement_key == "alter_function":
+        root = (
+            Path(repository_root).resolve(strict=True)
+            if repository_root is not None
+            else Path(__file__).resolve().parents[2]
+        )
+        factor_plan, handoff, actual = _alter_function_factor_documents(
+            root,
+            output_files,
+        )
+        document.update(
+            {
+                "generation_mode": "factor_value_independent_loop_v1",
+                "decision_count": factor_plan["decision_count"],
+                "delegated_count": handoff["delegated_count"],
+                "obligation_multiset_sha256": factor_plan[
+                    "obligation_multiset_sha256"
+                ],
+                "factor_loop_plan_sha256": _sha256(_json_bytes(factor_plan)),
+                "handoff_ledger_sha256": _sha256(_json_bytes(handoff)),
+                "actual_factor_witness_report_sha256": _sha256(
+                    _json_bytes(actual)
+                ),
+                "actual_factor_witness_passed": actual["passed"],
+            }
+        )
     return document
 
 
@@ -1661,6 +1903,9 @@ def _validate_rendered_output(
         ),
         "alter_foreign_table": (
             r"(?m)^ALTER\s+FOREIGN\s+TABLE(?:\s|;|$)"
+        ),
+        "alter_function": (
+            r"(?m)^ALTER\s+FUNCTION(?:\s|;|$)"
         ),
     }
     target_pattern = re.compile(
@@ -1846,6 +2091,11 @@ def generate_statement_regress_package(
             resolved_root,
             output_files,
         )
+    elif statement_key == "alter_function":
+        factor_documents = _alter_function_factor_documents(
+            resolved_root,
+            output_files,
+        )
     package = _package_document(plan, output_files, resolved_root)
     validation = _validate_rendered_output(
         plan, output_dir, resolved_root, package
@@ -1941,6 +2191,45 @@ def validate_statement_regress_package(
             if path.is_file() and not path.is_symlink():
                 actual_output_files[schedule_name] = path.read_bytes()
         factor_plan, handoff, actual = _alter_foreign_table_factor_documents(
+            resolved_root,
+            actual_output_files,
+        )
+        expected_factor_evidence = {
+            "factor-loop-plan.json": _json_bytes(factor_plan),
+            "handoff.json": _json_bytes(handoff),
+            "actual-factor-witness-report.json": _json_bytes(actual),
+        }
+        for name, expected in expected_factor_evidence.items():
+            try:
+                if (evidence_dir / name).read_bytes() != expected:
+                    issues.append(f"persisted {name} differs from actual bytes")
+            except OSError as exc:
+                issues.append(f"cannot read persisted {name}: {exc}")
+        if not actual["passed"]:
+            issues.extend(
+                f"actual factor witness: {item}" for item in actual["issues"]
+            )
+        if {"serial_schedule", "external_schedule"} <= set(actual_output_files):
+            expected_package = _package_document(
+                plan,
+                actual_output_files,
+                resolved_root,
+            )
+            if package != expected_package:
+                issues.append(
+                    "package evidence differs from the actual factor-loop package"
+                )
+    elif statement_key == "alter_function":
+        actual_output_files: dict[str, bytes] = {}
+        for case in plan.cases:
+            path = output_dir / case.sql_filename
+            if path.is_file() and not path.is_symlink():
+                actual_output_files[case.sql_filename] = path.read_bytes()
+        for schedule_name in ("serial_schedule", "external_schedule"):
+            path = output_dir / schedule_name
+            if path.is_file() and not path.is_symlink():
+                actual_output_files[schedule_name] = path.read_bytes()
+        factor_plan, handoff, actual = _alter_function_factor_documents(
             resolved_root,
             actual_output_files,
         )

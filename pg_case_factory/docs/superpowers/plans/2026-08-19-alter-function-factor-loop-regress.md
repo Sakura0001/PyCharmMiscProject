@@ -191,12 +191,12 @@ AF-RISK|transaction|commit-or-rollback
 
 ### Task 7: Register, mark complete, advance, notify
 
-- [ ] Register `alter_function` in `remaining_statement_regress.py` (mirror L694–1391 AFT block: lazy plan builder, renderer dispatch, validator dispatch, evidence doc).
-- [ ] Mark `progress.json` `alter_function = completed`; advance `next_pending_statement` → `alter_group`.
-- [ ] Stage only this statement's implementation/tests/plan + `git add -f` its precise `artifacts/` SQL/evidence paths; do not touch the user's other dirty files; count staged files before commit.
-- [ ] Update `docs/superpowers/context/2026-08-18-current-thread-memory.md` §8/§9-style entry for ALTER FUNCTION.
-- [ ] Commit — `test: publish alter function factor regress`.
-- [ ] Notify the user to inspect generation quality before starting `alter_group`.
+- [x] Register `alter_function` in `remaining_statement_regress.py` (mirror L694–1391 AFT block: lazy plan builder, renderer dispatch, validator dispatch, evidence doc).
+- [x] Mark `progress.json` `alter_function = completed`; advance `next_pending_statement` → `alter_group`.
+- [x] Stage only this statement's implementation/tests/plan + `git add -f` its precise `artifacts/` SQL/evidence paths; do not touch the user's other dirty files; count staged files before commit.
+- [x] Update `docs/superpowers/context/2026-08-18-current-thread-memory.md` §8/§9-style entry for ALTER FUNCTION.
+- [x] Commit — `test: publish alter function factor regress`.
+- [x] Notify the user to inspect generation quality before starting `alter_group`.
 
 ---
 

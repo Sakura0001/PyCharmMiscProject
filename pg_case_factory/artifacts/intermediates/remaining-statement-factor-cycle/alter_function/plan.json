@@ -1,0 +1,2978 @@
+{
+  "schema_version": 1,
+  "statement_key": "alter_function",
+  "file_prefix": "ALTERFUNCTION",
+  "cycle_fingerprint": "606b9e710210e50ff88b14de7052163f9ee31f6f1d1e744bc0bd9935f399a9d9",
+  "matrix_path": "skills/pg-sql-generation/references/combinations/ddl/function/alter_function.yaml",
+  "matrix_sha256": "412e107b7ed8d3519257d4aa0fe1ce92d6a2b0e60cf5eebe97acded1fbaa5227",
+  "reference_path": "skills/pg-sql-generation/references/statements/ddl/function/alter_function.md",
+  "reference_sha256": "85f262bb7eb94ad160bb25f16b5d18c982c093e5bd10f03fc267cb87b4d26846",
+  "universe_semantic_sha256": "42707defa63ed63e2c15e6d0fa1cde04b93aef9b3c735d1149198b10eb6977fc",
+  "official_source": "https://www.postgresql.org/docs/18/sql-alterfunction.html",
+  "case_count": 123,
+  "case_group_counts": {
+    "factor_value_loop_grm": 36,
+    "factor_value_loop_risk": 2,
+    "factor_value_loop_sfv": 85
+  },
+  "factor_value_count": 85,
+  "factor_disposition_counts": {
+    "covered": 60,
+    "expected_failure": 25,
+    "justified_na": 0
+  },
+  "cases": [
+    {
+      "ordinal": 1,
+      "case_id": "ALTERFUNCTION0001",
+      "sql_filename": "ALTERFUNCTION0001.sql",
+      "object_prefix": "alterfunction_0001_",
+      "case_group": "factor_value_loop_grm",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-GRM|branch_action_form|called_on_null_input|target_action|called_on_null_input",
+        "kind": "GRM",
+        "factor_key": "target_action",
+        "factor_value": "called_on_null_input",
+        "consumer_action_id": "called_on_null_input",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "target_action=called_on_null_input"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for target_action=called_on_null_input",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 2,
+      "case_id": "ALTERFUNCTION0002",
+      "sql_filename": "ALTERFUNCTION0002.sql",
+      "object_prefix": "alterfunction_0002_",
+      "case_group": "factor_value_loop_grm",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-GRM|branch_action_form|returns_null_on_null_input|target_action|returns_null_on_null_input",
+        "kind": "GRM",
+        "factor_key": "target_action",
+        "factor_value": "returns_null_on_null_input",
+        "consumer_action_id": "returns_null_on_null_input",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "target_action=returns_null_on_null_input"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for target_action=returns_null_on_null_input",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 3,
+      "case_id": "ALTERFUNCTION0003",
+      "sql_filename": "ALTERFUNCTION0003.sql",
+      "object_prefix": "alterfunction_0003_",
+      "case_group": "factor_value_loop_grm",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-GRM|branch_action_form|strict|target_action|strict",
+        "kind": "GRM",
+        "factor_key": "target_action",
+        "factor_value": "strict",
+        "consumer_action_id": "strict",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "target_action=strict"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for target_action=strict",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 4,
+      "case_id": "ALTERFUNCTION0004",
+      "sql_filename": "ALTERFUNCTION0004.sql",
+      "object_prefix": "alterfunction_0004_",
+      "case_group": "factor_value_loop_grm",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-GRM|branch_action_form|immutable|target_action|immutable",
+        "kind": "GRM",
+        "factor_key": "target_action",
+        "factor_value": "immutable",
+        "consumer_action_id": "immutable",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "target_action=immutable"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for target_action=immutable",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 5,
+      "case_id": "ALTERFUNCTION0005",
+      "sql_filename": "ALTERFUNCTION0005.sql",
+      "object_prefix": "alterfunction_0005_",
+      "case_group": "factor_value_loop_grm",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-GRM|branch_action_form|stable|target_action|stable",
+        "kind": "GRM",
+        "factor_key": "target_action",
+        "factor_value": "stable",
+        "consumer_action_id": "stable",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "target_action=stable"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for target_action=stable",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 6,
+      "case_id": "ALTERFUNCTION0006",
+      "sql_filename": "ALTERFUNCTION0006.sql",
+      "object_prefix": "alterfunction_0006_",
+      "case_group": "factor_value_loop_grm",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-GRM|branch_action_form|volatile|target_action|volatile",
+        "kind": "GRM",
+        "factor_key": "target_action",
+        "factor_value": "volatile",
+        "consumer_action_id": "volatile",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "target_action=volatile"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for target_action=volatile",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 7,
+      "case_id": "ALTERFUNCTION0007",
+      "sql_filename": "ALTERFUNCTION0007.sql",
+      "object_prefix": "alterfunction_0007_",
+      "case_group": "factor_value_loop_grm",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-GRM|branch_action_form|leakproof|target_action|leakproof",
+        "kind": "GRM",
+        "factor_key": "target_action",
+        "factor_value": "leakproof",
+        "consumer_action_id": "leakproof",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "target_action=leakproof"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for target_action=leakproof",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 8,
+      "case_id": "ALTERFUNCTION0008",
+      "sql_filename": "ALTERFUNCTION0008.sql",
+      "object_prefix": "alterfunction_0008_",
+      "case_group": "factor_value_loop_grm",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-GRM|branch_action_form|not_leakproof|target_action|not_leakproof",
+        "kind": "GRM",
+        "factor_key": "target_action",
+        "factor_value": "not_leakproof",
+        "consumer_action_id": "not_leakproof",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "target_action=not_leakproof"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for target_action=not_leakproof",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 9,
+      "case_id": "ALTERFUNCTION0009",
+      "sql_filename": "ALTERFUNCTION0009.sql",
+      "object_prefix": "alterfunction_0009_",
+      "case_group": "factor_value_loop_grm",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-GRM|branch_action_form|security_invoker|target_action|security_invoker",
+        "kind": "GRM",
+        "factor_key": "target_action",
+        "factor_value": "security_invoker",
+        "consumer_action_id": "security_invoker",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "target_action=security_invoker"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for target_action=security_invoker",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 10,
+      "case_id": "ALTERFUNCTION0010",
+      "sql_filename": "ALTERFUNCTION0010.sql",
+      "object_prefix": "alterfunction_0010_",
+      "case_group": "factor_value_loop_grm",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-GRM|branch_action_form|security_definer|target_action|security_definer",
+        "kind": "GRM",
+        "factor_key": "target_action",
+        "factor_value": "security_definer",
+        "consumer_action_id": "security_definer",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "target_action=security_definer"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for target_action=security_definer",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 11,
+      "case_id": "ALTERFUNCTION0011",
+      "sql_filename": "ALTERFUNCTION0011.sql",
+      "object_prefix": "alterfunction_0011_",
+      "case_group": "factor_value_loop_grm",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-GRM|branch_action_form|parallel_unsafe|target_action|parallel_unsafe",
+        "kind": "GRM",
+        "factor_key": "target_action",
+        "factor_value": "parallel_unsafe",
+        "consumer_action_id": "parallel_unsafe",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "target_action=parallel_unsafe"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for target_action=parallel_unsafe",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 12,
+      "case_id": "ALTERFUNCTION0012",
+      "sql_filename": "ALTERFUNCTION0012.sql",
+      "object_prefix": "alterfunction_0012_",
+      "case_group": "factor_value_loop_grm",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-GRM|branch_action_form|parallel_restricted|target_action|parallel_restricted",
+        "kind": "GRM",
+        "factor_key": "target_action",
+        "factor_value": "parallel_restricted",
+        "consumer_action_id": "parallel_restricted",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "target_action=parallel_restricted"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for target_action=parallel_restricted",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 13,
+      "case_id": "ALTERFUNCTION0013",
+      "sql_filename": "ALTERFUNCTION0013.sql",
+      "object_prefix": "alterfunction_0013_",
+      "case_group": "factor_value_loop_grm",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-GRM|branch_action_form|parallel_safe|target_action|parallel_safe",
+        "kind": "GRM",
+        "factor_key": "target_action",
+        "factor_value": "parallel_safe",
+        "consumer_action_id": "parallel_safe",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "target_action=parallel_safe"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for target_action=parallel_safe",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 14,
+      "case_id": "ALTERFUNCTION0014",
+      "sql_filename": "ALTERFUNCTION0014.sql",
+      "object_prefix": "alterfunction_0014_",
+      "case_group": "factor_value_loop_grm",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-GRM|branch_action_form|cost|target_action|cost",
+        "kind": "GRM",
+        "factor_key": "target_action",
+        "factor_value": "cost",
+        "consumer_action_id": "cost",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "target_action=cost"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for target_action=cost",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 15,
+      "case_id": "ALTERFUNCTION0015",
+      "sql_filename": "ALTERFUNCTION0015.sql",
+      "object_prefix": "alterfunction_0015_",
+      "case_group": "factor_value_loop_grm",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-GRM|branch_action_form|rows|target_action|rows",
+        "kind": "GRM",
+        "factor_key": "target_action",
+        "factor_value": "rows",
+        "consumer_action_id": "rows",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "target_action=rows"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for target_action=rows",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 16,
+      "case_id": "ALTERFUNCTION0016",
+      "sql_filename": "ALTERFUNCTION0016.sql",
+      "object_prefix": "alterfunction_0016_",
+      "case_group": "factor_value_loop_grm",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-GRM|branch_action_form|support|target_action|support",
+        "kind": "GRM",
+        "factor_key": "target_action",
+        "factor_value": "support",
+        "consumer_action_id": "support",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "target_action=support"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for target_action=support",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 17,
+      "case_id": "ALTERFUNCTION0017",
+      "sql_filename": "ALTERFUNCTION0017.sql",
+      "object_prefix": "alterfunction_0017_",
+      "case_group": "factor_value_loop_grm",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-GRM|branch_action_form|set_parameter|target_action|set_parameter",
+        "kind": "GRM",
+        "factor_key": "target_action",
+        "factor_value": "set_parameter",
+        "consumer_action_id": "set_parameter",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "target_action=set_parameter"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for target_action=set_parameter",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 18,
+      "case_id": "ALTERFUNCTION0018",
+      "sql_filename": "ALTERFUNCTION0018.sql",
+      "object_prefix": "alterfunction_0018_",
+      "case_group": "factor_value_loop_grm",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-GRM|branch_action_form|reset_parameter|target_action|reset_parameter",
+        "kind": "GRM",
+        "factor_key": "target_action",
+        "factor_value": "reset_parameter",
+        "consumer_action_id": "reset_parameter",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "target_action=reset_parameter"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for target_action=reset_parameter",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 19,
+      "case_id": "ALTERFUNCTION0019",
+      "sql_filename": "ALTERFUNCTION0019.sql",
+      "object_prefix": "alterfunction_0019_",
+      "case_group": "factor_value_loop_grm",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-GRM|branch_action_form|reset_all|target_action|reset_all",
+        "kind": "GRM",
+        "factor_key": "target_action",
+        "factor_value": "reset_all",
+        "consumer_action_id": "reset_all",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "target_action=reset_all"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for target_action=reset_all",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 20,
+      "case_id": "ALTERFUNCTION0020",
+      "sql_filename": "ALTERFUNCTION0020.sql",
+      "object_prefix": "alterfunction_0020_",
+      "case_group": "factor_value_loop_grm",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-GRM|branch_rename|rename|target_action|rename",
+        "kind": "GRM",
+        "factor_key": "target_action",
+        "factor_value": "rename",
+        "consumer_action_id": "rename",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "target_action=rename"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for target_action=rename",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 21,
+      "case_id": "ALTERFUNCTION0021",
+      "sql_filename": "ALTERFUNCTION0021.sql",
+      "object_prefix": "alterfunction_0021_",
+      "case_group": "factor_value_loop_grm",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-GRM|branch_owner|owner|target_action|owner",
+        "kind": "GRM",
+        "factor_key": "target_action",
+        "factor_value": "owner",
+        "consumer_action_id": "owner",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "target_action=owner"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for target_action=owner",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 22,
+      "case_id": "ALTERFUNCTION0022",
+      "sql_filename": "ALTERFUNCTION0022.sql",
+      "object_prefix": "alterfunction_0022_",
+      "case_group": "factor_value_loop_grm",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-GRM|branch_set_schema|set_schema|target_action|set_schema",
+        "kind": "GRM",
+        "factor_key": "target_action",
+        "factor_value": "set_schema",
+        "consumer_action_id": "set_schema",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "target_action=set_schema"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for target_action=set_schema",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 23,
+      "case_id": "ALTERFUNCTION0023",
+      "sql_filename": "ALTERFUNCTION0023.sql",
+      "object_prefix": "alterfunction_0023_",
+      "case_group": "factor_value_loop_grm",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-GRM|branch_depends_extension|depends_on_extension|target_action|depends_on_extension",
+        "kind": "GRM",
+        "factor_key": "target_action",
+        "factor_value": "depends_on_extension",
+        "consumer_action_id": "depends_on_extension",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "target_action=depends_on_extension"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for target_action=depends_on_extension",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 24,
+      "case_id": "ALTERFUNCTION0024",
+      "sql_filename": "ALTERFUNCTION0024.sql",
+      "object_prefix": "alterfunction_0024_",
+      "case_group": "factor_value_loop_grm",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-GRM|branch_action_form|__outer_action__|restrict_clause|absent",
+        "kind": "GRM",
+        "factor_key": "restrict_clause",
+        "factor_value": "absent",
+        "consumer_action_id": "volatile",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "restrict_clause=absent"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for restrict_clause=absent",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 25,
+      "case_id": "ALTERFUNCTION0025",
+      "sql_filename": "ALTERFUNCTION0025.sql",
+      "object_prefix": "alterfunction_0025_",
+      "case_group": "factor_value_loop_grm",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-GRM|branch_action_form|__outer_action__|restrict_clause|present",
+        "kind": "GRM",
+        "factor_key": "restrict_clause",
+        "factor_value": "present",
+        "consumer_action_id": "volatile",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "restrict_clause=present"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for restrict_clause=present",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 26,
+      "case_id": "ALTERFUNCTION0026",
+      "sql_filename": "ALTERFUNCTION0026.sql",
+      "object_prefix": "alterfunction_0026_",
+      "case_group": "factor_value_loop_grm",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-GRM|branch_action_form|__outer_action__|action_list_cardinality|one_action",
+        "kind": "GRM",
+        "factor_key": "action_list_cardinality",
+        "factor_value": "one_action",
+        "consumer_action_id": "volatile",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "action_list_cardinality=one_action"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for action_list_cardinality=one_action",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 27,
+      "case_id": "ALTERFUNCTION0027",
+      "sql_filename": "ALTERFUNCTION0027.sql",
+      "object_prefix": "alterfunction_0027_",
+      "case_group": "factor_value_loop_grm",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-GRM|branch_action_form|__outer_action__|action_list_cardinality|multiple_actions",
+        "kind": "GRM",
+        "factor_key": "action_list_cardinality",
+        "factor_value": "multiple_actions",
+        "consumer_action_id": "volatile",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "action_list_cardinality=multiple_actions"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for action_list_cardinality=multiple_actions",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 28,
+      "case_id": "ALTERFUNCTION0028",
+      "sql_filename": "ALTERFUNCTION0028.sql",
+      "object_prefix": "alterfunction_0028_",
+      "case_group": "factor_value_loop_grm",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-GRM|branch_action_form|set_parameter|set_assignment_form|to_value",
+        "kind": "GRM",
+        "factor_key": "set_assignment_form",
+        "factor_value": "to_value",
+        "consumer_action_id": "set_parameter",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "set_assignment_form=to_value"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for set_assignment_form=to_value",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 29,
+      "case_id": "ALTERFUNCTION0029",
+      "sql_filename": "ALTERFUNCTION0029.sql",
+      "object_prefix": "alterfunction_0029_",
+      "case_group": "factor_value_loop_grm",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-GRM|branch_action_form|set_parameter|set_assignment_form|equals_value",
+        "kind": "GRM",
+        "factor_key": "set_assignment_form",
+        "factor_value": "equals_value",
+        "consumer_action_id": "set_parameter",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "set_assignment_form=equals_value"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for set_assignment_form=equals_value",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 30,
+      "case_id": "ALTERFUNCTION0030",
+      "sql_filename": "ALTERFUNCTION0030.sql",
+      "object_prefix": "alterfunction_0030_",
+      "case_group": "factor_value_loop_grm",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-GRM|branch_action_form|set_parameter|set_assignment_form|to_default",
+        "kind": "GRM",
+        "factor_key": "set_assignment_form",
+        "factor_value": "to_default",
+        "consumer_action_id": "set_parameter",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "set_assignment_form=to_default"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for set_assignment_form=to_default",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 31,
+      "case_id": "ALTERFUNCTION0031",
+      "sql_filename": "ALTERFUNCTION0031.sql",
+      "object_prefix": "alterfunction_0031_",
+      "case_group": "factor_value_loop_grm",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-GRM|branch_action_form|security_invoker|external_keyword|omitted",
+        "kind": "GRM",
+        "factor_key": "external_keyword",
+        "factor_value": "omitted",
+        "consumer_action_id": "security_invoker",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "external_keyword=omitted"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for external_keyword=omitted",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 32,
+      "case_id": "ALTERFUNCTION0032",
+      "sql_filename": "ALTERFUNCTION0032.sql",
+      "object_prefix": "alterfunction_0032_",
+      "case_group": "factor_value_loop_grm",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-GRM|branch_action_form|security_invoker|external_keyword|present",
+        "kind": "GRM",
+        "factor_key": "external_keyword",
+        "factor_value": "present",
+        "consumer_action_id": "security_invoker",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "external_keyword=present"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for external_keyword=present",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 33,
+      "case_id": "ALTERFUNCTION0033",
+      "sql_filename": "ALTERFUNCTION0033.sql",
+      "object_prefix": "alterfunction_0033_",
+      "case_group": "factor_value_loop_grm",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-GRM|branch_action_form|security_definer|external_keyword|omitted",
+        "kind": "GRM",
+        "factor_key": "external_keyword",
+        "factor_value": "omitted",
+        "consumer_action_id": "security_definer",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "external_keyword=omitted"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for external_keyword=omitted",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 34,
+      "case_id": "ALTERFUNCTION0034",
+      "sql_filename": "ALTERFUNCTION0034.sql",
+      "object_prefix": "alterfunction_0034_",
+      "case_group": "factor_value_loop_grm",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-GRM|branch_action_form|security_definer|external_keyword|present",
+        "kind": "GRM",
+        "factor_key": "external_keyword",
+        "factor_value": "present",
+        "consumer_action_id": "security_definer",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "external_keyword=present"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for external_keyword=present",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 35,
+      "case_id": "ALTERFUNCTION0035",
+      "sql_filename": "ALTERFUNCTION0035.sql",
+      "object_prefix": "alterfunction_0035_",
+      "case_group": "factor_value_loop_grm",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-GRM|branch_depends_extension|depends_on_extension|depends_polarity|depends",
+        "kind": "GRM",
+        "factor_key": "depends_polarity",
+        "factor_value": "depends",
+        "consumer_action_id": "depends_on_extension",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "depends_polarity=depends"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for depends_polarity=depends",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 36,
+      "case_id": "ALTERFUNCTION0036",
+      "sql_filename": "ALTERFUNCTION0036.sql",
+      "object_prefix": "alterfunction_0036_",
+      "case_group": "factor_value_loop_grm",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-GRM|branch_depends_extension|depends_on_extension|depends_polarity|no_depends",
+        "kind": "GRM",
+        "factor_key": "depends_polarity",
+        "factor_value": "no_depends",
+        "consumer_action_id": "depends_on_extension",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "depends_polarity=no_depends"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for depends_polarity=no_depends",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 37,
+      "case_id": "ALTERFUNCTION0037",
+      "sql_filename": "ALTERFUNCTION0037.sql",
+      "object_prefix": "alterfunction_0037_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-a22b6b5b4c0be4d0de27bdee|called_on_null_input",
+        "kind": "SFV",
+        "factor_key": "action_type",
+        "factor_value": "CALLED_ON_NULL_INPUT",
+        "consumer_action_id": "called_on_null_input",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "action_type=CALLED_ON_NULL_INPUT"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for action_type=CALLED_ON_NULL_INPUT",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 38,
+      "case_id": "ALTERFUNCTION0038",
+      "sql_filename": "ALTERFUNCTION0038.sql",
+      "object_prefix": "alterfunction_0038_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-b51074c79da7832dd8b1d1f2|cost",
+        "kind": "SFV",
+        "factor_key": "action_type",
+        "factor_value": "COST",
+        "consumer_action_id": "cost",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "action_type=COST"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for action_type=COST",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 39,
+      "case_id": "ALTERFUNCTION0039",
+      "sql_filename": "ALTERFUNCTION0039.sql",
+      "object_prefix": "alterfunction_0039_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-08d97830f833307d61453238|immutable",
+        "kind": "SFV",
+        "factor_key": "action_type",
+        "factor_value": "IMMUTABLE",
+        "consumer_action_id": "immutable",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "action_type=IMMUTABLE"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for action_type=IMMUTABLE",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 40,
+      "case_id": "ALTERFUNCTION0040",
+      "sql_filename": "ALTERFUNCTION0040.sql",
+      "object_prefix": "alterfunction_0040_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-2504fe42c5894fdc0d0cd4e6|leakproof",
+        "kind": "SFV",
+        "factor_key": "action_type",
+        "factor_value": "LEAKPROOF",
+        "consumer_action_id": "leakproof",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "action_type=LEAKPROOF"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for action_type=LEAKPROOF",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 41,
+      "case_id": "ALTERFUNCTION0041",
+      "sql_filename": "ALTERFUNCTION0041.sql",
+      "object_prefix": "alterfunction_0041_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-80a8a12d5123c0b81dacf9fb|not_leakproof",
+        "kind": "SFV",
+        "factor_key": "action_type",
+        "factor_value": "NOT_LEAKPROOF",
+        "consumer_action_id": "not_leakproof",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "action_type=NOT_LEAKPROOF"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for action_type=NOT_LEAKPROOF",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 42,
+      "case_id": "ALTERFUNCTION0042",
+      "sql_filename": "ALTERFUNCTION0042.sql",
+      "object_prefix": "alterfunction_0042_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-bd6ae0458f5cefe84c6c9665|parallel_restricted",
+        "kind": "SFV",
+        "factor_key": "action_type",
+        "factor_value": "PARALLEL_RESTRICTED",
+        "consumer_action_id": "parallel_restricted",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "action_type=PARALLEL_RESTRICTED"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for action_type=PARALLEL_RESTRICTED",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 43,
+      "case_id": "ALTERFUNCTION0043",
+      "sql_filename": "ALTERFUNCTION0043.sql",
+      "object_prefix": "alterfunction_0043_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-7d52686ac1a9783030aadc35|parallel_safe",
+        "kind": "SFV",
+        "factor_key": "action_type",
+        "factor_value": "PARALLEL_SAFE",
+        "consumer_action_id": "parallel_safe",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "action_type=PARALLEL_SAFE"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for action_type=PARALLEL_SAFE",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 44,
+      "case_id": "ALTERFUNCTION0044",
+      "sql_filename": "ALTERFUNCTION0044.sql",
+      "object_prefix": "alterfunction_0044_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-1273aa9d9fd9160438d1ab39|parallel_unsafe",
+        "kind": "SFV",
+        "factor_key": "action_type",
+        "factor_value": "PARALLEL_UNSAFE",
+        "consumer_action_id": "parallel_unsafe",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "action_type=PARALLEL_UNSAFE"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for action_type=PARALLEL_UNSAFE",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 45,
+      "case_id": "ALTERFUNCTION0045",
+      "sql_filename": "ALTERFUNCTION0045.sql",
+      "object_prefix": "alterfunction_0045_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-c225e69146c50962ef6fe1f2|reset_all",
+        "kind": "SFV",
+        "factor_key": "action_type",
+        "factor_value": "RESET_ALL",
+        "consumer_action_id": "reset_all",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "action_type=RESET_ALL"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for action_type=RESET_ALL",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 46,
+      "case_id": "ALTERFUNCTION0046",
+      "sql_filename": "ALTERFUNCTION0046.sql",
+      "object_prefix": "alterfunction_0046_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-551415a3f27b2a84f71c4db3|reset_parameter",
+        "kind": "SFV",
+        "factor_key": "action_type",
+        "factor_value": "RESET_parameter",
+        "consumer_action_id": "reset_parameter",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "action_type=RESET_parameter"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for action_type=RESET_parameter",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 47,
+      "case_id": "ALTERFUNCTION0047",
+      "sql_filename": "ALTERFUNCTION0047.sql",
+      "object_prefix": "alterfunction_0047_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-c7dc6ce5fbd84781b8df32aa|returns_null_on_null_input",
+        "kind": "SFV",
+        "factor_key": "action_type",
+        "factor_value": "RETURNS_NULL_ON_NULL_INPUT",
+        "consumer_action_id": "returns_null_on_null_input",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "action_type=RETURNS_NULL_ON_NULL_INPUT"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for action_type=RETURNS_NULL_ON_NULL_INPUT",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 48,
+      "case_id": "ALTERFUNCTION0048",
+      "sql_filename": "ALTERFUNCTION0048.sql",
+      "object_prefix": "alterfunction_0048_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-08e1a730d5ce90e28c8e48cd|rows",
+        "kind": "SFV",
+        "factor_key": "action_type",
+        "factor_value": "ROWS",
+        "consumer_action_id": "rows",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "action_type=ROWS"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for action_type=ROWS",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 49,
+      "case_id": "ALTERFUNCTION0049",
+      "sql_filename": "ALTERFUNCTION0049.sql",
+      "object_prefix": "alterfunction_0049_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-6eb2950c391a1374372d68c0|security_definer",
+        "kind": "SFV",
+        "factor_key": "action_type",
+        "factor_value": "SECURITY_DEFINER",
+        "consumer_action_id": "security_definer",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "action_type=SECURITY_DEFINER"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for action_type=SECURITY_DEFINER",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 50,
+      "case_id": "ALTERFUNCTION0050",
+      "sql_filename": "ALTERFUNCTION0050.sql",
+      "object_prefix": "alterfunction_0050_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-d7afaed29307b5810f8c3837|security_invoker",
+        "kind": "SFV",
+        "factor_key": "action_type",
+        "factor_value": "SECURITY_INVOKER",
+        "consumer_action_id": "security_invoker",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "action_type=SECURITY_INVOKER"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for action_type=SECURITY_INVOKER",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 51,
+      "case_id": "ALTERFUNCTION0051",
+      "sql_filename": "ALTERFUNCTION0051.sql",
+      "object_prefix": "alterfunction_0051_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-f0f2af939326714faadfe7e6|set_parameter",
+        "kind": "SFV",
+        "factor_key": "action_type",
+        "factor_value": "SET_parameter",
+        "consumer_action_id": "set_parameter",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "action_type=SET_parameter"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for action_type=SET_parameter",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 52,
+      "case_id": "ALTERFUNCTION0052",
+      "sql_filename": "ALTERFUNCTION0052.sql",
+      "object_prefix": "alterfunction_0052_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-e8439848e4410c1423261b71|stable",
+        "kind": "SFV",
+        "factor_key": "action_type",
+        "factor_value": "STABLE",
+        "consumer_action_id": "stable",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "action_type=STABLE"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for action_type=STABLE",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 53,
+      "case_id": "ALTERFUNCTION0053",
+      "sql_filename": "ALTERFUNCTION0053.sql",
+      "object_prefix": "alterfunction_0053_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-21aee8bb7362b9e0d106c144|strict",
+        "kind": "SFV",
+        "factor_key": "action_type",
+        "factor_value": "STRICT",
+        "consumer_action_id": "strict",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "action_type=STRICT"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for action_type=STRICT",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 54,
+      "case_id": "ALTERFUNCTION0054",
+      "sql_filename": "ALTERFUNCTION0054.sql",
+      "object_prefix": "alterfunction_0054_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-fca99b7558e9492f0fea2e6b|support",
+        "kind": "SFV",
+        "factor_key": "action_type",
+        "factor_value": "SUPPORT",
+        "consumer_action_id": "support",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "action_type=SUPPORT"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for action_type=SUPPORT",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 55,
+      "case_id": "ALTERFUNCTION0055",
+      "sql_filename": "ALTERFUNCTION0055.sql",
+      "object_prefix": "alterfunction_0055_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-bb0ce301eabe77325dd917c8|volatile",
+        "kind": "SFV",
+        "factor_key": "action_type",
+        "factor_value": "VOLATILE",
+        "consumer_action_id": "volatile",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "action_type=VOLATILE"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for action_type=VOLATILE",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 56,
+      "case_id": "ALTERFUNCTION0056",
+      "sql_filename": "ALTERFUNCTION0056.sql",
+      "object_prefix": "alterfunction_0056_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-8ed0a6104541e05968473778|volatile",
+        "kind": "SFV",
+        "factor_key": "argtype_specification",
+        "factor_value": "with_full_signature",
+        "consumer_action_id": "volatile",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "argtype_specification=with_full_signature"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for argtype_specification=with_full_signature",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 57,
+      "case_id": "ALTERFUNCTION0057",
+      "sql_filename": "ALTERFUNCTION0057.sql",
+      "object_prefix": "alterfunction_0057_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "expected_failure",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-f7ffe1cbf14e1513bf53e14c|volatile",
+        "kind": "SFV",
+        "factor_key": "argtype_specification",
+        "factor_value": "with_partial_signature",
+        "consumer_action_id": "volatile",
+        "expected_sqlstate": "42883"
+      },
+      "factor_values": [
+        "argtype_specification=with_partial_signature"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for argtype_specification=with_partial_signature",
+      "expected_anchor": "SQLSTATE 42883; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 58,
+      "case_id": "ALTERFUNCTION0058",
+      "sql_filename": "ALTERFUNCTION0058.sql",
+      "object_prefix": "alterfunction_0058_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-bd829d3a0d922c62de1100d5|volatile",
+        "kind": "SFV",
+        "factor_key": "argtype_specification",
+        "factor_value": "without_signature",
+        "consumer_action_id": "volatile",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "argtype_specification=without_signature"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for argtype_specification=without_signature",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 59,
+      "case_id": "ALTERFUNCTION0059",
+      "sql_filename": "ALTERFUNCTION0059.sql",
+      "object_prefix": "alterfunction_0059_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-637a5276d460597108e470d2|volatile",
+        "kind": "SFV",
+        "factor_key": "cleanup_mode",
+        "factor_value": "DROP_FUNCTION",
+        "consumer_action_id": "volatile",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "cleanup_mode=DROP_FUNCTION"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for cleanup_mode=DROP_FUNCTION",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 60,
+      "case_id": "ALTERFUNCTION0060",
+      "sql_filename": "ALTERFUNCTION0060.sql",
+      "object_prefix": "alterfunction_0060_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-81a21049ec98718f5e2d1ce7|volatile",
+        "kind": "SFV",
+        "factor_key": "cleanup_mode",
+        "factor_value": "DROP_FUNCTION_CASCADE",
+        "consumer_action_id": "volatile",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "cleanup_mode=DROP_FUNCTION_CASCADE"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for cleanup_mode=DROP_FUNCTION_CASCADE",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 61,
+      "case_id": "ALTERFUNCTION0061",
+      "sql_filename": "ALTERFUNCTION0061.sql",
+      "object_prefix": "alterfunction_0061_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-364105511aa2eb5509976a93|volatile",
+        "kind": "SFV",
+        "factor_key": "cleanup_mode",
+        "factor_value": "DROP_FUNCTION_IF_EXISTS",
+        "consumer_action_id": "volatile",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "cleanup_mode=DROP_FUNCTION_IF_EXISTS"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for cleanup_mode=DROP_FUNCTION_IF_EXISTS",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 62,
+      "case_id": "ALTERFUNCTION0062",
+      "sql_filename": "ALTERFUNCTION0062.sql",
+      "object_prefix": "alterfunction_0062_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "expected_failure",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-173b19fa8c708bc8e169efb1|set_parameter",
+        "kind": "SFV",
+        "factor_key": "configuration_parameter_shape",
+        "factor_value": "invalid_parameter",
+        "consumer_action_id": "set_parameter",
+        "expected_sqlstate": "42704"
+      },
+      "factor_values": [
+        "configuration_parameter_shape=invalid_parameter"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for configuration_parameter_shape=invalid_parameter",
+      "expected_anchor": "SQLSTATE 42704; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 63,
+      "case_id": "ALTERFUNCTION0063",
+      "sql_filename": "ALTERFUNCTION0063.sql",
+      "object_prefix": "alterfunction_0063_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-836ce40cb9450f2d690e7465|set_parameter",
+        "kind": "SFV",
+        "factor_key": "configuration_parameter_shape",
+        "factor_value": "valid_parameter",
+        "consumer_action_id": "set_parameter",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "configuration_parameter_shape=valid_parameter"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for configuration_parameter_shape=valid_parameter",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 64,
+      "case_id": "ALTERFUNCTION0064",
+      "sql_filename": "ALTERFUNCTION0064.sql",
+      "object_prefix": "alterfunction_0064_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "expected_failure",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-6a8a4a0cd651ef2e9608f27c|volatile",
+        "kind": "SFV",
+        "factor_key": "conflicting_action",
+        "factor_value": "multiple_conflicting_volatility",
+        "consumer_action_id": "volatile",
+        "expected_sqlstate": "42601"
+      },
+      "factor_values": [
+        "conflicting_action=multiple_conflicting_volatility"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for conflicting_action=multiple_conflicting_volatility",
+      "expected_anchor": "SQLSTATE 42601; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 65,
+      "case_id": "ALTERFUNCTION0065",
+      "sql_filename": "ALTERFUNCTION0065.sql",
+      "object_prefix": "alterfunction_0065_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "expected_failure",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-49133171a8e01e4f3a947af7|volatile",
+        "kind": "SFV",
+        "factor_key": "expected_status",
+        "factor_value": "failure",
+        "consumer_action_id": "volatile",
+        "expected_sqlstate": "42883"
+      },
+      "factor_values": [
+        "expected_status=failure"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for expected_status=failure",
+      "expected_anchor": "SQLSTATE 42883; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 66,
+      "case_id": "ALTERFUNCTION0066",
+      "sql_filename": "ALTERFUNCTION0066.sql",
+      "object_prefix": "alterfunction_0066_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-262c83eb7219c562890fb6fb|volatile",
+        "kind": "SFV",
+        "factor_key": "expected_status",
+        "factor_value": "success",
+        "consumer_action_id": "volatile",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "expected_status=success"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for expected_status=success",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 67,
+      "case_id": "ALTERFUNCTION0067",
+      "sql_filename": "ALTERFUNCTION0067.sql",
+      "object_prefix": "alterfunction_0067_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-90c43f07116d5c13d4835148|depends_on_extension",
+        "kind": "SFV",
+        "factor_key": "extension_dependency",
+        "factor_value": "extension_installed",
+        "consumer_action_id": "depends_on_extension",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "extension_dependency=extension_installed"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for extension_dependency=extension_installed",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 68,
+      "case_id": "ALTERFUNCTION0068",
+      "sql_filename": "ALTERFUNCTION0068.sql",
+      "object_prefix": "alterfunction_0068_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "expected_failure",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-651c0e6b11d6c543b31af71d|depends_on_extension",
+        "kind": "SFV",
+        "factor_key": "extension_dependency",
+        "factor_value": "extension_not_installed",
+        "consumer_action_id": "depends_on_extension",
+        "expected_sqlstate": "42704"
+      },
+      "factor_values": [
+        "extension_dependency=extension_not_installed"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for extension_dependency=extension_not_installed",
+      "expected_anchor": "SQLSTATE 42704; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 69,
+      "case_id": "ALTERFUNCTION0069",
+      "sql_filename": "ALTERFUNCTION0069.sql",
+      "object_prefix": "alterfunction_0069_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-f71cdf6fb52a3b036ee586c5|depends_on_extension",
+        "kind": "SFV",
+        "factor_key": "extension_target",
+        "factor_value": "NO_DEPENDS",
+        "consumer_action_id": "depends_on_extension",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "extension_target=NO_DEPENDS"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for extension_target=NO_DEPENDS",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 70,
+      "case_id": "ALTERFUNCTION0070",
+      "sql_filename": "ALTERFUNCTION0070.sql",
+      "object_prefix": "alterfunction_0070_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-d343904c8a40e7ab8076daa7|depends_on_extension",
+        "kind": "SFV",
+        "factor_key": "extension_target",
+        "factor_value": "extension_exists",
+        "consumer_action_id": "depends_on_extension",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "extension_target=extension_exists"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for extension_target=extension_exists",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 71,
+      "case_id": "ALTERFUNCTION0071",
+      "sql_filename": "ALTERFUNCTION0071.sql",
+      "object_prefix": "alterfunction_0071_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "expected_failure",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-8c616844a22b729ae96db20a|depends_on_extension",
+        "kind": "SFV",
+        "factor_key": "extension_target",
+        "factor_value": "extension_not_exists",
+        "consumer_action_id": "depends_on_extension",
+        "expected_sqlstate": "42704"
+      },
+      "factor_values": [
+        "extension_target=extension_not_exists"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for extension_target=extension_not_exists",
+      "expected_anchor": "SQLSTATE 42704; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 72,
+      "case_id": "ALTERFUNCTION0072",
+      "sql_filename": "ALTERFUNCTION0072.sql",
+      "object_prefix": "alterfunction_0072_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-98e93731a856ba71c632a63e|volatile",
+        "kind": "SFV",
+        "factor_key": "function_name_shape",
+        "factor_value": "quoted",
+        "consumer_action_id": "volatile",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "function_name_shape=quoted"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for function_name_shape=quoted",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 73,
+      "case_id": "ALTERFUNCTION0073",
+      "sql_filename": "ALTERFUNCTION0073.sql",
+      "object_prefix": "alterfunction_0073_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-fa5b6f3953c3f07a3c4b031b|volatile",
+        "kind": "SFV",
+        "factor_key": "function_name_shape",
+        "factor_value": "reserved_word",
+        "consumer_action_id": "volatile",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "function_name_shape=reserved_word"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for function_name_shape=reserved_word",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 74,
+      "case_id": "ALTERFUNCTION0074",
+      "sql_filename": "ALTERFUNCTION0074.sql",
+      "object_prefix": "alterfunction_0074_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-d0d51295268af882fe63e371|volatile",
+        "kind": "SFV",
+        "factor_key": "function_name_shape",
+        "factor_value": "schema_qualified",
+        "consumer_action_id": "volatile",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "function_name_shape=schema_qualified"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for function_name_shape=schema_qualified",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 75,
+      "case_id": "ALTERFUNCTION0075",
+      "sql_filename": "ALTERFUNCTION0075.sql",
+      "object_prefix": "alterfunction_0075_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-92a0f23a97e406634d67b160|volatile",
+        "kind": "SFV",
+        "factor_key": "function_name_shape",
+        "factor_value": "simple",
+        "consumer_action_id": "volatile",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "function_name_shape=simple"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for function_name_shape=simple",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 76,
+      "case_id": "ALTERFUNCTION0076",
+      "sql_filename": "ALTERFUNCTION0076.sql",
+      "object_prefix": "alterfunction_0076_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-b7e5790ee717fe5e586a1ae0|rename",
+        "kind": "SFV",
+        "factor_key": "identifier_length_exceeded",
+        "factor_value": "over_63_chars",
+        "consumer_action_id": "rename",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "identifier_length_exceeded=over_63_chars"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for identifier_length_exceeded=over_63_chars",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 77,
+      "case_id": "ALTERFUNCTION0077",
+      "sql_filename": "ALTERFUNCTION0077.sql",
+      "object_prefix": "alterfunction_0077_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-e6331087a9f35b8aade7cf35|rename",
+        "kind": "SFV",
+        "factor_key": "new_name_shape",
+        "factor_value": "quoted",
+        "consumer_action_id": "rename",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "new_name_shape=quoted"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for new_name_shape=quoted",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 78,
+      "case_id": "ALTERFUNCTION0078",
+      "sql_filename": "ALTERFUNCTION0078.sql",
+      "object_prefix": "alterfunction_0078_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-59fedb05748bc0b5831a5456|rename",
+        "kind": "SFV",
+        "factor_key": "new_name_shape",
+        "factor_value": "reserved_word",
+        "consumer_action_id": "rename",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "new_name_shape=reserved_word"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for new_name_shape=reserved_word",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 79,
+      "case_id": "ALTERFUNCTION0079",
+      "sql_filename": "ALTERFUNCTION0079.sql",
+      "object_prefix": "alterfunction_0079_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-7a4400728ffc6869bb744199|rename",
+        "kind": "SFV",
+        "factor_key": "new_name_shape",
+        "factor_value": "simple",
+        "consumer_action_id": "rename",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "new_name_shape=simple"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for new_name_shape=simple",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 80,
+      "case_id": "ALTERFUNCTION0080",
+      "sql_filename": "ALTERFUNCTION0080.sql",
+      "object_prefix": "alterfunction_0080_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "expected_failure",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-6e7486025f73dcb114cd15c6|volatile",
+        "kind": "SFV",
+        "factor_key": "object_state",
+        "factor_value": "different_signature_exists",
+        "consumer_action_id": "volatile",
+        "expected_sqlstate": "42883"
+      },
+      "factor_values": [
+        "object_state=different_signature_exists"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for object_state=different_signature_exists",
+      "expected_anchor": "SQLSTATE 42883; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 81,
+      "case_id": "ALTERFUNCTION0081",
+      "sql_filename": "ALTERFUNCTION0081.sql",
+      "object_prefix": "alterfunction_0081_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-ca5e94b5c5b817d35a143b99|volatile",
+        "kind": "SFV",
+        "factor_key": "object_state",
+        "factor_value": "exists",
+        "consumer_action_id": "volatile",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "object_state=exists"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for object_state=exists",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 82,
+      "case_id": "ALTERFUNCTION0082",
+      "sql_filename": "ALTERFUNCTION0082.sql",
+      "object_prefix": "alterfunction_0082_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "expected_failure",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-2390babd35633e045e4699e0|volatile",
+        "kind": "SFV",
+        "factor_key": "object_state",
+        "factor_value": "not_exists",
+        "consumer_action_id": "volatile",
+        "expected_sqlstate": "42883"
+      },
+      "factor_values": [
+        "object_state=not_exists"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for object_state=not_exists",
+      "expected_anchor": "SQLSTATE 42883; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 83,
+      "case_id": "ALTERFUNCTION0083",
+      "sql_filename": "ALTERFUNCTION0083.sql",
+      "object_prefix": "alterfunction_0083_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-c4cd71241a2fc8fbbc71de1d|owner",
+        "kind": "SFV",
+        "factor_key": "owner_target",
+        "factor_value": "CURRENT_ROLE",
+        "consumer_action_id": "owner",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "owner_target=CURRENT_ROLE"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for owner_target=CURRENT_ROLE",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 84,
+      "case_id": "ALTERFUNCTION0084",
+      "sql_filename": "ALTERFUNCTION0084.sql",
+      "object_prefix": "alterfunction_0084_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-ed87875dc09a2bd7e9c4ec49|owner",
+        "kind": "SFV",
+        "factor_key": "owner_target",
+        "factor_value": "CURRENT_USER",
+        "consumer_action_id": "owner",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "owner_target=CURRENT_USER"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for owner_target=CURRENT_USER",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 85,
+      "case_id": "ALTERFUNCTION0085",
+      "sql_filename": "ALTERFUNCTION0085.sql",
+      "object_prefix": "alterfunction_0085_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-71dbc975bf5c3d6370a293de|owner",
+        "kind": "SFV",
+        "factor_key": "owner_target",
+        "factor_value": "SESSION_USER",
+        "consumer_action_id": "owner",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "owner_target=SESSION_USER"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for owner_target=SESSION_USER",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 86,
+      "case_id": "ALTERFUNCTION0086",
+      "sql_filename": "ALTERFUNCTION0086.sql",
+      "object_prefix": "alterfunction_0086_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-6d85d5d7697f5e5646c1e54c|owner",
+        "kind": "SFV",
+        "factor_key": "owner_target",
+        "factor_value": "new_owner_role",
+        "consumer_action_id": "owner",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "owner_target=new_owner_role"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for owner_target=new_owner_role",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 87,
+      "case_id": "ALTERFUNCTION0087",
+      "sql_filename": "ALTERFUNCTION0087.sql",
+      "object_prefix": "alterfunction_0087_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "expected_failure",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-77feef213a593d109205afea|owner",
+        "kind": "SFV",
+        "factor_key": "owner_target",
+        "factor_value": "nonexistent_role",
+        "consumer_action_id": "owner",
+        "expected_sqlstate": "42704"
+      },
+      "factor_values": [
+        "owner_target=nonexistent_role"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for owner_target=nonexistent_role",
+      "expected_anchor": "SQLSTATE 42704; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 88,
+      "case_id": "ALTERFUNCTION0088",
+      "sql_filename": "ALTERFUNCTION0088.sql",
+      "object_prefix": "alterfunction_0088_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "expected_failure",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-5ede1f168eca2dd3e4d43021|volatile",
+        "kind": "SFV",
+        "factor_key": "permission_insufficient",
+        "factor_value": "no_alter_privilege",
+        "consumer_action_id": "volatile",
+        "expected_sqlstate": "42501"
+      },
+      "factor_values": [
+        "permission_insufficient=no_alter_privilege"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for permission_insufficient=no_alter_privilege",
+      "expected_anchor": "SQLSTATE 42501; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 89,
+      "case_id": "ALTERFUNCTION0089",
+      "sql_filename": "ALTERFUNCTION0089.sql",
+      "object_prefix": "alterfunction_0089_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "expected_failure",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-360d460324c65f02bc5ccb75|owner",
+        "kind": "SFV",
+        "factor_key": "permission_insufficient",
+        "factor_value": "not_owner_for_OWNER_TO",
+        "consumer_action_id": "owner",
+        "expected_sqlstate": "42501"
+      },
+      "factor_values": [
+        "permission_insufficient=not_owner_for_OWNER_TO"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for permission_insufficient=not_owner_for_OWNER_TO",
+      "expected_anchor": "SQLSTATE 42501; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 90,
+      "case_id": "ALTERFUNCTION0090",
+      "sql_filename": "ALTERFUNCTION0090.sql",
+      "object_prefix": "alterfunction_0090_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "expected_failure",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-0457507b7bba832a14910fec|set_schema",
+        "kind": "SFV",
+        "factor_key": "permission_insufficient",
+        "factor_value": "not_owner_for_SET_SCHEMA",
+        "consumer_action_id": "set_schema",
+        "expected_sqlstate": "42501"
+      },
+      "factor_values": [
+        "permission_insufficient=not_owner_for_SET_SCHEMA"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for permission_insufficient=not_owner_for_SET_SCHEMA",
+      "expected_anchor": "SQLSTATE 42501; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 91,
+      "case_id": "ALTERFUNCTION0091",
+      "sql_filename": "ALTERFUNCTION0091.sql",
+      "object_prefix": "alterfunction_0091_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-0aef6aa6d1b6f3882a877d11|volatile",
+        "kind": "SFV",
+        "factor_key": "privilege_level",
+        "factor_value": "function_owner",
+        "consumer_action_id": "volatile",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "privilege_level=function_owner"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for privilege_level=function_owner",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 92,
+      "case_id": "ALTERFUNCTION0092",
+      "sql_filename": "ALTERFUNCTION0092.sql",
+      "object_prefix": "alterfunction_0092_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "expected_failure",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-7a82cdeada79069800c43dd6|volatile",
+        "kind": "SFV",
+        "factor_key": "privilege_level",
+        "factor_value": "non_owner_no_privilege",
+        "consumer_action_id": "volatile",
+        "expected_sqlstate": "42501"
+      },
+      "factor_values": [
+        "privilege_level=non_owner_no_privilege"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for privilege_level=non_owner_no_privilege",
+      "expected_anchor": "SQLSTATE 42501; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 93,
+      "case_id": "ALTERFUNCTION0093",
+      "sql_filename": "ALTERFUNCTION0093.sql",
+      "object_prefix": "alterfunction_0093_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "expected_failure",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-434d60d76a61e6189b18c1e9|volatile",
+        "kind": "SFV",
+        "factor_key": "privilege_level",
+        "factor_value": "non_owner_with_alter",
+        "consumer_action_id": "volatile",
+        "expected_sqlstate": "42501"
+      },
+      "factor_values": [
+        "privilege_level=non_owner_with_alter"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for privilege_level=non_owner_with_alter",
+      "expected_anchor": "SQLSTATE 42501; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 94,
+      "case_id": "ALTERFUNCTION0094",
+      "sql_filename": "ALTERFUNCTION0094.sql",
+      "object_prefix": "alterfunction_0094_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-36576e6205d56121ebe8bd7f|volatile",
+        "kind": "SFV",
+        "factor_key": "privilege_level",
+        "factor_value": "superuser",
+        "consumer_action_id": "volatile",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "privilege_level=superuser"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for privilege_level=superuser",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 95,
+      "case_id": "ALTERFUNCTION0095",
+      "sql_filename": "ALTERFUNCTION0095.sql",
+      "object_prefix": "alterfunction_0095_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "expected_failure",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-bf49633b17c3306e945a86e0|rename",
+        "kind": "SFV",
+        "factor_key": "rename_target",
+        "factor_value": "duplicate_name",
+        "consumer_action_id": "rename",
+        "expected_sqlstate": "42723"
+      },
+      "factor_values": [
+        "rename_target=duplicate_name"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for rename_target=duplicate_name",
+      "expected_anchor": "SQLSTATE 42723; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 96,
+      "case_id": "ALTERFUNCTION0096",
+      "sql_filename": "ALTERFUNCTION0096.sql",
+      "object_prefix": "alterfunction_0096_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-ae759e90ae1a319a9bf05b05|rename",
+        "kind": "SFV",
+        "factor_key": "rename_target",
+        "factor_value": "quoted",
+        "consumer_action_id": "rename",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "rename_target=quoted"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for rename_target=quoted",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 97,
+      "case_id": "ALTERFUNCTION0097",
+      "sql_filename": "ALTERFUNCTION0097.sql",
+      "object_prefix": "alterfunction_0097_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-f55a10ac303e7c763898eccc|rename",
+        "kind": "SFV",
+        "factor_key": "rename_target",
+        "factor_value": "reserved_word",
+        "consumer_action_id": "rename",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "rename_target=reserved_word"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for rename_target=reserved_word",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 98,
+      "case_id": "ALTERFUNCTION0098",
+      "sql_filename": "ALTERFUNCTION0098.sql",
+      "object_prefix": "alterfunction_0098_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-d2819d1b70160af842e592b4|rename",
+        "kind": "SFV",
+        "factor_key": "rename_target",
+        "factor_value": "simple",
+        "consumer_action_id": "rename",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "rename_target=simple"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for rename_target=simple",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 99,
+      "case_id": "ALTERFUNCTION0099",
+      "sql_filename": "ALTERFUNCTION0099.sql",
+      "object_prefix": "alterfunction_0099_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-494e4324731e0333228c2a48|volatile",
+        "kind": "SFV",
+        "factor_key": "restrict_clause",
+        "factor_value": "absent",
+        "consumer_action_id": "volatile",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "restrict_clause=absent"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for restrict_clause=absent",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 100,
+      "case_id": "ALTERFUNCTION0100",
+      "sql_filename": "ALTERFUNCTION0100.sql",
+      "object_prefix": "alterfunction_0100_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-5e3de5514daefd3d30ae2520|volatile",
+        "kind": "SFV",
+        "factor_key": "restrict_clause",
+        "factor_value": "present",
+        "consumer_action_id": "volatile",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "restrict_clause=present"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for restrict_clause=present",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 101,
+      "case_id": "ALTERFUNCTION0101",
+      "sql_filename": "ALTERFUNCTION0101.sql",
+      "object_prefix": "alterfunction_0101_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-f21321cbe2c6358608ffeef5|owner",
+        "kind": "SFV",
+        "factor_key": "role_dependency",
+        "factor_value": "owner_role_exists",
+        "consumer_action_id": "owner",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "role_dependency=owner_role_exists"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for role_dependency=owner_role_exists",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 102,
+      "case_id": "ALTERFUNCTION0102",
+      "sql_filename": "ALTERFUNCTION0102.sql",
+      "object_prefix": "alterfunction_0102_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "expected_failure",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-a5166fb692e4d87bd36a8dac|owner",
+        "kind": "SFV",
+        "factor_key": "role_dependency",
+        "factor_value": "owner_role_not_exists",
+        "consumer_action_id": "owner",
+        "expected_sqlstate": "42704"
+      },
+      "factor_values": [
+        "role_dependency=owner_role_not_exists"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for role_dependency=owner_role_not_exists",
+      "expected_anchor": "SQLSTATE 42704; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 103,
+      "case_id": "ALTERFUNCTION0103",
+      "sql_filename": "ALTERFUNCTION0103.sql",
+      "object_prefix": "alterfunction_0103_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "expected_failure",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-89df32eeaf323f9acdb13e85|set_schema",
+        "kind": "SFV",
+        "factor_key": "schema_dependency",
+        "factor_value": "reserved_schema",
+        "consumer_action_id": "set_schema",
+        "expected_sqlstate": "42501"
+      },
+      "factor_values": [
+        "schema_dependency=reserved_schema"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for schema_dependency=reserved_schema",
+      "expected_anchor": "SQLSTATE 42501; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 104,
+      "case_id": "ALTERFUNCTION0104",
+      "sql_filename": "ALTERFUNCTION0104.sql",
+      "object_prefix": "alterfunction_0104_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-05fef21cbf4c0137f533a029|set_schema",
+        "kind": "SFV",
+        "factor_key": "schema_dependency",
+        "factor_value": "target_schema_exists",
+        "consumer_action_id": "set_schema",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "schema_dependency=target_schema_exists"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for schema_dependency=target_schema_exists",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 105,
+      "case_id": "ALTERFUNCTION0105",
+      "sql_filename": "ALTERFUNCTION0105.sql",
+      "object_prefix": "alterfunction_0105_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "expected_failure",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-6c10f6cfa97970180a0d8946|set_schema",
+        "kind": "SFV",
+        "factor_key": "schema_dependency",
+        "factor_value": "target_schema_not_exists",
+        "consumer_action_id": "set_schema",
+        "expected_sqlstate": "3F000"
+      },
+      "factor_values": [
+        "schema_dependency=target_schema_not_exists"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for schema_dependency=target_schema_not_exists",
+      "expected_anchor": "SQLSTATE 3F000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 106,
+      "case_id": "ALTERFUNCTION0106",
+      "sql_filename": "ALTERFUNCTION0106.sql",
+      "object_prefix": "alterfunction_0106_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "expected_failure",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-782bc8316dd20b759da60b1b|set_schema",
+        "kind": "SFV",
+        "factor_key": "schema_target",
+        "factor_value": "information_schema_reserved",
+        "consumer_action_id": "set_schema",
+        "expected_sqlstate": "42501"
+      },
+      "factor_values": [
+        "schema_target=information_schema_reserved"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for schema_target=information_schema_reserved",
+      "expected_anchor": "SQLSTATE 42501; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 107,
+      "case_id": "ALTERFUNCTION0107",
+      "sql_filename": "ALTERFUNCTION0107.sql",
+      "object_prefix": "alterfunction_0107_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "expected_failure",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-81b1d3a90041028db2b0ba10|set_schema",
+        "kind": "SFV",
+        "factor_key": "schema_target",
+        "factor_value": "pg_catalog_reserved",
+        "consumer_action_id": "set_schema",
+        "expected_sqlstate": "42501"
+      },
+      "factor_values": [
+        "schema_target=pg_catalog_reserved"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for schema_target=pg_catalog_reserved",
+      "expected_anchor": "SQLSTATE 42501; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 108,
+      "case_id": "ALTERFUNCTION0108",
+      "sql_filename": "ALTERFUNCTION0108.sql",
+      "object_prefix": "alterfunction_0108_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-5f983c898b92343b8bb4bf68|set_schema",
+        "kind": "SFV",
+        "factor_key": "schema_target",
+        "factor_value": "schema_exists",
+        "consumer_action_id": "set_schema",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "schema_target=schema_exists"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for schema_target=schema_exists",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 109,
+      "case_id": "ALTERFUNCTION0109",
+      "sql_filename": "ALTERFUNCTION0109.sql",
+      "object_prefix": "alterfunction_0109_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "expected_failure",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-4c87ce9da1ae33a3c89a1567|set_schema",
+        "kind": "SFV",
+        "factor_key": "schema_target",
+        "factor_value": "schema_not_exists",
+        "consumer_action_id": "set_schema",
+        "expected_sqlstate": "3F000"
+      },
+      "factor_values": [
+        "schema_target=schema_not_exists"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for schema_target=schema_not_exists",
+      "expected_anchor": "SQLSTATE 3F000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 110,
+      "case_id": "ALTERFUNCTION0110",
+      "sql_filename": "ALTERFUNCTION0110.sql",
+      "object_prefix": "alterfunction_0110_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-67b3f2562eb7baa0880e9ab9|volatile",
+        "kind": "SFV",
+        "factor_key": "statement_branch",
+        "factor_value": "branch_1",
+        "consumer_action_id": "volatile",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "statement_branch=branch_1"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for statement_branch=branch_1",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 111,
+      "case_id": "ALTERFUNCTION0111",
+      "sql_filename": "ALTERFUNCTION0111.sql",
+      "object_prefix": "alterfunction_0111_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-c9fdaa1f5a510aee0ad22ef6|rename",
+        "kind": "SFV",
+        "factor_key": "statement_branch",
+        "factor_value": "branch_2",
+        "consumer_action_id": "rename",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "statement_branch=branch_2"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for statement_branch=branch_2",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 112,
+      "case_id": "ALTERFUNCTION0112",
+      "sql_filename": "ALTERFUNCTION0112.sql",
+      "object_prefix": "alterfunction_0112_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-7e958dd66487ef56be7683c8|owner",
+        "kind": "SFV",
+        "factor_key": "statement_branch",
+        "factor_value": "branch_3",
+        "consumer_action_id": "owner",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "statement_branch=branch_3"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for statement_branch=branch_3",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 113,
+      "case_id": "ALTERFUNCTION0113",
+      "sql_filename": "ALTERFUNCTION0113.sql",
+      "object_prefix": "alterfunction_0113_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-1e98da90f264d2a533777d43|set_schema",
+        "kind": "SFV",
+        "factor_key": "statement_branch",
+        "factor_value": "branch_4",
+        "consumer_action_id": "set_schema",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "statement_branch=branch_4"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for statement_branch=branch_4",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 114,
+      "case_id": "ALTERFUNCTION0114",
+      "sql_filename": "ALTERFUNCTION0114.sql",
+      "object_prefix": "alterfunction_0114_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-b3263b57a0d8d1a312fa440b|depends_on_extension",
+        "kind": "SFV",
+        "factor_key": "statement_branch",
+        "factor_value": "branch_5",
+        "consumer_action_id": "depends_on_extension",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "statement_branch=branch_5"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for statement_branch=branch_5",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 115,
+      "case_id": "ALTERFUNCTION0115",
+      "sql_filename": "ALTERFUNCTION0115.sql",
+      "object_prefix": "alterfunction_0115_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "expected_failure",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-636f679023550015c8735083|volatile",
+        "kind": "SFV",
+        "factor_key": "target_function_different_type",
+        "factor_value": "same_name_is_aggregate",
+        "consumer_action_id": "volatile",
+        "expected_sqlstate": "42809"
+      },
+      "factor_values": [
+        "target_function_different_type=same_name_is_aggregate"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for target_function_different_type=same_name_is_aggregate",
+      "expected_anchor": "SQLSTATE 42809; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 116,
+      "case_id": "ALTERFUNCTION0116",
+      "sql_filename": "ALTERFUNCTION0116.sql",
+      "object_prefix": "alterfunction_0116_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "expected_failure",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-0eb430e2c3966acbe68b6af3|volatile",
+        "kind": "SFV",
+        "factor_key": "target_function_different_type",
+        "factor_value": "same_name_is_procedure",
+        "consumer_action_id": "volatile",
+        "expected_sqlstate": "42809"
+      },
+      "factor_values": [
+        "target_function_different_type=same_name_is_procedure"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for target_function_different_type=same_name_is_procedure",
+      "expected_anchor": "SQLSTATE 42809; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 117,
+      "case_id": "ALTERFUNCTION0117",
+      "sql_filename": "ALTERFUNCTION0117.sql",
+      "object_prefix": "alterfunction_0117_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "expected_failure",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-87c949b46c3feea2240a6572|volatile",
+        "kind": "SFV",
+        "factor_key": "target_function_not_exists",
+        "factor_value": "function_name_not_found",
+        "consumer_action_id": "volatile",
+        "expected_sqlstate": "42883"
+      },
+      "factor_values": [
+        "target_function_not_exists=function_name_not_found"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for target_function_not_exists=function_name_not_found",
+      "expected_anchor": "SQLSTATE 42883; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 118,
+      "case_id": "ALTERFUNCTION0118",
+      "sql_filename": "ALTERFUNCTION0118.sql",
+      "object_prefix": "alterfunction_0118_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "expected_failure",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-085e7aa7135126c1c8b78f82|volatile",
+        "kind": "SFV",
+        "factor_key": "target_function_not_exists",
+        "factor_value": "function_signature_not_found",
+        "consumer_action_id": "volatile",
+        "expected_sqlstate": "42883"
+      },
+      "factor_values": [
+        "target_function_not_exists=function_signature_not_found"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for target_function_not_exists=function_signature_not_found",
+      "expected_anchor": "SQLSTATE 42883; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 119,
+      "case_id": "ALTERFUNCTION0119",
+      "sql_filename": "ALTERFUNCTION0119.sql",
+      "object_prefix": "alterfunction_0119_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-c7d05788c111122ee8a0d295|volatile",
+        "kind": "SFV",
+        "factor_key": "verification_mode",
+        "factor_value": "information_schema_routines",
+        "consumer_action_id": "volatile",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "verification_mode=information_schema_routines"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for verification_mode=information_schema_routines",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 120,
+      "case_id": "ALTERFUNCTION0120",
+      "sql_filename": "ALTERFUNCTION0120.sql",
+      "object_prefix": "alterfunction_0120_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-7c62c2ae728aa22429e2c856|volatile",
+        "kind": "SFV",
+        "factor_key": "verification_mode",
+        "factor_value": "pg_get_functiondef",
+        "consumer_action_id": "volatile",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "verification_mode=pg_get_functiondef"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for verification_mode=pg_get_functiondef",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 121,
+      "case_id": "ALTERFUNCTION0121",
+      "sql_filename": "ALTERFUNCTION0121.sql",
+      "object_prefix": "alterfunction_0121_",
+      "case_group": "factor_value_loop_sfv",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-SFV|sfv-1af78b189ee07a53f618163e|volatile",
+        "kind": "SFV",
+        "factor_key": "verification_mode",
+        "factor_value": "pg_proc_catalog_query",
+        "consumer_action_id": "volatile",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "verification_mode=pg_proc_catalog_query"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for verification_mode=pg_proc_catalog_query",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 122,
+      "case_id": "ALTERFUNCTION0122",
+      "sql_filename": "ALTERFUNCTION0122.sql",
+      "object_prefix": "alterfunction_0122_",
+      "case_group": "factor_value_loop_risk",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-RISK|transaction|commit",
+        "kind": "RISK",
+        "factor_key": "transaction_outcome",
+        "factor_value": "commit",
+        "consumer_action_id": "volatile",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "transaction_outcome=commit"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for transaction_outcome=commit",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    },
+    {
+      "ordinal": 123,
+      "case_id": "ALTERFUNCTION0123",
+      "sql_filename": "ALTERFUNCTION0123.sql",
+      "object_prefix": "alterfunction_0123_",
+      "case_group": "factor_value_loop_risk",
+      "case_type": "factor_value_independent_witness",
+      "outcome": "success",
+      "execution_profile": "same_session_multiphase",
+      "derived_axes": {
+        "primary_obligation_id": "AF-RISK|transaction|rollback",
+        "kind": "RISK",
+        "factor_key": "transaction_outcome",
+        "factor_value": "rollback",
+        "consumer_action_id": "volatile",
+        "expected_sqlstate": "00000"
+      },
+      "factor_values": [
+        "transaction_outcome=rollback"
+      ],
+      "combination_strategy": "one_primary_factor_value_with_legal_baselines",
+      "description": "Independent ALTER FUNCTION witness for transaction_outcome=rollback",
+      "expected_anchor": "SQLSTATE 00000; actual-byte semantic locus"
+    }
+  ]
+}
