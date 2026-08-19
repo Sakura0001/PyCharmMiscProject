@@ -165,7 +165,7 @@ def object_references(sql: str) -> set[str]:
                     if raw_name.lower().startswith("information_schema."):
                         continue
                     name = normalize_identifier(raw_name)
-                    if name not in {"select", "values", "only", "lateral"} | cte_names:
+                    if name not in {"select", "values", "only", "lateral", "current"} | cte_names:
                         names.add(name)
     return names
 
