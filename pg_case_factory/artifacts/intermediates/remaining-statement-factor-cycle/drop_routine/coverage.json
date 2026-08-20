@@ -1,0 +1,621 @@
+{
+  "schema_version": 1,
+  "statement_key": "drop_routine",
+  "cycle_fingerprint": "606b9e710210e50ff88b14de7052163f9ee31f6f1d1e744bc0bd9935f399a9d9",
+  "factor_value_count": 60,
+  "factor_disposition_counts": {
+    "covered": 46,
+    "expected_failure": 14,
+    "justified_na": 0
+  },
+  "missing_row_ids": [],
+  "duplicate_row_ids": [],
+  "decisions": [
+    {
+      "row_id": "sfv-1da25813cde1c66a9287ba2a",
+      "factor": "arg_signature_disambiguation",
+      "value": "no_args_no_ambiguity",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00002"
+      ]
+    },
+    {
+      "row_id": "sfv-29bc6cbe3bf966eca5c443fb",
+      "factor": "arg_signature_disambiguation",
+      "value": "overloaded_requires_signature",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00003"
+      ]
+    },
+    {
+      "row_id": "sfv-3c31052cf2c638ac4c76e9a3",
+      "factor": "arg_signature_disambiguation",
+      "value": "signature_mismatch",
+      "disposition": "expected_failure",
+      "reason": "undefined_function_signature_mismatch",
+      "case_ids": [
+        "DROPROUTINE00004"
+      ]
+    },
+    {
+      "row_id": "sfv-0fc6025c319a04b0e145fa64",
+      "factor": "arg_signature_disambiguation",
+      "value": "single_arg_with_signature",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00005"
+      ]
+    },
+    {
+      "row_id": "sfv-d060a36d996a773f9e32d0d4",
+      "factor": "arg_signature_shape",
+      "value": "empty_arg_list",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00006"
+      ]
+    },
+    {
+      "row_id": "sfv-7fd826467629e37ab0be9bb0",
+      "factor": "arg_signature_shape",
+      "value": "multiple_args",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00007"
+      ]
+    },
+    {
+      "row_id": "sfv-709ac55192928b2101e63852",
+      "factor": "arg_signature_shape",
+      "value": "no_args",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00008"
+      ]
+    },
+    {
+      "row_id": "sfv-fec553c2e71d07f5969af40e",
+      "factor": "arg_signature_shape",
+      "value": "single_arg",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00009"
+      ]
+    },
+    {
+      "row_id": "sfv-556e0d9539eb74a4879b29ec",
+      "factor": "arg_signature_shape",
+      "value": "with_argmode",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00010"
+      ]
+    },
+    {
+      "row_id": "sfv-daff72054b411d4a1fa887e6",
+      "factor": "arg_signature_shape",
+      "value": "with_argname",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00011"
+      ]
+    },
+    {
+      "row_id": "sfv-e8a1a67cf131c1038a3d488d",
+      "factor": "cascade_restrict_clause",
+      "value": "cascade",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00012"
+      ]
+    },
+    {
+      "row_id": "sfv-8c58bf3be6619aeaf9885c9d",
+      "factor": "cascade_restrict_clause",
+      "value": "no_clause_default_restrict",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00013"
+      ]
+    },
+    {
+      "row_id": "sfv-fb936beb6d7e0c727ebd4f91",
+      "factor": "cascade_restrict_clause",
+      "value": "restrict",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00014"
+      ]
+    },
+    {
+      "row_id": "sfv-f7f63876065226a67dd81fea",
+      "factor": "cleanup_mode",
+      "value": "cascade_drop_with_dependents",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00015"
+      ]
+    },
+    {
+      "row_id": "sfv-bae85e59533c5b0c723433ee",
+      "factor": "cleanup_mode",
+      "value": "drop_aggregate",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00016"
+      ]
+    },
+    {
+      "row_id": "sfv-35e56e27aac29123ebebf379",
+      "factor": "cleanup_mode",
+      "value": "drop_function",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00017"
+      ]
+    },
+    {
+      "row_id": "sfv-09354213c72465fe69ad7d4c",
+      "factor": "cleanup_mode",
+      "value": "drop_procedure",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00018"
+      ]
+    },
+    {
+      "row_id": "sfv-9b87557e6e31dcd1b27a348b",
+      "factor": "cleanup_mode",
+      "value": "drop_routine",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00019"
+      ]
+    },
+    {
+      "row_id": "sfv-324f13ce73fc37baddbc5bd7",
+      "factor": "dependent_object_conflict",
+      "value": "cascade_with_dependent_succeeds",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00020"
+      ]
+    },
+    {
+      "row_id": "sfv-e467f8842f8c8e869456273e",
+      "factor": "dependent_object_conflict",
+      "value": "restrict_with_dependent_fails",
+      "disposition": "expected_failure",
+      "reason": "dependent_objects_restricted",
+      "case_ids": [
+        "DROPROUTINE00021"
+      ]
+    },
+    {
+      "row_id": "sfv-6d5f63273dfee08e939722db",
+      "factor": "dependent_objects",
+      "value": "has_dependent_routine",
+      "disposition": "expected_failure",
+      "reason": "dependent_objects_restricted",
+      "case_ids": [
+        "DROPROUTINE00022"
+      ]
+    },
+    {
+      "row_id": "sfv-41a4274aa210613a44b54b18",
+      "factor": "dependent_objects",
+      "value": "has_dependent_trigger",
+      "disposition": "expected_failure",
+      "reason": "dependent_objects_restricted",
+      "case_ids": [
+        "DROPROUTINE00023"
+      ]
+    },
+    {
+      "row_id": "sfv-516e3eeeb84edfb3eeccb649",
+      "factor": "dependent_objects",
+      "value": "has_dependent_view",
+      "disposition": "expected_failure",
+      "reason": "dependent_objects_restricted",
+      "case_ids": [
+        "DROPROUTINE00024"
+      ]
+    },
+    {
+      "row_id": "sfv-01e13040df8cb8acc8313c6d",
+      "factor": "dependent_objects",
+      "value": "no_dependent_objects",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00025"
+      ]
+    },
+    {
+      "row_id": "sfv-88ef6fbbb02ed986b43d58c4",
+      "factor": "executor_privilege",
+      "value": "non_owner_no_privilege",
+      "disposition": "expected_failure",
+      "reason": "insufficient_routine_privilege",
+      "case_ids": [
+        "DROPROUTINE00026"
+      ]
+    },
+    {
+      "row_id": "sfv-b1c387286ed01bc544775653",
+      "factor": "executor_privilege",
+      "value": "owner",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00027"
+      ]
+    },
+    {
+      "row_id": "sfv-45ae04e234fe0588e7c62d6a",
+      "factor": "executor_privilege",
+      "value": "superuser",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00028"
+      ]
+    },
+    {
+      "row_id": "sfv-e5f594cdc6b5372cf1f87770",
+      "factor": "expected_status",
+      "value": "failure",
+      "disposition": "expected_failure",
+      "reason": "drop_routine_declared_failure",
+      "case_ids": [
+        "DROPROUTINE00029"
+      ]
+    },
+    {
+      "row_id": "sfv-fc3fb1a1b34091aa753256f7",
+      "factor": "expected_status",
+      "value": "success",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00030"
+      ]
+    },
+    {
+      "row_id": "sfv-08bb51bf4abdf91b5e468f3c",
+      "factor": "if_exists_clause",
+      "value": "with_if_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00031"
+      ]
+    },
+    {
+      "row_id": "sfv-edbabe373a775d3da4550446",
+      "factor": "if_exists_clause",
+      "value": "without_if_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00032"
+      ]
+    },
+    {
+      "row_id": "sfv-d98ec020c9d879ffe5d044ab",
+      "factor": "multi_target",
+      "value": "multi_target_all_exist",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00033"
+      ]
+    },
+    {
+      "row_id": "sfv-bb7bc5b089dbda62c9cb3f11",
+      "factor": "multi_target",
+      "value": "multi_target_some_not_exist",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00034"
+      ]
+    },
+    {
+      "row_id": "sfv-1360746699ff42bc30a7b358",
+      "factor": "multi_target",
+      "value": "single_target",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00035"
+      ]
+    },
+    {
+      "row_id": "sfv-d914402bd5e88195be9a8750",
+      "factor": "nonexistent_routine",
+      "value": "routine_does_not_exist",
+      "disposition": "expected_failure",
+      "reason": "undefined_routine_absent",
+      "case_ids": [
+        "DROPROUTINE00036"
+      ]
+    },
+    {
+      "row_id": "sfv-bbdccd9df0b3af8b56d70556",
+      "factor": "overloaded_routine_ambiguity",
+      "value": "ambiguous_without_signature",
+      "disposition": "expected_failure",
+      "reason": "routine_ambiguous_without_signature",
+      "case_ids": [
+        "DROPROUTINE00037"
+      ]
+    },
+    {
+      "row_id": "sfv-619cb1b913a2f4d0d0481ac6",
+      "factor": "overloaded_routine_ambiguity",
+      "value": "resolved_with_signature",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00038"
+      ]
+    },
+    {
+      "row_id": "sfv-9cdf0dea00b0f0d3aa9c7b4d",
+      "factor": "privilege_context",
+      "value": "non_owner_no_privilege",
+      "disposition": "expected_failure",
+      "reason": "insufficient_routine_privilege",
+      "case_ids": [
+        "DROPROUTINE00039"
+      ]
+    },
+    {
+      "row_id": "sfv-89e142f0b939b77560597f4a",
+      "factor": "privilege_context",
+      "value": "owner_of_routine",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00040"
+      ]
+    },
+    {
+      "row_id": "sfv-a153a9f66b854ad1657ad2db",
+      "factor": "privilege_context",
+      "value": "superuser",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00041"
+      ]
+    },
+    {
+      "row_id": "sfv-5c575e71a6507a28ee6dbf43",
+      "factor": "privilege_insufficient",
+      "value": "non_owner_dropping_routine",
+      "disposition": "expected_failure",
+      "reason": "insufficient_routine_privilege",
+      "case_ids": [
+        "DROPROUTINE00042"
+      ]
+    },
+    {
+      "row_id": "sfv-4dc6dd2d678e6993e0a3027c",
+      "factor": "routine_existence",
+      "value": "routine_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00043"
+      ]
+    },
+    {
+      "row_id": "sfv-fc02c5f2d000df0ccefe5ef1",
+      "factor": "routine_existence",
+      "value": "routine_exists_as_aggregate",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00044"
+      ]
+    },
+    {
+      "row_id": "sfv-ec1933a4da9e189602efa7eb",
+      "factor": "routine_existence",
+      "value": "routine_exists_as_function",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00045"
+      ]
+    },
+    {
+      "row_id": "sfv-28bd63c2af9cd92ebe7bc9bd",
+      "factor": "routine_existence",
+      "value": "routine_exists_as_procedure",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00046"
+      ]
+    },
+    {
+      "row_id": "sfv-3474f24b66fbc0f2314349b1",
+      "factor": "routine_existence",
+      "value": "routine_not_exists",
+      "disposition": "expected_failure",
+      "reason": "undefined_routine_absent",
+      "case_ids": [
+        "DROPROUTINE00047"
+      ]
+    },
+    {
+      "row_id": "sfv-6ffa8a2ae719546b73500627",
+      "factor": "routine_name_shape",
+      "value": "non_existing_name",
+      "disposition": "expected_failure",
+      "reason": "undefined_routine_name",
+      "case_ids": [
+        "DROPROUTINE00048"
+      ]
+    },
+    {
+      "row_id": "sfv-2e7bd716a0749c30ba122b46",
+      "factor": "routine_name_shape",
+      "value": "quoted_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00049"
+      ]
+    },
+    {
+      "row_id": "sfv-c7c7d5f2df5ea9fa31711ed0",
+      "factor": "routine_name_shape",
+      "value": "schema_qualified_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00050"
+      ]
+    },
+    {
+      "row_id": "sfv-5022a999ee640816ca5019d5",
+      "factor": "routine_name_shape",
+      "value": "simple_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00051"
+      ]
+    },
+    {
+      "row_id": "sfv-086c98ed5c105950816c7c1e",
+      "factor": "routine_type",
+      "value": "aggregate",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00052"
+      ]
+    },
+    {
+      "row_id": "sfv-89946aad4ce9866462985998",
+      "factor": "routine_type",
+      "value": "function",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00053"
+      ]
+    },
+    {
+      "row_id": "sfv-eb9cd5902a3af156c5a52d49",
+      "factor": "routine_type",
+      "value": "procedure",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00054"
+      ]
+    },
+    {
+      "row_id": "sfv-73642a1090d9e0b85dc27326",
+      "factor": "statement_branch",
+      "value": "branch_drop_routine",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00055"
+      ]
+    },
+    {
+      "row_id": "sfv-b69fbbcada250962157fe8e0",
+      "factor": "statement_branch",
+      "value": "branch_drop_routine_cascade",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00056"
+      ]
+    },
+    {
+      "row_id": "sfv-56fdeb66832d169d39032f00",
+      "factor": "statement_branch",
+      "value": "branch_drop_routine_if_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00057"
+      ]
+    },
+    {
+      "row_id": "sfv-8404b0c9a16674a5f51191c6",
+      "factor": "statement_branch",
+      "value": "branch_drop_routine_restrict",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00058"
+      ]
+    },
+    {
+      "row_id": "sfv-3e7049714a52e637404992ef",
+      "factor": "verification_mode",
+      "value": "error_assertion",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00059"
+      ]
+    },
+    {
+      "row_id": "sfv-b9ff7810da9e983c415ca659",
+      "factor": "verification_mode",
+      "value": "pg_proc_catalog",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPROUTINE00060"
+      ]
+    },
+    {
+      "row_id": "sfv-643be785cc0074fd0e51b68c",
+      "factor": "wrong_argument_types",
+      "value": "signature_does_not_match_any_routine",
+      "disposition": "expected_failure",
+      "reason": "undefined_function_signature_mismatch",
+      "case_ids": [
+        "DROPROUTINE00061"
+      ]
+    }
+  ],
+  "generation_mode": "factor_value_independent_loop_v1",
+  "decision_count": 63,
+  "local_sql_decision_count": 63,
+  "extension_case_count": 4290,
+  "delegated_decision_count": 0,
+  "obligation_multiset_sha256": "478e9c3aeb3f4946e9d0119a8946ffae81c81802f6558d4372550f8b28a02c3c"
+}
