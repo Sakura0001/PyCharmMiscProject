@@ -6,7 +6,7 @@
   "statement_count": 183,
   "retained_statement_count": 6,
   "pending_statement_count": 177,
-  "next_pending_statement": "alter_text_search_template",
+  "next_pending_statement": "alter_trigger",
   "statements": {
     "abort": {
       "status": "completed",
@@ -268,11 +268,11 @@
       "validation_evidence_sha256": "d5584a8bd48e67e7ef410ad638416dd04816eb0a243d9c1f5a349b84e6564815"
     },
     "alter_text_search_template": {
-      "status": "pending",
-      "package_path": null,
-      "sql_file_count": null,
-      "validation_evidence": null,
-      "validation_evidence_sha256": null
+      "status": "completed",
+      "package_path": "artifacts/regress/by-factor/ddl/text_search_template/alter_text_search_template",
+      "sql_file_count": 183,
+      "validation_evidence": "/Users/yuyu/PyCharmMiscProject/pg_case_factory/artifacts/intermediates/remaining-statement-factor-cycle/alter_text_search_template/validation.json",
+      "validation_evidence_sha256": "ec6db4320cd84c56458d304038f062feedc33a35ab0395c6c80b33c513b59fd9"
     },
     "alter_trigger": {
       "status": "pending",
