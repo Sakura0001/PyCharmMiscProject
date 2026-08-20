@@ -1,0 +1,39 @@
+-- --------------------------------------------------------
+-- 版权所有(C)  2021-2030 华为技术有限公司
+--
+-- --
+-- author       : codex
+-- create at    : 2026-08-20
+-- version      : 1.0
+-- description  : CALL target_relation_state=wrong_object_type
+-- FE           : PG18-STATEMENT-FACTOR-LOOP
+-- ++
+-- --------------------------------------------------------
+-- case_id: CALL00652
+-- source_md: skills/pg-sql-generation/references/statements/dml/routine/call.md
+-- factor_md: skills/pg-sql-generation/references/combinations/dml/routine/call.yaml
+-- primary_obligation_id: CALL-EXT|00652|catalog_query|reset_state
+-- expected_outcome: expected_failure
+-- expected_sqlstate: 42809
+-- 1. 清理本编号对象，保证脚本可重复执行。
+DROP TABLE IF EXISTS call_00652_tbl;
+DROP FUNCTION IF EXISTS call_00652_proc;
+\set ON_ERROR_STOP on
+-- 2. 创建完整本地规则和因子专用夹具。
+CREATE TABLE call_00652_tbl (val int);
+CREATE FUNCTION call_00652_proc(int) RETURNS int AS $$ SELECT $1 $$ LANGUAGE sql;
+\set ON_ERROR_STOP off
+-- 3. 执行唯一获得覆盖信用的 CALL。
+-- primary-target-begin
+WITH call_00652_cte AS (SELECT 42 AS val)
+CALL call_00652_proc((SELECT val FROM call_00652_cte));
+-- primary-target-end
+\set target_sqlstate :SQLSTATE
+\echo PGCF_TARGET_SQLSTATE=:target_sqlstate
+\set ON_ERROR_STOP on
+-- 4. 验证 SQLSTATE、目录状态和数据行为。
+SELECT :'target_sqlstate' = '42809' AS target_sqlstate_matches_expected;
+SELECT count(*) = 0 AS procedure_state FROM pg_catalog.pg_proc WHERE proname = 'call_00652_proc' ORDER BY count(*);
+-- 5. 清理全部本编号对象。
+DROP FUNCTION IF EXISTS call_00652_proc;
+DROP TABLE IF EXISTS call_00652_tbl;
