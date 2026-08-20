@@ -1,0 +1,821 @@
+{
+  "schema_version": 1,
+  "statement_key": "create_policy",
+  "cycle_fingerprint": "606b9e710210e50ff88b14de7052163f9ee31f6f1d1e744bc0bd9935f399a9d9",
+  "factor_value_count": 80,
+  "factor_disposition_counts": {
+    "covered": 62,
+    "expected_failure": 18,
+    "justified_na": 0
+  },
+  "missing_row_ids": [],
+  "duplicate_row_ids": [],
+  "decisions": [
+    {
+      "row_id": "sfv-81f5dc9c3b34f9018a37cd51",
+      "factor": "cleanup_mode",
+      "value": "disable_rls_and_drop_policy",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00002"
+      ]
+    },
+    {
+      "row_id": "sfv-cbb7bae5d18ea44320ac1852",
+      "factor": "cleanup_mode",
+      "value": "drop_policy",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00003"
+      ]
+    },
+    {
+      "row_id": "sfv-3e1bad9137c7276d40fad534",
+      "factor": "cleanup_mode",
+      "value": "drop_table",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00004"
+      ]
+    },
+    {
+      "row_id": "sfv-73a89b89d6820a73ba33f02c",
+      "factor": "command_type",
+      "value": "ALL",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00005"
+      ]
+    },
+    {
+      "row_id": "sfv-5046a3679fca820b94e025fd",
+      "factor": "command_type",
+      "value": "DELETE",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00006"
+      ]
+    },
+    {
+      "row_id": "sfv-a80889d5230bc682d61dff23",
+      "factor": "command_type",
+      "value": "DML_RETURNING",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00007"
+      ]
+    },
+    {
+      "row_id": "sfv-ba21ddbf0c5555a2013976ac",
+      "factor": "command_type",
+      "value": "INSERT",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00008"
+      ]
+    },
+    {
+      "row_id": "sfv-797dd7fb5abddb8031e5ee07",
+      "factor": "command_type",
+      "value": "INSERT_ON_CONFLICT",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00009"
+      ]
+    },
+    {
+      "row_id": "sfv-d0a1f00ee457e03ca4aaaad1",
+      "factor": "command_type",
+      "value": "MERGE",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00010"
+      ]
+    },
+    {
+      "row_id": "sfv-d7b0727124e71b0b53f331fc",
+      "factor": "command_type",
+      "value": "SELECT",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00011"
+      ]
+    },
+    {
+      "row_id": "sfv-b50f073ff7aea8e30610933e",
+      "factor": "command_type",
+      "value": "UPDATE",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00012"
+      ]
+    },
+    {
+      "row_id": "sfv-487b2954bfecad02ebaec212",
+      "factor": "duplicate_policy_name",
+      "value": "no_conflict",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00013"
+      ]
+    },
+    {
+      "row_id": "sfv-3642b55a607b7cb3110d7c35",
+      "factor": "duplicate_policy_name",
+      "value": "same_table_same_name",
+      "disposition": "expected_failure",
+      "reason": "duplicate_policy_provisional",
+      "case_ids": [
+        "CREATEPOLICY00014"
+      ]
+    },
+    {
+      "row_id": "sfv-c54318ba2e0240164c28b140",
+      "factor": "expected_status",
+      "value": "failure",
+      "disposition": "expected_failure",
+      "reason": "duplicate_policy_provisional",
+      "case_ids": [
+        "CREATEPOLICY00015"
+      ]
+    },
+    {
+      "row_id": "sfv-4afde7277a94311783035460",
+      "factor": "expected_status",
+      "value": "success",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00016"
+      ]
+    },
+    {
+      "row_id": "sfv-dc31a5e2173d7202bea39eee",
+      "factor": "expression_compatibility",
+      "value": "compatible_pairing",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00017"
+      ]
+    },
+    {
+      "row_id": "sfv-9a6e85912619d92e78475307",
+      "factor": "expression_compatibility",
+      "value": "delete_with_check_incompatible",
+      "disposition": "expected_failure",
+      "reason": "syntax_error_provisional",
+      "case_ids": [
+        "CREATEPOLICY00018"
+      ]
+    },
+    {
+      "row_id": "sfv-d61e1989384df730ab061c7d",
+      "factor": "expression_compatibility",
+      "value": "insert_with_using_incompatible",
+      "disposition": "expected_failure",
+      "reason": "syntax_error_provisional",
+      "case_ids": [
+        "CREATEPOLICY00019"
+      ]
+    },
+    {
+      "row_id": "sfv-0f30ac6968e6da8c7b6dda34",
+      "factor": "expression_compatibility",
+      "value": "select_with_check_incompatible",
+      "disposition": "expected_failure",
+      "reason": "syntax_error_provisional",
+      "case_ids": [
+        "CREATEPOLICY00020"
+      ]
+    },
+    {
+      "row_id": "sfv-8dfa1499c2f9c9617b75af0d",
+      "factor": "insert_with_using_conflict",
+      "value": "compatible_no_using",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00021"
+      ]
+    },
+    {
+      "row_id": "sfv-63d339937dfd8fb3be78c72b",
+      "factor": "insert_with_using_conflict",
+      "value": "incompatible_using",
+      "disposition": "expected_failure",
+      "reason": "syntax_error_provisional",
+      "case_ids": [
+        "CREATEPOLICY00022"
+      ]
+    },
+    {
+      "row_id": "sfv-c85038dd17331ba6f47d3fb1",
+      "factor": "invalid_expression",
+      "value": "aggregate_in_expression",
+      "disposition": "expected_failure",
+      "reason": "grouping_error_provisional",
+      "case_ids": [
+        "CREATEPOLICY00023"
+      ]
+    },
+    {
+      "row_id": "sfv-6253c8230ed0c8a4acae102b",
+      "factor": "invalid_expression",
+      "value": "valid_expression",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00024"
+      ]
+    },
+    {
+      "row_id": "sfv-81f8634a5ace676b8ff0f589",
+      "factor": "invalid_expression",
+      "value": "window_function_in_expression",
+      "disposition": "expected_failure",
+      "reason": "grouping_error_provisional",
+      "case_ids": [
+        "CREATEPOLICY00025"
+      ]
+    },
+    {
+      "row_id": "sfv-ce50cc863f4217490a5368e1",
+      "factor": "nonexistent_table",
+      "value": "table_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00026"
+      ]
+    },
+    {
+      "row_id": "sfv-bf0792a0dc9b973b52d88ff2",
+      "factor": "nonexistent_table",
+      "value": "table_missing",
+      "disposition": "expected_failure",
+      "reason": "undefined_table_provisional",
+      "case_ids": [
+        "CREATEPOLICY00027"
+      ]
+    },
+    {
+      "row_id": "sfv-69f95401b61460e6cdac44c6",
+      "factor": "object_state",
+      "value": "exists_different_table",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00028"
+      ]
+    },
+    {
+      "row_id": "sfv-660c9bf8ebd342f6de604796",
+      "factor": "object_state",
+      "value": "exists_same_table",
+      "disposition": "expected_failure",
+      "reason": "duplicate_policy_provisional",
+      "case_ids": [
+        "CREATEPOLICY00029"
+      ]
+    },
+    {
+      "row_id": "sfv-5f9b8fb30e01450ae3d86961",
+      "factor": "object_state",
+      "value": "not_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00030"
+      ]
+    },
+    {
+      "row_id": "sfv-a67977c8b2b03a3cb0a433ff",
+      "factor": "only_restrictive_policy",
+      "value": "has_permissive_policy",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00031"
+      ]
+    },
+    {
+      "row_id": "sfv-b89e103e2319dcc3b322a667",
+      "factor": "only_restrictive_policy",
+      "value": "only_restrictive_no_permissive",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00032"
+      ]
+    },
+    {
+      "row_id": "sfv-2e08bbfad1174fdaea99ad10",
+      "factor": "policy_name_shape",
+      "value": "duplicate_name_different_table",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00033"
+      ]
+    },
+    {
+      "row_id": "sfv-1f139e2cd7318f4ba60724c1",
+      "factor": "policy_name_shape",
+      "value": "duplicate_name_same_table",
+      "disposition": "expected_failure",
+      "reason": "duplicate_policy_provisional",
+      "case_ids": [
+        "CREATEPOLICY00034"
+      ]
+    },
+    {
+      "row_id": "sfv-b95c67b9e12f87a1009aa0e6",
+      "factor": "policy_name_shape",
+      "value": "quoted_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00035"
+      ]
+    },
+    {
+      "row_id": "sfv-7dcaa11a8caa15a934b099a1",
+      "factor": "policy_name_shape",
+      "value": "reserved_word_as_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00036"
+      ]
+    },
+    {
+      "row_id": "sfv-1124a10f9deea2abd9aa0413",
+      "factor": "policy_name_shape",
+      "value": "simple_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00037"
+      ]
+    },
+    {
+      "row_id": "sfv-63aebc26e03d908064bf721f",
+      "factor": "policy_type",
+      "value": "permissive",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00038"
+      ]
+    },
+    {
+      "row_id": "sfv-76daf619c5ce379ced763f38",
+      "factor": "policy_type",
+      "value": "restrictive",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00039"
+      ]
+    },
+    {
+      "row_id": "sfv-bba023f940c82f1919d7a1a4",
+      "factor": "privilege_denied",
+      "value": "non_owner_denied",
+      "disposition": "expected_failure",
+      "reason": "insufficient_privilege_provisional",
+      "case_ids": [
+        "CREATEPOLICY00040"
+      ]
+    },
+    {
+      "row_id": "sfv-a03a86765d744d56d331ecf8",
+      "factor": "privilege_denied",
+      "value": "owner_execution",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00041"
+      ]
+    },
+    {
+      "row_id": "sfv-122b934f85201f7de801d60a",
+      "factor": "privilege_denied",
+      "value": "superuser_execution",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00042"
+      ]
+    },
+    {
+      "row_id": "sfv-5ebcec6701ff47c060e9ad23",
+      "factor": "privilege_level",
+      "value": "non_owner",
+      "disposition": "expected_failure",
+      "reason": "insufficient_privilege_provisional",
+      "case_ids": [
+        "CREATEPOLICY00043"
+      ]
+    },
+    {
+      "row_id": "sfv-4fa29011b2e9bddd561e837b",
+      "factor": "privilege_level",
+      "value": "superuser",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00044"
+      ]
+    },
+    {
+      "row_id": "sfv-d6608de0041388fcd67a1739",
+      "factor": "privilege_level",
+      "value": "table_owner",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00045"
+      ]
+    },
+    {
+      "row_id": "sfv-abee4bee5e74fa59ff5c312e",
+      "factor": "rls_enabled",
+      "value": "rls_enabled",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00046"
+      ]
+    },
+    {
+      "row_id": "sfv-704694e4163a5243419db98f",
+      "factor": "rls_enabled",
+      "value": "rls_not_enabled",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00047"
+      ]
+    },
+    {
+      "row_id": "sfv-a36cbad0c743aa4a6d6f921c",
+      "factor": "rls_not_enabled",
+      "value": "rls_enabled",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00048"
+      ]
+    },
+    {
+      "row_id": "sfv-8ba0d065e3330abda76c5081",
+      "factor": "rls_not_enabled",
+      "value": "rls_not_enabled",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00049"
+      ]
+    },
+    {
+      "row_id": "sfv-95d489b799ad2ae32817427a",
+      "factor": "role_existence",
+      "value": "role_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00050"
+      ]
+    },
+    {
+      "row_id": "sfv-b88eecfe326e18b8417af603",
+      "factor": "role_existence",
+      "value": "role_not_exists",
+      "disposition": "expected_failure",
+      "reason": "undefined_role_provisional",
+      "case_ids": [
+        "CREATEPOLICY00051"
+      ]
+    },
+    {
+      "row_id": "sfv-9849d85de18ba314f34c28b1",
+      "factor": "role_name_shape",
+      "value": "PUBLIC_keyword",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00052"
+      ]
+    },
+    {
+      "row_id": "sfv-acb20f69bec0201cae1f9dd6",
+      "factor": "role_name_shape",
+      "value": "nonexistent_role",
+      "disposition": "expected_failure",
+      "reason": "undefined_role_provisional",
+      "case_ids": [
+        "CREATEPOLICY00053"
+      ]
+    },
+    {
+      "row_id": "sfv-fe14bd113f8429217af7e1ea",
+      "factor": "role_name_shape",
+      "value": "quoted_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00054"
+      ]
+    },
+    {
+      "row_id": "sfv-0f6e38b4615e0f983222fa23",
+      "factor": "role_name_shape",
+      "value": "simple_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00055"
+      ]
+    },
+    {
+      "row_id": "sfv-a1fd6ea6a098c5aed476a42a",
+      "factor": "role_target",
+      "value": "CURRENT_ROLE",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00056"
+      ]
+    },
+    {
+      "row_id": "sfv-64d767a1f9ceb98f81dfd0ba",
+      "factor": "role_target",
+      "value": "CURRENT_USER",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00057"
+      ]
+    },
+    {
+      "row_id": "sfv-1f7e079eabe2566209c46b19",
+      "factor": "role_target",
+      "value": "PUBLIC",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00058"
+      ]
+    },
+    {
+      "row_id": "sfv-6455fd153d74fc5ab5787498",
+      "factor": "role_target",
+      "value": "SESSION_USER",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00059"
+      ]
+    },
+    {
+      "row_id": "sfv-d5769c5d14b743fc86a9ddf3",
+      "factor": "role_target",
+      "value": "multiple_roles",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00060"
+      ]
+    },
+    {
+      "row_id": "sfv-3df8168b95e6e2bda3c6811e",
+      "factor": "role_target",
+      "value": "single_role",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00061"
+      ]
+    },
+    {
+      "row_id": "sfv-538dcaf3bb60b665f6c17954",
+      "factor": "select_with_check_conflict",
+      "value": "compatible_no_with_check",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00062"
+      ]
+    },
+    {
+      "row_id": "sfv-c454adddb67c42dcd71b687d",
+      "factor": "select_with_check_conflict",
+      "value": "incompatible_with_check",
+      "disposition": "expected_failure",
+      "reason": "syntax_error_provisional",
+      "case_ids": [
+        "CREATEPOLICY00063"
+      ]
+    },
+    {
+      "row_id": "sfv-6594a057ce9970526633047c",
+      "factor": "statement_branch",
+      "value": "branch_create_policy",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00064"
+      ]
+    },
+    {
+      "row_id": "sfv-954389ebda6e274fb035fab6",
+      "factor": "table_existence",
+      "value": "table_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00065"
+      ]
+    },
+    {
+      "row_id": "sfv-c4f6fb6fec42114d1a61d17c",
+      "factor": "table_existence",
+      "value": "table_not_exists",
+      "disposition": "expected_failure",
+      "reason": "undefined_table_provisional",
+      "case_ids": [
+        "CREATEPOLICY00066"
+      ]
+    },
+    {
+      "row_id": "sfv-71205b6754f12dba1f257569",
+      "factor": "table_name_shape",
+      "value": "nonexistent_table",
+      "disposition": "expected_failure",
+      "reason": "undefined_table_provisional",
+      "case_ids": [
+        "CREATEPOLICY00067"
+      ]
+    },
+    {
+      "row_id": "sfv-6d780866f09ffaa36d428174",
+      "factor": "table_name_shape",
+      "value": "quoted_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00068"
+      ]
+    },
+    {
+      "row_id": "sfv-9f749fee3ed8c262c09ed577",
+      "factor": "table_name_shape",
+      "value": "schema_qualified",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00069"
+      ]
+    },
+    {
+      "row_id": "sfv-a7aa3cf7b68be553745e232d",
+      "factor": "table_name_shape",
+      "value": "simple_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00070"
+      ]
+    },
+    {
+      "row_id": "sfv-89cbc5752f22eb00717f09a8",
+      "factor": "using_expression",
+      "value": "column_reference_expr",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00071"
+      ]
+    },
+    {
+      "row_id": "sfv-83d836f0c11e2b1a93e8a636",
+      "factor": "using_expression",
+      "value": "complex_expr",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00072"
+      ]
+    },
+    {
+      "row_id": "sfv-210bfedfffcf95536a7b94ba",
+      "factor": "using_expression",
+      "value": "omitted",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00073"
+      ]
+    },
+    {
+      "row_id": "sfv-dc299f7a2b43512c44c55c35",
+      "factor": "using_expression",
+      "value": "simple_boolean_expr",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00074"
+      ]
+    },
+    {
+      "row_id": "sfv-669eef3d556b03bb11f88c0e",
+      "factor": "verification_mode",
+      "value": "catalog_query_pg_policy",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00075"
+      ]
+    },
+    {
+      "row_id": "sfv-7c32e5657548fbadc1c181fd",
+      "factor": "verification_mode",
+      "value": "error_assertion",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00076"
+      ]
+    },
+    {
+      "row_id": "sfv-291872751d9b811c060e4dab",
+      "factor": "verification_mode",
+      "value": "rls_behavior_test",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00077"
+      ]
+    },
+    {
+      "row_id": "sfv-32b297fb2a886a6d81bb6273",
+      "factor": "with_check_expression",
+      "value": "column_reference_expr",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00078"
+      ]
+    },
+    {
+      "row_id": "sfv-f7a52b60b6d3da8cc73ef948",
+      "factor": "with_check_expression",
+      "value": "complex_expr",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00079"
+      ]
+    },
+    {
+      "row_id": "sfv-037146534994c48bb7bcaf4b",
+      "factor": "with_check_expression",
+      "value": "omitted",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00080"
+      ]
+    },
+    {
+      "row_id": "sfv-299e38622dd77da130dc6cf3",
+      "factor": "with_check_expression",
+      "value": "simple_boolean_expr",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEPOLICY00081"
+      ]
+    }
+  ],
+  "generation_mode": "factor_value_independent_loop_v1",
+  "decision_count": 81,
+  "local_sql_decision_count": 81,
+  "extension_case_count": 936,
+  "delegated_decision_count": 0,
+  "obligation_multiset_sha256": "2f16773031dd50e2c30df4327309469f987f637303aed90323b54a7891222de8"
+}
