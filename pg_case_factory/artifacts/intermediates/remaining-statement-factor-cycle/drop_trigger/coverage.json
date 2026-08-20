@@ -1,0 +1,351 @@
+{
+  "schema_version": 1,
+  "statement_key": "drop_trigger",
+  "cycle_fingerprint": "606b9e710210e50ff88b14de7052163f9ee31f6f1d1e744bc0bd9935f399a9d9",
+  "factor_value_count": 33,
+  "factor_disposition_counts": {
+    "covered": 25,
+    "expected_failure": 8,
+    "justified_na": 0
+  },
+  "missing_row_ids": [],
+  "duplicate_row_ids": [],
+  "decisions": [
+    {
+      "row_id": "sfv-0a1ba87f408ec38e3f8b3c64",
+      "factor": "cascade_destroys_dependents",
+      "value": "cascade_removes_constraint",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTRIGGER00002"
+      ]
+    },
+    {
+      "row_id": "sfv-5b8aac609db0e0927dc0248a",
+      "factor": "cascade_restrict_clause",
+      "value": "CASCADE",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTRIGGER00003"
+      ]
+    },
+    {
+      "row_id": "sfv-01ca7bd2193e1331d01c88f3",
+      "factor": "cascade_restrict_clause",
+      "value": "RESTRICT",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTRIGGER00004"
+      ]
+    },
+    {
+      "row_id": "sfv-19756638e310a8199ef93fc1",
+      "factor": "cascade_restrict_clause",
+      "value": "absent",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTRIGGER00005"
+      ]
+    },
+    {
+      "row_id": "sfv-fff9cfb3743dbc90e37339cf",
+      "factor": "cleanup_mode",
+      "value": "DROP_TRIGGER_cascade",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTRIGGER00006"
+      ]
+    },
+    {
+      "row_id": "sfv-61558f8e1328ba235e0354cf",
+      "factor": "cleanup_mode",
+      "value": "DROP_TRIGGER_if_exists_cascade",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTRIGGER00007"
+      ]
+    },
+    {
+      "row_id": "sfv-9a6ac48f38ddc288b9d8d942",
+      "factor": "cleanup_mode",
+      "value": "no_cleanup_needed",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTRIGGER00008"
+      ]
+    },
+    {
+      "row_id": "sfv-3e105d0ab5a8c40eec959022",
+      "factor": "dependent_objects",
+      "value": "has_dependents_restrict_blocks",
+      "disposition": "expected_failure",
+      "reason": "dependent_objects_restricted",
+      "case_ids": [
+        "DROPTRIGGER00009"
+      ]
+    },
+    {
+      "row_id": "sfv-4fbd29b16be73bd70b7f084b",
+      "factor": "dependent_objects",
+      "value": "no_dependencies",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTRIGGER00010"
+      ]
+    },
+    {
+      "row_id": "sfv-b755d991b7ae411eada0b4a1",
+      "factor": "expected_status",
+      "value": "failure",
+      "disposition": "expected_failure",
+      "reason": "drop_trigger_declared_failure",
+      "case_ids": [
+        "DROPTRIGGER00011"
+      ]
+    },
+    {
+      "row_id": "sfv-e694eaf545d32fe086bad13e",
+      "factor": "expected_status",
+      "value": "success",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTRIGGER00012"
+      ]
+    },
+    {
+      "row_id": "sfv-e829a57555fa58a2477cee52",
+      "factor": "identifier_length_exceeded",
+      "value": "over_63_chars",
+      "disposition": "expected_failure",
+      "reason": "identifier_too_long",
+      "case_ids": [
+        "DROPTRIGGER00013"
+      ]
+    },
+    {
+      "row_id": "sfv-6e011894d4ea8cf3830bf872",
+      "factor": "if_exists_clause",
+      "value": "absent",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTRIGGER00014"
+      ]
+    },
+    {
+      "row_id": "sfv-1fced8fe1a42eb836711c6bd",
+      "factor": "if_exists_clause",
+      "value": "present",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTRIGGER00015"
+      ]
+    },
+    {
+      "row_id": "sfv-d10b5161327f7fe4281188fa",
+      "factor": "object_state",
+      "value": "exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTRIGGER00016"
+      ]
+    },
+    {
+      "row_id": "sfv-f7e4fff62967275f46673ea5",
+      "factor": "object_state",
+      "value": "not_exists",
+      "disposition": "expected_failure",
+      "reason": "undefined_trigger_absent",
+      "case_ids": [
+        "DROPTRIGGER00017"
+      ]
+    },
+    {
+      "row_id": "sfv-8acdb2291a2ada12882417ca",
+      "factor": "permission_insufficient",
+      "value": "not_table_owner",
+      "disposition": "expected_failure",
+      "reason": "insufficient_trigger_privilege",
+      "case_ids": [
+        "DROPTRIGGER00018"
+      ]
+    },
+    {
+      "row_id": "sfv-019968047e1fe026b430b39b",
+      "factor": "privilege_level",
+      "value": "non_owner_no_privilege",
+      "disposition": "expected_failure",
+      "reason": "insufficient_trigger_privilege",
+      "case_ids": [
+        "DROPTRIGGER00019"
+      ]
+    },
+    {
+      "row_id": "sfv-4896c0c356897b01591e9df2",
+      "factor": "privilege_level",
+      "value": "superuser",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTRIGGER00020"
+      ]
+    },
+    {
+      "row_id": "sfv-efdeaf2581000e976206d5b7",
+      "factor": "privilege_level",
+      "value": "table_owner",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTRIGGER00021"
+      ]
+    },
+    {
+      "row_id": "sfv-395b904ce902499c53c1f4ae",
+      "factor": "statement_branch",
+      "value": "branch_1",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTRIGGER00022"
+      ]
+    },
+    {
+      "row_id": "sfv-9a678521023dcefa432a8ef6",
+      "factor": "table_dependency",
+      "value": "table_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTRIGGER00023"
+      ]
+    },
+    {
+      "row_id": "sfv-1470ba647915bcc624c427bf",
+      "factor": "table_dependency",
+      "value": "table_not_exists",
+      "disposition": "expected_failure",
+      "reason": "undefined_table_missing",
+      "case_ids": [
+        "DROPTRIGGER00024"
+      ]
+    },
+    {
+      "row_id": "sfv-657f02532656656f92d8f804",
+      "factor": "table_name_shape",
+      "value": "quoted",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTRIGGER00025"
+      ]
+    },
+    {
+      "row_id": "sfv-3b9dfbb03dbd697a4a3f5020",
+      "factor": "table_name_shape",
+      "value": "schema_qualified",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTRIGGER00026"
+      ]
+    },
+    {
+      "row_id": "sfv-714d72fbf00002838d0ad1d1",
+      "factor": "table_name_shape",
+      "value": "simple",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTRIGGER00027"
+      ]
+    },
+    {
+      "row_id": "sfv-658fc2d42b7a05174fa2ea99",
+      "factor": "target_trigger_not_exists",
+      "value": "with_IF_EXISTS_noop",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTRIGGER00028"
+      ]
+    },
+    {
+      "row_id": "sfv-2626934934c03b9c0590b167",
+      "factor": "target_trigger_not_exists",
+      "value": "without_IF_EXISTS_error",
+      "disposition": "expected_failure",
+      "reason": "undefined_trigger_no_if_exists",
+      "case_ids": [
+        "DROPTRIGGER00029"
+      ]
+    },
+    {
+      "row_id": "sfv-d91998cc39da2b09e0118297",
+      "factor": "trigger_name_shape",
+      "value": "quoted",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTRIGGER00030"
+      ]
+    },
+    {
+      "row_id": "sfv-bc29eb01ee7d95360f5af26d",
+      "factor": "trigger_name_shape",
+      "value": "reserved_word",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTRIGGER00031"
+      ]
+    },
+    {
+      "row_id": "sfv-7f7d5fd0c1cc9098b9bbf566",
+      "factor": "trigger_name_shape",
+      "value": "simple",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTRIGGER00032"
+      ]
+    },
+    {
+      "row_id": "sfv-892feaf9dee4c5d80d15ee17",
+      "factor": "verification_mode",
+      "value": "information_schema_triggers",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTRIGGER00033"
+      ]
+    },
+    {
+      "row_id": "sfv-449f61f1969cca951d139203",
+      "factor": "verification_mode",
+      "value": "pg_trigger_catalog_query",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTRIGGER00034"
+      ]
+    }
+  ],
+  "generation_mode": "factor_value_independent_loop_v1",
+  "decision_count": 36,
+  "local_sql_decision_count": 36,
+  "extension_case_count": 4320,
+  "delegated_decision_count": 0,
+  "obligation_multiset_sha256": "d1ca3d69f180eaa741b49a779b895a8fe3d298c3c0c8b6f08a57592db5994fd4"
+}
