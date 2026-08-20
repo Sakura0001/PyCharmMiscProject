@@ -1,0 +1,721 @@
+{
+  "schema_version": 1,
+  "statement_key": "alter_procedure",
+  "cycle_fingerprint": "606b9e710210e50ff88b14de7052163f9ee31f6f1d1e744bc0bd9935f399a9d9",
+  "factor_value_count": 70,
+  "factor_disposition_counts": {
+    "covered": 46,
+    "expected_failure": 24,
+    "justified_na": 0
+  },
+  "missing_row_ids": [],
+  "duplicate_row_ids": [],
+  "decisions": [
+    {
+      "row_id": "sfv-8a7adb36d0ee20f17f67a461",
+      "factor": "action_type",
+      "value": "RESET_ALL",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00023"
+      ]
+    },
+    {
+      "row_id": "sfv-1caa95dc64ca6c0b4fa1fbf5",
+      "factor": "action_type",
+      "value": "RESET_parameter",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00024"
+      ]
+    },
+    {
+      "row_id": "sfv-fdfb7fad49579bc9d31ef8bf",
+      "factor": "action_type",
+      "value": "SECURITY_DEFINER",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00025"
+      ]
+    },
+    {
+      "row_id": "sfv-4f2f4cda5b333cb3cb5cbd8e",
+      "factor": "action_type",
+      "value": "SECURITY_INVOKER",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00026"
+      ]
+    },
+    {
+      "row_id": "sfv-b9c8d95cb1edc7890771020c",
+      "factor": "action_type",
+      "value": "SET_parameter",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00027"
+      ]
+    },
+    {
+      "row_id": "sfv-b341d3c84ec3de352d3f6b9c",
+      "factor": "argtype_specification",
+      "value": "with_full_signature",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00028"
+      ]
+    },
+    {
+      "row_id": "sfv-b3a4146e33d5983bb62c98c4",
+      "factor": "argtype_specification",
+      "value": "with_partial_signature",
+      "disposition": "expected_failure",
+      "reason": "procedure_signature_does_not_exist",
+      "case_ids": [
+        "ALTERPROCEDURE00029"
+      ]
+    },
+    {
+      "row_id": "sfv-25667e6c21dad31d2382462c",
+      "factor": "argtype_specification",
+      "value": "without_signature",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00030"
+      ]
+    },
+    {
+      "row_id": "sfv-7de11b322a302814a725f345",
+      "factor": "cleanup_mode",
+      "value": "DROP_PROCEDURE",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00031"
+      ]
+    },
+    {
+      "row_id": "sfv-051a5bc2cdf5bceafc577662",
+      "factor": "cleanup_mode",
+      "value": "DROP_PROCEDURE_CASCADE",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00032"
+      ]
+    },
+    {
+      "row_id": "sfv-dd30565ec64387684bf8fb05",
+      "factor": "cleanup_mode",
+      "value": "DROP_PROCEDURE_IF_EXISTS",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00033"
+      ]
+    },
+    {
+      "row_id": "sfv-316c80e360f5102d9823b434",
+      "factor": "configuration_parameter_shape",
+      "value": "invalid_parameter",
+      "disposition": "expected_failure",
+      "reason": "unrecognized_configuration_parameter",
+      "case_ids": [
+        "ALTERPROCEDURE00034"
+      ]
+    },
+    {
+      "row_id": "sfv-d726ef43ce7b734d2f14cc8a",
+      "factor": "configuration_parameter_shape",
+      "value": "valid_parameter",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00035"
+      ]
+    },
+    {
+      "row_id": "sfv-e979d5f8498da9ba8635d2b9",
+      "factor": "conflicting_action",
+      "value": "conflicting_security_modes",
+      "disposition": "expected_failure",
+      "reason": "conflicting_or_redundant_options",
+      "case_ids": [
+        "ALTERPROCEDURE00036"
+      ]
+    },
+    {
+      "row_id": "sfv-9905a9e8050161b7b4db5aa7",
+      "factor": "expected_status",
+      "value": "failure",
+      "disposition": "expected_failure",
+      "reason": "expected_status_failure_procedure_not_found",
+      "case_ids": [
+        "ALTERPROCEDURE00037"
+      ]
+    },
+    {
+      "row_id": "sfv-979ffdbe9b6b67fd33b0751b",
+      "factor": "expected_status",
+      "value": "success",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00038"
+      ]
+    },
+    {
+      "row_id": "sfv-fc54cddc7ea02eab66e80466",
+      "factor": "extension_dependency",
+      "value": "extension_installed",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00039"
+      ]
+    },
+    {
+      "row_id": "sfv-a1a412f2fd7e7809e118ec79",
+      "factor": "extension_dependency",
+      "value": "extension_not_installed",
+      "disposition": "expected_failure",
+      "reason": "extension_does_not_exist",
+      "case_ids": [
+        "ALTERPROCEDURE00040"
+      ]
+    },
+    {
+      "row_id": "sfv-874c692efbb46f246f3a9ca9",
+      "factor": "extension_target",
+      "value": "NO_DEPENDS",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00041"
+      ]
+    },
+    {
+      "row_id": "sfv-ce472c813aaec62c2bbdc863",
+      "factor": "extension_target",
+      "value": "extension_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00042"
+      ]
+    },
+    {
+      "row_id": "sfv-803726134b1b84ca28d16f70",
+      "factor": "extension_target",
+      "value": "extension_not_exists",
+      "disposition": "expected_failure",
+      "reason": "extension_does_not_exist",
+      "case_ids": [
+        "ALTERPROCEDURE00043"
+      ]
+    },
+    {
+      "row_id": "sfv-3378e0733ef46a1dc918c777",
+      "factor": "identifier_length_exceeded",
+      "value": "over_63_chars",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00044"
+      ]
+    },
+    {
+      "row_id": "sfv-711d2197ca6472b30dee4570",
+      "factor": "new_name_shape",
+      "value": "quoted",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00045"
+      ]
+    },
+    {
+      "row_id": "sfv-616f122e955fa7f2bac767b5",
+      "factor": "new_name_shape",
+      "value": "reserved_word",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00046"
+      ]
+    },
+    {
+      "row_id": "sfv-d72b7627b410c553d9820bde",
+      "factor": "new_name_shape",
+      "value": "simple",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00047"
+      ]
+    },
+    {
+      "row_id": "sfv-4e67aeacefcba1e6b1857f8f",
+      "factor": "object_state",
+      "value": "different_signature_exists",
+      "disposition": "expected_failure",
+      "reason": "procedure_signature_does_not_exist",
+      "case_ids": [
+        "ALTERPROCEDURE00048"
+      ]
+    },
+    {
+      "row_id": "sfv-f60d453ab3de1ab1befebd47",
+      "factor": "object_state",
+      "value": "exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00049"
+      ]
+    },
+    {
+      "row_id": "sfv-d2fd68f3621045da7692c359",
+      "factor": "object_state",
+      "value": "not_exists",
+      "disposition": "expected_failure",
+      "reason": "procedure_does_not_exist",
+      "case_ids": [
+        "ALTERPROCEDURE00050"
+      ]
+    },
+    {
+      "row_id": "sfv-2149fb04bc06db063dac158e",
+      "factor": "owner_target",
+      "value": "CURRENT_ROLE",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00051"
+      ]
+    },
+    {
+      "row_id": "sfv-7ccf99678f93a3ee3ca24493",
+      "factor": "owner_target",
+      "value": "CURRENT_USER",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00052"
+      ]
+    },
+    {
+      "row_id": "sfv-ef48326aa0b7da2cc8b3b16e",
+      "factor": "owner_target",
+      "value": "SESSION_USER",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00053"
+      ]
+    },
+    {
+      "row_id": "sfv-306319ee397073ac49045c84",
+      "factor": "owner_target",
+      "value": "new_owner_role",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00054"
+      ]
+    },
+    {
+      "row_id": "sfv-5b56d667b1a12eb3f43c7432",
+      "factor": "owner_target",
+      "value": "nonexistent_role",
+      "disposition": "expected_failure",
+      "reason": "role_does_not_exist",
+      "case_ids": [
+        "ALTERPROCEDURE00055"
+      ]
+    },
+    {
+      "row_id": "sfv-6e764abfdd5128dde6c1121f",
+      "factor": "permission_insufficient",
+      "value": "no_alter_privilege",
+      "disposition": "expected_failure",
+      "reason": "must_be_owner_of_procedure",
+      "case_ids": [
+        "ALTERPROCEDURE00056"
+      ]
+    },
+    {
+      "row_id": "sfv-9f35cbd9417fd780f44f91a0",
+      "factor": "permission_insufficient",
+      "value": "not_owner_for_OWNER_TO",
+      "disposition": "expected_failure",
+      "reason": "must_be_owner_of_procedure",
+      "case_ids": [
+        "ALTERPROCEDURE00057"
+      ]
+    },
+    {
+      "row_id": "sfv-107d5ece7e9b809383fc738c",
+      "factor": "permission_insufficient",
+      "value": "not_owner_for_SET_SCHEMA",
+      "disposition": "expected_failure",
+      "reason": "must_be_owner_of_procedure",
+      "case_ids": [
+        "ALTERPROCEDURE00058"
+      ]
+    },
+    {
+      "row_id": "sfv-f2a9f08d53ab63bcbd2f47ad",
+      "factor": "privilege_level",
+      "value": "non_owner_no_privilege",
+      "disposition": "expected_failure",
+      "reason": "must_be_owner_of_procedure",
+      "case_ids": [
+        "ALTERPROCEDURE00059"
+      ]
+    },
+    {
+      "row_id": "sfv-6a73e80e2afe267ac61cc099",
+      "factor": "privilege_level",
+      "value": "non_owner_with_alter",
+      "disposition": "expected_failure",
+      "reason": "must_be_owner_of_procedure",
+      "case_ids": [
+        "ALTERPROCEDURE00060"
+      ]
+    },
+    {
+      "row_id": "sfv-4520d572f98538d8110e28a0",
+      "factor": "privilege_level",
+      "value": "procedure_owner",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00061"
+      ]
+    },
+    {
+      "row_id": "sfv-a4b80b8b218babfaca1d9fa0",
+      "factor": "privilege_level",
+      "value": "superuser",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00062"
+      ]
+    },
+    {
+      "row_id": "sfv-6f5a8b741de312e14aa26600",
+      "factor": "procedure_name_shape",
+      "value": "quoted",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00063"
+      ]
+    },
+    {
+      "row_id": "sfv-a652c9eda69c445914167088",
+      "factor": "procedure_name_shape",
+      "value": "reserved_word",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00064"
+      ]
+    },
+    {
+      "row_id": "sfv-11fca4cb92e33b7365f9a38f",
+      "factor": "procedure_name_shape",
+      "value": "schema_qualified",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00065"
+      ]
+    },
+    {
+      "row_id": "sfv-c488dae949879b1981eae947",
+      "factor": "procedure_name_shape",
+      "value": "simple",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00066"
+      ]
+    },
+    {
+      "row_id": "sfv-d628e182410fe2b2c6a89519",
+      "factor": "rename_target",
+      "value": "duplicate_name",
+      "disposition": "expected_failure",
+      "reason": "duplicate_function",
+      "case_ids": [
+        "ALTERPROCEDURE00067"
+      ]
+    },
+    {
+      "row_id": "sfv-444756d623038e6b27dc03bf",
+      "factor": "rename_target",
+      "value": "quoted",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00068"
+      ]
+    },
+    {
+      "row_id": "sfv-5ef192225b642e9c290bdcd2",
+      "factor": "rename_target",
+      "value": "reserved_word",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00069"
+      ]
+    },
+    {
+      "row_id": "sfv-7371ea71fd652b6e89126f52",
+      "factor": "rename_target",
+      "value": "simple",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00070"
+      ]
+    },
+    {
+      "row_id": "sfv-08b43f6dd567e5ce0d9f7eb3",
+      "factor": "restrict_clause",
+      "value": "absent",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00071"
+      ]
+    },
+    {
+      "row_id": "sfv-02b763bfa72ad1be53fc016e",
+      "factor": "restrict_clause",
+      "value": "present",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00072"
+      ]
+    },
+    {
+      "row_id": "sfv-71c91d9e9c38fd7ade188c9f",
+      "factor": "role_dependency",
+      "value": "owner_role_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00073"
+      ]
+    },
+    {
+      "row_id": "sfv-f012ab022fbaf5afa256ac74",
+      "factor": "role_dependency",
+      "value": "owner_role_not_exists",
+      "disposition": "expected_failure",
+      "reason": "role_does_not_exist",
+      "case_ids": [
+        "ALTERPROCEDURE00074"
+      ]
+    },
+    {
+      "row_id": "sfv-c142c33a42ba57508f1d2378",
+      "factor": "schema_dependency",
+      "value": "reserved_schema",
+      "disposition": "expected_failure",
+      "reason": "permission_denied_for_reserved_schema",
+      "case_ids": [
+        "ALTERPROCEDURE00075"
+      ]
+    },
+    {
+      "row_id": "sfv-99226b838802eac89f2b376b",
+      "factor": "schema_dependency",
+      "value": "target_schema_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00076"
+      ]
+    },
+    {
+      "row_id": "sfv-c3f4299dab7b92a442148726",
+      "factor": "schema_dependency",
+      "value": "target_schema_not_exists",
+      "disposition": "expected_failure",
+      "reason": "schema_does_not_exist",
+      "case_ids": [
+        "ALTERPROCEDURE00077"
+      ]
+    },
+    {
+      "row_id": "sfv-c09cf217c311374a292f938d",
+      "factor": "schema_target",
+      "value": "information_schema_reserved",
+      "disposition": "expected_failure",
+      "reason": "permission_denied_for_reserved_schema",
+      "case_ids": [
+        "ALTERPROCEDURE00078"
+      ]
+    },
+    {
+      "row_id": "sfv-b414ef2790f7df1a1ae84238",
+      "factor": "schema_target",
+      "value": "pg_catalog_reserved",
+      "disposition": "expected_failure",
+      "reason": "permission_denied_for_reserved_schema",
+      "case_ids": [
+        "ALTERPROCEDURE00079"
+      ]
+    },
+    {
+      "row_id": "sfv-1a45205dd71e4e0b3954b67c",
+      "factor": "schema_target",
+      "value": "schema_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00080"
+      ]
+    },
+    {
+      "row_id": "sfv-3151cbe42729000b7a0dc234",
+      "factor": "schema_target",
+      "value": "schema_not_exists",
+      "disposition": "expected_failure",
+      "reason": "schema_does_not_exist",
+      "case_ids": [
+        "ALTERPROCEDURE00081"
+      ]
+    },
+    {
+      "row_id": "sfv-1a30d6112519affe0258e820",
+      "factor": "statement_branch",
+      "value": "branch_1",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00082"
+      ]
+    },
+    {
+      "row_id": "sfv-d6cf545588851a23ece808c6",
+      "factor": "statement_branch",
+      "value": "branch_2",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00083"
+      ]
+    },
+    {
+      "row_id": "sfv-2c7adea4c7793cf50f55673b",
+      "factor": "statement_branch",
+      "value": "branch_3",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00084"
+      ]
+    },
+    {
+      "row_id": "sfv-59f2f9caf26d887f17e52bf7",
+      "factor": "statement_branch",
+      "value": "branch_4",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00085"
+      ]
+    },
+    {
+      "row_id": "sfv-e6711c48b4de8177324d479d",
+      "factor": "statement_branch",
+      "value": "branch_5",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00086"
+      ]
+    },
+    {
+      "row_id": "sfv-e265993a5c9653241d15db54",
+      "factor": "target_procedure_different_type",
+      "value": "same_name_is_function",
+      "disposition": "expected_failure",
+      "reason": "not_a_procedure_is_function",
+      "case_ids": [
+        "ALTERPROCEDURE00087"
+      ]
+    },
+    {
+      "row_id": "sfv-d6161aebd37790d3ecdb50a7",
+      "factor": "target_procedure_not_exists",
+      "value": "procedure_name_not_found",
+      "disposition": "expected_failure",
+      "reason": "procedure_does_not_exist",
+      "case_ids": [
+        "ALTERPROCEDURE00088"
+      ]
+    },
+    {
+      "row_id": "sfv-1d2cb96d9bedd01d7e1e7841",
+      "factor": "target_procedure_not_exists",
+      "value": "procedure_signature_not_found",
+      "disposition": "expected_failure",
+      "reason": "procedure_signature_does_not_exist",
+      "case_ids": [
+        "ALTERPROCEDURE00089"
+      ]
+    },
+    {
+      "row_id": "sfv-e2b37e08bcb15b1de4986c6e",
+      "factor": "verification_mode",
+      "value": "information_schema_routines",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00090"
+      ]
+    },
+    {
+      "row_id": "sfv-60172ea9bab70bc7ce4230b7",
+      "factor": "verification_mode",
+      "value": "pg_get_functiondef",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00091"
+      ]
+    },
+    {
+      "row_id": "sfv-07db203de4fc3eeba8dce31a",
+      "factor": "verification_mode",
+      "value": "pg_proc_catalog_query",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERPROCEDURE00092"
+      ]
+    }
+  ],
+  "generation_mode": "factor_value_independent_loop_v1",
+  "decision_count": 94,
+  "local_sql_decision_count": 94,
+  "extension_case_count": 13104,
+  "delegated_decision_count": 0,
+  "obligation_multiset_sha256": "c2a28ca00031c2c8bef4d5ea59303f7478667c718b27a4d0995788a57de6a3b3"
+}

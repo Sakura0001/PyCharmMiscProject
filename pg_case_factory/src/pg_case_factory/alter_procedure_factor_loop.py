@@ -347,8 +347,8 @@ _SFV_FAILURE_SQLSTATE: dict[tuple[str, str], tuple[str, str]] = {
         "procedure_signature_does_not_exist",
     ),
     ("rename_target", "duplicate_name"): (
-        "42710",
-        "duplicate_object",
+        "42723",
+        "duplicate_function",
     ),
     ("owner_target", "nonexistent_role"): ("42704", "role_does_not_exist"),
     ("schema_target", "schema_not_exists"): ("3F000", "schema_does_not_exist"),
@@ -379,6 +379,14 @@ _SFV_FAILURE_SQLSTATE: dict[tuple[str, str], tuple[str, str]] = {
     ("privilege_level", "non_owner_with_alter"): (
         "42501",
         "must_be_owner_of_procedure",
+    ),
+    # procedure_owner doing OWNER TO SESSION_USER (a role it is not a member
+    # of) surfaces 42501 (must be able to SET ROLE); the no-op escape only
+    # holds for a superuser transferring to itself.  Surfaced by
+    # _present_failure_pair in the extension expander.
+    ("privilege_level", "procedure_owner"): (
+        "42501",
+        "owner_change_requires_role_membership",
     ),
     # Sentinel attribution key (not a real crossed-axis (factor, value)) for
     # the role-membership privilege wall that fires only under a non-superuser

@@ -25,8 +25,8 @@ ROOT = Path(__file__).resolve().parents[1]
 _BASELINE_COUNT = 94
 _EXTENSION_COUNT = 13104
 _TOTAL_COUNT = _BASELINE_COUNT + _EXTENSION_COUNT  # 13198
-_SUCCESS_EXTENSIONS = 2628
-_FAILURE_EXTENSIONS = 10476
+_SUCCESS_EXTENSIONS = 2520
+_FAILURE_EXTENSIONS = 10584
 
 _CROSSED_BEHAVIOUR_NEGATIVES = frozenset(
     {
@@ -190,12 +190,37 @@ def _privilege_cluster_fires(assignment: dict[str, str]) -> bool:
 def _failure_unit_count(assignment: dict[str, str]) -> int:
     cluster = 1 if _privilege_cluster_fires(assignment) else 0
     owner_priv = 1 if _owner_privilege_failure(assignment) else 0
+    # SESSION_USER wall (mirrors the module's ``_session_user_wall_fires``):
+    # fires for an existing procedure AND for a schema-qualified target in a
+    # private existing schema (USAGE denial precedes the existence lookup).
+    session_user_wall = (
+        assignment.get("owner_target") == _SESSION_USER_ESCAPE
+        and assignment.get("privilege_level") != "superuser"
+        and assignment.get("role_dependency") == "owner_role_exists"
+        and (
+            assignment.get("object_state") == "exists"
+            or (
+                assignment.get("object_state")
+                in ("not_exists", "different_signature_exists")
+                and assignment.get("procedure_name_shape") == "schema_qualified"
+                and assignment.get("schema_target") == "schema_exists"
+            )
+        )
+    )
+    # When the wall fires on a not_exists / different_signature case it shadows
+    # that behaviour negative (the schema-USAGE denial precedes the existence
+    # check), so the negative is excluded to keep the unit count at 1.
     negatives = sum(
         1
         for pair in _CROSSED_BEHAVIOUR_NEGATIVES
         if assignment.get(pair[0]) == pair[1]
+        and not (
+            session_user_wall
+            and pair[0] == "object_state"
+            and pair[1] in ("not_exists", "different_signature_exists")
+        )
     )
-    return cluster + owner_priv + negatives
+    return cluster + owner_priv + negatives + (1 if session_user_wall else 0)
 
 
 def _present_failure_pair(
@@ -207,6 +232,29 @@ def _present_failure_pair(
     if _privilege_cluster_fires(assignment):
         level = assignment.get("privilege_level")
         return ("privilege_level", level)
+    # SESSION_USER owner-transfer wall (must mirror the module's
+    # ``_session_user_wall_fires``): a non-superuser doing OWNER TO
+    # SESSION_USER surfaces 42501 -- for an existing procedure (must-be-owner)
+    # AND for a schema-qualified target in a private existing schema where the
+    # non-superuser lacks USAGE, so PG denies the schema (42501) before the
+    # existence/signature lookup that would otherwise surface 42883.  Keeping
+    # this local copy in sync with the module is what the
+    # ``test_expected_sqlstate_matches_present_failure_pair`` cross-check gates.
+    if (
+        assignment.get("owner_target") == _SESSION_USER_ESCAPE
+        and assignment.get("privilege_level") != "superuser"
+        and assignment.get("role_dependency") == "owner_role_exists"
+        and (
+            assignment.get("object_state") == "exists"
+            or (
+                assignment.get("object_state")
+                in ("not_exists", "different_signature_exists")
+                and assignment.get("procedure_name_shape") == "schema_qualified"
+                and assignment.get("schema_target") == "schema_exists"
+            )
+        )
+    ):
+        return ("privilege_level", assignment.get("privilege_level"))
     for pair in _CROSSED_BEHAVIOUR_NEGATIVES:
         if assignment.get(pair[0]) == pair[1]:
             return pair
@@ -294,13 +342,25 @@ class AlterProcedureFactorExtensionPlanTest(unittest.TestCase):
                 )
 
     def test_session_user_escapes_privilege_boundary(self) -> None:
-        # SESSION_USER is a permitted no-op transfer (PG 18.4 allows even for
-        # non-owners); the privilege boundary does not fire for it.
+        # SESSION_USER owner-transfer: only a superuser (transferring to itself)
+        # completes OWNER TO SESSION_USER (the no-op escape).  A non-superuser
+        # (procedure_owner or non_owner) doing OWNER TO SESSION_USER on an
+        # EXISTING procedure surfaces 42501 (must be owner / must be a member of
+        # the target role); a completely absent or signature-mismatched
+        # procedure surfaces 42883 first (existence preempts privilege).
         for case in self.plan.cases:
             a = dict(case.factor_assignment)
             if a.get("owner_target") == _SESSION_USER_ESCAPE:
                 if _failure_unit_count(a) == 0:
                     self.assertEqual("success", case.outcome, case.case_id)
+                if (
+                    a.get("privilege_level") != "superuser"
+                    and a.get("object_state") == "exists"
+                    and a.get("role_dependency") == "owner_role_exists"
+                ):
+                    self.assertEqual(
+                        "42501", case.expected_sqlstate, case.case_id
+                    )
 
     def test_branch_grammar_and_consumer_action_are_consistent(self) -> None:
         for case in self.plan.cases:

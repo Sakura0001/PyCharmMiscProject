@@ -21,7 +21,7 @@ from pg_case_factory.alter_procedure_factor_runtime import (
 
 ROOT = Path(__file__).resolve().parents[1]
 PG18_BIN = Path("/tmp/pgcf-postgresql-18.4-install/bin")
-PG18_SOCKET = Path("/tmp/pgcf-pg18-ap-sock-20260820")
+PG18_SOCKET = Path("/tmp/pgcf-pg18-aproc-sock-20260820")
 _BASELINE_COUNT = 94
 _EXTENSION_COUNT = 13104
 _TOTAL = _BASELINE_COUNT + _EXTENSION_COUNT  # 13198

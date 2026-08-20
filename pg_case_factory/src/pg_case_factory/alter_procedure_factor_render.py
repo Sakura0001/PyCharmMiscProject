@@ -211,8 +211,21 @@ def _action_clause(
         raise AlterProcedureFactorRenderError(
             f"no branch_1 action clause for {action}"
         )
+    # invalid_parameter crossed with reset_all: RESET ALL ignores the guc and
+    # succeeds (00000); reference the unrecognized guc so 42704 surfaces.
+    if (
+        action == "reset_all"
+        and a.get("configuration_parameter_shape") == "invalid_parameter"
+    ):
+        clause = f"RESET {guc}"
     if a.get("action_list_cardinality") == "multiple_actions":
-        clause = f"{clause} SECURITY INVOKER"
+        # Append a DISTINCT action so the combination succeeds (00000); a
+        # bare " SECURITY INVOKER" duplicates when the base is already
+        # security_invoker/definer, surfacing 42601.
+        if "SECURITY INVOKER" in clause or "SECURITY DEFINER" in clause:
+            clause = f"{clause} SET work_mem = 100"
+        else:
+            clause = f"{clause} SECURITY INVOKER"
     if a.get("restrict_clause") == "present":
         clause = f"{clause} RESTRICT"
     return clause
@@ -552,16 +565,17 @@ def _resolve_case(case: AlterProcedureFactorCase) -> _CasePlan:
         if effective == f"{p}alter":
             # Procedures only grant EXECUTE; a non-owner granted EXECUTE
             # still cannot ALTER PROCEDURE (only the owner can), surfacing
-            # 42501.
-            grant_schema = (
-                f"{p}src_schema."
-                if (needs_src_schema and fixture_kind == "procedure")
-                else ""
-            )
-            setup.append(
-                f"GRANT EXECUTE ON PROCEDURE {grant_schema}{name}(integer) "
-                f"TO {p}alter;"
-            )
+            # 42501.  Skip the GRANT when no procedure fixture exists: a
+            # GRANT on an absent (not_exists) or wrong-object routine errors
+            # in setup and aborts the run before the target is reached.
+            if fixture_kind == "procedure":
+                grant_schema = (
+                    f"{p}src_schema." if needs_src_schema else ""
+                )
+                setup.append(
+                    f"GRANT EXECUTE ON PROCEDURE {grant_schema}{name}(integer) "
+                    f"TO {p}alter;"
+                )
         setup.append("RESET ROLE;")
         setup.append(f"SET ROLE {effective};")
 

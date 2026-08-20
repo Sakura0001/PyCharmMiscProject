@@ -13,9 +13,9 @@ from .alter_procedure_factor_loop import AlterProcedureFactorCase
 
 
 PG18_BIN = Path("/tmp/pgcf-postgresql-18.4-install/bin")
-PG18_SOCKET = Path("/tmp/pgcf-pg18-ap-sock-20260820")
-PG18_PORT = 55486
-PG18_DATABASE = "pgcf_ap"
+PG18_SOCKET = Path("/tmp/pgcf-pg18-aproc-sock-20260820")
+PG18_PORT = 55495
+PG18_DATABASE = "pgcf_aproc"
 PG18_SUPERUSER = "pgcf_superuser"
 PER_FILE_TIMEOUT_SECONDS = 30
 MAX_PARALLELISM = 1

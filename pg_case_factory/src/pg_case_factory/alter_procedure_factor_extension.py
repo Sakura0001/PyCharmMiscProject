@@ -382,6 +382,30 @@ def _privilege_cluster_fires(assignment: dict[str, str]) -> bool:
     return True
 
 
+def _session_user_wall_fires(assignment: dict[str, str]) -> bool:
+    """A non-superuser doing OWNER TO SESSION_USER surfaces 42501.
+
+    For an existing procedure this is the must-be-owner / role-membership
+    check.  For a schema-qualified target in a private (existing) schema the
+    non-superuser lacks USAGE, so PG denies the schema (42501) before the
+    procedure existence / signature lookup that would otherwise surface 42883.
+    """
+    return (
+        assignment.get("owner_target") == _SESSION_USER_ESCAPE
+        and assignment.get("privilege_level") != "superuser"
+        and assignment.get("role_dependency") == "owner_role_exists"
+        and (
+            assignment.get("object_state") == "exists"
+            or (
+                assignment.get("object_state")
+                in ("not_exists", "different_signature_exists")
+                and assignment.get("procedure_name_shape") == "schema_qualified"
+                and assignment.get("schema_target") == "schema_exists"
+            )
+        )
+    )
+
+
 def _failure_unit_count(assignment: dict[str, str]) -> int:
     """Privilege cluster (1) + owner-privilege wall (1) + behaviour negatives.
 
@@ -392,12 +416,22 @@ def _failure_unit_count(assignment: dict[str, str]) -> int:
 
     cluster = 1 if _privilege_cluster_fires(assignment) else 0
     owner_priv = 1 if _owner_privilege_failure(assignment) else 0
+    session_user_wall = _session_user_wall_fires(assignment)
+    # When the wall fires on a not_exists / different_signature case it
+    # shadows that behaviour negative (the schema-USAGE denial precedes the
+    # existence check), so the negative is excluded to keep the unit count at
+    # 1 -- never 2 -- and raw_combination_count is unchanged.
     negatives = sum(
         1
         for factor, value in _CROSSED_BEHAVIOUR_NEGATIVES
         if assignment.get(factor) == value
+        and not (
+            session_user_wall
+            and factor == "object_state"
+            and value in ("not_exists", "different_signature_exists")
+        )
     )
-    return cluster + owner_priv + negatives
+    return cluster + owner_priv + negatives + (1 if session_user_wall else 0)
 
 
 def _present_failure_pair(
@@ -417,6 +451,20 @@ def _present_failure_pair(
     if _privilege_cluster_fires(assignment):
         level = assignment.get("privilege_level")
         return ("privilege_level", level)
+    # SESSION_USER owner-transfer escape: _privilege_cluster_fires suppresses
+    # the non-owner wall for OWNER TO SESSION_USER, assuming PG 18.4 permits
+    # the no-op transfer.  In fact only a superuser (transferring to itself)
+    # succeeds; a non-superuser (procedure_owner or non_owner) still cannot
+    # complete OWNER TO SESSION_USER (must be owner / must be a member of the
+    # target role -> 42501) when the procedure with the target name EXISTS.
+    # For a schema-qualified target in a private (existing) schema the
+    # non-superuser lacks USAGE, so PG denies the schema (42501) before the
+    # existence / signature lookup that would otherwise surface 42883; the
+    # wall therefore fires ahead of the behaviour-negative loop for those
+    # not_exists / different_signature cases too.  See
+    # _session_user_wall_fires for the precise predicate.
+    if _session_user_wall_fires(assignment):
+        return ("privilege_level", assignment.get("privilege_level"))
     for neg_factor, neg_value in _CROSSED_BEHAVIOUR_NEGATIVES:
         if assignment.get(neg_factor) == neg_value:
             return (neg_factor, neg_value)
