@@ -1,0 +1,621 @@
+{
+  "schema_version": 1,
+  "statement_key": "alter_text_search_dictionary",
+  "cycle_fingerprint": "606b9e710210e50ff88b14de7052163f9ee31f6f1d1e744bc0bd9935f399a9d9",
+  "factor_value_count": 60,
+  "factor_disposition_counts": {
+    "covered": 44,
+    "expected_failure": 16,
+    "justified_na": 0
+  },
+  "missing_row_ids": [],
+  "duplicate_row_ids": [],
+  "decisions": [
+    {
+      "row_id": "sfv-9e050ab9da6e001f049f1cac",
+      "factor": "alter_action",
+      "value": "option_modify",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00005"
+      ]
+    },
+    {
+      "row_id": "sfv-2c143466e3d89d4dabe6ff85",
+      "factor": "alter_action",
+      "value": "owner",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00006"
+      ]
+    },
+    {
+      "row_id": "sfv-389a2bce23815aba7d83015b",
+      "factor": "alter_action",
+      "value": "rename",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00007"
+      ]
+    },
+    {
+      "row_id": "sfv-5f5901d367a4a3200485376a",
+      "factor": "alter_action",
+      "value": "set_schema",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00008"
+      ]
+    },
+    {
+      "row_id": "sfv-4add889608aa8851eb472a5d",
+      "factor": "cannot_set_role",
+      "value": "can_set_role",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00009"
+      ]
+    },
+    {
+      "row_id": "sfv-ba29f0dee284993cddb3f438",
+      "factor": "cannot_set_role",
+      "value": "cannot_set_role_to_target",
+      "disposition": "expected_failure",
+      "reason": "insufficient_privilege_provisional",
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00010"
+      ]
+    },
+    {
+      "row_id": "sfv-d192fa9488533aa4a0150afa",
+      "factor": "cleanup_mode",
+      "value": "drop_text_search_dictionary",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00011"
+      ]
+    },
+    {
+      "row_id": "sfv-e662cbc9b345d7c3f3fbb6f5",
+      "factor": "cleanup_mode",
+      "value": "revert_option",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00012"
+      ]
+    },
+    {
+      "row_id": "sfv-7d42a18a5abf95c5bb665c48",
+      "factor": "cleanup_mode",
+      "value": "revert_owner",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00013"
+      ]
+    },
+    {
+      "row_id": "sfv-f5b49c1307c18ddcbbc909f3",
+      "factor": "cleanup_mode",
+      "value": "revert_rename",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00014"
+      ]
+    },
+    {
+      "row_id": "sfv-18374594e4237cf796f8a600",
+      "factor": "cleanup_mode",
+      "value": "role_cleanup",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00015"
+      ]
+    },
+    {
+      "row_id": "sfv-e69cc6a6400d38d58902f422",
+      "factor": "dict_name_shape",
+      "value": "nonexistent_name",
+      "disposition": "expected_failure",
+      "reason": "undefined_object_provisional",
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00016"
+      ]
+    },
+    {
+      "row_id": "sfv-be0f126599881ec4a02f37a7",
+      "factor": "dict_name_shape",
+      "value": "quoted_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00017"
+      ]
+    },
+    {
+      "row_id": "sfv-6c88d1a4de01f1bb36a21dbd",
+      "factor": "dict_name_shape",
+      "value": "schema_qualified_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00018"
+      ]
+    },
+    {
+      "row_id": "sfv-62f5e0dbce571415e4874bec",
+      "factor": "dict_name_shape",
+      "value": "simple_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00019"
+      ]
+    },
+    {
+      "row_id": "sfv-5937bf48a71a6b510941cd59",
+      "factor": "duplicate_new_name",
+      "value": "no_conflict",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00020"
+      ]
+    },
+    {
+      "row_id": "sfv-62e40fa9210fa2228b903059",
+      "factor": "duplicate_new_name",
+      "value": "same_name_conflict",
+      "disposition": "expected_failure",
+      "reason": "duplicate_object_provisional",
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00021"
+      ]
+    },
+    {
+      "row_id": "sfv-e6d26c59a996a6b76ea6e97e",
+      "factor": "expected_status",
+      "value": "failure",
+      "disposition": "expected_failure",
+      "reason": "undefined_object_provisional",
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00022"
+      ]
+    },
+    {
+      "row_id": "sfv-f8b53a4ffebd6fbc61d475fe",
+      "factor": "expected_status",
+      "value": "success",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00023"
+      ]
+    },
+    {
+      "row_id": "sfv-8f93b505fe6cea0ebc88633c",
+      "factor": "new_name_shape",
+      "value": "duplicate_name",
+      "disposition": "expected_failure",
+      "reason": "duplicate_object_provisional",
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00024"
+      ]
+    },
+    {
+      "row_id": "sfv-4a77e65dcc46fe4b2d0a639e",
+      "factor": "new_name_shape",
+      "value": "quoted_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00025"
+      ]
+    },
+    {
+      "row_id": "sfv-aba3b1ad78a80e9982ec6d15",
+      "factor": "new_name_shape",
+      "value": "simple_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00026"
+      ]
+    },
+    {
+      "row_id": "sfv-14f71379b610ff19823527b1",
+      "factor": "non_owner_attempt",
+      "value": "non_owner_execution",
+      "disposition": "expected_failure",
+      "reason": "insufficient_privilege_provisional",
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00027"
+      ]
+    },
+    {
+      "row_id": "sfv-456a68266b3bc23aef9a0f63",
+      "factor": "non_owner_attempt",
+      "value": "owner_execution",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00028"
+      ]
+    },
+    {
+      "row_id": "sfv-fe212d523cb863df30436434",
+      "factor": "nonexistent_dict",
+      "value": "dict_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00029"
+      ]
+    },
+    {
+      "row_id": "sfv-e838818e65e90432a7e31a1f",
+      "factor": "nonexistent_dict",
+      "value": "dict_missing",
+      "disposition": "expected_failure",
+      "reason": "undefined_object_provisional",
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00030"
+      ]
+    },
+    {
+      "row_id": "sfv-de45eb20d94828a2468240c9",
+      "factor": "nonexistent_owner_role",
+      "value": "role_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00031"
+      ]
+    },
+    {
+      "row_id": "sfv-996278583d2c43c70fd0b527",
+      "factor": "nonexistent_owner_role",
+      "value": "role_missing",
+      "disposition": "expected_failure",
+      "reason": "undefined_object_provisional",
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00032"
+      ]
+    },
+    {
+      "row_id": "sfv-f95ceaf18ae27da557c5a727",
+      "factor": "nonexistent_target_schema",
+      "value": "schema_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00033"
+      ]
+    },
+    {
+      "row_id": "sfv-37603b2385c5e564623c7238",
+      "factor": "nonexistent_target_schema",
+      "value": "schema_missing",
+      "disposition": "expected_failure",
+      "reason": "invalid_schema_name_provisional",
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00034"
+      ]
+    },
+    {
+      "row_id": "sfv-8be0397a2e905920ff53b3f3",
+      "factor": "object_state",
+      "value": "exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00035"
+      ]
+    },
+    {
+      "row_id": "sfv-683d43f1dfd434206d6a5870",
+      "factor": "object_state",
+      "value": "not_exists",
+      "disposition": "expected_failure",
+      "reason": "undefined_object_provisional",
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00036"
+      ]
+    },
+    {
+      "row_id": "sfv-541af7b3d70bbf25788a6052",
+      "factor": "option_action",
+      "value": "dummy_refresh",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00037"
+      ]
+    },
+    {
+      "row_id": "sfv-2b6d0f7b3ee2aa34fedfccf5",
+      "factor": "option_action",
+      "value": "remove_option_restore_default",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00038"
+      ]
+    },
+    {
+      "row_id": "sfv-513a06027d77a8b15b7803ac",
+      "factor": "option_action",
+      "value": "set_new_value",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00039"
+      ]
+    },
+    {
+      "row_id": "sfv-8377af5b9449eeea4dd5ea20",
+      "factor": "owner_name_shape",
+      "value": "nonexistent_role",
+      "disposition": "expected_failure",
+      "reason": "undefined_object_provisional",
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00040"
+      ]
+    },
+    {
+      "row_id": "sfv-d9da6b64a419127a1ea67e09",
+      "factor": "owner_name_shape",
+      "value": "quoted_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00041"
+      ]
+    },
+    {
+      "row_id": "sfv-47d8d51bbaf68bb2559172a2",
+      "factor": "owner_name_shape",
+      "value": "simple_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00042"
+      ]
+    },
+    {
+      "row_id": "sfv-a497bf7de5a57955436bf896",
+      "factor": "owner_target",
+      "value": "specified_current_role",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00043"
+      ]
+    },
+    {
+      "row_id": "sfv-4fedcb52aa5faef280815632",
+      "factor": "owner_target",
+      "value": "specified_current_user",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00044"
+      ]
+    },
+    {
+      "row_id": "sfv-e790f0816317539310338ee6",
+      "factor": "owner_target",
+      "value": "specified_new_owner",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00045"
+      ]
+    },
+    {
+      "row_id": "sfv-f104e5b7115d1f82ed0880f9",
+      "factor": "owner_target",
+      "value": "specified_session_user",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00046"
+      ]
+    },
+    {
+      "row_id": "sfv-4e2392e2b3acee03394cf142",
+      "factor": "privilege_level",
+      "value": "non_owner",
+      "disposition": "expected_failure",
+      "reason": "insufficient_privilege_provisional",
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00047"
+      ]
+    },
+    {
+      "row_id": "sfv-d46dcd536c52639a401cb2f6",
+      "factor": "privilege_level",
+      "value": "owner",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00048"
+      ]
+    },
+    {
+      "row_id": "sfv-2cccac5fa6a5f4415d16f6dc",
+      "factor": "privilege_level",
+      "value": "superuser",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00049"
+      ]
+    },
+    {
+      "row_id": "sfv-d1b6f2b146d03722a4487612",
+      "factor": "role_existence",
+      "value": "role_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00050"
+      ]
+    },
+    {
+      "row_id": "sfv-1f50681e28ff1687c5382895",
+      "factor": "role_existence",
+      "value": "role_not_exists",
+      "disposition": "expected_failure",
+      "reason": "undefined_object_provisional",
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00051"
+      ]
+    },
+    {
+      "row_id": "sfv-72cf778e4a83cdad17b593b9",
+      "factor": "schema_existence",
+      "value": "schema_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00052"
+      ]
+    },
+    {
+      "row_id": "sfv-c67dab42b11353231e9a6d4e",
+      "factor": "schema_existence",
+      "value": "schema_not_exists",
+      "disposition": "expected_failure",
+      "reason": "invalid_schema_name_provisional",
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00053"
+      ]
+    },
+    {
+      "row_id": "sfv-d1ca7a34cc2c3e9894a595a4",
+      "factor": "schema_name_shape",
+      "value": "nonexistent_schema",
+      "disposition": "expected_failure",
+      "reason": "invalid_schema_name_provisional",
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00054"
+      ]
+    },
+    {
+      "row_id": "sfv-7665b3fb00960045134ad49f",
+      "factor": "schema_name_shape",
+      "value": "simple_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00055"
+      ]
+    },
+    {
+      "row_id": "sfv-f88b990428ff8f2f9a5d221e",
+      "factor": "set_role_capability",
+      "value": "can_set_role",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00056"
+      ]
+    },
+    {
+      "row_id": "sfv-6b7b64b61b0c282e3e0f0219",
+      "factor": "set_role_capability",
+      "value": "cannot_set_role",
+      "disposition": "expected_failure",
+      "reason": "insufficient_privilege_provisional",
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00057"
+      ]
+    },
+    {
+      "row_id": "sfv-3988181bd8ba6d8ad7f0832a",
+      "factor": "statement_branch",
+      "value": "branch_option",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00058"
+      ]
+    },
+    {
+      "row_id": "sfv-ec3afd82602e39c8a67ec136",
+      "factor": "statement_branch",
+      "value": "branch_owner",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00059"
+      ]
+    },
+    {
+      "row_id": "sfv-7e51b24df3523c4ae59b7db5",
+      "factor": "statement_branch",
+      "value": "branch_rename",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00060"
+      ]
+    },
+    {
+      "row_id": "sfv-2f1c0d14f5dd96e46a1aaa3c",
+      "factor": "statement_branch",
+      "value": "branch_set_schema",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00061"
+      ]
+    },
+    {
+      "row_id": "sfv-34513bb6503e89ec4d1c71ad",
+      "factor": "verification_mode",
+      "value": "catalog_query_pg_ts_dict",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00062"
+      ]
+    },
+    {
+      "row_id": "sfv-cfa86cb94bb246520756671e",
+      "factor": "verification_mode",
+      "value": "error_assertion",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00063"
+      ]
+    },
+    {
+      "row_id": "sfv-b050854c62ea0f3fd6f94448",
+      "factor": "verification_mode",
+      "value": "option_query",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHDICTIONARY00064"
+      ]
+    }
+  ],
+  "generation_mode": "factor_value_independent_loop_v1",
+  "decision_count": 64,
+  "local_sql_decision_count": 64,
+  "extension_case_count": 1320,
+  "delegated_decision_count": 0,
+  "obligation_multiset_sha256": "13a3aed3f97e54419b9b4975329bc78a6dfebe3800617956874e252d418fc820"
+}
