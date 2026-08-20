@@ -1,0 +1,631 @@
+{
+  "schema_version": 1,
+  "statement_key": "create_event_trigger",
+  "cycle_fingerprint": "606b9e710210e50ff88b14de7052163f9ee31f6f1d1e744bc0bd9935f399a9d9",
+  "factor_value_count": 61,
+  "factor_disposition_counts": {
+    "covered": 44,
+    "expected_failure": 17,
+    "justified_na": 0
+  },
+  "missing_row_ids": [],
+  "duplicate_row_ids": [],
+  "decisions": [
+    {
+      "row_id": "sfv-6b01ca90c23d77ac6a4e2f8c",
+      "factor": "cleanup_mode",
+      "value": "cascade_cleanup",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEVENTTRIGGER00002"
+      ]
+    },
+    {
+      "row_id": "sfv-ed67a2f28fc20394642efa58",
+      "factor": "cleanup_mode",
+      "value": "drop_event_trigger",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEVENTTRIGGER00003"
+      ]
+    },
+    {
+      "row_id": "sfv-a172dfa8844bf3d66e1b3a19",
+      "factor": "cleanup_mode",
+      "value": "drop_function",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEVENTTRIGGER00004"
+      ]
+    },
+    {
+      "row_id": "sfv-9c2ee840b2ad322defa22582",
+      "factor": "duplicate_trigger_name",
+      "value": "no_conflict",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEVENTTRIGGER00005"
+      ]
+    },
+    {
+      "row_id": "sfv-6f9ffa83f28e8ccef1949a2e",
+      "factor": "duplicate_trigger_name",
+      "value": "same_name_conflict",
+      "disposition": "expected_failure",
+      "reason": "duplicate_event_trigger_provisional",
+      "case_ids": [
+        "CREATEEVENTTRIGGER00006"
+      ]
+    },
+    {
+      "row_id": "sfv-693185cb0c4a0d06e0f7e23b",
+      "factor": "event_type",
+      "value": "ddl_command_end",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEVENTTRIGGER00007"
+      ]
+    },
+    {
+      "row_id": "sfv-147ad384dd8b823a1c6ab1eb",
+      "factor": "event_type",
+      "value": "ddl_command_start",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEVENTTRIGGER00008"
+      ]
+    },
+    {
+      "row_id": "sfv-9d7b86697482f41733a5e849",
+      "factor": "event_type",
+      "value": "table_rewrite",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEVENTTRIGGER00009"
+      ]
+    },
+    {
+      "row_id": "sfv-83b280a33d78d0f67fec2422",
+      "factor": "execute_keyword",
+      "value": "FUNCTION",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEVENTTRIGGER00010"
+      ]
+    },
+    {
+      "row_id": "sfv-9ed33bc4d3ff1f9e618fac86",
+      "factor": "execute_keyword",
+      "value": "PROCEDURE",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEVENTTRIGGER00011"
+      ]
+    },
+    {
+      "row_id": "sfv-fb72a8176e68ed27a7d54571",
+      "factor": "expected_status",
+      "value": "failure",
+      "disposition": "expected_failure",
+      "reason": "create_event_trigger_declared_failure_provisional",
+      "case_ids": [
+        "CREATEEVENTTRIGGER00012"
+      ]
+    },
+    {
+      "row_id": "sfv-fb5813dad0449514d179f8ab",
+      "factor": "expected_status",
+      "value": "success",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEVENTTRIGGER00013"
+      ]
+    },
+    {
+      "row_id": "sfv-56516e0179610caf9a219fbf",
+      "factor": "filter_value_shape",
+      "value": "multiple_command_tags",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEVENTTRIGGER00014"
+      ]
+    },
+    {
+      "row_id": "sfv-861dcfb1fc3dda0c26855ad4",
+      "factor": "filter_value_shape",
+      "value": "representative_tags_alter_table",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEVENTTRIGGER00015"
+      ]
+    },
+    {
+      "row_id": "sfv-1c012af8ab8a8908ade89300",
+      "factor": "filter_value_shape",
+      "value": "representative_tags_create_table",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEVENTTRIGGER00016"
+      ]
+    },
+    {
+      "row_id": "sfv-26ad91870a8eb93df9dcd82b",
+      "factor": "filter_value_shape",
+      "value": "representative_tags_drop_function",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEVENTTRIGGER00017"
+      ]
+    },
+    {
+      "row_id": "sfv-873d368235846c98a32262a9",
+      "factor": "filter_value_shape",
+      "value": "single_command_tag",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEVENTTRIGGER00018"
+      ]
+    },
+    {
+      "row_id": "sfv-8c9a7d72c326f6c9e13e1701",
+      "factor": "function_existence",
+      "value": "function_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEVENTTRIGGER00019"
+      ]
+    },
+    {
+      "row_id": "sfv-135e1011645e2bac9f7c3525",
+      "factor": "function_existence",
+      "value": "function_not_exists",
+      "disposition": "expected_failure",
+      "reason": "event_trigger_function_not_found_provisional",
+      "case_ids": [
+        "CREATEEVENTTRIGGER00020"
+      ]
+    },
+    {
+      "row_id": "sfv-45ec8c38e55034036b1d902b",
+      "factor": "function_name_shape",
+      "value": "nonexistent_name",
+      "disposition": "expected_failure",
+      "reason": "event_trigger_function_not_found_provisional",
+      "case_ids": [
+        "CREATEEVENTTRIGGER00021"
+      ]
+    },
+    {
+      "row_id": "sfv-ca89efa76487f1b593d155c9",
+      "factor": "function_name_shape",
+      "value": "schema_qualified",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEVENTTRIGGER00022"
+      ]
+    },
+    {
+      "row_id": "sfv-b3f9b61481f44b3dc50672cb",
+      "factor": "function_name_shape",
+      "value": "simple_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEVENTTRIGGER00023"
+      ]
+    },
+    {
+      "row_id": "sfv-c45bc233b60a6697509d8300",
+      "factor": "function_parameter_count",
+      "value": "nonzero_parameters",
+      "disposition": "expected_failure",
+      "reason": "event_trigger_function_wrong_arity_provisional",
+      "case_ids": [
+        "CREATEEVENTTRIGGER00024"
+      ]
+    },
+    {
+      "row_id": "sfv-707aecc103c5b8e18de80f42",
+      "factor": "function_parameter_count",
+      "value": "zero_parameters",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEVENTTRIGGER00025"
+      ]
+    },
+    {
+      "row_id": "sfv-62703bcbae2d0b3849288b09",
+      "factor": "function_return_type",
+      "value": "event_trigger_return_type",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEVENTTRIGGER00026"
+      ]
+    },
+    {
+      "row_id": "sfv-d4f7b763b70f90467b95f38b",
+      "factor": "function_return_type",
+      "value": "non_event_trigger_return_type",
+      "disposition": "expected_failure",
+      "reason": "event_trigger_function_wrong_return_type_provisional",
+      "case_ids": [
+        "CREATEEVENTTRIGGER00027"
+      ]
+    },
+    {
+      "row_id": "sfv-0e1b808d8f0ca6c908c5a521",
+      "factor": "function_wrong_parameter_count",
+      "value": "nonzero_parameters",
+      "disposition": "expected_failure",
+      "reason": "event_trigger_function_wrong_arity_provisional",
+      "case_ids": [
+        "CREATEEVENTTRIGGER00028"
+      ]
+    },
+    {
+      "row_id": "sfv-457f52a0c34bbdd6083ec6cb",
+      "factor": "function_wrong_parameter_count",
+      "value": "zero_parameters",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEVENTTRIGGER00029"
+      ]
+    },
+    {
+      "row_id": "sfv-67a359a10f558584eb461110",
+      "factor": "function_wrong_return_type",
+      "value": "correct_return_type",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEVENTTRIGGER00030"
+      ]
+    },
+    {
+      "row_id": "sfv-595d3da5b80c86cd4eec84fd",
+      "factor": "function_wrong_return_type",
+      "value": "wrong_return_type",
+      "disposition": "expected_failure",
+      "reason": "event_trigger_function_wrong_return_type_provisional",
+      "case_ids": [
+        "CREATEEVENTTRIGGER00031"
+      ]
+    },
+    {
+      "row_id": "sfv-4bed62972ee7325d940bfba0",
+      "factor": "invalid_event_type",
+      "value": "invalid_event_type",
+      "disposition": "expected_failure",
+      "reason": "invalid_event_type_provisional",
+      "case_ids": [
+        "CREATEEVENTTRIGGER00032"
+      ]
+    },
+    {
+      "row_id": "sfv-14fd180036fa5828903b10ba",
+      "factor": "invalid_event_type",
+      "value": "valid_event_type",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEVENTTRIGGER00033"
+      ]
+    },
+    {
+      "row_id": "sfv-15c51b802bc4af7d39526af4",
+      "factor": "invalid_filter_variable",
+      "value": "tag_variable",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEVENTTRIGGER00034"
+      ]
+    },
+    {
+      "row_id": "sfv-c91d7e6f4fc0f84b4c62e97a",
+      "factor": "invalid_filter_variable",
+      "value": "unsupported_variable",
+      "disposition": "expected_failure",
+      "reason": "invalid_filter_variable_provisional",
+      "case_ids": [
+        "CREATEEVENTTRIGGER00035"
+      ]
+    },
+    {
+      "row_id": "sfv-56facbe00dc5b50f5449c7f1",
+      "factor": "nonexistent_function",
+      "value": "function_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEVENTTRIGGER00036"
+      ]
+    },
+    {
+      "row_id": "sfv-303cb818bed5b8b768022588",
+      "factor": "nonexistent_function",
+      "value": "function_not_exists",
+      "disposition": "expected_failure",
+      "reason": "event_trigger_function_not_found_provisional",
+      "case_ids": [
+        "CREATEEVENTTRIGGER00037"
+      ]
+    },
+    {
+      "row_id": "sfv-98697a69db261588ea4341c7",
+      "factor": "object_state",
+      "value": "exists",
+      "disposition": "expected_failure",
+      "reason": "duplicate_event_trigger_provisional",
+      "case_ids": [
+        "CREATEEVENTTRIGGER00038"
+      ]
+    },
+    {
+      "row_id": "sfv-b409b9225e695e34a0970b55",
+      "factor": "object_state",
+      "value": "not_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEVENTTRIGGER00039"
+      ]
+    },
+    {
+      "row_id": "sfv-231262c1f4e1834a636e139a",
+      "factor": "privilege_denied_non_superuser",
+      "value": "non_superuser_failure",
+      "disposition": "expected_failure",
+      "reason": "must_be_superuser_provisional",
+      "case_ids": [
+        "CREATEEVENTTRIGGER00040"
+      ]
+    },
+    {
+      "row_id": "sfv-a5b3462cab9c9772b084487a",
+      "factor": "privilege_denied_non_superuser",
+      "value": "superuser_success",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEVENTTRIGGER00041"
+      ]
+    },
+    {
+      "row_id": "sfv-0170dd7bbcec2bff9e951f44",
+      "factor": "privilege_level",
+      "value": "non_superuser",
+      "disposition": "expected_failure",
+      "reason": "must_be_superuser_provisional",
+      "case_ids": [
+        "CREATEEVENTTRIGGER00042"
+      ]
+    },
+    {
+      "row_id": "sfv-d12bdce3f8240a8b04dc4ac6",
+      "factor": "privilege_level",
+      "value": "superuser",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEVENTTRIGGER00043"
+      ]
+    },
+    {
+      "row_id": "sfv-4848aef1d2ed57899999242f",
+      "factor": "single_user_mode",
+      "value": "allow_event_triggers_off",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEVENTTRIGGER00044"
+      ]
+    },
+    {
+      "row_id": "sfv-79ffb760ba55531ce9e6da35",
+      "factor": "single_user_mode",
+      "value": "normal_mode",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEVENTTRIGGER00045"
+      ]
+    },
+    {
+      "row_id": "sfv-226a58e1c6fcc63e218ad322",
+      "factor": "single_user_mode",
+      "value": "single_user_mode_disabled",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEVENTTRIGGER00046"
+      ]
+    },
+    {
+      "row_id": "sfv-60b3bc4cce9178c7bd2b88f0",
+      "factor": "statement_branch",
+      "value": "branch_create_event_trigger",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEVENTTRIGGER00047"
+      ]
+    },
+    {
+      "row_id": "sfv-cacb9bbb178c27d258d9d1bd",
+      "factor": "trigger_function_state",
+      "value": "function_exists_valid_signature",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEVENTTRIGGER00048"
+      ]
+    },
+    {
+      "row_id": "sfv-4b485491a0316472977fcea4",
+      "factor": "trigger_function_state",
+      "value": "function_exists_with_parameters",
+      "disposition": "expected_failure",
+      "reason": "event_trigger_function_wrong_arity_provisional",
+      "case_ids": [
+        "CREATEEVENTTRIGGER00049"
+      ]
+    },
+    {
+      "row_id": "sfv-e132a7ef4de73dfaf4f4c13e",
+      "factor": "trigger_function_state",
+      "value": "function_exists_wrong_return_type",
+      "disposition": "expected_failure",
+      "reason": "event_trigger_function_wrong_return_type_provisional",
+      "case_ids": [
+        "CREATEEVENTTRIGGER00050"
+      ]
+    },
+    {
+      "row_id": "sfv-0db805147cfd0217022128d1",
+      "factor": "trigger_function_state",
+      "value": "function_not_exists",
+      "disposition": "expected_failure",
+      "reason": "event_trigger_function_not_found_provisional",
+      "case_ids": [
+        "CREATEEVENTTRIGGER00051"
+      ]
+    },
+    {
+      "row_id": "sfv-6e210274fb6e8358ccaefd3e",
+      "factor": "trigger_name_shape",
+      "value": "duplicate_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEVENTTRIGGER00052"
+      ]
+    },
+    {
+      "row_id": "sfv-57e7f55c5d5b3a566326ad3d",
+      "factor": "trigger_name_shape",
+      "value": "quoted_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEVENTTRIGGER00053"
+      ]
+    },
+    {
+      "row_id": "sfv-ac80e6ddc71131abc885d07f",
+      "factor": "trigger_name_shape",
+      "value": "reserved_word_as_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEVENTTRIGGER00054"
+      ]
+    },
+    {
+      "row_id": "sfv-fdf6ee79bb3ee6e9276324ad",
+      "factor": "trigger_name_shape",
+      "value": "simple_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEVENTTRIGGER00055"
+      ]
+    },
+    {
+      "row_id": "sfv-80f4c6e5431476129f6306b1",
+      "factor": "verification_mode",
+      "value": "catalog_query_pg_event_trigger",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEVENTTRIGGER00056"
+      ]
+    },
+    {
+      "row_id": "sfv-807e526eecdd316e4fca8e7b",
+      "factor": "verification_mode",
+      "value": "error_assertion",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEVENTTRIGGER00057"
+      ]
+    },
+    {
+      "row_id": "sfv-7a32d252db2982356e9a3402",
+      "factor": "verification_mode",
+      "value": "trigger_firing_test",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEVENTTRIGGER00058"
+      ]
+    },
+    {
+      "row_id": "sfv-255f884376ac8fd498c11dfe",
+      "factor": "when_filter_clause",
+      "value": "and_connected_multiple_conditions",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEVENTTRIGGER00059"
+      ]
+    },
+    {
+      "row_id": "sfv-8a76ac289845ded1f002a60f",
+      "factor": "when_filter_clause",
+      "value": "multiple_tag_in_values",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEVENTTRIGGER00060"
+      ]
+    },
+    {
+      "row_id": "sfv-499e5ed09fedbec999f21215",
+      "factor": "when_filter_clause",
+      "value": "omitted",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEVENTTRIGGER00061"
+      ]
+    },
+    {
+      "row_id": "sfv-f0abcaef4139a21452c3d6b5",
+      "factor": "when_filter_clause",
+      "value": "single_tag_in_condition",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEVENTTRIGGER00062"
+      ]
+    }
+  ],
+  "generation_mode": "factor_value_independent_loop_v1",
+  "decision_count": 62,
+  "local_sql_decision_count": 62,
+  "extension_case_count": 6480,
+  "delegated_decision_count": 0,
+  "obligation_multiset_sha256": "cc355d90cf93298289aca1ab0d579acb44ef7909e84f83bfabaa62f9a187b65c"
+}
