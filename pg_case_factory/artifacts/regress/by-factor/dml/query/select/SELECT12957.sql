@@ -1,0 +1,39 @@
+-- --------------------------------------------------------
+-- 版权所有(C)  2021-2030 华为技术有限公司
+--
+-- --
+-- author       : codex
+-- create at    : 2026-08-21
+-- version      : 1.0
+-- description  : SELECT target_relation_state=wrong_object_type
+-- FE           : PG18-STATEMENT-FACTOR-LOOP
+-- ++
+-- --------------------------------------------------------
+-- case_id: SELECT12957
+-- source_md: skills/pg-sql-generation/references/statements/dml/query/select.md
+-- factor_md: skills/pg-sql-generation/references/combinations/dml/query/select.yaml
+-- primary_obligation_id: SELECT-EXT|12957|effect_query|reset_state
+-- expected_outcome: expected_failure
+-- expected_sqlstate: 42809
+-- 1. 清理本编号对象，保证脚本可重复执行。
+DROP TABLE IF EXISTS select_12957_tbl, select_12957_src, select_12957_ref CASCADE;
+DROP SEQUENCE IF EXISTS select_12957_seq;
+RESET ROLE;
+\set ON_ERROR_STOP on
+-- 2. 创建完整本地规则和因子专用夹具。
+CREATE SEQUENCE select_12957_seq;
+\set ON_ERROR_STOP off
+-- 3. 执行唯一获得覆盖信用的 SELECT。
+-- primary-target-begin
+WITH select_12957_cte AS (SELECT 1 AS val)
+SELECT 1 FROM select_12957_seq WHERE id IN (SELECT val FROM select_12957_cte);
+-- primary-target-end
+\set target_sqlstate :SQLSTATE
+\echo PGCF_TARGET_SQLSTATE=:target_sqlstate
+\set ON_ERROR_STOP on
+-- 4. 验证 SQLSTATE、目录状态和数据行为。
+SELECT :'target_sqlstate' = '42809' AS target_sqlstate_matches_expected;
+SELECT count(*) = 0 AS effect_state FROM pg_catalog.pg_class WHERE relname = 'select_12957_seq' AND relkind = 'r' ORDER BY count(*);
+-- 5. 清理全部本编号对象。
+DROP SEQUENCE IF EXISTS select_12957_seq;
+DROP TABLE IF EXISTS select_12957_tbl, select_12957_src, select_12957_ref CASCADE;
