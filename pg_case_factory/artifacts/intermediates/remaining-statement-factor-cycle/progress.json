@@ -6,7 +6,7 @@
   "statement_count": 183,
   "retained_statement_count": 6,
   "pending_statement_count": 177,
-  "next_pending_statement": "create_language",
+  "next_pending_statement": "create_materialized_view",
   "statements": {
     "abort": {
       "status": "completed",
@@ -478,11 +478,11 @@
       "validation_evidence_sha256": "579ff0b60c01c0d496c764498e0be73fa97b77cb3c3c43d2e7c97a29ae3049fe"
     },
     "create_language": {
-      "status": "pending",
-      "package_path": null,
-      "sql_file_count": null,
-      "validation_evidence": null,
-      "validation_evidence_sha256": null
+      "status": "completed",
+      "package_path": "artifacts/regress/by-factor/ddl/language/create_language",
+      "sql_file_count": 2540,
+      "validation_evidence": "/Users/yuyu/PyCharmMiscProject/pg_case_factory/artifacts/intermediates/remaining-statement-factor-cycle/create_language/validation.json",
+      "validation_evidence_sha256": "18e0b0a554621f2085a784509938f04098039d98371bd9cd15ee9068e629a94a"
     },
     "create_materialized_view": {
       "status": "pending",

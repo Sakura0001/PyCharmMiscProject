@@ -1,0 +1,441 @@
+{
+  "schema_version": 1,
+  "statement_key": "create_language",
+  "cycle_fingerprint": "606b9e710210e50ff88b14de7052163f9ee31f6f1d1e744bc0bd9935f399a9d9",
+  "factor_value_count": 42,
+  "factor_disposition_counts": {
+    "covered": 28,
+    "expected_failure": 14,
+    "justified_na": 0
+  },
+  "missing_row_ids": [],
+  "duplicate_row_ids": [],
+  "decisions": [
+    {
+      "row_id": "sfv-3117002cf0e33bc6335b4bef",
+      "factor": "cleanup_mode",
+      "value": "drop_objects",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATELANGUAGE00003"
+      ]
+    },
+    {
+      "row_id": "sfv-a2ed0ef57253d539d20b4796",
+      "factor": "cleanup_mode",
+      "value": "reset_state",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATELANGUAGE00004"
+      ]
+    },
+    {
+      "row_id": "sfv-4f58b41d90c04df24eef9b2c",
+      "factor": "dependency_state",
+      "value": "missing_handler",
+      "disposition": "expected_failure",
+      "reason": "missing_handler_dependency_provisional",
+      "case_ids": [
+        "CREATELANGUAGE00005"
+      ]
+    },
+    {
+      "row_id": "sfv-6079f931dfd4f463b2c268cd",
+      "factor": "dependency_state",
+      "value": "missing_validator",
+      "disposition": "expected_failure",
+      "reason": "missing_validator_dependency_provisional",
+      "case_ids": [
+        "CREATELANGUAGE00006"
+      ]
+    },
+    {
+      "row_id": "sfv-4c782bff2cf643a66b9eb0bd",
+      "factor": "dependency_state",
+      "value": "ready",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATELANGUAGE00007"
+      ]
+    },
+    {
+      "row_id": "sfv-823af475e1ddb2d06f9784f0",
+      "factor": "dependency_state",
+      "value": "wrong_signature",
+      "disposition": "expected_failure",
+      "reason": "wrong_signature_dependency_provisional",
+      "case_ids": [
+        "CREATELANGUAGE00008"
+      ]
+    },
+    {
+      "row_id": "sfv-dccc7c9e73a2f3a24b338a0c",
+      "factor": "expected_status",
+      "value": "failure",
+      "disposition": "expected_failure",
+      "reason": "duplicate_language_provisional",
+      "case_ids": [
+        "CREATELANGUAGE00009"
+      ]
+    },
+    {
+      "row_id": "sfv-010f9ee1c9b9c681ee9874fd",
+      "factor": "expected_status",
+      "value": "success",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATELANGUAGE00010"
+      ]
+    },
+    {
+      "row_id": "sfv-1cbbd12c9fe4519ba04fcdbf",
+      "factor": "handler_clause",
+      "value": "handler_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATELANGUAGE00011"
+      ]
+    },
+    {
+      "row_id": "sfv-7fd0c292bdf6d1a8a8a5cb6d",
+      "factor": "handler_clause",
+      "value": "handler_missing",
+      "disposition": "expected_failure",
+      "reason": "missing_handler_dependency_provisional",
+      "case_ids": [
+        "CREATELANGUAGE00012"
+      ]
+    },
+    {
+      "row_id": "sfv-43bddf439bca343de0dffe6d",
+      "factor": "handler_name_shape",
+      "value": "missing_function",
+      "disposition": "expected_failure",
+      "reason": "missing_handler_dependency_provisional",
+      "case_ids": [
+        "CREATELANGUAGE00013"
+      ]
+    },
+    {
+      "row_id": "sfv-1da126c21130f3da7a7e385c",
+      "factor": "handler_name_shape",
+      "value": "plain_function",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATELANGUAGE00014"
+      ]
+    },
+    {
+      "row_id": "sfv-9a6d6997e5a2fcb2851c0004",
+      "factor": "handler_name_shape",
+      "value": "schema_qualified_function",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATELANGUAGE00015"
+      ]
+    },
+    {
+      "row_id": "sfv-33a5ebc3647357bd9d941eae",
+      "factor": "inline_clause",
+      "value": "absent",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATELANGUAGE00016"
+      ]
+    },
+    {
+      "row_id": "sfv-443d032937b07ac010403fb5",
+      "factor": "inline_clause",
+      "value": "present",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATELANGUAGE00017"
+      ]
+    },
+    {
+      "row_id": "sfv-1523276cd9c4c6039ee529a4",
+      "factor": "invalid_combination",
+      "value": "none",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATELANGUAGE00018"
+      ]
+    },
+    {
+      "row_id": "sfv-bdf903e327a81b0028ad61b9",
+      "factor": "invalid_combination",
+      "value": "object_type_mismatch",
+      "disposition": "expected_failure",
+      "reason": "invalid_language_definition_provisional",
+      "case_ids": [
+        "CREATELANGUAGE00019"
+      ]
+    },
+    {
+      "row_id": "sfv-d92cf4241cb821f1247d34dd",
+      "factor": "invalid_combination",
+      "value": "syntax_valid_semantic_error",
+      "disposition": "expected_failure",
+      "reason": "invalid_language_definition_provisional",
+      "case_ids": [
+        "CREATELANGUAGE00020"
+      ]
+    },
+    {
+      "row_id": "sfv-0dabbbd307c09133a5712e38",
+      "factor": "name_shape",
+      "value": "plain_identifier",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATELANGUAGE00021"
+      ]
+    },
+    {
+      "row_id": "sfv-2b9f56d68d53434469efc609",
+      "factor": "name_shape",
+      "value": "quoted_identifier",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATELANGUAGE00022"
+      ]
+    },
+    {
+      "row_id": "sfv-d1daba480c352faa3de609f4",
+      "factor": "name_shape",
+      "value": "schema_qualified",
+      "disposition": "expected_failure",
+      "reason": "invalid_language_definition_provisional",
+      "case_ids": [
+        "CREATELANGUAGE00023"
+      ]
+    },
+    {
+      "row_id": "sfv-e50599bc94e3f6ec3d80175f",
+      "factor": "or_replace_clause",
+      "value": "absent",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATELANGUAGE00024"
+      ]
+    },
+    {
+      "row_id": "sfv-71b99dc7bdd87b47e5deb065",
+      "factor": "or_replace_clause",
+      "value": "present_replace_existing",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATELANGUAGE00025"
+      ]
+    },
+    {
+      "row_id": "sfv-43449d4078b0dc95069232c0",
+      "factor": "or_replace_clause",
+      "value": "present_replace_new",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATELANGUAGE00026"
+      ]
+    },
+    {
+      "row_id": "sfv-103764b2aba47c69b4cacdc2",
+      "factor": "ownership_boundary",
+      "value": "non_superuser",
+      "disposition": "expected_failure",
+      "reason": "insufficient_privilege_provisional",
+      "case_ids": [
+        "CREATELANGUAGE00027"
+      ]
+    },
+    {
+      "row_id": "sfv-edf54f5b44617dde84033fb5",
+      "factor": "ownership_boundary",
+      "value": "superuser",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATELANGUAGE00028"
+      ]
+    },
+    {
+      "row_id": "sfv-c943633093d0861762485b43",
+      "factor": "privilege_context",
+      "value": "non_superuser",
+      "disposition": "expected_failure",
+      "reason": "insufficient_privilege_provisional",
+      "case_ids": [
+        "CREATELANGUAGE00029"
+      ]
+    },
+    {
+      "row_id": "sfv-eddb788ffd4516ea41b36b37",
+      "factor": "privilege_context",
+      "value": "superuser",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATELANGUAGE00030"
+      ]
+    },
+    {
+      "row_id": "sfv-b8bcf7655afd4a82ea8a444f",
+      "factor": "statement_branch",
+      "value": "branch_1",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATELANGUAGE00031"
+      ]
+    },
+    {
+      "row_id": "sfv-9cee08a8d031f66a1e896e3b",
+      "factor": "statement_branch",
+      "value": "branch_2",
+      "disposition": "expected_failure",
+      "reason": "handlerless_extension_resolution_failure_provisional",
+      "case_ids": [
+        "CREATELANGUAGE00032"
+      ]
+    },
+    {
+      "row_id": "sfv-cf03704ed7aa10b5eddd7742",
+      "factor": "superuser_requirement",
+      "value": "superuser_available",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATELANGUAGE00033"
+      ]
+    },
+    {
+      "row_id": "sfv-f7010b9ccb4e3b576e8b9172",
+      "factor": "superuser_requirement",
+      "value": "superuser_required_only",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATELANGUAGE00034"
+      ]
+    },
+    {
+      "row_id": "sfv-59c8adda19cd8bed4f0a0c03",
+      "factor": "target_object_state",
+      "value": "absent",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATELANGUAGE00035"
+      ]
+    },
+    {
+      "row_id": "sfv-fefd4e4954f349aaea97fc55",
+      "factor": "target_object_state",
+      "value": "exists",
+      "disposition": "expected_failure",
+      "reason": "duplicate_language_provisional",
+      "case_ids": [
+        "CREATELANGUAGE00036"
+      ]
+    },
+    {
+      "row_id": "sfv-c89176300fe08244dd3b2093",
+      "factor": "target_object_state",
+      "value": "exists_conflict",
+      "disposition": "expected_failure",
+      "reason": "duplicate_language_provisional",
+      "case_ids": [
+        "CREATELANGUAGE00037"
+      ]
+    },
+    {
+      "row_id": "sfv-eb695e113d5fa88dcde1721b",
+      "factor": "trusted_clause",
+      "value": "absent",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATELANGUAGE00038"
+      ]
+    },
+    {
+      "row_id": "sfv-aabc5254fe2ab616c11cc6fb",
+      "factor": "trusted_clause",
+      "value": "present",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATELANGUAGE00039"
+      ]
+    },
+    {
+      "row_id": "sfv-4c6bb5b1cc6d84c78b164e86",
+      "factor": "validator_clause",
+      "value": "absent",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATELANGUAGE00040"
+      ]
+    },
+    {
+      "row_id": "sfv-52cc4af7266f01e04a9461bb",
+      "factor": "validator_clause",
+      "value": "present",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATELANGUAGE00041"
+      ]
+    },
+    {
+      "row_id": "sfv-6d86018fa31b9b5468d7ea73",
+      "factor": "verification_mode",
+      "value": "catalog_query",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATELANGUAGE00042"
+      ]
+    },
+    {
+      "row_id": "sfv-7bc60cf0db366ceb93f4b7c7",
+      "factor": "verification_mode",
+      "value": "effect_query",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATELANGUAGE00043"
+      ]
+    },
+    {
+      "row_id": "sfv-b18577ca95712a9c6d6e723d",
+      "factor": "verification_mode",
+      "value": "error_assertion",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATELANGUAGE00044"
+      ]
+    }
+  ],
+  "generation_mode": "factor_value_independent_loop_v1",
+  "decision_count": 44,
+  "local_sql_decision_count": 44,
+  "extension_case_count": 2496,
+  "delegated_decision_count": 0,
+  "obligation_multiset_sha256": "b888965f233ee071732defb8f92c5f2f023817c9452221b26d706aac64bbac22"
+}
