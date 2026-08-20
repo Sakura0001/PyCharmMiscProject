@@ -1,0 +1,911 @@
+{
+  "schema_version": 1,
+  "statement_key": "create_index",
+  "cycle_fingerprint": "606b9e710210e50ff88b14de7052163f9ee31f6f1d1e744bc0bd9935f399a9d9",
+  "factor_value_count": 89,
+  "factor_disposition_counts": {
+    "covered": 81,
+    "expected_failure": 8,
+    "justified_na": 0
+  },
+  "missing_row_ids": [],
+  "duplicate_row_ids": [],
+  "decisions": [
+    {
+      "row_id": "sfv-1a6a32a2e1c3b7a2c45bbe76",
+      "factor": "cleanup_mode",
+      "value": "drop_index",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00013"
+      ]
+    },
+    {
+      "row_id": "sfv-3afc13ed44d9cb064cfaee4a",
+      "factor": "cleanup_mode",
+      "value": "rollback",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00014"
+      ]
+    },
+    {
+      "row_id": "sfv-d9cc3441cc9404af8b9f54a4",
+      "factor": "collation",
+      "value": "default_collation",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00015"
+      ]
+    },
+    {
+      "row_id": "sfv-796d921520affeb9dada040e",
+      "factor": "collation",
+      "value": "non_default_collation",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00016"
+      ]
+    },
+    {
+      "row_id": "sfv-1c2569c1f07014cdae6b2ff9",
+      "factor": "collation",
+      "value": "none",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00017"
+      ]
+    },
+    {
+      "row_id": "sfv-63953e86e44416b4001f8ad7",
+      "factor": "column_source",
+      "value": "all_template_columns",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00018"
+      ]
+    },
+    {
+      "row_id": "sfv-928639bae83f8fe4b8d19f4a",
+      "factor": "column_type_compatibility",
+      "value": "brin_compatible",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00019"
+      ]
+    },
+    {
+      "row_id": "sfv-6305ffdcde43d1f82110b809",
+      "factor": "column_type_compatibility",
+      "value": "btree_compatible",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00020"
+      ]
+    },
+    {
+      "row_id": "sfv-a9f4166e44d0673cd8d2e492",
+      "factor": "column_type_compatibility",
+      "value": "gin_compatible",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00021"
+      ]
+    },
+    {
+      "row_id": "sfv-0c126d13f708d1f18a1aa870",
+      "factor": "column_type_compatibility",
+      "value": "gist_compatible",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00022"
+      ]
+    },
+    {
+      "row_id": "sfv-f3f513aa46ad61c8faedb684",
+      "factor": "column_type_compatibility",
+      "value": "hash_compatible",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00023"
+      ]
+    },
+    {
+      "row_id": "sfv-ca7d6e8c3f81e9c0d53547b1",
+      "factor": "column_type_compatibility",
+      "value": "method_type_incompatible",
+      "disposition": "expected_failure",
+      "reason": "operator_class_missing_provisional",
+      "case_ids": [
+        "CREATEINDEX00024"
+      ]
+    },
+    {
+      "row_id": "sfv-ef4f595ae695f6b39f77aee5",
+      "factor": "column_type_compatibility",
+      "value": "spgist_compatible",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00025"
+      ]
+    },
+    {
+      "row_id": "sfv-6e586884ae0603152f3f7bd8",
+      "factor": "concurrent_failure",
+      "value": "in_transaction_block",
+      "disposition": "expected_failure",
+      "reason": "concurrently_in_transaction_block_provisional",
+      "case_ids": [
+        "CREATEINDEX00026"
+      ]
+    },
+    {
+      "row_id": "sfv-601b98a17491209a667c2527",
+      "factor": "concurrent_failure",
+      "value": "invalid_index_leftover",
+      "disposition": "expected_failure",
+      "reason": "concurrent_failure_invalid_index_provisional",
+      "case_ids": [
+        "CREATEINDEX00027"
+      ]
+    },
+    {
+      "row_id": "sfv-5e8c87aebfa357c885c1c367",
+      "factor": "concurrent_failure",
+      "value": "none",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00028"
+      ]
+    },
+    {
+      "row_id": "sfv-0dd1bcb0c9ba26de0377bc84",
+      "factor": "concurrently",
+      "value": "false",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00029"
+      ]
+    },
+    {
+      "row_id": "sfv-666337802a1d7a6ef7b32fd8",
+      "factor": "concurrently",
+      "value": "true",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00030"
+      ]
+    },
+    {
+      "row_id": "sfv-f5d30bd31cbbfb1bd9b7fd6b",
+      "factor": "expected_status",
+      "value": "failure",
+      "disposition": "expected_failure",
+      "reason": "duplicate_index_provisional",
+      "case_ids": [
+        "CREATEINDEX00031"
+      ]
+    },
+    {
+      "row_id": "sfv-8d341287128a8aece5c4d8e9",
+      "factor": "expected_status",
+      "value": "success",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00032"
+      ]
+    },
+    {
+      "row_id": "sfv-9d002396680f9d03f32ba0ac",
+      "factor": "expression_index",
+      "value": "column_only",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00033"
+      ]
+    },
+    {
+      "row_id": "sfv-e782eb80b0ba5b364f42ffa2",
+      "factor": "expression_index",
+      "value": "complex_expression",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00034"
+      ]
+    },
+    {
+      "row_id": "sfv-f4c1140cce2c9aad309e58a0",
+      "factor": "expression_index",
+      "value": "simple_expression",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00035"
+      ]
+    },
+    {
+      "row_id": "sfv-30e02820d3a5ffaaa04063a2",
+      "factor": "if_not_exists",
+      "value": "false",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00036"
+      ]
+    },
+    {
+      "row_id": "sfv-032c11860f1b6b6e45215c59",
+      "factor": "if_not_exists",
+      "value": "true",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00037"
+      ]
+    },
+    {
+      "row_id": "sfv-a004310b9dd8d149f0951cbf",
+      "factor": "include",
+      "value": "false",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00038"
+      ]
+    },
+    {
+      "row_id": "sfv-0b092d191496c0cfae3f7c1d",
+      "factor": "include",
+      "value": "true",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00039"
+      ]
+    },
+    {
+      "row_id": "sfv-4a232b0cf141b54730099938",
+      "factor": "invalid_combination",
+      "value": "include_with_unsupported_method",
+      "disposition": "expected_failure",
+      "reason": "include_not_supported_for_method_provisional",
+      "case_ids": [
+        "CREATEINDEX00040"
+      ]
+    },
+    {
+      "row_id": "sfv-e5573da29168c3f1a06c4750",
+      "factor": "invalid_combination",
+      "value": "multi_column_with_unsupported_method",
+      "disposition": "expected_failure",
+      "reason": "multicolumn_not_supported_for_method_provisional",
+      "case_ids": [
+        "CREATEINDEX00041"
+      ]
+    },
+    {
+      "row_id": "sfv-85b53a91b6031f7b65519f7a",
+      "factor": "invalid_combination",
+      "value": "none",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00042"
+      ]
+    },
+    {
+      "row_id": "sfv-f7024a9264dd2472061cf924",
+      "factor": "invalid_combination",
+      "value": "unique_with_non_btree",
+      "disposition": "expected_failure",
+      "reason": "unique_not_supported_for_method_provisional",
+      "case_ids": [
+        "CREATEINDEX00043"
+      ]
+    },
+    {
+      "row_id": "sfv-f10dc797cadd3df1da4c30a8",
+      "factor": "method",
+      "value": "brin",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00044"
+      ]
+    },
+    {
+      "row_id": "sfv-a46b71c73035869a2dee8d8b",
+      "factor": "method",
+      "value": "btree",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00045"
+      ]
+    },
+    {
+      "row_id": "sfv-78dce97665837359920b96f5",
+      "factor": "method",
+      "value": "gin",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00046"
+      ]
+    },
+    {
+      "row_id": "sfv-e96ac1521462c39c29ab95f4",
+      "factor": "method",
+      "value": "gist",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00047"
+      ]
+    },
+    {
+      "row_id": "sfv-6431f171aaf3c1210cca08f9",
+      "factor": "method",
+      "value": "hash",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00048"
+      ]
+    },
+    {
+      "row_id": "sfv-413411960a6d7ae579f9383e",
+      "factor": "method",
+      "value": "spgist",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00049"
+      ]
+    },
+    {
+      "row_id": "sfv-8585018ea03831913179f9a0",
+      "factor": "name_style",
+      "value": "explicit_compact",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00050"
+      ]
+    },
+    {
+      "row_id": "sfv-baf7c552810fb56cdd8133fa",
+      "factor": "name_style",
+      "value": "explicit_semantic",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00051"
+      ]
+    },
+    {
+      "row_id": "sfv-ef1356a82ccf8e1b9f7161cc",
+      "factor": "name_style",
+      "value": "implicit",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00052"
+      ]
+    },
+    {
+      "row_id": "sfv-d8a0522c6b5dad1eb016e157",
+      "factor": "nulls",
+      "value": "first",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00053"
+      ]
+    },
+    {
+      "row_id": "sfv-10dacf8836680fc2eb7c050b",
+      "factor": "nulls",
+      "value": "last",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00054"
+      ]
+    },
+    {
+      "row_id": "sfv-7b42f3fe815e40754a9b3bdb",
+      "factor": "nulls",
+      "value": "none",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00055"
+      ]
+    },
+    {
+      "row_id": "sfv-ef9d2a79df275b931d6505a4",
+      "factor": "nulls_distinct",
+      "value": "distinct",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00056"
+      ]
+    },
+    {
+      "row_id": "sfv-e6249aa7cdaa767573ebb7d6",
+      "factor": "nulls_distinct",
+      "value": "none",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00057"
+      ]
+    },
+    {
+      "row_id": "sfv-90138406d9416f2ff1644608",
+      "factor": "nulls_distinct",
+      "value": "not_distinct",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00058"
+      ]
+    },
+    {
+      "row_id": "sfv-7e32ce61a90e66e643e121f2",
+      "factor": "only",
+      "value": "false",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00059"
+      ]
+    },
+    {
+      "row_id": "sfv-99a239fd5cb9eabea8d707e1",
+      "factor": "only",
+      "value": "true",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00060"
+      ]
+    },
+    {
+      "row_id": "sfv-9e279b13417aec0262d52bc5",
+      "factor": "opclass",
+      "value": "default_opclass",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00061"
+      ]
+    },
+    {
+      "row_id": "sfv-73463ab5b8a4f92991c02ed9",
+      "factor": "opclass",
+      "value": "non_default_opclass",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00062"
+      ]
+    },
+    {
+      "row_id": "sfv-7d131eab51d8ea276badd116",
+      "factor": "opclass",
+      "value": "none",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00063"
+      ]
+    },
+    {
+      "row_id": "sfv-135da98b534bb86d15170b0b",
+      "factor": "order",
+      "value": "asc",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00064"
+      ]
+    },
+    {
+      "row_id": "sfv-d8b8477b78bec4db54b04739",
+      "factor": "order",
+      "value": "desc",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00065"
+      ]
+    },
+    {
+      "row_id": "sfv-db38e0311b0842072b888973",
+      "factor": "order",
+      "value": "none",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00066"
+      ]
+    },
+    {
+      "row_id": "sfv-a960c9cf216854a30bfb75e4",
+      "factor": "partition_constraint",
+      "value": "concurrently_on_partitioned",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00067"
+      ]
+    },
+    {
+      "row_id": "sfv-1456eaa949ef5bc383bbb14d",
+      "factor": "partition_constraint",
+      "value": "none",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00068"
+      ]
+    },
+    {
+      "row_id": "sfv-45e09153e29e5c61bd16b56e",
+      "factor": "partition_constraint",
+      "value": "only_on_partitioned",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00069"
+      ]
+    },
+    {
+      "row_id": "sfv-fca0a2ac548377b9eaeb2fd2",
+      "factor": "predicate",
+      "value": "false",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00070"
+      ]
+    },
+    {
+      "row_id": "sfv-9b344191c053dc786b484139",
+      "factor": "predicate",
+      "value": "true",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00071"
+      ]
+    },
+    {
+      "row_id": "sfv-9449fd690842a08da2c19d55",
+      "factor": "statement_branch",
+      "value": "brin_index",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00072"
+      ]
+    },
+    {
+      "row_id": "sfv-a753f3223c14d1bfa7da78f1",
+      "factor": "statement_branch",
+      "value": "concurrent_build",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00073"
+      ]
+    },
+    {
+      "row_id": "sfv-afdad2d6593b100ead4a2f52",
+      "factor": "statement_branch",
+      "value": "covering_index",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00074"
+      ]
+    },
+    {
+      "row_id": "sfv-ed47d84bdf0e345df717cc7a",
+      "factor": "statement_branch",
+      "value": "expression_index",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00075"
+      ]
+    },
+    {
+      "row_id": "sfv-20b809e9c1030a09e034052f",
+      "factor": "statement_branch",
+      "value": "gin_index",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00076"
+      ]
+    },
+    {
+      "row_id": "sfv-04698434e73704e2db651c7e",
+      "factor": "statement_branch",
+      "value": "gist_index",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00077"
+      ]
+    },
+    {
+      "row_id": "sfv-8f5b12b408ce7ea8fd2c3c6d",
+      "factor": "statement_branch",
+      "value": "hash_index",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00078"
+      ]
+    },
+    {
+      "row_id": "sfv-252ea6039e69a089de999a24",
+      "factor": "statement_branch",
+      "value": "multi_column_btree",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00079"
+      ]
+    },
+    {
+      "row_id": "sfv-51c3fc4345b731eab1d61af3",
+      "factor": "statement_branch",
+      "value": "partial_index",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00080"
+      ]
+    },
+    {
+      "row_id": "sfv-97103c0f815fa5b80907b293",
+      "factor": "statement_branch",
+      "value": "single_column_btree",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00081"
+      ]
+    },
+    {
+      "row_id": "sfv-ca090b156228da4eaefb153a",
+      "factor": "statement_branch",
+      "value": "spgist_index",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00082"
+      ]
+    },
+    {
+      "row_id": "sfv-ed59bb222b1065c7a30fcbca",
+      "factor": "statement_branch",
+      "value": "unique_btree",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00083"
+      ]
+    },
+    {
+      "row_id": "sfv-752e6c3666a91000ed5a2709",
+      "factor": "syntax_error",
+      "value": "invalid_syntax",
+      "disposition": "expected_failure",
+      "reason": "syntax_error_provisional",
+      "case_ids": [
+        "CREATEINDEX00084"
+      ]
+    },
+    {
+      "row_id": "sfv-eac0386c4fd37ef4c38d4abe",
+      "factor": "syntax_error",
+      "value": "none",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00085"
+      ]
+    },
+    {
+      "row_id": "sfv-a6c65e9fa8cea1eed3e5e093",
+      "factor": "tablespace",
+      "value": "custom_tablespace",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00086"
+      ]
+    },
+    {
+      "row_id": "sfv-9a6e9455624792e024b7a57d",
+      "factor": "tablespace",
+      "value": "none",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00087"
+      ]
+    },
+    {
+      "row_id": "sfv-46a9460583a0b61df32dab23",
+      "factor": "tablespace",
+      "value": "pg_default",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00088"
+      ]
+    },
+    {
+      "row_id": "sfv-328e90f62348b0f8894bd3f4",
+      "factor": "unique",
+      "value": "false",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00089"
+      ]
+    },
+    {
+      "row_id": "sfv-48520595964d84da3b36073c",
+      "factor": "unique",
+      "value": "true",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00090"
+      ]
+    },
+    {
+      "row_id": "sfv-adc52c9045c8fcb1e66d63af",
+      "factor": "verification_mode",
+      "value": "catalog_query",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00091"
+      ]
+    },
+    {
+      "row_id": "sfv-209320ee02d9b4a2fee9d2c4",
+      "factor": "verification_mode",
+      "value": "explain_index_scan",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00092"
+      ]
+    },
+    {
+      "row_id": "sfv-b63397e72e538cf5637f8b9a",
+      "factor": "verification_mode",
+      "value": "index_validity_check",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00093"
+      ]
+    },
+    {
+      "row_id": "sfv-5a910dccefb61b493710eba6",
+      "factor": "with_storage",
+      "value": "brin_autosummarize",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00094"
+      ]
+    },
+    {
+      "row_id": "sfv-fe3add0ced9560240a6d74d2",
+      "factor": "with_storage",
+      "value": "brin_pages_per_range",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00095"
+      ]
+    },
+    {
+      "row_id": "sfv-cafde0620d42789eeae4b27a",
+      "factor": "with_storage",
+      "value": "btree_deduplicate_items",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00096"
+      ]
+    },
+    {
+      "row_id": "sfv-dbb2be3825e8db88773f4579",
+      "factor": "with_storage",
+      "value": "btree_fillfactor",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00097"
+      ]
+    },
+    {
+      "row_id": "sfv-1a51bc144887fc6c7e9e14e7",
+      "factor": "with_storage",
+      "value": "gin_fastupdate",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00098"
+      ]
+    },
+    {
+      "row_id": "sfv-26c86f5898db69dba73454f4",
+      "factor": "with_storage",
+      "value": "gin_pending_list_limit",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00099"
+      ]
+    },
+    {
+      "row_id": "sfv-f17e07ecc59639fd40a23cae",
+      "factor": "with_storage",
+      "value": "gist_buffering",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00100"
+      ]
+    },
+    {
+      "row_id": "sfv-0381f43633fc461fa29d6782",
+      "factor": "with_storage",
+      "value": "none",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEINDEX00101"
+      ]
+    }
+  ],
+  "generation_mode": "factor_value_independent_loop_v1",
+  "decision_count": 101,
+  "local_sql_decision_count": 101,
+  "extension_case_count": 1908,
+  "delegated_decision_count": 0,
+  "obligation_multiset_sha256": "30382c3559c26c895aa94059c3c5d5e2631965b5747a02cfc7890763cb8a0746"
+}
