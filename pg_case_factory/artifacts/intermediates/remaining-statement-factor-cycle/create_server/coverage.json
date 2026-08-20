@@ -1,0 +1,431 @@
+{
+  "schema_version": 1,
+  "statement_key": "create_server",
+  "cycle_fingerprint": "606b9e710210e50ff88b14de7052163f9ee31f6f1d1e744bc0bd9935f399a9d9",
+  "factor_value_count": 41,
+  "factor_disposition_counts": {
+    "covered": 30,
+    "expected_failure": 11,
+    "justified_na": 0
+  },
+  "missing_row_ids": [],
+  "duplicate_row_ids": [],
+  "decisions": [
+    {
+      "row_id": "sfv-3d017c45a76e7ae90901af4d",
+      "factor": "cleanup_mode",
+      "value": "drop_fdw_then_drop_server",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESERVER00003"
+      ]
+    },
+    {
+      "row_id": "sfv-ca723201fc8dcc5bbea48a1b",
+      "factor": "cleanup_mode",
+      "value": "drop_server",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESERVER00004"
+      ]
+    },
+    {
+      "row_id": "sfv-5106435c47ba3e736e3fa4df",
+      "factor": "duplicate_server_name",
+      "value": "none",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESERVER00005"
+      ]
+    },
+    {
+      "row_id": "sfv-edd8ad555515dbb55f6bd6cf",
+      "factor": "duplicate_server_name",
+      "value": "same_name_exists",
+      "disposition": "expected_failure",
+      "reason": "duplicate_object_provisional",
+      "case_ids": [
+        "CREATESERVER00006"
+      ]
+    },
+    {
+      "row_id": "sfv-47bf2cf7a5cd7699ce0e55a3",
+      "factor": "executor_privilege",
+      "value": "non_superuser",
+      "disposition": "expected_failure",
+      "reason": "insufficient_privilege_provisional",
+      "case_ids": [
+        "CREATESERVER00007"
+      ]
+    },
+    {
+      "row_id": "sfv-bd84e6bab0417d3f15aa28e3",
+      "factor": "executor_privilege",
+      "value": "superuser",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESERVER00008"
+      ]
+    },
+    {
+      "row_id": "sfv-9b91b78af905ca00037724f5",
+      "factor": "expected_status",
+      "value": "failure",
+      "disposition": "expected_failure",
+      "reason": "duplicate_object_provisional",
+      "case_ids": [
+        "CREATESERVER00009"
+      ]
+    },
+    {
+      "row_id": "sfv-4a0f81ff01413d2610b75a5b",
+      "factor": "expected_status",
+      "value": "success",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESERVER00010"
+      ]
+    },
+    {
+      "row_id": "sfv-db9ac5d2334f1efff2c2656d",
+      "factor": "fdw_dependency",
+      "value": "existing_fdw",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESERVER00011"
+      ]
+    },
+    {
+      "row_id": "sfv-56e87c52516670afc1ac358f",
+      "factor": "fdw_dependency",
+      "value": "nonexistent_fdw",
+      "disposition": "expected_failure",
+      "reason": "undefined_object_provisional",
+      "case_ids": [
+        "CREATESERVER00012"
+      ]
+    },
+    {
+      "row_id": "sfv-2760e00a0b2bd84bea32ad80",
+      "factor": "fdw_existence",
+      "value": "fdw_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESERVER00013"
+      ]
+    },
+    {
+      "row_id": "sfv-0a3f372ae03a6e383954b701",
+      "factor": "fdw_existence",
+      "value": "fdw_not_exists",
+      "disposition": "expected_failure",
+      "reason": "undefined_object_provisional",
+      "case_ids": [
+        "CREATESERVER00014"
+      ]
+    },
+    {
+      "row_id": "sfv-ab61a6b9765a885ed31dd839",
+      "factor": "fdw_name_shape",
+      "value": "existing_fdw_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESERVER00015"
+      ]
+    },
+    {
+      "row_id": "sfv-7c0be041b628a9b98ff1d34e",
+      "factor": "fdw_name_shape",
+      "value": "nonexistent_fdw_name",
+      "disposition": "expected_failure",
+      "reason": "undefined_object_provisional",
+      "case_ids": [
+        "CREATESERVER00016"
+      ]
+    },
+    {
+      "row_id": "sfv-adb56b8e4916b31672439322",
+      "factor": "fdw_validator_rejection",
+      "value": "none",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESERVER00017"
+      ]
+    },
+    {
+      "row_id": "sfv-e5907b8f510d54641c3026d4",
+      "factor": "fdw_validator_rejection",
+      "value": "validator_rejects_invalid_option",
+      "disposition": "expected_failure",
+      "reason": "fdw_error_provisional",
+      "case_ids": [
+        "CREATESERVER00018"
+      ]
+    },
+    {
+      "row_id": "sfv-8fb4eea83c6709942f044429",
+      "factor": "if_not_exists_clause",
+      "value": "with_if_not_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESERVER00019"
+      ]
+    },
+    {
+      "row_id": "sfv-1ef88114b9842dbdffa96aee",
+      "factor": "if_not_exists_clause",
+      "value": "without_if_not_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESERVER00020"
+      ]
+    },
+    {
+      "row_id": "sfv-064673457c4e5eb878e4d254",
+      "factor": "nonexistent_fdw",
+      "value": "fdw_does_not_exist",
+      "disposition": "expected_failure",
+      "reason": "undefined_object_provisional",
+      "case_ids": [
+        "CREATESERVER00021"
+      ]
+    },
+    {
+      "row_id": "sfv-5cfb59e80dd1e32340d48d58",
+      "factor": "option_value_shape",
+      "value": "empty_option_value",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESERVER00022"
+      ]
+    },
+    {
+      "row_id": "sfv-c77ae718fbfd4d549c40f628",
+      "factor": "option_value_shape",
+      "value": "valid_option_value",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESERVER00023"
+      ]
+    },
+    {
+      "row_id": "sfv-d9e2963d861f870fe17fb3b0",
+      "factor": "options_clause",
+      "value": "multiple_options",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESERVER00024"
+      ]
+    },
+    {
+      "row_id": "sfv-3309364be81f1a6ebdf7d303",
+      "factor": "options_clause",
+      "value": "omitted",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESERVER00025"
+      ]
+    },
+    {
+      "row_id": "sfv-e9dc8bfb697913e65152f462",
+      "factor": "options_clause",
+      "value": "single_option",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESERVER00026"
+      ]
+    },
+    {
+      "row_id": "sfv-7d99621f165be161427bf9aa",
+      "factor": "privilege_insufficient",
+      "value": "non_superuser_creating_server",
+      "disposition": "expected_failure",
+      "reason": "insufficient_privilege_provisional",
+      "case_ids": [
+        "CREATESERVER00027"
+      ]
+    },
+    {
+      "row_id": "sfv-a44e712c8ae280983773d960",
+      "factor": "server_identity",
+      "value": "exists",
+      "disposition": "expected_failure",
+      "reason": "duplicate_object_provisional",
+      "case_ids": [
+        "CREATESERVER00028"
+      ]
+    },
+    {
+      "row_id": "sfv-e2cd8d54162b11e29a5eb013",
+      "factor": "server_identity",
+      "value": "not_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESERVER00029"
+      ]
+    },
+    {
+      "row_id": "sfv-7d8bc27c2525a5e95266947a",
+      "factor": "server_identity",
+      "value": "quoted_duplicate",
+      "disposition": "expected_failure",
+      "reason": "duplicate_object_provisional",
+      "case_ids": [
+        "CREATESERVER00030"
+      ]
+    },
+    {
+      "row_id": "sfv-81860a3cef4c0da25ca0ed7d",
+      "factor": "server_identity",
+      "value": "reserved_word_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESERVER00031"
+      ]
+    },
+    {
+      "row_id": "sfv-19ef9d411261960eec87e715",
+      "factor": "server_name_shape",
+      "value": "non_existing_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESERVER00032"
+      ]
+    },
+    {
+      "row_id": "sfv-d4bbb0975b1443e5c7ddf63f",
+      "factor": "server_name_shape",
+      "value": "quoted_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESERVER00033"
+      ]
+    },
+    {
+      "row_id": "sfv-65b11228b402aaec152251c1",
+      "factor": "server_name_shape",
+      "value": "reserved_word_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESERVER00034"
+      ]
+    },
+    {
+      "row_id": "sfv-d33feb6fc49c830b60de993f",
+      "factor": "server_name_shape",
+      "value": "simple_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESERVER00035"
+      ]
+    },
+    {
+      "row_id": "sfv-8caa203930b4e493d3c036d3",
+      "factor": "statement_branch",
+      "value": "branch_create_server",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESERVER00036"
+      ]
+    },
+    {
+      "row_id": "sfv-9c761cac5a12b2835a38a7cf",
+      "factor": "statement_branch",
+      "value": "branch_create_server_if_not_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESERVER00037"
+      ]
+    },
+    {
+      "row_id": "sfv-bf828965653396a3fb07ab40",
+      "factor": "type_version_clause",
+      "value": "both_type_and_version",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESERVER00038"
+      ]
+    },
+    {
+      "row_id": "sfv-3b65892db085006cd4965cf3",
+      "factor": "type_version_clause",
+      "value": "omitted",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESERVER00039"
+      ]
+    },
+    {
+      "row_id": "sfv-51e77c653d2dd454afc8440f",
+      "factor": "type_version_clause",
+      "value": "type_only",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESERVER00040"
+      ]
+    },
+    {
+      "row_id": "sfv-919be574a605083925eba0e0",
+      "factor": "type_version_clause",
+      "value": "version_only",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESERVER00041"
+      ]
+    },
+    {
+      "row_id": "sfv-148ca9c3a648a6fa5e3f2e3d",
+      "factor": "verification_mode",
+      "value": "error_assertion",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESERVER00042"
+      ]
+    },
+    {
+      "row_id": "sfv-c211317e327fb7847d2f93ab",
+      "factor": "verification_mode",
+      "value": "pg_foreign_server_catalog",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESERVER00043"
+      ]
+    }
+  ],
+  "generation_mode": "factor_value_independent_loop_v1",
+  "decision_count": 43,
+  "local_sql_decision_count": 43,
+  "extension_case_count": 4800,
+  "delegated_decision_count": 0,
+  "obligation_multiset_sha256": "221dfde75cdce9fbf91178c6a7a34bafacdf52ceefebd4bb95e647d45aa28c9e"
+}
