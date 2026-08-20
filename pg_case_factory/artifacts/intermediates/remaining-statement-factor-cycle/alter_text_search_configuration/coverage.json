@@ -1,0 +1,831 @@
+{
+  "schema_version": 1,
+  "statement_key": "alter_text_search_configuration",
+  "cycle_fingerprint": "606b9e710210e50ff88b14de7052163f9ee31f6f1d1e744bc0bd9935f399a9d9",
+  "factor_value_count": 81,
+  "factor_disposition_counts": {
+    "covered": 60,
+    "expected_failure": 21,
+    "justified_na": 0
+  },
+  "missing_row_ids": [],
+  "duplicate_row_ids": [],
+  "decisions": [
+    {
+      "row_id": "sfv-d7c5050905f107ca953b2360",
+      "factor": "alter_action",
+      "value": "add_mapping",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00009"
+      ]
+    },
+    {
+      "row_id": "sfv-9a1542f178bdedd00e5e7438",
+      "factor": "alter_action",
+      "value": "alter_mapping",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00010"
+      ]
+    },
+    {
+      "row_id": "sfv-4739cbc6931ecbc4a6c0d0bf",
+      "factor": "alter_action",
+      "value": "alter_mapping_for_replace",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00011"
+      ]
+    },
+    {
+      "row_id": "sfv-07bef02cfe62c8f694987d46",
+      "factor": "alter_action",
+      "value": "alter_mapping_replace",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00012"
+      ]
+    },
+    {
+      "row_id": "sfv-9b09471e103299b5685787b3",
+      "factor": "alter_action",
+      "value": "drop_mapping",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00013"
+      ]
+    },
+    {
+      "row_id": "sfv-60d3a79569a2c214eb4b3011",
+      "factor": "alter_action",
+      "value": "owner",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00014"
+      ]
+    },
+    {
+      "row_id": "sfv-0cf8c155b1f1f79945b05cb3",
+      "factor": "alter_action",
+      "value": "rename",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00015"
+      ]
+    },
+    {
+      "row_id": "sfv-9c9738669d962607cf37dc3d",
+      "factor": "alter_action",
+      "value": "set_schema",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00016"
+      ]
+    },
+    {
+      "row_id": "sfv-988090c9c4b338e01d94bd65",
+      "factor": "cleanup_mode",
+      "value": "drop_mapping_revert",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00017"
+      ]
+    },
+    {
+      "row_id": "sfv-148195cc0ecc6689957f8b29",
+      "factor": "cleanup_mode",
+      "value": "drop_text_search_configuration",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00018"
+      ]
+    },
+    {
+      "row_id": "sfv-6ae9c2661c1d7ce83ec69a32",
+      "factor": "cleanup_mode",
+      "value": "revert_owner",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00019"
+      ]
+    },
+    {
+      "row_id": "sfv-987b6536cc36d0ab128f4c68",
+      "factor": "cleanup_mode",
+      "value": "revert_rename",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00020"
+      ]
+    },
+    {
+      "row_id": "sfv-5b3bf9b7c33d3bac33010998",
+      "factor": "cleanup_mode",
+      "value": "role_cleanup",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00021"
+      ]
+    },
+    {
+      "row_id": "sfv-b92a08e8550c61530a130c4a",
+      "factor": "config_name_shape",
+      "value": "nonexistent_name",
+      "disposition": "expected_failure",
+      "reason": "config_does_not_exist_provisional",
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00022"
+      ]
+    },
+    {
+      "row_id": "sfv-d8de75555c9ee41e50e1423b",
+      "factor": "config_name_shape",
+      "value": "quoted_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00023"
+      ]
+    },
+    {
+      "row_id": "sfv-bb753713903a4c395df245ce",
+      "factor": "config_name_shape",
+      "value": "reserved_word_as_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00024"
+      ]
+    },
+    {
+      "row_id": "sfv-66eabec053633efb34e5d027",
+      "factor": "config_name_shape",
+      "value": "schema_qualified_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00025"
+      ]
+    },
+    {
+      "row_id": "sfv-92ba8f1b5954882ceeb0e225",
+      "factor": "config_name_shape",
+      "value": "simple_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00026"
+      ]
+    },
+    {
+      "row_id": "sfv-4c4ce3b6c8cbaa8547e07428",
+      "factor": "dictionary_dependency",
+      "value": "dictionary_exists_and_valid",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00027"
+      ]
+    },
+    {
+      "row_id": "sfv-d364834dc44c18e3d94cbc75",
+      "factor": "dictionary_dependency",
+      "value": "dictionary_missing",
+      "disposition": "expected_failure",
+      "reason": "dictionary_does_not_exist_provisional",
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00028"
+      ]
+    },
+    {
+      "row_id": "sfv-a14432fe773002b67e1ed97f",
+      "factor": "dictionary_existence",
+      "value": "dictionary_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00029"
+      ]
+    },
+    {
+      "row_id": "sfv-fed3c189d097a1254761966c",
+      "factor": "dictionary_existence",
+      "value": "dictionary_not_exists",
+      "disposition": "expected_failure",
+      "reason": "dictionary_does_not_exist_provisional",
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00030"
+      ]
+    },
+    {
+      "row_id": "sfv-b3b0ee6bd87bd7e409aaff01",
+      "factor": "dictionary_name_shape",
+      "value": "nonexistent_name",
+      "disposition": "expected_failure",
+      "reason": "dictionary_does_not_exist_provisional",
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00031"
+      ]
+    },
+    {
+      "row_id": "sfv-5819f2bb1949601e1d7b816a",
+      "factor": "dictionary_name_shape",
+      "value": "schema_qualified_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00032"
+      ]
+    },
+    {
+      "row_id": "sfv-eff0f18a72ea7a850d269a0d",
+      "factor": "dictionary_name_shape",
+      "value": "simple_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00033"
+      ]
+    },
+    {
+      "row_id": "sfv-2cc0c3da736df93c08ff37c8",
+      "factor": "drop_mapping_without_if_exists",
+      "value": "with_if_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00034"
+      ]
+    },
+    {
+      "row_id": "sfv-498659e4b28853b64306fa8e",
+      "factor": "drop_mapping_without_if_exists",
+      "value": "without_if_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00035"
+      ]
+    },
+    {
+      "row_id": "sfv-827de8492ff61c14e1bf76c6",
+      "factor": "duplicate_new_name",
+      "value": "no_conflict",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00036"
+      ]
+    },
+    {
+      "row_id": "sfv-d8c8be7591c1d064a95af4cd",
+      "factor": "duplicate_new_name",
+      "value": "same_name_conflict",
+      "disposition": "expected_failure",
+      "reason": "duplicate_object_provisional",
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00037"
+      ]
+    },
+    {
+      "row_id": "sfv-54561d19ff98856a07ce398d",
+      "factor": "expected_status",
+      "value": "failure",
+      "disposition": "expected_failure",
+      "reason": "config_does_not_exist_provisional",
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00038"
+      ]
+    },
+    {
+      "row_id": "sfv-5fce51dce42cf4010ce87ee6",
+      "factor": "expected_status",
+      "value": "success",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00039"
+      ]
+    },
+    {
+      "row_id": "sfv-1cfcbe8404141fea7f00e3c6",
+      "factor": "if_exists_clause",
+      "value": "omitted",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00040"
+      ]
+    },
+    {
+      "row_id": "sfv-a1bfc80694cb4b131f382f9d",
+      "factor": "if_exists_clause",
+      "value": "present",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00041"
+      ]
+    },
+    {
+      "row_id": "sfv-0c341aa2be21337e3dde8de4",
+      "factor": "new_name_shape",
+      "value": "duplicate_name",
+      "disposition": "expected_failure",
+      "reason": "duplicate_object_provisional",
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00042"
+      ]
+    },
+    {
+      "row_id": "sfv-ab16c9d78c00282b3c1c2692",
+      "factor": "new_name_shape",
+      "value": "quoted_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00043"
+      ]
+    },
+    {
+      "row_id": "sfv-c08acdaa006058f1887bb8da",
+      "factor": "new_name_shape",
+      "value": "simple_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00044"
+      ]
+    },
+    {
+      "row_id": "sfv-853c96229f251294cf31bc51",
+      "factor": "non_owner_attempt",
+      "value": "non_owner_execution",
+      "disposition": "expected_failure",
+      "reason": "insufficient_privilege_provisional",
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00045"
+      ]
+    },
+    {
+      "row_id": "sfv-f250847e8ad560e4b58178b5",
+      "factor": "non_owner_attempt",
+      "value": "owner_execution",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00046"
+      ]
+    },
+    {
+      "row_id": "sfv-5a0cecfb2e1d6a4975ebb164",
+      "factor": "nonexistent_config",
+      "value": "config_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00047"
+      ]
+    },
+    {
+      "row_id": "sfv-558d163495573a87e608eefa",
+      "factor": "nonexistent_config",
+      "value": "config_missing",
+      "disposition": "expected_failure",
+      "reason": "config_does_not_exist_provisional",
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00048"
+      ]
+    },
+    {
+      "row_id": "sfv-79989c2b16b1568deaaa2544",
+      "factor": "nonexistent_dictionary",
+      "value": "dictionary_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00049"
+      ]
+    },
+    {
+      "row_id": "sfv-70857bd8e796102e04ea8ecb",
+      "factor": "nonexistent_dictionary",
+      "value": "dictionary_missing",
+      "disposition": "expected_failure",
+      "reason": "dictionary_does_not_exist_provisional",
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00050"
+      ]
+    },
+    {
+      "row_id": "sfv-7b895d7740fd7b96355b17a2",
+      "factor": "nonexistent_owner_role",
+      "value": "role_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00051"
+      ]
+    },
+    {
+      "row_id": "sfv-ae57e22ab40f092e440827ed",
+      "factor": "nonexistent_owner_role",
+      "value": "role_missing",
+      "disposition": "expected_failure",
+      "reason": "role_does_not_exist_provisional",
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00052"
+      ]
+    },
+    {
+      "row_id": "sfv-7ad222698776133be61bbe6f",
+      "factor": "nonexistent_target_schema",
+      "value": "schema_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00053"
+      ]
+    },
+    {
+      "row_id": "sfv-54105707450c259d690e9a20",
+      "factor": "nonexistent_target_schema",
+      "value": "schema_missing",
+      "disposition": "expected_failure",
+      "reason": "schema_does_not_exist_provisional",
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00054"
+      ]
+    },
+    {
+      "row_id": "sfv-9250b8a0cb85e040c1cd561b",
+      "factor": "nonexistent_token_type_mapping",
+      "value": "mapping_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00055"
+      ]
+    },
+    {
+      "row_id": "sfv-061d5810fef7097ae2a62c4a",
+      "factor": "nonexistent_token_type_mapping",
+      "value": "mapping_missing",
+      "disposition": "expected_failure",
+      "reason": "token_type_not_mapped_provisional",
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00056"
+      ]
+    },
+    {
+      "row_id": "sfv-dd47933744f1ab545f3e5d83",
+      "factor": "object_state",
+      "value": "exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00057"
+      ]
+    },
+    {
+      "row_id": "sfv-10c05e1a2973ed37d6cfba94",
+      "factor": "object_state",
+      "value": "not_exists",
+      "disposition": "expected_failure",
+      "reason": "config_does_not_exist_provisional",
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00058"
+      ]
+    },
+    {
+      "row_id": "sfv-bc21c472f8194c8d85b26d9d",
+      "factor": "owner_name_shape",
+      "value": "nonexistent_role",
+      "disposition": "expected_failure",
+      "reason": "role_does_not_exist_provisional",
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00059"
+      ]
+    },
+    {
+      "row_id": "sfv-0ea9e8b77ad30d031f9def56",
+      "factor": "owner_name_shape",
+      "value": "quoted_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00060"
+      ]
+    },
+    {
+      "row_id": "sfv-bc206ab698a30cddfd579468",
+      "factor": "owner_name_shape",
+      "value": "simple_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00061"
+      ]
+    },
+    {
+      "row_id": "sfv-2432772f17892e14da6a1cee",
+      "factor": "owner_target",
+      "value": "specified_current_role",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00062"
+      ]
+    },
+    {
+      "row_id": "sfv-9a5a86548464e62ab83005d2",
+      "factor": "owner_target",
+      "value": "specified_current_user",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00063"
+      ]
+    },
+    {
+      "row_id": "sfv-7dd6467a5a2a7713c67027ed",
+      "factor": "owner_target",
+      "value": "specified_new_owner",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00064"
+      ]
+    },
+    {
+      "row_id": "sfv-a2260afd018344f00a4c345a",
+      "factor": "owner_target",
+      "value": "specified_session_user",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00065"
+      ]
+    },
+    {
+      "row_id": "sfv-8771dd488dba6dce567b3c9e",
+      "factor": "privilege_level",
+      "value": "non_owner",
+      "disposition": "expected_failure",
+      "reason": "insufficient_privilege_provisional",
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00066"
+      ]
+    },
+    {
+      "row_id": "sfv-61eaff549fe200e81fce05ba",
+      "factor": "privilege_level",
+      "value": "owner",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00067"
+      ]
+    },
+    {
+      "row_id": "sfv-599eaf3687dfe2a8c94c7eff",
+      "factor": "privilege_level",
+      "value": "superuser",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00068"
+      ]
+    },
+    {
+      "row_id": "sfv-8e0c0559aac5880619b55978",
+      "factor": "role_existence",
+      "value": "role_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00069"
+      ]
+    },
+    {
+      "row_id": "sfv-d8f36f87fa1823d4552a837d",
+      "factor": "role_existence",
+      "value": "role_not_exists",
+      "disposition": "expected_failure",
+      "reason": "role_does_not_exist_provisional",
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00070"
+      ]
+    },
+    {
+      "row_id": "sfv-b8e08dce41bd6cc36204b8f0",
+      "factor": "schema_existence",
+      "value": "schema_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00071"
+      ]
+    },
+    {
+      "row_id": "sfv-771b6ed65fb99633d4566a20",
+      "factor": "schema_existence",
+      "value": "schema_not_exists",
+      "disposition": "expected_failure",
+      "reason": "schema_does_not_exist_provisional",
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00072"
+      ]
+    },
+    {
+      "row_id": "sfv-3105b3d392bc780b3dc0ae63",
+      "factor": "schema_name_shape",
+      "value": "nonexistent_schema",
+      "disposition": "expected_failure",
+      "reason": "schema_does_not_exist_provisional",
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00073"
+      ]
+    },
+    {
+      "row_id": "sfv-e1476ef9e926352d0e9e43e9",
+      "factor": "schema_name_shape",
+      "value": "simple_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00074"
+      ]
+    },
+    {
+      "row_id": "sfv-ab365f2500dbf0c030218da8",
+      "factor": "statement_branch",
+      "value": "branch_add_mapping",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00075"
+      ]
+    },
+    {
+      "row_id": "sfv-f68336e1770253b91c6c51a1",
+      "factor": "statement_branch",
+      "value": "branch_alter_mapping",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00076"
+      ]
+    },
+    {
+      "row_id": "sfv-39abe926ca88d085ea5fc6ba",
+      "factor": "statement_branch",
+      "value": "branch_alter_mapping_for_replace",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00077"
+      ]
+    },
+    {
+      "row_id": "sfv-79f8a0becd08b5ef6093f458",
+      "factor": "statement_branch",
+      "value": "branch_alter_mapping_replace",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00078"
+      ]
+    },
+    {
+      "row_id": "sfv-54e3de59bfd157995cd059e8",
+      "factor": "statement_branch",
+      "value": "branch_drop_mapping",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00079"
+      ]
+    },
+    {
+      "row_id": "sfv-9394e1f887b556fad576baae",
+      "factor": "statement_branch",
+      "value": "branch_owner",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00080"
+      ]
+    },
+    {
+      "row_id": "sfv-09253f8253b421912d795cdf",
+      "factor": "statement_branch",
+      "value": "branch_rename",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00081"
+      ]
+    },
+    {
+      "row_id": "sfv-6140d9bae2fa98b424481c2a",
+      "factor": "statement_branch",
+      "value": "branch_set_schema",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00082"
+      ]
+    },
+    {
+      "row_id": "sfv-93a57eb5d79b29bc4b00418e",
+      "factor": "token_type_existence",
+      "value": "token_type_mapped",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00083"
+      ]
+    },
+    {
+      "row_id": "sfv-f15b7d1a5ac559da35edb010",
+      "factor": "token_type_existence",
+      "value": "token_type_not_mapped",
+      "disposition": "expected_failure",
+      "reason": "token_type_not_mapped_provisional",
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00084"
+      ]
+    },
+    {
+      "row_id": "sfv-2044b2be19a8441df325a7f6",
+      "factor": "token_type_name_shape",
+      "value": "invalid_token_type",
+      "disposition": "expected_failure",
+      "reason": "token_type_does_not_exist_provisional",
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00085"
+      ]
+    },
+    {
+      "row_id": "sfv-238ff7b4e292e83bcad5c081",
+      "factor": "token_type_name_shape",
+      "value": "valid_token_type",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00086"
+      ]
+    },
+    {
+      "row_id": "sfv-f5f2166b6187e6a740a91d77",
+      "factor": "verification_mode",
+      "value": "catalog_query_pg_ts_config",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00087"
+      ]
+    },
+    {
+      "row_id": "sfv-6635c53e0f134dc471b96679",
+      "factor": "verification_mode",
+      "value": "error_assertion",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00088"
+      ]
+    },
+    {
+      "row_id": "sfv-0f8963281275a4c8ea1c8a6b",
+      "factor": "verification_mode",
+      "value": "mapping_query",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERTEXTSEARCHCONFIGURATION00089"
+      ]
+    }
+  ],
+  "generation_mode": "factor_value_independent_loop_v1",
+  "decision_count": 89,
+  "local_sql_decision_count": 89,
+  "extension_case_count": 4890,
+  "delegated_decision_count": 0,
+  "obligation_multiset_sha256": "e5526351875e8f26562194497f8e89b0f2c854c7e1ee2f2731fb5b7a663c9b37"
+}
