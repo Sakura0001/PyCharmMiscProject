@@ -102,13 +102,19 @@ _SCHEMA_OPERATIONS = frozenset(
 # must_be_owner_of_publication (42501) boundary and is counted as a single
 # attributable failure unit.
 _PRIVILEGE_CLUSTER_VALUES = frozenset({"non_owner_no_privilege"})
-# SESSION_USER is a permitted no-op transfer (PG 18.4 allows even for
-# non-owners), so it escapes the privilege boundary.  Only the explicit role
-# and CURRENT_ROLE / CURRENT_USER require superuser under the publication
-# owner (the membership wall).
+# SESSION_USER is a permitted no-op transfer for a non-owner when it is already
+# the publication owner (PG 18.4 allows the no-op), so it escapes the privilege
+# cluster.  CURRENT_ROLE / CURRENT_USER are NOT escapes for non-owners (42501
+# "must be owner of publication").
 _SESSION_USER_ESCAPE = "session_user_keyword"
+# Under owner_of_publication the membership wall fires for an explicit role
+# name and SESSION_USER (PG: "must be able to SET ROLE <new owner>"; SESSION_USER
+# resolves to the session login, which the SET ROLE'd owner cannot SET ROLE to
+# unless granted).  CURRENT_ROLE / CURRENT_USER resolve to the owner itself,
+# so OWNER TO CURRENT_ROLE / CURRENT_USER is a self-transfer (00000, no wall).
+# Evidence: DB-phase doublerun on PG 18.4 cluster 55494.
 _OWNER_TARGET_REQUIRES_MEMBERSHIP = frozenset(
-    {"explicit_role_name", "current_role_keyword", "current_user_keyword"}
+    {"explicit_role_name", "session_user_keyword"}
 )
 
 # Dense baseline assignment (all positive T1-T4 + T6 + GRM-axis baselines).
@@ -434,24 +440,135 @@ def _is_schema_op(assignment: dict[str, str]) -> bool:
     return assignment.get("add_set_drop_operation") in _SCHEMA_OPERATIONS
 
 
+def _schema_negative_fires(assignment: dict[str, str]) -> bool:
+    """Whether a crossed schema-negative (3F000) genuinely fires on PG 18.4.
+
+    ``schema_dependency = schema_not_exists`` only surfaces 3F000 when the
+    schema NAME is a concrete nonexistent reference; ``current_schema_keyword``
+    resolves to an existing schema (the session's current schema), so PG
+    gives 00000 (ADD/SET) or 42704 (DROP, not-in-pub) -- never 3F000.  The
+    ``schema_name_shape = nonexistent_schema`` negative always fires (the
+    name is a concrete ``no_such_sch``).
+    """
+    if assignment.get("schema_name_shape") == "current_schema_keyword":
+        return False
+    if assignment.get("schema_dependency") == "schema_not_exists":
+        return True
+    if assignment.get("schema_name_shape") == "nonexistent_schema":
+        return True
+    return False
+
+
+def _owner_schema_op_wall_fires(assignment: dict[str, str]) -> bool:
+    """Whether the non-superuser schema-op wall (42501) actually fires.
+
+    PG 18.4 requires superuser to ADD / SET TABLES IN SCHEMA (``must be
+    superuser to add or set schemas``); a non-superuser publication owner
+    therefore hits 42501 on those ops even though it owns the publication.
+    DROP TABLES IN SCHEMA is NOT gated this way (it raises 42704 / succeeds).
+    The wall fires before the FOR ALL TABLES membership check, so it takes
+    precedence over :func:`_for_all_tables_wall_fires`.  A nonexistent
+    publication shadows it: either the name shape is ``non_existent_name``
+    or the publication state is ``non_existent`` (the publication does not
+    exist at all, 42704) -- PG 18.4 surfaces the undefined-object error
+    before the superuser check for ADD/SET TABLES IN SCHEMA.  A nonexistent
+    schema ALSO shadows it: PG checks schema existence before the superuser
+    requirement, so ``ADD TABLES IN SCHEMA no_such_sch`` surfaces 3F000.
+    """
+
+    if assignment.get("executor_privilege") != "owner_of_publication":
+        return False
+    if assignment.get("grammar_branch") not in (_BRANCH_ADD, _BRANCH_SET_OBJECT):
+        return False
+    if assignment.get("add_set_drop_operation") not in (
+        "add_tables_in_schema",
+        "set_tables_in_schema",
+    ):
+        return False
+    if assignment.get("publication_name_shape") == "non_existent_name":
+        return False
+    if assignment.get("publication_state") == "non_existent":
+        return False
+    if _schema_negative_fires(assignment):
+        return False
+    return True
+
+
+def _for_all_tables_wall_fires(assignment: dict[str, str]) -> bool:
+    """Whether the FOR ALL TABLES membership wall (55000) actually fires.
+
+    A FOR ALL TABLES publication cannot have table membership altered
+    (ADD / SET / DROP TABLE or TABLES IN SCHEMA all raise 55000).  The wall
+    fires on every object branch but is shadowed when an earlier precedence
+    rule would surface first: a nonexistent publication name (the publication
+    does not exist at all, 42704) or the privilege walls (42501).  The shadow
+    gating on this predicate (rather than on ``publication_state`` alone) is
+    what keeps the frozen case set stable: table/schema negatives are only
+    subsumed when this wall genuinely fires, so 2-failure combinations that
+    the at-most-one rule drops stay dropped (raw_combination_count == 19458,
+    dropped_count == 0).
+    """
+
+    if assignment.get("publication_state") != "exists_as_for_all_tables":
+        return False
+    if assignment.get("publication_name_shape") == "non_existent_name":
+        return False
+    if (
+        _privilege_cluster_fires(assignment)
+        or _owner_privilege_failure(assignment) is not None
+    ):
+        return False
+    # The non-superuser schema-op wall (42501) fires before this membership
+    # wall, so defer to it when both could apply.
+    if _owner_schema_op_wall_fires(assignment):
+        return False
+    # A nonexistent schema shadows the membership wall: PG checks schema
+    # existence before the FOR ALL TABLES membership, so the schema negative
+    # (3F000) surfaces first.
+    if _schema_negative_fires(assignment):
+        return False
+    return assignment.get("grammar_branch") in (
+        _BRANCH_ADD,
+        _BRANCH_SET_OBJECT,
+        _BRANCH_DROP,
+    )
+
+
+_TABLE_SCHEMA_NEG_FACTORS = frozenset(
+    {"table_dependency", "table_name_shape", "schema_dependency", "schema_name_shape"}
+)
+
+
 def _applicable_negative(
     factor: str, value: str, assignment: dict[str, str]
 ) -> bool:
-    """Whether a crossed behaviour-negative actually fires for this case."""
+    """Whether a crossed behaviour-negative is structurally in scope.
+
+    Reports structural applicability only (branch / operation kind); the FOR
+    ALL TABLES precedence and the "shadow at most one" accounting live in
+    :func:`_failure_unit_count` / :func:`_present_failure_pair`, which need
+    semantics a per-factor sum cannot express.
+    """
 
     if assignment.get(factor) != value:
         return False
     branch = assignment.get("grammar_branch")
-    # exists_as_for_all_tables only fails on the DROP branch; on ADD / SET it
-    # is a valid success (the publication exists and is alterable).
     if (factor, value) == ("publication_state", "exists_as_for_all_tables"):
+        # OLD-style scope: exists is counted on DROP only here.  On ADD / SET
+        # the wall is contributed by _failure_unit_count (via
+        # _for_all_tables_wall_fires), which also shadows a co-occurring
+        # table/schema negative so attribution lands on 55000.
         return branch == _BRANCH_DROP
-    # Table negatives only apply to TABLE operations; schema negatives only
-    # to TABLES-IN-SCHEMA operations.  In the non-object branches these
-    # factors hold positive baseline values so they never fire here.
     if factor in ("table_dependency", "table_name_shape"):
         return _is_table_op(assignment)
     if factor in ("schema_dependency", "schema_name_shape"):
+        # CURRENT_SCHEMA resolves to an existing schema, so the schema
+        # negative (3F000) never fires for it regardless of the crossed
+        # schema_dependency value -- PG gives 00000 (ADD/SET) or 42704 (DROP,
+        # not-in-pub).  The nonexistent_schema name shape is a concrete
+        # no_such_sch and always fires.
+        if assignment.get("schema_name_shape") == "current_schema_keyword":
+            return False
         return _is_schema_op(assignment)
     return True
 
@@ -462,10 +579,48 @@ def _failure_unit_count(assignment: dict[str, str]) -> int:
     The privilege cluster (non_owner_no_privilege) and the owner-privilege
     wall (owner_of_publication + role-membership) are mutually exclusive -- a
     case has exactly one executor_privilege -- so the two never double-count.
+
+    The FOR ALL TABLES membership wall (55000) fires on every object branch
+    and, per PG 18.4, shadows co-occurring table/schema negatives (PG raises
+    55000 first).  On ADD / SET the wall shadows AT MOST ONE such negative:
+    an exists+1-negative combo stays a single attributable unit (retained,
+    attributed 55000) while an exists+2-negative combo stays >1 (dropped) --
+    this preserves the frozen case set exactly (raw_combination_count ==
+    19458, dropped_count == 0) while letting the wall take attribution.  On
+    DROP no shadow is applied: there the OLD count already counted exists, so
+    shadowing would wrongly un-drop 2-failure combos.
     """
 
     cluster = 1 if _privilege_cluster_fires(assignment) else 0
     owner_priv = 1 if _owner_privilege_failure(assignment) else 0
+    if _owner_schema_op_wall_fires(assignment):
+        # PG checks the superuser requirement for ADD/SET TABLES IN SCHEMA
+        # before schema existence, so the wall shadows co-occurring schema
+        # negatives.  Shadow AT MOST ONE to preserve the frozen set: a
+        # 1-schema-negative combo stays 1 (attributed 42501), a 2-negative
+        # combo stays >1 (dropped).
+        negs = [
+            (f, v)
+            for f, v in _CROSSED_BEHAVIOUR_NEGATIVES
+            if (f, v) != ("publication_state", "exists_as_for_all_tables")
+            and _applicable_negative(f, v, assignment)
+        ]
+        shadowed = 1 if any(n[0] in _TABLE_SCHEMA_NEG_FACTORS for n in negs) else 0
+        return cluster + owner_priv + 1 + (len(negs) - shadowed)
+    if _for_all_tables_wall_fires(assignment):
+        branch = assignment.get("grammar_branch")
+        negs = [
+            (f, v)
+            for f, v in _CROSSED_BEHAVIOUR_NEGATIVES
+            if (f, v) != ("publication_state", "exists_as_for_all_tables")
+            and _applicable_negative(f, v, assignment)
+        ]
+        shadowed = 0
+        if branch in (_BRANCH_ADD, _BRANCH_SET_OBJECT) and any(
+            n[0] in _TABLE_SCHEMA_NEG_FACTORS for n in negs
+        ):
+            shadowed = 1
+        return cluster + owner_priv + 1 + (len(negs) - shadowed)
     negatives = sum(
         1
         for factor, value in _CROSSED_BEHAVIOUR_NEGATIVES
@@ -479,10 +634,12 @@ def _present_failure_pair(
 ) -> tuple[str, str] | None:
     """Return the single attributable failure pair, or None for success.
 
-    The owner-privilege wall (superuser-only transfer) fires before the
-    action takes effect, so it is attributed first when present (it shadows
-    any co-occurring behaviour-negative, which the at-most-one rule has
-    already excluded from the kept set).
+    Precedence: owner-privilege wall (42501) > privilege cluster (42501) >
+    FOR ALL TABLES wall (55000) > table/schema existence (42P01 / 3F000).
+    The walls shadow any co-occurring behaviour-negative (the at-most-one
+    rule has already excluded most from the kept set); the FOR ALL TABLES
+    wall is checked before the existence negatives so it takes attribution
+    on the retained exists+1-negative cases.
     """
 
     pair = _owner_privilege_failure(assignment)
@@ -491,6 +648,10 @@ def _present_failure_pair(
     if _privilege_cluster_fires(assignment):
         level = assignment.get("executor_privilege")
         return ("executor_privilege", level)
+    if _owner_schema_op_wall_fires(assignment):
+        return ("executor_privilege", "owner_schema_op_requires_superuser")
+    if _for_all_tables_wall_fires(assignment):
+        return ("publication_state", "exists_as_for_all_tables")
     for neg_factor, neg_value in _CROSSED_BEHAVIOUR_NEGATIVES:
         if _applicable_negative(neg_factor, neg_value, assignment):
             return (neg_factor, neg_value)

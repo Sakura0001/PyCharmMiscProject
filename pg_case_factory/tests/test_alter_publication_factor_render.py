@@ -23,8 +23,8 @@ from pg_case_factory.alter_publication_factor_render import (
 ROOT = Path(__file__).resolve().parents[1]
 
 _BASELINE_COUNT = 93
-_EXTENSION_COUNT = 19458
-_TOTAL = _BASELINE_COUNT + _EXTENSION_COUNT  # 19551
+_EXTENSION_COUNT = 19923
+_TOTAL = _BASELINE_COUNT + _EXTENSION_COUNT  # 20016
 
 
 class AlterPublicationFactorRenderTest(unittest.TestCase):

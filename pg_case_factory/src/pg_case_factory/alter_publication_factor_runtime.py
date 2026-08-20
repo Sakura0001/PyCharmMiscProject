@@ -13,9 +13,13 @@ from .alter_publication_factor_loop import AlterPublicationFactorCase
 
 
 PG18_BIN = Path("/tmp/pgcf-postgresql-18.4-install/bin")
-PG18_SOCKET = Path("/tmp/pgcf-pg18-altpub-sock-20260820")
-PG18_PORT = 55487
-PG18_DATABASE = "pgcf_altpub"
+# Calibrated to reuse the freed cluster 55494 (the alter_policy cluster,
+# up on the ap socket with db pgcf_ap) per the DB-phase task spec.  The
+# no-DB ledger shipped provisional 55487 / altpub-socket / pgcf_altpub
+# constants that did not match the live cluster being reused.
+PG18_SOCKET = Path("/tmp/pgcf-pg18-ap-sock-20260820")
+PG18_PORT = 55494
+PG18_DATABASE = "pgcf_ap"
 PG18_SUPERUSER = "pgcf_superuser"
 PER_FILE_TIMEOUT_SECONDS = 30
 MAX_PARALLELISM = 1

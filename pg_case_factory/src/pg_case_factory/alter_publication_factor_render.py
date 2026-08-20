@@ -141,6 +141,8 @@ class _FixtureState:
     fixture_pub: str
     table_name: str
     schema_name: str
+    create_schema_name: str
+    should_create_schema: bool
 
 
 def _baseline(case: AlterPublicationFactorCase) -> dict[str, str]:
@@ -162,18 +164,27 @@ def _table_name(a: dict[str, str], p: str) -> str:
     if shape == "schema_qualified_name":
         return f"{p}sch.{p}tbl"
     if shape == "quoted_name":
-        return f'"{p}Mixed Tbl"'
+        return f'"{p}tbl"'
     if shape == "nonexistent_table":
         return f"{p}no_such_tbl"
     return f"{p}tbl"
 
 
 def _fixture_table(a: dict[str, str], p: str) -> str:
+    """Audit-normalizable name for fixture CREATE TABLE and bookend DROPs.
+
+    The shared ``audit_complete_table_script`` gate normalizes identifiers
+    with a plain ``[A-Za-z_][A-Za-z0-9_$]*`` grammar that rejects quoted
+    names (and stops at the space inside a quoted name), so the fixture
+    CREATE TABLE and the bookend DROP TABLE statements emit a plain name.
+    The ALTER PUBLICATION target still uses the shape-appropriate
+    :func:`_table_name` form — a quoted lowercase identifier resolves to the
+    same table as the plain fixture name — so the ``quoted_name`` factor
+    stays byte-observable in the target without breaking the table audit.
+    """
     shape = a.get("table_name_shape", "simple_name")
     if shape == "schema_qualified_name":
         return f"{p}sch.{p}tbl"
-    if shape == "quoted_name":
-        return f'"{p}Mixed Tbl"'
     return f"{p}tbl"
 
 
@@ -193,7 +204,9 @@ def _new_name(a: dict[str, str], p: str) -> str:
     if form == "quoted_name":
         return f'"{p}Mixed New"'
     if form == "existing_name_conflict":
-        return f"{p}pub"
+        # A DIFFERENT name from the source pub so the setup can create it as
+        # the conflicting publication; renaming to it surfaces 42710.
+        return f"{p}conflict"
     return f"{p}renamed"
 
 
@@ -213,11 +226,18 @@ def _owner_target(a: dict[str, str], p: str) -> str:
 def _parameter_clause(a: dict[str, str]) -> str:
     param = a.get("publication_parameter", "publish_insert_only")
     form = a.get("parameter_assignment_form", "equals_value")
-    sep = "=" if form == "equals_value" else " "
+    # PG 18.4's synopsis marks ``[= value]`` optional, but the engine REQUIRES
+    # ``= value`` for ``publish`` (bare ``publish`` raises 42601).  Only
+    # ``publish_via_partition_root`` accepts the bare-name (no ``=``) reset
+    # form, so the no_equals assignment form is rendered bare solely for it;
+    # for every publish-family parameter the no_equals case collapses to the
+    # equals form on its success path (there is no valid bare render).
+    bare = form == "no_equals" and param == "publish_via_partition_root"
+    sep = " " if bare else "="
     if param == "publish_all_operations":
         return f"publish{sep}'insert, update, delete, truncate'"
     if param == "publish_via_partition_root":
-        return f"publish_via_partition_root{sep}'on'"
+        return f"publish_via_partition_root{sep}'on'" if not bare else "publish_via_partition_root"
     if param == "multiple_parameters":
         return f"publish{sep}'insert', publish_via_partition_root{sep}'on'"
     return f"publish{sep}'insert'"
@@ -238,6 +258,24 @@ def _where_clause(a: dict[str, str]) -> str:
     return ""
 
 
+def _render_table_ref(a: dict[str, str], p: str) -> str:
+    """Table reference for TABLE ops.
+
+    When a schema factor is nonexistent (schema_dependency /
+    schema_name_shape / nonexistent_schema) the table is rendered
+    schema-qualified with the nonexistent schema name so PG 18.4 surfaces
+    3F000 (undefined schema) rather than 00000 -- a plain ``ADD TABLE tbl``
+    with no schema reference succeeds.  Only the ``simple_name`` table shape
+    is re-qualified: ``schema_qualified_name`` already carries a schema and
+    ``nonexistent_table`` / ``quoted_name`` carry their own reference.
+    """
+    table = _table_name(a, p)
+    if _schema_non_existent(a) and a.get("table_name_shape", "simple_name") == "simple_name":
+        schema = _schema_name(a, p)
+        return f"{schema}.{table}"
+    return table
+
+
 def _object_clause(
     case: AlterPublicationFactorCase, a: dict[str, str], p: str
 ) -> str:
@@ -246,7 +284,7 @@ def _object_clause(
     star = " *" if a.get("star_marker") == "present" else ""
     branch = a["grammar_branch"]
     if op in _TABLE_OPS:
-        table = _table_name(a, p)
+        table = _render_table_ref(a, p)
         cols = ""
         where = ""
         if branch != _BRANCH_DROP:
@@ -292,6 +330,12 @@ def _table_non_existent(a: dict[str, str]) -> bool:
 
 
 def _schema_non_existent(a: dict[str, str]) -> bool:
+    # CURRENT_SCHEMA resolves to an existing schema in PG, so the schema
+    # negative (3F000) never fires for it regardless of the crossed
+    # schema_dependency value.  This mirrors the extension's
+    # _schema_negative_fires which returns False for current_schema_keyword.
+    if a.get("schema_name_shape") == "current_schema_keyword":
+        return False
     if a.get("schema_dependency") in _SCHEMA_NON_EXISTENT:
         return True
     if a.get("schema_name_shape") in _SCHEMA_NON_EXISTENT:
@@ -396,6 +440,22 @@ def _compute_state(
         and not _pub_for_all_tables(a)
     )
     effective = _effective_role(case, a, p)
+    op = a.get("add_set_drop_operation", "add_table")
+    is_table_op = op in _TABLE_OPS
+    schema_name = _schema_name(a, p)
+    # For TABLE ops the schema name in the table reference is always {p}sch
+    # (a concrete simple name); CURRENT_SCHEMA is not accepted by PG as a
+    # schema name in CREATE TABLE / ADD TABLE context.  For SCHEMA ops
+    # (TABLES IN SCHEMA) the target uses _schema_name which may be a quoted
+    # name or CURRENT_SCHEMA (PG accepts CURRENT_SCHEMA in that context).
+    create_schema_name = f"{p}sch" if is_table_op else schema_name
+    # should_create_schema: skip only for current_schema_keyword + SCHEMA ops
+    # (CURRENT_SCHEMA resolves to the session's current schema, no creation
+    # needed).  For TABLE ops, always create when table is schema-qualified.
+    should_create = ns and not (
+        not is_table_op
+        and a.get("schema_name_shape") == "current_schema_keyword"
+    )
     return _FixtureState(
         pub_fixture=pub_fix,
         needs_table=nt,
@@ -408,7 +468,9 @@ def _compute_state(
         pub_name=_pub_name(a, p),
         fixture_pub=_pub_name(a, p),
         table_name=_fixture_table(a, p),
-        schema_name=_schema_name(a, p),
+        schema_name=schema_name,
+        create_schema_name=create_schema_name,
+        should_create_schema=should_create,
     )
 
 
@@ -455,8 +517,8 @@ def _build_setup(
     branch = a["grammar_branch"]
     setup: list[str] = []
     locus = "target.publication"
-    if st.needs_schema:
-        setup.append(f"CREATE SCHEMA IF NOT EXISTS {p}sch;")
+    if st.should_create_schema:
+        setup.append(f"CREATE SCHEMA IF NOT EXISTS {st.create_schema_name};")
     effective = st.effective
     if branch == _BRANCH_OWNER_TO:
         owner = _owner_target(a, p)
@@ -469,6 +531,12 @@ def _build_setup(
         setup.append(f"GRANT USAGE ON SCHEMA public TO {p}owner;")
         if _privilege_denied(case, a):
             setup.append(f"GRANT USAGE ON SCHEMA public TO {p}actor;")
+        # A non-superuser publication owner must hold USAGE on the case schema
+        # to resolve a schema-qualified table / TABLES-IN-SCHEMA reference;
+        # without it PG raises 42501 (permission denied for schema) before
+        # the intended table/schema-existence negative can surface.
+        if st.should_create_schema:
+            setup.append(f"GRANT USAGE ON SCHEMA {st.create_schema_name} TO {p}owner;")
         locus = "fixture.privilege_state"
     # CREATE PUBLICATION before CREATE TABLE so the \set meta-command
     # does not mask the CREATE TABLE from audit_complete_table_script.
@@ -483,6 +551,16 @@ def _build_setup(
         setup.append(f"CREATE TABLE {p}member_tbl (id integer, data text);")
     if st.needs_tbl2:
         setup.append(f"CREATE TABLE {p}tbl2 (id integer, data text);")
+    # A non-superuser publication owner must also OWN every table it adds to
+    # the publication (PG: "must be owner of the table"); transfer ownership
+    # of the fixture tables to the owner role so the success path surfaces.
+    if _is_owner_of_pub(a):
+        if st.needs_table:
+            setup.append(f"ALTER TABLE {st.table_name} OWNER TO {p}owner;")
+        if st.needs_member_tbl:
+            setup.append(f"ALTER TABLE {p}member_tbl OWNER TO {p}owner;")
+        if st.needs_tbl2:
+            setup.append(f"ALTER TABLE {p}tbl2 OWNER TO {p}owner;")
     # Pre-add tables to the publication (after CREATE TABLE).
     is_for_all = _pub_for_all_tables(a)
     if st.pub_fixture not in ("none", "for_all_tables"):
@@ -492,6 +570,19 @@ def _build_setup(
             setup.append(f"ALTER PUBLICATION {pub} ADD TABLE {st.table_name};")
         if st.pre_add_tbl2 and not is_for_all:
             setup.append(f"ALTER PUBLICATION {pub} ADD TABLE {p}tbl2;")
+        # For DROP TABLES IN SCHEMA, pre-add the schema to the publication so
+        # the DROP succeeds (00000); without it PG raises 42704 ("tables from
+        # schema are not part of the publication").  ADD TABLES IN SCHEMA
+        # requires superuser, so this runs before the ownership transfer.
+        if (
+            branch == _BRANCH_DROP
+            and a.get("add_set_drop_operation") == "drop_tables_in_schema"
+            and st.needs_schema
+            and not is_for_all
+        ):
+            setup.append(
+                f"ALTER PUBLICATION {pub} ADD TABLES IN SCHEMA {st.schema_name};"
+            )
     return setup, locus
 
 
@@ -571,7 +662,7 @@ def _pub_names_to_drop(
     if a["grammar_branch"] == _BRANCH_RENAME and case.outcome == "success":
         names.append(_new_name(a, p))
     if case.factor_key == "new_name_shape" and case.factor_value == "existing_name_conflict":
-        names.append(f"{p}pub")
+        names.append(_new_name(a, p))
     return names
 
 
@@ -599,8 +690,8 @@ def _build_pre_cleanup(
     if tables:
         lines.append(f"DROP TABLE IF EXISTS {', '.join(tables)} CASCADE;")
     lines.extend(f"DROP PUBLICATION IF EXISTS {n} CASCADE;" for n in pubs)
-    if st.needs_schema:
-        lines.append(f"DROP SCHEMA IF EXISTS {p}sch CASCADE;")
+    if st.should_create_schema:
+        lines.append(f"DROP SCHEMA IF EXISTS {st.create_schema_name} CASCADE;")
     for role in _roles_to_drop(case, a, p):
         lines.append(f"DROP ROLE IF EXISTS {role};")
     if not lines:
@@ -619,8 +710,8 @@ def _build_cleanup(
     if st.effective:
         lines.append("RESET ROLE;")
     lines.extend(f"DROP PUBLICATION IF EXISTS {n} CASCADE;" for n in pubs)
-    if st.needs_schema:
-        lines.append(f"DROP SCHEMA IF EXISTS {p}sch CASCADE;")
+    if st.should_create_schema:
+        lines.append(f"DROP SCHEMA IF EXISTS {st.create_schema_name} CASCADE;")
     for role in _roles_to_drop(case, a, p):
         lines.append(f"DROP OWNED BY {role};")
         lines.append(f"DROP ROLE IF EXISTS {role};")
@@ -641,9 +732,18 @@ def _resolve_case(
     if (case.factor_key == "new_name_shape"
             and case.factor_value == "existing_name_conflict"
             and st.pub_fixture != "none"):
-        setup.append(f"CREATE PUBLICATION {p}pub;")
+        setup.append(f"CREATE PUBLICATION {_new_name(a, p)};")
     if st.effective and st.pub_fixture != "none":
-        setup.append(f"ALTER PUBLICATION {st.fixture_pub} OWNER TO {p}owner;")
+        # For non_owner + SESSION_USER: the no-op escape only works when
+        # SESSION_USER IS the current owner.  The pub was created by
+        # pgcf_superuser (= SESSION_USER), so DO NOT transfer it to {p}owner;
+        # the actor's OWNER TO SESSION_USER is then a no-op (00000).
+        skip_transfer = (
+            _privilege_denied(case, a)
+            and a.get("owner_to_clause") == "session_user_keyword"
+        )
+        if not skip_transfer:
+            setup.append(f"ALTER PUBLICATION {st.fixture_pub} OWNER TO {p}owner;")
         setup.append(f"SET ROLE {st.effective};")
     if case.kind == "RISK":
         setup.append("BEGIN;")

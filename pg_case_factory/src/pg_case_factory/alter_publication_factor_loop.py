@@ -334,20 +334,28 @@ def _renderer_factor_key(factor_key: str) -> str:
 # These will be verified against an isolated 18.4 instance in the DB phase.
 _SFV_FAILURE_SQLSTATE: dict[tuple[str, str], tuple[str, str]] = {
     ("expected_status", "failure"): (
-        "44000",
+        "42704",
         "publication_does_not_exist",
     ),
     ("publication_state", "non_existent"): (
-        "44000",
+        "42704",
         "publication_does_not_exist",
     ),
     ("publication_state", "exists_as_for_all_tables"): (
-        "42809",
-        "cannot_drop_from_for_all_tables",
+        "55000",
+        "publication_is_for_all_tables",
     ),
     ("executor_privilege", "non_owner_no_privilege"): (
         "42501",
         "privilege_denied_for_publication",
+    ),
+    # Sentinel attribution key for the non-superuser schema-op wall: ADD/SET
+    # TABLES IN SCHEMA requires superuser even for the publication owner, so a
+    # non-superuser owner hits 42501 before the schema is resolved.  Surfaced
+    # by _present_failure_pair in the extension expander.
+    ("executor_privilege", "owner_schema_op_requires_superuser"): (
+        "42501",
+        "schema_op_requires_superuser",
     ),
     ("table_dependency", "table_not_exists"): (
         "42P01",
@@ -374,11 +382,11 @@ _SFV_FAILURE_SQLSTATE: dict[tuple[str, str], tuple[str, str]] = {
         "duplicate_object",
     ),
     ("publication_name_shape", "non_existent_name"): (
-        "44000",
+        "42704",
         "publication_does_not_exist",
     ),
     ("nonexistent_publication", "publication_does_not_exist"): (
-        "44000",
+        "42704",
         "publication_does_not_exist",
     ),
     ("privilege_insufficient", "non_owner_altering_publication"): (
@@ -398,19 +406,22 @@ _SFV_FAILURE_SQLSTATE: dict[tuple[str, str], tuple[str, str]] = {
         "schema_does_not_exist",
     ),
     ("drop_from_for_all_tables", "cannot_drop_from_for_all_tables"): (
-        "42809",
-        "cannot_drop_from_for_all_tables",
+        "55000",
+        "cannot_alter_table_membership_of_for_all_tables",
     ),
     ("conflicting_add_existing_table", "table_already_in_publication"): (
         "42710",
         "duplicate_object",
     ),
-    # Sentinel attribution key for the superuser-only owner-transfer wall
-    # that fires only under a non-superuser publication owner: OWNER TO
-    # <role> requires superuser (CURRENT_ROLE / CURRENT_USER fail 42501).
-    # SESSION_USER is a permitted no-op transfer (PG 18.4 allows even for
-    # non-owners) and does NOT fire this wall.  Surfaced by
-    # _present_failure_pair in the extension expander.
+    # Sentinel attribution key for the membership wall that fires under a
+    # non-superuser publication owner: OWNER TO <explicit role> or SESSION_USER
+    # requires the owner to be able to SET ROLE to the target (PG 18.4: "must
+    # be able to SET ROLE").  CURRENT_ROLE / CURRENT_USER resolve to the owner
+    # itself, so OWNER TO CURRENT_ROLE / CURRENT_USER is a self-transfer (00000)
+    # and does NOT fire this wall.  SESSION_USER resolves to the session login,
+    # which the SET ROLE'd owner cannot SET ROLE to unless granted (42501).
+    # Evidence: DB-phase doublerun on PG 18.4 cluster 55494.
+    # Surfaced by _present_failure_pair in the extension expander.
     ("owner_to_clause", "membership_required_under_owner"): (
         "42501",
         "owner_change_requires_superuser",

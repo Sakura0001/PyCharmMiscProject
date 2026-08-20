@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "kind": "alter_publication_pg18_two_run_comparison",
+  "passed": true,
+  "issues": [],
+  "execution_count": 40032,
+  "transcript_mismatch_case_ids": [],
+  "structured_mismatch_case_ids": [],
+  "sqlstate_mismatch_case_ids": [],
+  "cleanup_failure_case_ids": [],
+  "execution_failure_case_ids": []
+}

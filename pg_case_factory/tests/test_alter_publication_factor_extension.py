@@ -23,10 +23,10 @@ from pg_case_factory.alter_publication_factor_loop import (
 ROOT = Path(__file__).resolve().parents[1]
 
 _BASELINE_COUNT = 93
-_EXTENSION_COUNT = 19458
-_TOTAL_COUNT = _BASELINE_COUNT + _EXTENSION_COUNT  # 19551
-_SUCCESS_EXTENSIONS = 5292
-_FAILURE_EXTENSIONS = 14166
+_EXTENSION_COUNT = 19923
+_TOTAL_COUNT = _BASELINE_COUNT + _EXTENSION_COUNT  # 20016
+_SUCCESS_EXTENSIONS = 3726
+_FAILURE_EXTENSIONS = 16197
 
 _CROSSED_BEHAVIOUR_NEGATIVES = frozenset(
     {
@@ -42,17 +42,28 @@ _CROSSED_BEHAVIOUR_NEGATIVES = frozenset(
     }
 )
 _PRIVILEGE_CLUSTER_VALUES = frozenset({"non_owner_no_privilege"})
+# Under owner_of_publication the membership wall fires for an explicit role
+# name and SESSION_USER (PG: "must be able to SET ROLE <new owner>";
+# SESSION_USER resolves to the session login, which the SET ROLE'd owner cannot
+# SET ROLE to unless granted).  CURRENT_ROLE / CURRENT_USER resolve to the owner
+# itself, so OWNER TO CURRENT_ROLE / CURRENT_USER is a self-transfer (00000).
+# Evidence: DB-phase doublerun on PG 18.4 cluster 55494.
 _OWNER_TARGET_REQUIRES_MEMBERSHIP = frozenset(
-    {"explicit_role_name", "current_role_keyword", "current_user_keyword"}
+    {"explicit_role_name", "session_user_keyword"}
 )
 _SESSION_USER_ESCAPE = "session_user_keyword"
 
+_BRANCH_ADD = "branch_add"
+_BRANCH_SET_OBJECT = "branch_set_object"
 _BRANCH_DROP = "branch_drop"
 _TABLE_OPERATIONS = frozenset(
     {"add_table", "set_table", "drop_table"}
 )
 _SCHEMA_OPERATIONS = frozenset(
     {"add_tables_in_schema", "set_tables_in_schema", "drop_tables_in_schema"}
+)
+_TABLE_SCHEMA_NEG_FACTORS = frozenset(
+    {"table_dependency", "table_name_shape", "schema_dependency", "schema_name_shape"}
 )
 
 # GRM-axis modifiers are held constant at their canonical default across every
@@ -190,6 +201,59 @@ def _is_schema_op(assignment: dict[str, str]) -> bool:
     return assignment.get("add_set_drop_operation") in _SCHEMA_OPERATIONS
 
 
+def _schema_negative_fires(assignment: dict[str, str]) -> bool:
+    """Whether a crossed schema-negative (3F000) genuinely fires on PG 18.4."""
+    if assignment.get("schema_name_shape") == "current_schema_keyword":
+        return False
+    if assignment.get("schema_dependency") == "schema_not_exists":
+        return True
+    if assignment.get("schema_name_shape") == "nonexistent_schema":
+        return True
+    return False
+
+
+def _owner_schema_op_wall_fires(assignment: dict[str, str]) -> bool:
+    """Whether the non-superuser schema-op wall (42501) actually fires."""
+    if assignment.get("executor_privilege") != "owner_of_publication":
+        return False
+    if assignment.get("grammar_branch") not in (_BRANCH_ADD, _BRANCH_SET_OBJECT):
+        return False
+    if assignment.get("add_set_drop_operation") not in (
+        "add_tables_in_schema",
+        "set_tables_in_schema",
+    ):
+        return False
+    if assignment.get("publication_name_shape") == "non_existent_name":
+        return False
+    if assignment.get("publication_state") == "non_existent":
+        return False
+    if _schema_negative_fires(assignment):
+        return False
+    return True
+
+
+def _for_all_tables_wall_fires(assignment: dict[str, str]) -> bool:
+    """Whether the FOR ALL TABLES membership wall (55000) actually fires."""
+    if assignment.get("publication_state") != "exists_as_for_all_tables":
+        return False
+    if assignment.get("publication_name_shape") == "non_existent_name":
+        return False
+    if (
+        _privilege_cluster_fires(assignment)
+        or _owner_privilege_failure(assignment) is not None
+    ):
+        return False
+    if _owner_schema_op_wall_fires(assignment):
+        return False
+    if _schema_negative_fires(assignment):
+        return False
+    return assignment.get("grammar_branch") in (
+        _BRANCH_ADD,
+        _BRANCH_SET_OBJECT,
+        _BRANCH_DROP,
+    )
+
+
 def _applicable_negative(
     factor: str, value: str, assignment: dict[str, str]
 ) -> bool:
@@ -207,6 +271,11 @@ def _applicable_negative(
     if factor in ("table_dependency", "table_name_shape"):
         return _is_table_op(assignment)
     if factor in ("schema_dependency", "schema_name_shape"):
+        # CURRENT_SCHEMA resolves to an existing schema, so the schema
+        # negative (3F000) never fires for it regardless of the crossed
+        # schema_dependency value.
+        if assignment.get("schema_name_shape") == "current_schema_keyword":
+            return False
         return _is_schema_op(assignment)
     return True
 
@@ -214,6 +283,29 @@ def _applicable_negative(
 def _failure_unit_count(assignment: dict[str, str]) -> int:
     cluster = 1 if _privilege_cluster_fires(assignment) else 0
     owner_priv = 1 if _owner_privilege_failure(assignment) else 0
+    if _owner_schema_op_wall_fires(assignment):
+        negs = [
+            (f, v)
+            for f, v in _CROSSED_BEHAVIOUR_NEGATIVES
+            if (f, v) != ("publication_state", "exists_as_for_all_tables")
+            and _applicable_negative(f, v, assignment)
+        ]
+        shadowed = 1 if any(n[0] in _TABLE_SCHEMA_NEG_FACTORS for n in negs) else 0
+        return cluster + owner_priv + 1 + (len(negs) - shadowed)
+    if _for_all_tables_wall_fires(assignment):
+        branch = assignment.get("grammar_branch")
+        negs = [
+            (f, v)
+            for f, v in _CROSSED_BEHAVIOUR_NEGATIVES
+            if (f, v) != ("publication_state", "exists_as_for_all_tables")
+            and _applicable_negative(f, v, assignment)
+        ]
+        shadowed = 0
+        if branch in (_BRANCH_ADD, _BRANCH_SET_OBJECT) and any(
+            n[0] in _TABLE_SCHEMA_NEG_FACTORS for n in negs
+        ):
+            shadowed = 1
+        return cluster + owner_priv + 1 + (len(negs) - shadowed)
     negatives = sum(
         1
         for pair in _CROSSED_BEHAVIOUR_NEGATIVES
@@ -231,6 +323,10 @@ def _present_failure_pair(
     if _privilege_cluster_fires(assignment):
         level = assignment.get("executor_privilege")
         return ("executor_privilege", level)
+    if _owner_schema_op_wall_fires(assignment):
+        return ("executor_privilege", "owner_schema_op_requires_superuser")
+    if _for_all_tables_wall_fires(assignment):
+        return ("publication_state", "exists_as_for_all_tables")
     for neg_factor, neg_value in _CROSSED_BEHAVIOUR_NEGATIVES:
         if _applicable_negative(neg_factor, neg_value, assignment):
             return (neg_factor, neg_value)

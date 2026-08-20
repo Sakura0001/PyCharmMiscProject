@@ -21,10 +21,10 @@ from pg_case_factory.alter_publication_factor_runtime import (
 
 ROOT = Path(__file__).resolve().parents[1]
 PG18_BIN = Path("/tmp/pgcf-postgresql-18.4-install/bin")
-PG18_SOCKET = Path("/tmp/pgcf-pg18-altpub-sock-20260820")
+PG18_SOCKET = Path("/tmp/pgcf-pg18-ap-sock-20260820")
 _BASELINE_COUNT = 93
-_EXTENSION_COUNT = 19458
-_TOTAL = _BASELINE_COUNT + _EXTENSION_COUNT  # 19551
+_EXTENSION_COUNT = 19923
+_TOTAL = _BASELINE_COUNT + _EXTENSION_COUNT  # 20016
 
 
 def _sample_case(stdout: bytes) -> AlterPublicationCaseRuntimeResult:
