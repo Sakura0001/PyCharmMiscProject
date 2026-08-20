@@ -1,0 +1,451 @@
+{
+  "schema_version": 1,
+  "statement_key": "commit_prepared",
+  "cycle_fingerprint": "606b9e710210e50ff88b14de7052163f9ee31f6f1d1e744bc0bd9935f399a9d9",
+  "factor_value_count": 43,
+  "factor_disposition_counts": {
+    "covered": 37,
+    "expected_failure": 6,
+    "justified_na": 0
+  },
+  "missing_row_ids": [],
+  "duplicate_row_ids": [],
+  "decisions": [
+    {
+      "row_id": "sfv-1318b1f31fa57cdd8da08bf6",
+      "factor": "chain_behavior",
+      "value": "and_chain",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "COMMITPREPARED00002"
+      ]
+    },
+    {
+      "row_id": "sfv-d5a0e77793ec41ceea145bcf",
+      "factor": "chain_behavior",
+      "value": "and_no_chain",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "COMMITPREPARED00003"
+      ]
+    },
+    {
+      "row_id": "sfv-8bb6fc0d47abe0f54cb4f3da",
+      "factor": "chain_behavior",
+      "value": "none",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "COMMITPREPARED00004"
+      ]
+    },
+    {
+      "row_id": "sfv-30bad959f2900aa9c45122ea",
+      "factor": "cleanup_mode",
+      "value": "drop_objects",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "COMMITPREPARED00005"
+      ]
+    },
+    {
+      "row_id": "sfv-35b70c4a316760a1669d6098",
+      "factor": "cleanup_mode",
+      "value": "reset_state",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "COMMITPREPARED00006"
+      ]
+    },
+    {
+      "row_id": "sfv-c46e7ae424af397c76d2b217",
+      "factor": "cleanup_mode",
+      "value": "rollback",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "COMMITPREPARED00007"
+      ]
+    },
+    {
+      "row_id": "sfv-c4b76b867ffac365736f35ab",
+      "factor": "environment_context",
+      "value": "external_resource_required",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "COMMITPREPARED00008"
+      ]
+    },
+    {
+      "row_id": "sfv-0ab2228e6c62da7df57a57ec",
+      "factor": "environment_context",
+      "value": "normal_session",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "COMMITPREPARED00009"
+      ]
+    },
+    {
+      "row_id": "sfv-2a1c2338f52384be2124db72",
+      "factor": "environment_context",
+      "value": "outside_transaction_required",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "COMMITPREPARED00010"
+      ]
+    },
+    {
+      "row_id": "sfv-3fcff7c7fb4f295cb5e6113b",
+      "factor": "environment_context",
+      "value": "transaction_block",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "COMMITPREPARED00011"
+      ]
+    },
+    {
+      "row_id": "sfv-99d9b48fe633e4661fe683f8",
+      "factor": "expected_status",
+      "value": "failure",
+      "disposition": "expected_failure",
+      "reason": "prepared_transaction_does_not_exist_provisional",
+      "case_ids": [
+        "COMMITPREPARED00012"
+      ]
+    },
+    {
+      "row_id": "sfv-87ed3eab1b2dbcb3acccf25f",
+      "factor": "expected_status",
+      "value": "success",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "COMMITPREPARED00013"
+      ]
+    },
+    {
+      "row_id": "sfv-81c5aa585d79f0eaeb9dccb4",
+      "factor": "framework_context",
+      "value": "no_outer_transaction",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "COMMITPREPARED00014"
+      ]
+    },
+    {
+      "row_id": "sfv-a9b9343abd92340771c0aec5",
+      "factor": "framework_context",
+      "value": "outer_transaction_present",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "COMMITPREPARED00015"
+      ]
+    },
+    {
+      "row_id": "sfv-5cbe181967e71781d6f710d1",
+      "factor": "invalid_combination",
+      "value": "none",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "COMMITPREPARED00016"
+      ]
+    },
+    {
+      "row_id": "sfv-1f0f9fbba81b5b75cf830ddd",
+      "factor": "invalid_combination",
+      "value": "object_type_mismatch",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "COMMITPREPARED00017"
+      ]
+    },
+    {
+      "row_id": "sfv-c0185975d6d15a091e491ed9",
+      "factor": "invalid_combination",
+      "value": "syntax_valid_semantic_error",
+      "disposition": "expected_failure",
+      "reason": "prepared_transaction_does_not_exist_provisional",
+      "case_ids": [
+        "COMMITPREPARED00018"
+      ]
+    },
+    {
+      "row_id": "sfv-b34fb1428f5580f6525c2215",
+      "factor": "savepoint_name_shape",
+      "value": "missing_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "COMMITPREPARED00019"
+      ]
+    },
+    {
+      "row_id": "sfv-355ded6186f7fde182315d9e",
+      "factor": "savepoint_name_shape",
+      "value": "quoted_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "COMMITPREPARED00020"
+      ]
+    },
+    {
+      "row_id": "sfv-875740f1aa3d7becef944b2a",
+      "factor": "savepoint_name_shape",
+      "value": "released_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "COMMITPREPARED00021"
+      ]
+    },
+    {
+      "row_id": "sfv-5c3ed4e1875b73b103472954",
+      "factor": "savepoint_name_shape",
+      "value": "simple_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "COMMITPREPARED00022"
+      ]
+    },
+    {
+      "row_id": "sfv-7e68acacd2d6c1475916b50f",
+      "factor": "state_boundary",
+      "value": "nested_savepoint",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "COMMITPREPARED00023"
+      ]
+    },
+    {
+      "row_id": "sfv-3f7b608f4db298acb31807c6",
+      "factor": "state_boundary",
+      "value": "no_open_transaction",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "COMMITPREPARED00024"
+      ]
+    },
+    {
+      "row_id": "sfv-4928be3d5dd897756c069db2",
+      "factor": "state_boundary",
+      "value": "prepared_transaction_leftover",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "COMMITPREPARED00025"
+      ]
+    },
+    {
+      "row_id": "sfv-421a36df7ce1110d0ab49b61",
+      "factor": "statement_branch",
+      "value": "branch_1",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "COMMITPREPARED00026"
+      ]
+    },
+    {
+      "row_id": "sfv-135b982dffcf4fb11a1a5aa0",
+      "factor": "transaction_id_shape",
+      "value": "duplicate_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "COMMITPREPARED00027"
+      ]
+    },
+    {
+      "row_id": "sfv-e7fad8e1dc5ede583932a588",
+      "factor": "transaction_id_shape",
+      "value": "missing_id",
+      "disposition": "expected_failure",
+      "reason": "syntax_error_provisional",
+      "case_ids": [
+        "COMMITPREPARED00028"
+      ]
+    },
+    {
+      "row_id": "sfv-d9e6230952d62488d04a350b",
+      "factor": "transaction_id_shape",
+      "value": "quoted_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "COMMITPREPARED00029"
+      ]
+    },
+    {
+      "row_id": "sfv-003e2f7d54f6fc1065e782b7",
+      "factor": "transaction_id_shape",
+      "value": "simple_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "COMMITPREPARED00030"
+      ]
+    },
+    {
+      "row_id": "sfv-5b9fd47ca600b3771c62d955",
+      "factor": "transaction_mode",
+      "value": "default",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "COMMITPREPARED00031"
+      ]
+    },
+    {
+      "row_id": "sfv-ff7448a62afd23ea8c06600d",
+      "factor": "transaction_mode",
+      "value": "deferrable",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "COMMITPREPARED00032"
+      ]
+    },
+    {
+      "row_id": "sfv-4d16cd190117cd175afaac3d",
+      "factor": "transaction_mode",
+      "value": "isolation_level",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "COMMITPREPARED00033"
+      ]
+    },
+    {
+      "row_id": "sfv-9d5e0842656e366ea1073f39",
+      "factor": "transaction_mode",
+      "value": "read_only",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "COMMITPREPARED00034"
+      ]
+    },
+    {
+      "row_id": "sfv-623eba1bb7eb40af6d1a0bdb",
+      "factor": "transaction_mode",
+      "value": "read_write",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "COMMITPREPARED00035"
+      ]
+    },
+    {
+      "row_id": "sfv-93d30b226c3dac9369850345",
+      "factor": "transaction_state",
+      "value": "inside_transaction",
+      "disposition": "expected_failure",
+      "reason": "active_sql_transaction_provisional",
+      "case_ids": [
+        "COMMITPREPARED00036"
+      ]
+    },
+    {
+      "row_id": "sfv-f44b261596f13c544c4aeda7",
+      "factor": "transaction_state",
+      "value": "missing_required_state",
+      "disposition": "expected_failure",
+      "reason": "prepared_transaction_does_not_exist_provisional",
+      "case_ids": [
+        "COMMITPREPARED00037"
+      ]
+    },
+    {
+      "row_id": "sfv-8ce516eb4d933a088037fc9a",
+      "factor": "transaction_state",
+      "value": "outside_transaction",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "COMMITPREPARED00038"
+      ]
+    },
+    {
+      "row_id": "sfv-c2290df57f07f558122be152",
+      "factor": "transaction_state",
+      "value": "prepared_transaction_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "COMMITPREPARED00039"
+      ]
+    },
+    {
+      "row_id": "sfv-c5eb0b1f80285b2ef078cdcd",
+      "factor": "transaction_state",
+      "value": "savepoint_exists",
+      "disposition": "expected_failure",
+      "reason": "active_sql_transaction_provisional",
+      "case_ids": [
+        "COMMITPREPARED00040"
+      ]
+    },
+    {
+      "row_id": "sfv-7ad2fe980f66aa0ff9bfad64",
+      "factor": "verification_mode",
+      "value": "catalog_query",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "COMMITPREPARED00041"
+      ]
+    },
+    {
+      "row_id": "sfv-f2e49cd92962b8fe2265c1ea",
+      "factor": "verification_mode",
+      "value": "effect_query",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "COMMITPREPARED00042"
+      ]
+    },
+    {
+      "row_id": "sfv-9b687eb5029f2c33004b4834",
+      "factor": "verification_mode",
+      "value": "error_assertion",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "COMMITPREPARED00043"
+      ]
+    },
+    {
+      "row_id": "sfv-9022ce0bccb27adec9d5b7d6",
+      "factor": "verification_mode",
+      "value": "returned_rows",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "COMMITPREPARED00044"
+      ]
+    }
+  ],
+  "generation_mode": "factor_value_independent_loop_v1",
+  "decision_count": 44,
+  "local_sql_decision_count": 44,
+  "extension_case_count": 12240,
+  "delegated_decision_count": 0,
+  "obligation_multiset_sha256": "ca7736b2a31b34fc3079a5c298ec8f6609b49a912d52febae2882342ca7905dc"
+}
