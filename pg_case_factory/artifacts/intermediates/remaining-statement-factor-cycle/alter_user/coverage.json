@@ -1,0 +1,711 @@
+{
+  "schema_version": 1,
+  "statement_key": "alter_user",
+  "cycle_fingerprint": "606b9e710210e50ff88b14de7052163f9ee31f6f1d1e744bc0bd9935f399a9d9",
+  "factor_value_count": 69,
+  "factor_disposition_counts": {
+    "covered": 54,
+    "expected_failure": 15,
+    "justified_na": 0
+  },
+  "missing_row_ids": [],
+  "duplicate_row_ids": [],
+  "decisions": [
+    {
+      "row_id": "sfv-04c1c58ad95c948f4715fffb",
+      "factor": "alter_action",
+      "value": "option_modify",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00007"
+      ]
+    },
+    {
+      "row_id": "sfv-eb1cf1ba8f8592b85c564553",
+      "factor": "alter_action",
+      "value": "rename",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00008"
+      ]
+    },
+    {
+      "row_id": "sfv-68e570e815c51769c2face4a",
+      "factor": "alter_action",
+      "value": "reset_all",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00009"
+      ]
+    },
+    {
+      "row_id": "sfv-cf5ef73be0e8874a8c77cdde",
+      "factor": "alter_action",
+      "value": "reset_config",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00010"
+      ]
+    },
+    {
+      "row_id": "sfv-b99b36e5e8fb66ca8e881af9",
+      "factor": "alter_action",
+      "value": "set_config",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00011"
+      ]
+    },
+    {
+      "row_id": "sfv-a5a943e3c6f72fc18766ea8b",
+      "factor": "alter_action",
+      "value": "set_from_current",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00012"
+      ]
+    },
+    {
+      "row_id": "sfv-24979a6931ff3e2b1df75533",
+      "factor": "cleanup_mode",
+      "value": "drop_role",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00013"
+      ]
+    },
+    {
+      "row_id": "sfv-d7a32c452d295c03815bfe14",
+      "factor": "cleanup_mode",
+      "value": "reset_config",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00014"
+      ]
+    },
+    {
+      "row_id": "sfv-8ea88eb3c389831c1ee71ffb",
+      "factor": "cleanup_mode",
+      "value": "revert_option",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00015"
+      ]
+    },
+    {
+      "row_id": "sfv-223d3cf460da63a0ab8df0d7",
+      "factor": "cleanup_mode",
+      "value": "revert_rename",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00016"
+      ]
+    },
+    {
+      "row_id": "sfv-4db53b8c2637c4047aab2c6e",
+      "factor": "config_param_shape",
+      "value": "invalid_param",
+      "disposition": "expected_failure",
+      "reason": "invalid_configuration_parameter_provisional",
+      "case_ids": [
+        "ALTERUSER00017"
+      ]
+    },
+    {
+      "row_id": "sfv-1f56734c32f48cc0a9cc76c0",
+      "factor": "config_param_shape",
+      "value": "valid_param",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00018"
+      ]
+    },
+    {
+      "row_id": "sfv-dc6b26f26d82583c9bb2656c",
+      "factor": "database_existence",
+      "value": "database_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00019"
+      ]
+    },
+    {
+      "row_id": "sfv-11cf2bfba13e77a97b56fe7f",
+      "factor": "database_existence",
+      "value": "database_not_exists",
+      "disposition": "expected_failure",
+      "reason": "target_database_missing_provisional",
+      "case_ids": [
+        "ALTERUSER00020"
+      ]
+    },
+    {
+      "row_id": "sfv-d8d1c34ba46b8aa74f4b5fb2",
+      "factor": "database_name_shape",
+      "value": "nonexistent_name",
+      "disposition": "expected_failure",
+      "reason": "target_database_missing_provisional",
+      "case_ids": [
+        "ALTERUSER00021"
+      ]
+    },
+    {
+      "row_id": "sfv-1ba820cb31623642df3598e7",
+      "factor": "database_name_shape",
+      "value": "simple_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00022"
+      ]
+    },
+    {
+      "row_id": "sfv-d83b339fe0d21636ec573af2",
+      "factor": "duplicate_new_name",
+      "value": "no_conflict",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00023"
+      ]
+    },
+    {
+      "row_id": "sfv-fae08ab5a6b3f6d9ff37499d",
+      "factor": "duplicate_new_name",
+      "value": "same_name_conflict",
+      "disposition": "expected_failure",
+      "reason": "duplicate_new_name_provisional",
+      "case_ids": [
+        "ALTERUSER00024"
+      ]
+    },
+    {
+      "row_id": "sfv-c7259eb65ccd76a9a2ab246b",
+      "factor": "expected_status",
+      "value": "failure",
+      "disposition": "expected_failure",
+      "reason": "target_role_missing_provisional",
+      "case_ids": [
+        "ALTERUSER00025"
+      ]
+    },
+    {
+      "row_id": "sfv-5dc57ec79631d5579a07aa93",
+      "factor": "expected_status",
+      "value": "success",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00026"
+      ]
+    },
+    {
+      "row_id": "sfv-70e908268717048f49a4076f",
+      "factor": "in_database_clause",
+      "value": "omitted",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00027"
+      ]
+    },
+    {
+      "row_id": "sfv-78d377380107dad6597579df",
+      "factor": "in_database_clause",
+      "value": "specified",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00028"
+      ]
+    },
+    {
+      "row_id": "sfv-9e59ae23d94babaeac713997",
+      "factor": "insufficient_privilege",
+      "value": "has_privilege",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00029"
+      ]
+    },
+    {
+      "row_id": "sfv-8db8d6c0af9b2d0848ce886f",
+      "factor": "insufficient_privilege",
+      "value": "lacks_createrole",
+      "disposition": "expected_failure",
+      "reason": "insufficient_privilege_provisional",
+      "case_ids": [
+        "ALTERUSER00030"
+      ]
+    },
+    {
+      "row_id": "sfv-45f1e7f0d9ba1871dd75e2af",
+      "factor": "insufficient_privilege",
+      "value": "lacks_role_ownership",
+      "disposition": "expected_failure",
+      "reason": "insufficient_privilege_provisional",
+      "case_ids": [
+        "ALTERUSER00031"
+      ]
+    },
+    {
+      "row_id": "sfv-54faf580a10b4a05a557145b",
+      "factor": "new_name_shape",
+      "value": "duplicate_name",
+      "disposition": "expected_failure",
+      "reason": "duplicate_new_name_provisional",
+      "case_ids": [
+        "ALTERUSER00032"
+      ]
+    },
+    {
+      "row_id": "sfv-eeff99652a0379c9bb1f9c41",
+      "factor": "new_name_shape",
+      "value": "quoted_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00033"
+      ]
+    },
+    {
+      "row_id": "sfv-61435d934064351068d12d8c",
+      "factor": "new_name_shape",
+      "value": "simple_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00034"
+      ]
+    },
+    {
+      "row_id": "sfv-11032dc7545460875a4d5cfd",
+      "factor": "nonexistent_database",
+      "value": "database_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00035"
+      ]
+    },
+    {
+      "row_id": "sfv-914f3a7cd26d4d26f69ce68e",
+      "factor": "nonexistent_database",
+      "value": "database_missing",
+      "disposition": "expected_failure",
+      "reason": "target_database_missing_provisional",
+      "case_ids": [
+        "ALTERUSER00036"
+      ]
+    },
+    {
+      "row_id": "sfv-1a1e0b4f9893effa8177382e",
+      "factor": "nonexistent_role",
+      "value": "role_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00037"
+      ]
+    },
+    {
+      "row_id": "sfv-ce72de59d8b2f0d6ed9dcc3c",
+      "factor": "nonexistent_role",
+      "value": "role_missing",
+      "disposition": "expected_failure",
+      "reason": "target_role_missing_provisional",
+      "case_ids": [
+        "ALTERUSER00038"
+      ]
+    },
+    {
+      "row_id": "sfv-793263f01273b0bc4b840541",
+      "factor": "object_state",
+      "value": "exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00039"
+      ]
+    },
+    {
+      "row_id": "sfv-93415ea3eabec7e39875e42a",
+      "factor": "object_state",
+      "value": "not_exists",
+      "disposition": "expected_failure",
+      "reason": "target_role_missing_provisional",
+      "case_ids": [
+        "ALTERUSER00040"
+      ]
+    },
+    {
+      "row_id": "sfv-b45ef84783b9c71baa4631e6",
+      "factor": "option_type",
+      "value": "bypassrls_toggle",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00041"
+      ]
+    },
+    {
+      "row_id": "sfv-b0bba86853e52e47d18f7472",
+      "factor": "option_type",
+      "value": "connection_limit",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00042"
+      ]
+    },
+    {
+      "row_id": "sfv-97f1da70cc31a9b68e0cf372",
+      "factor": "option_type",
+      "value": "createdb_toggle",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00043"
+      ]
+    },
+    {
+      "row_id": "sfv-059d3465ec9ad2ba68d6ebd5",
+      "factor": "option_type",
+      "value": "createrole_toggle",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00044"
+      ]
+    },
+    {
+      "row_id": "sfv-3589ab14eee50d46c12d7d79",
+      "factor": "option_type",
+      "value": "inherit_toggle",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00045"
+      ]
+    },
+    {
+      "row_id": "sfv-2d3c8e3ea27dc81dddecbe09",
+      "factor": "option_type",
+      "value": "login_toggle",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00046"
+      ]
+    },
+    {
+      "row_id": "sfv-133749ddc737ee66bc971a48",
+      "factor": "option_type",
+      "value": "password",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00047"
+      ]
+    },
+    {
+      "row_id": "sfv-b07b410515ac58d004f3a154",
+      "factor": "option_type",
+      "value": "password_null",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00048"
+      ]
+    },
+    {
+      "row_id": "sfv-7085fe870b4b206412a5fe80",
+      "factor": "option_type",
+      "value": "replication_toggle",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00049"
+      ]
+    },
+    {
+      "row_id": "sfv-fc8c61cd7796c96fcb6d25f9",
+      "factor": "option_type",
+      "value": "superuser_toggle",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00050"
+      ]
+    },
+    {
+      "row_id": "sfv-6efa4f5f8b35319795df86cc",
+      "factor": "option_type",
+      "value": "valid_until",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00051"
+      ]
+    },
+    {
+      "row_id": "sfv-8f1fd03b52967ae06a651a83",
+      "factor": "privilege_level",
+      "value": "createrole",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00052"
+      ]
+    },
+    {
+      "row_id": "sfv-0539b19a255b0c6bcf8d602c",
+      "factor": "privilege_level",
+      "value": "non_createrole",
+      "disposition": "expected_failure",
+      "reason": "insufficient_privilege_provisional",
+      "case_ids": [
+        "ALTERUSER00053"
+      ]
+    },
+    {
+      "row_id": "sfv-7d00df392e2c1af4cd191521",
+      "factor": "privilege_level",
+      "value": "non_owner",
+      "disposition": "expected_failure",
+      "reason": "insufficient_privilege_provisional",
+      "case_ids": [
+        "ALTERUSER00054"
+      ]
+    },
+    {
+      "row_id": "sfv-4b42e4fc0eaaf7d7cadd9094",
+      "factor": "privilege_level",
+      "value": "role_owner",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00055"
+      ]
+    },
+    {
+      "row_id": "sfv-2546d36c4625b5cfe480f13d",
+      "factor": "privilege_level",
+      "value": "superuser",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00056"
+      ]
+    },
+    {
+      "row_id": "sfv-a58eadddcca4d47fa23cbca9",
+      "factor": "role_name_shape",
+      "value": "nonexistent_name",
+      "disposition": "expected_failure",
+      "reason": "target_role_missing_provisional",
+      "case_ids": [
+        "ALTERUSER00057"
+      ]
+    },
+    {
+      "row_id": "sfv-fea17cdc4dad11f24c9afc37",
+      "factor": "role_name_shape",
+      "value": "quoted_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00058"
+      ]
+    },
+    {
+      "row_id": "sfv-c897f543aa74910dbe9a9015",
+      "factor": "role_name_shape",
+      "value": "simple_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00059"
+      ]
+    },
+    {
+      "row_id": "sfv-b6843b4e2e250ebb4096fbb2",
+      "factor": "role_specification",
+      "value": "all",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00060"
+      ]
+    },
+    {
+      "row_id": "sfv-1cb5c88be78dda9f509bca52",
+      "factor": "role_specification",
+      "value": "current_role",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00061"
+      ]
+    },
+    {
+      "row_id": "sfv-8cabe469e7388e49c3312718",
+      "factor": "role_specification",
+      "value": "current_user",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00062"
+      ]
+    },
+    {
+      "row_id": "sfv-f51f6a8151293c133eb0dbdb",
+      "factor": "role_specification",
+      "value": "named_role",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00063"
+      ]
+    },
+    {
+      "row_id": "sfv-2730c4ca03c781b70f0e6bfb",
+      "factor": "role_specification",
+      "value": "session_user",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00064"
+      ]
+    },
+    {
+      "row_id": "sfv-24fd13f9e289442dbc9c1a65",
+      "factor": "statement_branch",
+      "value": "branch_option",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00065"
+      ]
+    },
+    {
+      "row_id": "sfv-e74b5aef808154e524d6b745",
+      "factor": "statement_branch",
+      "value": "branch_rename",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00066"
+      ]
+    },
+    {
+      "row_id": "sfv-bafdcdb41aab64a7676be5ad",
+      "factor": "statement_branch",
+      "value": "branch_reset_all",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00067"
+      ]
+    },
+    {
+      "row_id": "sfv-1b1443c906fd42e44b3bad8d",
+      "factor": "statement_branch",
+      "value": "branch_reset_config",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00068"
+      ]
+    },
+    {
+      "row_id": "sfv-6134341b8dd38893a0aef315",
+      "factor": "statement_branch",
+      "value": "branch_set_config",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00069"
+      ]
+    },
+    {
+      "row_id": "sfv-05e8b124dd406796b1b71d34",
+      "factor": "statement_branch",
+      "value": "branch_set_from_current",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00070"
+      ]
+    },
+    {
+      "row_id": "sfv-b57912d1d8de6d9a6b799b26",
+      "factor": "superuser_modification_by_non_superuser",
+      "value": "non_superuser_attempting_superuser_toggle",
+      "disposition": "expected_failure",
+      "reason": "insufficient_privilege_provisional",
+      "case_ids": [
+        "ALTERUSER00071"
+      ]
+    },
+    {
+      "row_id": "sfv-2b433c7c6e516eab4c0ccaab",
+      "factor": "superuser_modification_by_non_superuser",
+      "value": "superuser_execution",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00072"
+      ]
+    },
+    {
+      "row_id": "sfv-591922dce299f56c575c9580",
+      "factor": "verification_mode",
+      "value": "catalog_query_pg_roles",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00073"
+      ]
+    },
+    {
+      "row_id": "sfv-90cdef0340609ed21558daf7",
+      "factor": "verification_mode",
+      "value": "config_parameter_query",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00074"
+      ]
+    },
+    {
+      "row_id": "sfv-4fdd4a335889ba21e2278ee6",
+      "factor": "verification_mode",
+      "value": "error_assertion",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSER00075"
+      ]
+    }
+  ],
+  "generation_mode": "factor_value_independent_loop_v1",
+  "decision_count": 75,
+  "local_sql_decision_count": 75,
+  "extension_case_count": 3456,
+  "delegated_decision_count": 0,
+  "obligation_multiset_sha256": "8fe8d77e69c4b675aeb30987c5885ef39adf7adeabe28820d950a924f0eb687d"
+}
