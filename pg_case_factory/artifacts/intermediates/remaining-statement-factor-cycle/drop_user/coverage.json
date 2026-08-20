@@ -1,0 +1,381 @@
+{
+  "schema_version": 1,
+  "statement_key": "drop_user",
+  "cycle_fingerprint": "606b9e710210e50ff88b14de7052163f9ee31f6f1d1e744bc0bd9935f399a9d9",
+  "factor_value_count": 36,
+  "factor_disposition_counts": {
+    "covered": 24,
+    "expected_failure": 12,
+    "justified_na": 0
+  },
+  "missing_row_ids": [],
+  "duplicate_row_ids": [],
+  "decisions": [
+    {
+      "row_id": "sfv-b19a05e0d4578e8a687a234d",
+      "factor": "authorization_path",
+      "value": "createrole",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPUSER00002"
+      ]
+    },
+    {
+      "row_id": "sfv-6d5dae40ca500b5efda99dfa",
+      "factor": "authorization_path",
+      "value": "non_createrole",
+      "disposition": "expected_failure",
+      "reason": "insufficient_privilege",
+      "case_ids": [
+        "DROPUSER00003"
+      ]
+    },
+    {
+      "row_id": "sfv-093b5ce0469dc12054661c14",
+      "factor": "authorization_path",
+      "value": "superuser",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPUSER00004"
+      ]
+    },
+    {
+      "row_id": "sfv-81cbb64ee0a0ac3fb37821e2",
+      "factor": "cleanup_mode",
+      "value": "drop_role",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPUSER00005"
+      ]
+    },
+    {
+      "row_id": "sfv-ac263061e2eb49833e7e1230",
+      "factor": "cleanup_mode",
+      "value": "reassign_objects_then_drop",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPUSER00006"
+      ]
+    },
+    {
+      "row_id": "sfv-fb43f91ff527a475071bea38",
+      "factor": "cleanup_mode",
+      "value": "terminate_sessions",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPUSER00007"
+      ]
+    },
+    {
+      "row_id": "sfv-c0a4eaa4e2e653d98ce62c67",
+      "factor": "dependency_context",
+      "value": "no_dependencies",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPUSER00008"
+      ]
+    },
+    {
+      "row_id": "sfv-289f877c160a442f4f8f64d8",
+      "factor": "dependency_context",
+      "value": "role_has_active_sessions",
+      "disposition": "expected_failure",
+      "reason": "active_session_boundary",
+      "case_ids": [
+        "DROPUSER00009"
+      ]
+    },
+    {
+      "row_id": "sfv-b85c03612d444cd8cf16c84c",
+      "factor": "dependency_context",
+      "value": "role_owns_objects",
+      "disposition": "expected_failure",
+      "reason": "dependent_objects_restricted",
+      "case_ids": [
+        "DROPUSER00010"
+      ]
+    },
+    {
+      "row_id": "sfv-8b01c1a1a178eb15441d12fb",
+      "factor": "error_type",
+      "value": "insufficient_privilege",
+      "disposition": "expected_failure",
+      "reason": "insufficient_privilege",
+      "case_ids": [
+        "DROPUSER00011"
+      ]
+    },
+    {
+      "row_id": "sfv-f306b6a8ad4dfad1566af8d9",
+      "factor": "error_type",
+      "value": "non_existent_without_if_exists",
+      "disposition": "expected_failure",
+      "reason": "undefined_role_no_if_exists",
+      "case_ids": [
+        "DROPUSER00012"
+      ]
+    },
+    {
+      "row_id": "sfv-9fa13d70b566d7ea95f4eea6",
+      "factor": "error_type",
+      "value": "none",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPUSER00013"
+      ]
+    },
+    {
+      "row_id": "sfv-8356bce48983c2a7fa73cd80",
+      "factor": "error_type",
+      "value": "role_owns_objects",
+      "disposition": "expected_failure",
+      "reason": "dependent_objects_restricted",
+      "case_ids": [
+        "DROPUSER00014"
+      ]
+    },
+    {
+      "row_id": "sfv-fe5e6aa1f26fbe608293b932",
+      "factor": "expected_status",
+      "value": "failure",
+      "disposition": "expected_failure",
+      "reason": "drop_user_declared_failure",
+      "case_ids": [
+        "DROPUSER00015"
+      ]
+    },
+    {
+      "row_id": "sfv-85a06a605974cfe4e94aafde",
+      "factor": "expected_status",
+      "value": "success",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPUSER00016"
+      ]
+    },
+    {
+      "row_id": "sfv-46d97ab9d55f264a247c17a6",
+      "factor": "if_exists_clause",
+      "value": "absent",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPUSER00017"
+      ]
+    },
+    {
+      "row_id": "sfv-6da80e19de7793c927234d0b",
+      "factor": "if_exists_clause",
+      "value": "present",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPUSER00018"
+      ]
+    },
+    {
+      "row_id": "sfv-14f352dd48ef1767ba1a09e5",
+      "factor": "multi_user_clause",
+      "value": "multiple_roles",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPUSER00019"
+      ]
+    },
+    {
+      "row_id": "sfv-4e001e78007bcb52c670326a",
+      "factor": "multi_user_clause",
+      "value": "single_role",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPUSER00020"
+      ]
+    },
+    {
+      "row_id": "sfv-c87ca611a29d45ef1dd2f48a",
+      "factor": "object_state",
+      "value": "absent",
+      "disposition": "expected_failure",
+      "reason": "undefined_role_absent",
+      "case_ids": [
+        "DROPUSER00021"
+      ]
+    },
+    {
+      "row_id": "sfv-b08242d9dea6b5a09ae18749",
+      "factor": "object_state",
+      "value": "exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPUSER00022"
+      ]
+    },
+    {
+      "row_id": "sfv-0e6e0cabcb5e80773ced040b",
+      "factor": "privilege_context",
+      "value": "createrole_session",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPUSER00023"
+      ]
+    },
+    {
+      "row_id": "sfv-857f540674b6819145100eee",
+      "factor": "privilege_context",
+      "value": "non_createrole_session",
+      "disposition": "expected_failure",
+      "reason": "insufficient_privilege",
+      "case_ids": [
+        "DROPUSER00024"
+      ]
+    },
+    {
+      "row_id": "sfv-c2702f50524854ce8a7d66af",
+      "factor": "privilege_context",
+      "value": "superuser_session",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPUSER00025"
+      ]
+    },
+    {
+      "row_id": "sfv-63f309e6d11142650120fd71",
+      "factor": "role_dependency",
+      "value": "has_active_connections",
+      "disposition": "expected_failure",
+      "reason": "active_session_boundary",
+      "case_ids": [
+        "DROPUSER00026"
+      ]
+    },
+    {
+      "row_id": "sfv-9c64b262326ee18f8e93c42d",
+      "factor": "role_dependency",
+      "value": "no_dependencies",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPUSER00027"
+      ]
+    },
+    {
+      "row_id": "sfv-f86b34cb22a213549d6e63aa",
+      "factor": "role_dependency",
+      "value": "owns_objects",
+      "disposition": "expected_failure",
+      "reason": "dependent_objects_restricted",
+      "case_ids": [
+        "DROPUSER00028"
+      ]
+    },
+    {
+      "row_id": "sfv-8c191cbc559fb346fd54cf01",
+      "factor": "role_name_shape",
+      "value": "non_existent_name",
+      "disposition": "expected_failure",
+      "reason": "undefined_role_name",
+      "case_ids": [
+        "DROPUSER00029"
+      ]
+    },
+    {
+      "row_id": "sfv-c175abf387335581156072e9",
+      "factor": "role_name_shape",
+      "value": "quoted_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPUSER00030"
+      ]
+    },
+    {
+      "row_id": "sfv-6f26037242fa019bc44c391a",
+      "factor": "role_name_shape",
+      "value": "reserved_word_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPUSER00031"
+      ]
+    },
+    {
+      "row_id": "sfv-f7ca7474255faf9171f0a250",
+      "factor": "role_name_shape",
+      "value": "simple_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPUSER00032"
+      ]
+    },
+    {
+      "row_id": "sfv-246349f885432fc24f01b1f8",
+      "factor": "statement_branch",
+      "value": "branch_drop_user",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPUSER00033"
+      ]
+    },
+    {
+      "row_id": "sfv-41bf51cc3750cf70f81fbf99",
+      "factor": "statement_branch",
+      "value": "branch_drop_user_if_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPUSER00034"
+      ]
+    },
+    {
+      "row_id": "sfv-0378361f9802d1276359d13b",
+      "factor": "verification_mode",
+      "value": "catalog_query",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPUSER00035"
+      ]
+    },
+    {
+      "row_id": "sfv-99c65c27f5b5fe23685597b1",
+      "factor": "verification_mode",
+      "value": "error_assertion",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPUSER00036"
+      ]
+    },
+    {
+      "row_id": "sfv-0eec50227e21656c647a3e40",
+      "factor": "verification_mode",
+      "value": "notice_assertion",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPUSER00037"
+      ]
+    }
+  ],
+  "generation_mode": "factor_value_independent_loop_v1",
+  "decision_count": 39,
+  "local_sql_decision_count": 39,
+  "extension_case_count": 1566,
+  "delegated_decision_count": 0,
+  "obligation_multiset_sha256": "c8dcc367730c3aa673e903597662cceb1e690442207eedb13f40b3c32bef9737"
+}

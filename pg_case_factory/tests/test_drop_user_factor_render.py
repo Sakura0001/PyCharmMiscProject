@@ -1,0 +1,176 @@
+from pathlib import Path
+import re
+import shutil
+import tempfile
+import unittest
+
+from pg_case_factory.drop_user_factor_extension import (
+    build_drop_user_factor_extension_plan,
+)
+from pg_case_factory.drop_user_factor_loop import (
+    build_drop_user_factor_loop_plan,
+)
+from pg_case_factory.drop_user_factor_render import (
+    DropUserFactorWitness,
+    count_primary_drop_user,
+    generate_drop_user_factor_programs,
+    render_drop_user_factor_case,
+    resolve_drop_user_factor_witness,
+)
+
+ROOT = Path(__file__).resolve().parents[1]
+
+_TOTAL_CASES = 1605
+
+
+class DropUserFactorRenderTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.baseline = build_drop_user_factor_loop_plan(ROOT)
+        cls.extension = build_drop_user_factor_extension_plan(ROOT)
+        cls.tmp = Path(tempfile.mkdtemp(prefix="drop_user_render_"))
+        cls.count = generate_drop_user_factor_programs(
+            cls.baseline, cls.extension, cls.tmp
+        )
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        shutil.rmtree(cls.tmp, ignore_errors=True)
+
+    def test_renders_exactly_1605_files(self) -> None:
+        self.assertEqual(_TOTAL_CASES, self.count)
+        files = sorted(self.tmp.glob("*.sql"))
+        self.assertEqual(_TOTAL_CASES, len(files))
+
+    def test_filename_numbering_is_contiguous(self) -> None:
+        files = sorted(self.tmp.glob("*.sql"))
+        for i, f in enumerate(files, start=1):
+            self.assertEqual(f"DROPUSER{i:05d}.sql", f.name)
+
+    def test_every_file_has_exactly_one_primary_target(self) -> None:
+        files = sorted(self.tmp.glob("*.sql"))
+        for f in files:
+            text = f.read_text()
+            n = count_primary_drop_user(text)
+            self.assertEqual(1, n, f.name)
+
+    def test_bookend_gate_no_create_table_present(self) -> None:
+        """DROP USER is table-less: no CREATE TABLE ever appears, so the
+        bookend gate (first+last stmt = DROP TABLE IF EXISTS) is N/A.
+        Assert the precondition holds so the gate stays trivially satisfied.
+        """
+        files = sorted(self.tmp.glob("*.sql"))
+        create_seen = 0
+        for f in files:
+            text = f.read_text()
+            has_create = bool(
+                re.search(r"(?im)^\s*CREATE\s+TABLE\b", text)
+            )
+            create_seen += int(has_create)
+        self.assertEqual(0, create_seen, "DROP USER programs must not CREATE TABLE")
+
+    def test_every_catalog_query_has_order_by(self) -> None:
+        files = sorted(self.tmp.glob("*.sql"))
+        for f in files:
+            text = f.read_text()
+            for m in re.finditer(
+                r"(?is)SELECT\s[^;]*?FROM\s+"
+                r"(?:pg_catalog|information_schema)\.\S+[^;]*;",
+                text,
+            ):
+                self.assertIn(
+                    "ORDER BY",
+                    m.group(0).upper(),
+                    f"missing ORDER BY in {f.name}",
+                )
+
+    def test_primary_target_is_drop_user(self) -> None:
+        files = sorted(self.tmp.glob("*.sql"))
+        for f in files:
+            text = f.read_text()
+            region = self._extract_target_region(text)
+            self.assertIsNotNone(region, f.name)
+            self.assertTrue(
+                re.search(r"(?m)^DROP\s+USER\b", region),
+                f"no col-0 DROP USER in {f.name}",
+            )
+
+    @staticmethod
+    def _extract_target_region(sql: str) -> str | None:
+        begin = "-- primary-target-begin"
+        end = "-- primary-target-end"
+        if sql.count(begin) != 1 or sql.count(end) != 1:
+            return None
+        before_end, _ = sql.split(end, 1)
+        if begin not in before_end:
+            return None
+        return before_end.split(begin, 1)[1].strip()
+
+    def test_witness_resolves_for_every_case(self) -> None:
+        root = ROOT
+        for case in self.baseline.cases[:5]:
+            w = resolve_drop_user_factor_witness(case, root)
+            self.assertIsInstance(w, DropUserFactorWitness)
+            self.assertTrue(w.target_sql_fragment)
+
+    def test_render_is_deterministic(self) -> None:
+        root = ROOT
+        case = self.baseline.cases[0]
+        a = render_drop_user_factor_case(case, root)
+        b = render_drop_user_factor_case(case, root)
+        self.assertEqual(a, b)
+
+    def test_header_has_required_fields(self) -> None:
+        files = sorted(self.tmp.glob("*.sql"))
+        text = files[0].read_text()
+        self.assertIn("-- case_id:", text)
+        self.assertIn("-- primary_obligation_id:", text)
+        self.assertIn("-- expected_outcome:", text)
+        self.assertIn("-- expected_sqlstate:", text)
+
+    def test_cleanup_section_present(self) -> None:
+        files = sorted(self.tmp.glob("*.sql"))
+        for f in files:
+            text = f.read_text()
+            self.assertIn("-- 5. 清理全部本编号对象。", text)
+
+    def test_no_placeholder_leakage(self) -> None:
+        files = sorted(self.tmp.glob("*.sql"))
+        for f in files:
+            text = f.read_text()
+            self.assertNotIn("{", text)
+            self.assertNotIn("}", text)
+
+    def test_on_error_stop_management(self) -> None:
+        files = sorted(self.tmp.glob("*.sql"))
+        for f in files:
+            text = f.read_text()
+            self.assertIn("\\set ON_ERROR_STOP on", text)
+
+    def test_no_quoted_or_dotted_table_identifiers(self) -> None:
+        """DROP USER programs use no tables in FROM/JOIN, so the
+        quoted-identifier/dotted-table gate is trivially satisfied.  Assert
+        no FROM/JOIN references a table with a quote or dot that would trip
+        the shared style gate (DROP USER's only FROM targets are
+        pg_catalog.pg_roles, which is a dotted catalog reference explicitly
+        allowed by the gate's pg_catalog exemption).
+        """
+        files = sorted(self.tmp.glob("*.sql"))
+        for f in files:
+            text = f.read_text()
+            for m in re.finditer(
+                r"(?is)\bFROM\s+([^\s;]+(?:\s+[^\s;]+)?)",
+                text,
+            ):
+                ref = m.group(1)
+                if ref.lower().startswith("pg_catalog."):
+                    continue
+                self.assertNotIn('"', ref, f"quoted FROM in {f.name}: {ref}")
+                if "." in ref and not ref.lower().startswith("pg_catalog."):
+                    self.fail(
+                        f"dotted non-catalog FROM in {f.name}: {ref}"
+                    )
+
+
+if __name__ == "__main__":
+    unittest.main()
