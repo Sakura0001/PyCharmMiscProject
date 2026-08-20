@@ -6,7 +6,7 @@
   "statement_count": 183,
   "retained_statement_count": 6,
   "pending_statement_count": 177,
-  "next_pending_statement": "commit",
+  "next_pending_statement": "commit_prepared",
   "statements": {
     "abort": {
       "status": "completed",
@@ -359,11 +359,11 @@
       "validation_evidence_sha256": "ef91e9463d59d872bf18c6b1437e7162f8fa810d51b04924d441bb705ae1f1d0"
     },
     "commit": {
-      "status": "pending",
-      "package_path": null,
-      "sql_file_count": null,
-      "validation_evidence": null,
-      "validation_evidence_sha256": null
+      "status": "completed",
+      "package_path": "artifacts/regress/by-factor/tcl/transaction/commit",
+      "sql_file_count": 1844,
+      "validation_evidence": "/Users/yuyu/PyCharmMiscProject/pg_case_factory/artifacts/intermediates/remaining-statement-factor-cycle/commit/validation.json",
+      "validation_evidence_sha256": "a7efa2e8e434f05571c1ec6203829a03283fc09ce1e3ee887a7db53a05d0dd13"
     },
     "commit_prepared": {
       "status": "pending",
