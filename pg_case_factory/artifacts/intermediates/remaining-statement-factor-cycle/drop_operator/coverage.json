@@ -1,0 +1,421 @@
+{
+  "schema_version": 1,
+  "statement_key": "drop_operator",
+  "cycle_fingerprint": "606b9e710210e50ff88b14de7052163f9ee31f6f1d1e744bc0bd9935f399a9d9",
+  "factor_value_count": 40,
+  "factor_disposition_counts": {
+    "covered": 33,
+    "expected_failure": 7,
+    "justified_na": 0
+  },
+  "missing_row_ids": [],
+  "duplicate_row_ids": [],
+  "decisions": [
+    {
+      "row_id": "sfv-bc1ff153578af4792f91202c",
+      "factor": "cascade_behavior",
+      "value": "cascade_succeeds",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPOPERATOR00002"
+      ]
+    },
+    {
+      "row_id": "sfv-4570f2c45fdbd9fec878f2ec",
+      "factor": "cascade_behavior",
+      "value": "restrict_blocks",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPOPERATOR00003"
+      ]
+    },
+    {
+      "row_id": "sfv-969080f72521d58a4797db96",
+      "factor": "cascade_clause",
+      "value": "cascade",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPOPERATOR00004"
+      ]
+    },
+    {
+      "row_id": "sfv-51044484211221591e0b5877",
+      "factor": "cascade_clause",
+      "value": "restrict_default",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPOPERATOR00005"
+      ]
+    },
+    {
+      "row_id": "sfv-7a657201adb25bb88b2d30ca",
+      "factor": "cascade_clause",
+      "value": "restrict_explicit",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPOPERATOR00006"
+      ]
+    },
+    {
+      "row_id": "sfv-7bfc8e0375c7fa9647a70833",
+      "factor": "cleanup_mode",
+      "value": "drop_objects",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPOPERATOR00007"
+      ]
+    },
+    {
+      "row_id": "sfv-28a4e37575e195a9c90989e4",
+      "factor": "cleanup_mode",
+      "value": "reset_state",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPOPERATOR00008"
+      ]
+    },
+    {
+      "row_id": "sfv-430e1f4d9cfe8b6288689021",
+      "factor": "dependency_state",
+      "value": "has_dependents",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPOPERATOR00009"
+      ]
+    },
+    {
+      "row_id": "sfv-57fab44397b2b2a4f893022f",
+      "factor": "dependency_state",
+      "value": "no_dependents",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPOPERATOR00010"
+      ]
+    },
+    {
+      "row_id": "sfv-528ba1bce3980e0db7604d70",
+      "factor": "expected_status",
+      "value": "failure",
+      "disposition": "expected_failure",
+      "reason": "drop_operator_declared_failure",
+      "case_ids": [
+        "DROPOPERATOR00011"
+      ]
+    },
+    {
+      "row_id": "sfv-78fb3c659003fe3a54b6fcd8",
+      "factor": "expected_status",
+      "value": "success",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPOPERATOR00012"
+      ]
+    },
+    {
+      "row_id": "sfv-26a0fdf13b9879078dfef82d",
+      "factor": "if_exists_clause",
+      "value": "absent",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPOPERATOR00013"
+      ]
+    },
+    {
+      "row_id": "sfv-e666887dd1c4d738aef12358",
+      "factor": "if_exists_clause",
+      "value": "present",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPOPERATOR00014"
+      ]
+    },
+    {
+      "row_id": "sfv-506483276289071a2bd8392a",
+      "factor": "invalid_combination",
+      "value": "none",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPOPERATOR00015"
+      ]
+    },
+    {
+      "row_id": "sfv-cb39c892fc3ebc6d1d4e4dce",
+      "factor": "invalid_combination",
+      "value": "syntax_valid_semantic_error",
+      "disposition": "expected_failure",
+      "reason": "invalid_drop_operator_combination",
+      "case_ids": [
+        "DROPOPERATOR00016"
+      ]
+    },
+    {
+      "row_id": "sfv-289851dc9ad341e32af055ef",
+      "factor": "multi_drop",
+      "value": "multiple",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPOPERATOR00017"
+      ]
+    },
+    {
+      "row_id": "sfv-d48fa60f70eda9881e1f0505",
+      "factor": "multi_drop",
+      "value": "single",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPOPERATOR00018"
+      ]
+    },
+    {
+      "row_id": "sfv-969e10c85333da2a6e956908",
+      "factor": "name_shape",
+      "value": "plain_identifier",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPOPERATOR00019"
+      ]
+    },
+    {
+      "row_id": "sfv-ef82902faa0531bda4f2f2db",
+      "factor": "name_shape",
+      "value": "quoted_identifier",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPOPERATOR00020"
+      ]
+    },
+    {
+      "row_id": "sfv-a35636e2298408c0467b8c27",
+      "factor": "name_shape",
+      "value": "schema_qualified",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPOPERATOR00021"
+      ]
+    },
+    {
+      "row_id": "sfv-d9b1940b3addcd8c6fbb04ca",
+      "factor": "operand_data_type",
+      "value": "boolean",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPOPERATOR00022"
+      ]
+    },
+    {
+      "row_id": "sfv-ddc35a889b1794919bad9333",
+      "factor": "operand_data_type",
+      "value": "custom_type",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPOPERATOR00023"
+      ]
+    },
+    {
+      "row_id": "sfv-b98824f8befd0f5e12ea5dc5",
+      "factor": "operand_data_type",
+      "value": "integer",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPOPERATOR00024"
+      ]
+    },
+    {
+      "row_id": "sfv-c39464c42def6b80accac401",
+      "factor": "operand_data_type",
+      "value": "text",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPOPERATOR00025"
+      ]
+    },
+    {
+      "row_id": "sfv-a2f8d0e92afb461cb975f5d8",
+      "factor": "operand_type_shape",
+      "value": "binary_operator",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPOPERATOR00026"
+      ]
+    },
+    {
+      "row_id": "sfv-5382381edb179faab45767e8",
+      "factor": "operand_type_shape",
+      "value": "prefix_operator",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPOPERATOR00027"
+      ]
+    },
+    {
+      "row_id": "sfv-92834992de8513b923b69a5c",
+      "factor": "ownership_boundary",
+      "value": "non_owner",
+      "disposition": "expected_failure",
+      "reason": "insufficient_operator_privilege",
+      "case_ids": [
+        "DROPOPERATOR00028"
+      ]
+    },
+    {
+      "row_id": "sfv-8aa822babd1cbc29b07aba51",
+      "factor": "ownership_boundary",
+      "value": "owner",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPOPERATOR00029"
+      ]
+    },
+    {
+      "row_id": "sfv-b8ef15a992f63caef888369f",
+      "factor": "ownership_boundary",
+      "value": "superuser",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPOPERATOR00030"
+      ]
+    },
+    {
+      "row_id": "sfv-eebcd0e4585514f93710951b",
+      "factor": "privilege_context",
+      "value": "insufficient_privilege",
+      "disposition": "expected_failure",
+      "reason": "insufficient_operator_privilege",
+      "case_ids": [
+        "DROPOPERATOR00031"
+      ]
+    },
+    {
+      "row_id": "sfv-6e51d9b6788638748cef3a82",
+      "factor": "privilege_context",
+      "value": "non_owner",
+      "disposition": "expected_failure",
+      "reason": "insufficient_operator_privilege",
+      "case_ids": [
+        "DROPOPERATOR00032"
+      ]
+    },
+    {
+      "row_id": "sfv-b690a710f247357ac63fa298",
+      "factor": "privilege_context",
+      "value": "owner",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPOPERATOR00033"
+      ]
+    },
+    {
+      "row_id": "sfv-b72252f55a8e9689d5d775f8",
+      "factor": "privilege_context",
+      "value": "superuser",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPOPERATOR00034"
+      ]
+    },
+    {
+      "row_id": "sfv-5408abaac53700e15eaef01e",
+      "factor": "statement_branch",
+      "value": "branch_1",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPOPERATOR00035"
+      ]
+    },
+    {
+      "row_id": "sfv-f0289a038e4f16f8e744af86",
+      "factor": "target_object_state",
+      "value": "exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPOPERATOR00036"
+      ]
+    },
+    {
+      "row_id": "sfv-f99b7526b63ef0089bf74438",
+      "factor": "target_object_state",
+      "value": "exists_with_dependents",
+      "disposition": "expected_failure",
+      "reason": "dependent_objects_restricted",
+      "case_ids": [
+        "DROPOPERATOR00037"
+      ]
+    },
+    {
+      "row_id": "sfv-97a08268d7a0aa99270e2cf5",
+      "factor": "target_object_state",
+      "value": "missing",
+      "disposition": "expected_failure",
+      "reason": "undefined_operator_absent",
+      "case_ids": [
+        "DROPOPERATOR00038"
+      ]
+    },
+    {
+      "row_id": "sfv-b52e2c69959e2d4d16b3a371",
+      "factor": "verification_mode",
+      "value": "catalog_query",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPOPERATOR00039"
+      ]
+    },
+    {
+      "row_id": "sfv-4d7f02e0689939b6bb6f719c",
+      "factor": "verification_mode",
+      "value": "effect_query",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPOPERATOR00040"
+      ]
+    },
+    {
+      "row_id": "sfv-f712d94109ebd1b0ea371ed9",
+      "factor": "verification_mode",
+      "value": "error_assertion",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPOPERATOR00041"
+      ]
+    }
+  ],
+  "generation_mode": "factor_value_independent_loop_v1",
+  "decision_count": 43,
+  "local_sql_decision_count": 43,
+  "extension_case_count": 1920,
+  "delegated_decision_count": 0,
+  "obligation_multiset_sha256": "a1a5ca96351754b7a939eb8fb313254dfde78296361a87f12b5ca2d26f967d0d"
+}
