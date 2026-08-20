@@ -6,7 +6,7 @@
   "statement_count": 183,
   "retained_statement_count": 6,
   "pending_statement_count": 177,
-  "next_pending_statement": "reindex",
+  "next_pending_statement": "release_savepoint",
   "statements": {
     "abort": {
       "status": "completed",
@@ -1129,11 +1129,11 @@
       "validation_evidence_sha256": "20b3411127d9f1e5c8b380465eb565c3a612fd716349a4389dac9671bfd816d9"
     },
     "reindex": {
-      "status": "pending",
-      "package_path": null,
-      "sql_file_count": null,
-      "validation_evidence": null,
-      "validation_evidence_sha256": null
+      "status": "completed",
+      "package_path": "artifacts/regress/by-factor/ddl/index/reindex",
+      "sql_file_count": 3575,
+      "validation_evidence": "/Users/yuyu/PyCharmMiscProject/pg_case_factory/artifacts/intermediates/remaining-statement-factor-cycle/reindex/validation.json",
+      "validation_evidence_sha256": "a1317d9bb097816cd89736b2a4c54cc07b31703188eeb3a47fe0b0307785e0c8"
     },
     "release_savepoint": {
       "status": "pending",
