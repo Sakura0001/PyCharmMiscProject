@@ -3448,6 +3448,171 @@ def _build_alter_text_search_dictionary_plan_lazily(
     )
 
 @lru_cache(maxsize=4)
+def _alter_text_search_parser_factor_plan(repository_root: str):
+    from .alter_text_search_parser_factor_loop import (
+        build_alter_text_search_parser_factor_loop_plan,
+    )
+
+    return build_alter_text_search_parser_factor_loop_plan(Path(repository_root))
+
+
+@lru_cache(maxsize=4)
+def _alter_text_search_parser_extension_plan(repository_root: str):
+    from .alter_text_search_parser_factor_extension import (
+        build_alter_text_search_parser_factor_extension_plan,
+    )
+
+    return build_alter_text_search_parser_factor_extension_plan(
+        Path(repository_root)
+    )
+
+
+def _alter_text_search_parser_baseline_cases(
+    factor_plan: object,
+) -> tuple[StatementRegressCase, ...]:
+    return tuple(
+        StatementRegressCase(
+            ordinal=case.ordinal,
+            case_id=case.case_id,
+            sql_filename=case.sql_filename,
+            object_prefix=case.object_prefix,
+            case_group=f"factor_value_loop_{case.kind.lower()}",
+            case_type="factor_value_independent_witness",
+            outcome=case.outcome,
+            execution_profile="same_session_multiphase",
+            derived_axes={
+                "primary_obligation_id": case.primary_obligation_id,
+                "kind": case.kind,
+                "factor_key": case.factor_key,
+                "factor_value": case.factor_value,
+                "consumer_action_id": case.consumer_action_id,
+                "expected_sqlstate": case.expected_sqlstate,
+            },
+            factor_values=(f"{case.factor_key}={case.factor_value}",),
+            combination_strategy="one_primary_factor_value_with_legal_baselines",
+            description=(
+                "Independent ALTER TEXT SEARCH PARSER witness for "
+                f"{case.factor_key}={case.factor_value}"
+            ),
+            expected_anchor=(
+                f"SQLSTATE {case.expected_sqlstate}; actual-byte semantic locus"
+            ),
+        )
+        for case in factor_plan.cases
+    )
+
+
+def _alter_text_search_parser_extension_cases(
+    extension_plan: object,
+) -> tuple[StatementRegressCase, ...]:
+    return tuple(
+        StatementRegressCase(
+            ordinal=case.ordinal,
+            case_id=case.case_id,
+            sql_filename=case.sql_filename,
+            object_prefix=case.object_prefix,
+            case_group="factor_extension_cross",
+            case_type="bounded_post_coverage_extension",
+            outcome=case.outcome,
+            execution_profile="same_session_multiphase",
+            derived_axes={
+                "derivation_id": case.derivation_id,
+                "combination_group": case.derived_from_combination_group,
+                "consumer_action_id": case.consumer_action_id,
+                "expected_sqlstate": case.expected_sqlstate,
+                "derivation_reason": case.derivation_reason,
+            },
+            factor_values=tuple(
+                f"{key}={value}" for key, value in case.factor_assignment
+            ),
+            combination_strategy="bounded_post_coverage_extension",
+            description=case.derivation_reason,
+            expected_anchor=(
+                f"SQLSTATE {case.expected_sqlstate}; actual-byte semantic locus"
+            ),
+        )
+        for case in extension_plan.cases
+    )
+
+
+def _alter_text_search_parser_factor_decisions(
+    factor_plan: object,
+    entry: StatementCycleEntry,
+) -> list[FactorValueDecision]:
+    standard_case_by_id = {case.case_id: case for case in factor_plan.cases}
+    factor_case_by_obligation = {
+        case.primary_obligation_id: case for case in factor_plan.cases
+    }
+    decisions: list[FactorValueDecision] = []
+    for factor in entry.factors:
+        for value, row_id in zip(factor.values, factor.row_ids):
+            matches = [
+                obligation
+                for obligation in factor_plan.obligations
+                if obligation.kind == "SFV"
+                and obligation.factor_key == factor.name
+                and obligation.value == value
+                and f"|{row_id}|" in obligation.obligation_id
+            ]
+            if len(matches) != 1:
+                raise RemainingStatementRegressError(
+                    "ALTER TEXT SEARCH PARSER canonical factor mapping is not "
+                    f"unique: {factor.name}={value}"
+                )
+            obligation = matches[0]
+            factor_case = factor_case_by_obligation[obligation.obligation_id]
+            standard_case = standard_case_by_id[factor_case.case_id]
+            decisions.append(
+                FactorValueDecision(
+                    row_id=row_id,
+                    factor=factor.name,
+                    value=value,
+                    disposition=obligation.disposition,
+                    reason=(
+                        factor_case.expected_failure_reason
+                        if obligation.disposition == "expected_failure"
+                        else None
+                    ),
+                    case_ids=(standard_case.case_id,),
+                )
+            )
+    return decisions
+
+
+def _build_alter_text_search_parser_plan_lazily(
+    snapshot: StatementFactorCycleSnapshot,
+    entry: StatementCycleEntry,
+) -> StatementRegressPlan:
+    factor_plan = _alter_text_search_parser_factor_plan(
+        str(snapshot.repository_root.resolve())
+    )
+    extension_plan = _alter_text_search_parser_extension_plan(
+        str(snapshot.repository_root.resolve())
+    )
+    baseline_cases = _alter_text_search_parser_baseline_cases(factor_plan)
+    extension_cases = _alter_text_search_parser_extension_cases(extension_plan)
+    cases = tuple(
+        sorted(
+            (*baseline_cases, *extension_cases),
+            key=lambda case: case.ordinal,
+        )
+    )
+    decisions = _alter_text_search_parser_factor_decisions(factor_plan, entry)
+    return StatementRegressPlan(
+        statement_key="alter_text_search_parser",
+        file_prefix="ALTERTEXTSEARCHPARSER",
+        cycle_fingerprint=snapshot.fingerprint,
+        matrix_path=entry.matrix_path.as_posix(),
+        matrix_sha256=entry.matrix_sha256,
+        reference_path=entry.reference_path.as_posix(),
+        reference_sha256=entry.reference_sha256,
+        universe_semantic_sha256=snapshot.universe_semantic_sha256,
+        official_source=entry.official_source,
+        cases=cases,
+        factor_decisions=tuple(decisions),
+    )
+
+@lru_cache(maxsize=4)
 def _alter_publication_factor_plan(repository_root: str):
     from .alter_publication_factor_loop import (
         build_alter_publication_factor_loop_plan,
@@ -5217,6 +5382,7 @@ _PLAN_BUILDERS: Mapping[
     "alter_routine": _build_alter_routine_plan_lazily,
     "alter_rule": _build_alter_rule_plan_lazily,
     "alter_schema": _build_alter_schema_plan_lazily,
+    "alter_text_search_parser": _build_alter_text_search_parser_plan_lazily,
     "alter_text_search_dictionary": _build_alter_text_search_dictionary_plan_lazily,
     "alter_text_search_configuration": _build_alter_text_search_configuration_plan_lazily,
     "alter_tablespace": _build_alter_tablespace_plan_lazily,
@@ -6033,6 +6199,32 @@ def render_statement_regress_case(
             )
         return render_alter_text_search_dictionary_factor_case(found, root)
 
+    if plan.statement_key == "alter_text_search_parser":
+        from .alter_text_search_parser_factor_render import (
+            render_alter_text_search_parser_factor_case,
+        )
+
+        root = (
+            Path(repository_root).resolve(strict=True)
+            if repository_root is not None
+            else Path(__file__).resolve().parents[2]
+        )
+        factor_plan = _alter_text_search_parser_factor_plan(str(root))
+        extension_plan = _alter_text_search_parser_extension_plan(str(root))
+        found = next(
+            (c for c in factor_plan.cases if c.case_id == case.case_id), None
+        )
+        if found is None:
+            found = next(
+                (c for c in extension_plan.cases if c.case_id == case.case_id),
+                None,
+            )
+        if found is None:
+            raise RemainingStatementRegressError(
+                f"ALTER TEXT SEARCH PARSER case mapping is not unique: {case.case_id}"
+            )
+        return render_alter_text_search_parser_factor_case(found, root)
+
     if plan.statement_key == "alter_publication":
         from .alter_publication_factor_render import (
             render_alter_publication_factor_case,
@@ -6726,6 +6918,27 @@ def _coverage_document(
         )
         factor_plan = _alter_text_search_dictionary_factor_plan(str(root))
         extension_plan = _alter_text_search_dictionary_extension_plan(str(root))
+        document.update(
+            {
+                "generation_mode": "factor_value_independent_loop_v1",
+                "decision_count": len(factor_plan.obligations),
+                "local_sql_decision_count": len(factor_plan.cases),
+                "extension_case_count": len(extension_plan.cases),
+                "delegated_decision_count": len(factor_plan.delegated),
+                "obligation_multiset_sha256": (
+                    factor_plan.obligation_multiset_sha256
+                ),
+            }
+        )
+
+    elif plan.statement_key == "alter_text_search_parser":
+        root = (
+            Path(repository_root).resolve(strict=True)
+            if repository_root is not None
+            else Path(__file__).resolve().parents[2]
+        )
+        factor_plan = _alter_text_search_parser_factor_plan(str(root))
+        extension_plan = _alter_text_search_parser_extension_plan(str(root))
         document.update(
             {
                 "generation_mode": "factor_value_independent_loop_v1",
@@ -8880,6 +9093,107 @@ def _alter_text_search_dictionary_factor_documents(
     ).to_dict()
     return factor_plan_document, handoff_document, actual_report
 
+def _alter_text_search_parser_factor_documents(
+    repository_root: Path,
+    output_files: Mapping[str, bytes],
+) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+    from .alter_text_search_parser_factor_validate import (
+        validate_alter_text_search_parser_factor_programs,
+    )
+
+    root = Path(repository_root).resolve(strict=True)
+    baseline_plan = _alter_text_search_parser_factor_plan(str(root))
+    extension_plan = _alter_text_search_parser_extension_plan(str(root))
+    obligations = [
+        {
+            "ordinal": row.ordinal,
+            "obligation_id": row.obligation_id,
+            "kind": row.kind,
+            "factor_key": row.factor_key,
+            "value": row.value,
+            "consumer_action_id": row.consumer_action_id,
+            "disposition": row.disposition,
+            "source_locator": row.source_locator,
+            "delegated_statement_key": row.delegated_statement_key,
+        }
+        for row in baseline_plan.obligations
+    ]
+    baseline_case_rows = [
+        {
+            "ordinal": row.ordinal,
+            "case_id": row.case_id,
+            "sql_filename": row.sql_filename,
+            "object_prefix": row.object_prefix,
+            "primary_obligation_id": row.primary_obligation_id,
+            "kind": row.kind,
+            "factor_key": row.factor_key,
+            "factor_value": row.factor_value,
+            "consumer_action_id": row.consumer_action_id,
+            "outcome": row.outcome,
+            "expected_sqlstate": row.expected_sqlstate,
+            "expected_failure_reason": row.expected_failure_reason,
+            "baseline_assignments": [
+                list(item) for item in row.baseline_assignments
+            ],
+            "execution_profile": row.execution_profile,
+        }
+        for row in baseline_plan.cases
+    ]
+    extension_case_rows = [
+        {
+            "ordinal": row.ordinal,
+            "case_id": row.case_id,
+            "sql_filename": row.sql_filename,
+            "object_prefix": row.object_prefix,
+            "derivation_id": row.derivation_id,
+            "derived_from_combination_group": row.derived_from_combination_group,
+            "derivation_reason": row.derivation_reason,
+            "factor_assignment": [
+                list(item) for item in row.factor_assignment
+            ],
+            "consumer_action_id": row.consumer_action_id,
+            "outcome": row.outcome,
+            "expected_sqlstate": row.expected_sqlstate,
+            "expected_failure_reason": row.expected_failure_reason,
+        }
+        for row in extension_plan.cases
+    ]
+    factor_plan_document = {
+        "schema_version": 1,
+        "kind": "alter_text_search_parser_factor_value_loop_plan",
+        "generation_mode": "factor_value_independent_loop_v1",
+        "decision_count": len(baseline_plan.obligations),
+        "sql_file_count": len(baseline_case_rows) + len(extension_case_rows),
+        "delegated_count": len(baseline_plan.delegated),
+        "obligation_multiset_sha256": baseline_plan.obligation_multiset_sha256,
+        "extension_multiset_sha256": extension_plan.extension_multiset_sha256,
+        "obligations": obligations,
+        "cases": baseline_case_rows + extension_case_rows,
+    }
+    handoff_document = {
+        "schema_version": 1,
+        "kind": "alter_text_search_parser_factor_handoff_ledger",
+        "generation_mode": "factor_value_independent_loop_v1",
+        "delegated_count": len(baseline_plan.delegated),
+        "owner_statement_key": "alter_text_search_parser",
+        "decisions": [
+            row
+            for row in obligations
+            if row["disposition"] == "delegated"
+        ],
+    }
+    actual_report = validate_alter_text_search_parser_factor_programs(
+        baseline_plan,
+        extension_plan,
+        {
+            name: payload
+            for name, payload in output_files.items()
+            if name.endswith(".sql")
+        },
+        root,
+    ).to_dict()
+    return factor_plan_document, handoff_document, actual_report
+
 def _alter_publication_factor_documents(
     repository_root: Path,
     output_files: Mapping[str, bytes],
@@ -10238,6 +10552,36 @@ def _package_document(
             }
         )
 
+    elif plan.statement_key == "alter_text_search_parser":
+        root = (
+            Path(repository_root).resolve(strict=True)
+            if repository_root is not None
+            else Path(__file__).resolve().parents[2]
+        )
+        factor_plan, handoff, actual = _alter_text_search_parser_factor_documents(
+            root,
+            output_files,
+        )
+        document.update(
+            {
+                "generation_mode": "factor_value_independent_loop_v1",
+                "decision_count": factor_plan["decision_count"],
+                "delegated_count": handoff["delegated_count"],
+                "obligation_multiset_sha256": factor_plan[
+                    "obligation_multiset_sha256"
+                ],
+                "extension_multiset_sha256": factor_plan[
+                    "extension_multiset_sha256"
+                ],
+                "factor_loop_plan_sha256": _sha256(_json_bytes(factor_plan)),
+                "handoff_ledger_sha256": _sha256(_json_bytes(handoff)),
+                "actual_factor_witness_report_sha256": _sha256(
+                    _json_bytes(actual)
+                ),
+                "actual_factor_witness_passed": actual["passed"],
+            }
+        )
+
     elif plan.statement_key == "alter_publication":
         root = (
             Path(repository_root).resolve(strict=True)
@@ -10650,6 +10994,7 @@ def _validate_rendered_output(
         "alter_statistics": r"(?m)^ALTER\s+STATISTICS(?:\s|;|$)",
         "alter_subscription": r"(?m)^ALTER\s+SUBSCRIPTION(?:\s|;|$)",
         "alter_system": r"(?m)^ALTER\s+SYSTEM(?:\s|;|$)",
+        "alter_text_search_parser": r"(?m)^ALTER\s+TEXT\s+SEARCH\s+PARSER(?:\s|;|$)",
         "alter_text_search_dictionary": r"(?m)^ALTER\s+TEXT\s+SEARCH\s+DICTIONARY(?:\s|;|$)",
         "alter_text_search_configuration": r"(?m)^ALTER\s+TEXT\s+SEARCH\s+CONFIGURATION(?:\s|;|$)",
         "alter_tablespace": r"(?m)^ALTER\s+TABLESPACE(?:\s|;|$)",
