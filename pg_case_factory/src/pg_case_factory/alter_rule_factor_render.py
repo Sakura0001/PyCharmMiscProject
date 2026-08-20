@@ -7,8 +7,13 @@ diverge from the bytes actually written.
 
 BOOKEND: ``ALTER RULE`` with ``table_type=table`` creates a host TABLE, so
 ``contains_create_table_statement`` is True — the first and last ``;``-
-statement must each be ``DROP TABLE IF EXISTS <host>``.  For
-``table_type=view`` (no CREATE TABLE), the bookend gate is False and
+statement must each be ``DROP TABLE IF EXISTS`` naming every created table.
+The fixture CREATE TABLE and both bookend DROP TABLE statements use the
+audit-normalizable :func:`_table_fixture_name` (a plain or schema-qualified
+name); the ALTER RULE target keeps the shape-appropriate :func:`_host_name`
+(a quoted lowercase identifier resolves to the same table), so the
+``quoted_id`` factor stays byte-observable without breaking the table audit.
+For ``table_type=view`` (no CREATE TABLE), the bookend gate is False and
 cleanup DROPs the VIEW instead.  For ``table_name_shape=nonexistent_table``
 (no table created at all), the bookend is also False.
 """
@@ -156,7 +161,32 @@ def _host_name(
     shape = a.get("table_name_shape", "simple_id")
     base = f"{p}vhost" if _is_view(a) else f"{p}host"
     if shape == "quoted_id":
-        return f'"{p}Mixed Host"'
+        return f'"{base}"'
+    if shape == "schema_qualified":
+        return f"public.{base}"
+    if shape == "nonexistent_table":
+        return f"{p}no_such_table" if not _is_view(a) else f"{p}no_such_view"
+    return base
+
+
+def _table_fixture_name(
+    case: AlterRuleFactorCase, a: dict[str, str], p: str
+) -> str:
+    """The bookend-audit-normalizable name for fixture CREATE/DROP.
+
+    The shared ``audit_complete_table_script`` normalizes table identifiers
+    with a plain ``[A-Za-z_][A-Za-z0-9_$]*`` grammar that rejects quoted
+    names (and stops at the space inside a quoted name), so the fixture
+    CREATE TABLE and the bookend DROP TABLE statements emit a plain (or
+    schema-qualified) name.  The ALTER RULE target still uses the
+    shape-appropriate :func:`_host_name` form — a quoted lowercase identifier
+    resolves to the same table as the plain fixture name — so the
+    ``quoted_id`` factor stays byte-observable in the target without
+    breaking the table audit.
+    """
+
+    shape = a.get("table_name_shape", "simple_id")
+    base = f"{p}vhost" if _is_view(a) else f"{p}host"
     if shape == "schema_qualified":
         return f"public.{base}"
     if shape == "nonexistent_table":
@@ -171,7 +201,7 @@ def _host_base(
 
     shape = a.get("table_name_shape", "simple_id")
     if shape == "quoted_id":
-        return f"{p}Mixed Host".lower()
+        return f"{p}vhost" if _is_view(a) else f"{p}host"
     if shape == "schema_qualified":
         return f"{p}vhost" if _is_view(a) else f"{p}host"
     if shape == "nonexistent_table":
@@ -302,6 +332,7 @@ def _resolve_case(case: AlterRuleFactorCase) -> _CasePlan:
     effective = _effective_role(case, a, p)
     roles = _role_names(case, a, p)
     host = _host_name(case, a, p)
+    fixture_name = _table_fixture_name(case, a, p)
     rule = _rule_name(case, a, p)
     new = _new_name(case, a, p)
 
@@ -332,7 +363,7 @@ def _resolve_case(case: AlterRuleFactorCase) -> _CasePlan:
         locus = "fixture.view"
     else:
         setup.append(
-            f"CREATE TABLE {host} ({p}col integer);"
+            f"CREATE TABLE {fixture_name} ({p}col integer);"
         )
         locus = "fixture.table"
 
@@ -412,13 +443,13 @@ def _resolve_case(case: AlterRuleFactorCase) -> _CasePlan:
                     f"DROP RULE IF EXISTS {new} ON {host};"
                 )
 
-    # host drop
+    # host drop — table bookends use the audit-normalizable fixture name so
+    # ``audit_complete_table_script`` can parse the DROP TABLE identifiers;
+    # views keep the shape-appropriate name (the bookend gate skips views).
     if is_view or (drop_mode in ("drop_view", "drop_table") and is_view):
         host_drop = f"DROP VIEW IF EXISTS {host} CASCADE;"
-    elif not creates_table and table_missing:
-        host_drop = f"DROP TABLE IF EXISTS {host} CASCADE;"
     else:
-        host_drop = f"DROP TABLE IF EXISTS {host} CASCADE;"
+        host_drop = f"DROP TABLE IF EXISTS {fixture_name} CASCADE;"
 
     # pre-cleanup: host drop first (for bookend), then role drops
     pre_cleanup: list[str] = []
