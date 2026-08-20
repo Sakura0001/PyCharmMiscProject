@@ -1,0 +1,461 @@
+{
+  "schema_version": 1,
+  "statement_key": "create_text_search_dictionary",
+  "cycle_fingerprint": "606b9e710210e50ff88b14de7052163f9ee31f6f1d1e744bc0bd9935f399a9d9",
+  "factor_value_count": 44,
+  "factor_disposition_counts": {
+    "covered": 30,
+    "expected_failure": 14,
+    "justified_na": 0
+  },
+  "missing_row_ids": [],
+  "duplicate_row_ids": [],
+  "decisions": [
+    {
+      "row_id": "sfv-671e7cbec24754420f8ba611",
+      "factor": "cleanup_mode",
+      "value": "drop_template",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATETEXTSEARCHDICTIONARY00002"
+      ]
+    },
+    {
+      "row_id": "sfv-458989591f4ef7450fca3b4f",
+      "factor": "cleanup_mode",
+      "value": "drop_text_search_dictionary",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATETEXTSEARCHDICTIONARY00003"
+      ]
+    },
+    {
+      "row_id": "sfv-4bc3c2ca151f86f3306cb0a4",
+      "factor": "dict_name_shape",
+      "value": "duplicate_name",
+      "disposition": "expected_failure",
+      "reason": "duplicate_object_provisional",
+      "case_ids": [
+        "CREATETEXTSEARCHDICTIONARY00004"
+      ]
+    },
+    {
+      "row_id": "sfv-33d72fc1358ab369eb248ae3",
+      "factor": "dict_name_shape",
+      "value": "invalid_name",
+      "disposition": "expected_failure",
+      "reason": "syntax_error_provisional",
+      "case_ids": [
+        "CREATETEXTSEARCHDICTIONARY00005"
+      ]
+    },
+    {
+      "row_id": "sfv-70eb7d258783d29c2c0321d1",
+      "factor": "dict_name_shape",
+      "value": "quoted_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATETEXTSEARCHDICTIONARY00006"
+      ]
+    },
+    {
+      "row_id": "sfv-23f065e5b312517299fc8b2d",
+      "factor": "dict_name_shape",
+      "value": "reserved_word_as_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATETEXTSEARCHDICTIONARY00007"
+      ]
+    },
+    {
+      "row_id": "sfv-f493328199f03b638508d080",
+      "factor": "dict_name_shape",
+      "value": "schema_qualified_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATETEXTSEARCHDICTIONARY00008"
+      ]
+    },
+    {
+      "row_id": "sfv-5f57370a65c684dc47cb3792",
+      "factor": "dict_name_shape",
+      "value": "simple_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATETEXTSEARCHDICTIONARY00009"
+      ]
+    },
+    {
+      "row_id": "sfv-8186f125731e1a4735733310",
+      "factor": "duplicate_dict_name",
+      "value": "no_conflict",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATETEXTSEARCHDICTIONARY00010"
+      ]
+    },
+    {
+      "row_id": "sfv-69fd2f5bfff25e3484315370",
+      "factor": "duplicate_dict_name",
+      "value": "same_name_conflict",
+      "disposition": "expected_failure",
+      "reason": "duplicate_object_provisional",
+      "case_ids": [
+        "CREATETEXTSEARCHDICTIONARY00011"
+      ]
+    },
+    {
+      "row_id": "sfv-2b2c25146276a97fcdfab360",
+      "factor": "expected_status",
+      "value": "failure",
+      "disposition": "expected_failure",
+      "reason": "text_search_dictionary_failure_provisional",
+      "case_ids": [
+        "CREATETEXTSEARCHDICTIONARY00012"
+      ]
+    },
+    {
+      "row_id": "sfv-3900f77872340e44e085d9c3",
+      "factor": "expected_status",
+      "value": "success",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATETEXTSEARCHDICTIONARY00013"
+      ]
+    },
+    {
+      "row_id": "sfv-fe040f4c319b6e2b8c2b942f",
+      "factor": "invalid_option_value",
+      "value": "invalid_value",
+      "disposition": "expected_failure",
+      "reason": "invalid_option_value_provisional",
+      "case_ids": [
+        "CREATETEXTSEARCHDICTIONARY00014"
+      ]
+    },
+    {
+      "row_id": "sfv-79285fb684b99170d17e74ac",
+      "factor": "invalid_option_value",
+      "value": "valid_value",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATETEXTSEARCHDICTIONARY00015"
+      ]
+    },
+    {
+      "row_id": "sfv-eb122d6e149e5b73811839ae",
+      "factor": "nonexistent_template",
+      "value": "template_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATETEXTSEARCHDICTIONARY00016"
+      ]
+    },
+    {
+      "row_id": "sfv-4f5eac1a0c6a8c4c6b7b6eea",
+      "factor": "nonexistent_template",
+      "value": "template_missing",
+      "disposition": "expected_failure",
+      "reason": "text_search_template_does_not_exist_provisional",
+      "case_ids": [
+        "CREATETEXTSEARCHDICTIONARY00017"
+      ]
+    },
+    {
+      "row_id": "sfv-840d6bef7f173d81bcf42b79",
+      "factor": "object_state",
+      "value": "exists",
+      "disposition": "expected_failure",
+      "reason": "duplicate_object_provisional",
+      "case_ids": [
+        "CREATETEXTSEARCHDICTIONARY00018"
+      ]
+    },
+    {
+      "row_id": "sfv-18eebdda6452f423cba03e29",
+      "factor": "object_state",
+      "value": "not_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATETEXTSEARCHDICTIONARY00019"
+      ]
+    },
+    {
+      "row_id": "sfv-9e6e3d10496cb9c97bf6fb0f",
+      "factor": "option_clause",
+      "value": "only_template",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATETEXTSEARCHDICTIONARY00020"
+      ]
+    },
+    {
+      "row_id": "sfv-6775f4dc223b131410ec65e1",
+      "factor": "option_clause",
+      "value": "template_plus_multiple_options",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATETEXTSEARCHDICTIONARY00021"
+      ]
+    },
+    {
+      "row_id": "sfv-5c19380f05dc7f075f27d406",
+      "factor": "option_clause",
+      "value": "template_plus_single_option",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATETEXTSEARCHDICTIONARY00022"
+      ]
+    },
+    {
+      "row_id": "sfv-f46fdd61476f79a752222e60",
+      "factor": "option_value_shape",
+      "value": "invalid_value",
+      "disposition": "expected_failure",
+      "reason": "invalid_option_value_provisional",
+      "case_ids": [
+        "CREATETEXTSEARCHDICTIONARY00023"
+      ]
+    },
+    {
+      "row_id": "sfv-30ee664f4d4e8366cb112f99",
+      "factor": "option_value_shape",
+      "value": "quoted_value",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATETEXTSEARCHDICTIONARY00024"
+      ]
+    },
+    {
+      "row_id": "sfv-21f515d7602f85683d115318",
+      "factor": "option_value_shape",
+      "value": "valid_value",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATETEXTSEARCHDICTIONARY00025"
+      ]
+    },
+    {
+      "row_id": "sfv-8cf9369c4aaa5f212a700d6f",
+      "factor": "option_value_type",
+      "value": "numeric_value",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATETEXTSEARCHDICTIONARY00026"
+      ]
+    },
+    {
+      "row_id": "sfv-9764c2bbb2e476a5fcb84943",
+      "factor": "option_value_type",
+      "value": "quoted_string_value",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATETEXTSEARCHDICTIONARY00027"
+      ]
+    },
+    {
+      "row_id": "sfv-aba71cf76b787dba47276eb6",
+      "factor": "option_value_type",
+      "value": "simple_identifier",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATETEXTSEARCHDICTIONARY00028"
+      ]
+    },
+    {
+      "row_id": "sfv-93f945fafa656bb8bd93ee86",
+      "factor": "privilege_level",
+      "value": "non_owner",
+      "disposition": "expected_failure",
+      "reason": "insufficient_privilege_provisional",
+      "case_ids": [
+        "CREATETEXTSEARCHDICTIONARY00029"
+      ]
+    },
+    {
+      "row_id": "sfv-b696d61fd795aff61b18f169",
+      "factor": "privilege_level",
+      "value": "schema_owner",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATETEXTSEARCHDICTIONARY00030"
+      ]
+    },
+    {
+      "row_id": "sfv-a34321de3b57d530a12086ac",
+      "factor": "privilege_level",
+      "value": "superuser",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATETEXTSEARCHDICTIONARY00031"
+      ]
+    },
+    {
+      "row_id": "sfv-315c6203a7ac97f6ad502c8b",
+      "factor": "schema_existence",
+      "value": "schema_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATETEXTSEARCHDICTIONARY00032"
+      ]
+    },
+    {
+      "row_id": "sfv-fba750180bbe3b6269e39994",
+      "factor": "schema_existence",
+      "value": "schema_not_exists",
+      "disposition": "expected_failure",
+      "reason": "invalid_schema_name_provisional",
+      "case_ids": [
+        "CREATETEXTSEARCHDICTIONARY00033"
+      ]
+    },
+    {
+      "row_id": "sfv-451ad1456ad6e543c9430a1e",
+      "factor": "schema_permission_denied",
+      "value": "has_create_privilege",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATETEXTSEARCHDICTIONARY00034"
+      ]
+    },
+    {
+      "row_id": "sfv-8b3dac759aff3d26bb7876d2",
+      "factor": "schema_permission_denied",
+      "value": "lacks_create_privilege",
+      "disposition": "expected_failure",
+      "reason": "insufficient_privilege_provisional",
+      "case_ids": [
+        "CREATETEXTSEARCHDICTIONARY00035"
+      ]
+    },
+    {
+      "row_id": "sfv-cff6323c3f5062f25cd0aebc",
+      "factor": "statement_branch",
+      "value": "branch_1",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATETEXTSEARCHDICTIONARY00036"
+      ]
+    },
+    {
+      "row_id": "sfv-b4b23495aa0887ca1956b823",
+      "factor": "template_dependency",
+      "value": "template_exists_and_valid",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATETEXTSEARCHDICTIONARY00037"
+      ]
+    },
+    {
+      "row_id": "sfv-4dc53f28065883cc41d6cb0e",
+      "factor": "template_dependency",
+      "value": "template_missing",
+      "disposition": "expected_failure",
+      "reason": "text_search_template_does_not_exist_provisional",
+      "case_ids": [
+        "CREATETEXTSEARCHDICTIONARY00038"
+      ]
+    },
+    {
+      "row_id": "sfv-a0660c67ed1a3f5a6c8fbdf6",
+      "factor": "template_existence",
+      "value": "template_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATETEXTSEARCHDICTIONARY00039"
+      ]
+    },
+    {
+      "row_id": "sfv-aac30819c1a82333d9b94a3d",
+      "factor": "template_existence",
+      "value": "template_not_exists",
+      "disposition": "expected_failure",
+      "reason": "text_search_template_does_not_exist_provisional",
+      "case_ids": [
+        "CREATETEXTSEARCHDICTIONARY00040"
+      ]
+    },
+    {
+      "row_id": "sfv-2e71fc3bce435ef146970f1a",
+      "factor": "template_name_shape",
+      "value": "nonexistent_name",
+      "disposition": "expected_failure",
+      "reason": "text_search_template_does_not_exist_provisional",
+      "case_ids": [
+        "CREATETEXTSEARCHDICTIONARY00041"
+      ]
+    },
+    {
+      "row_id": "sfv-7eb7638f55e49364d0356bbc",
+      "factor": "template_name_shape",
+      "value": "schema_qualified_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATETEXTSEARCHDICTIONARY00042"
+      ]
+    },
+    {
+      "row_id": "sfv-a3220ec2aac8c04028aeca56",
+      "factor": "template_name_shape",
+      "value": "simple_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATETEXTSEARCHDICTIONARY00043"
+      ]
+    },
+    {
+      "row_id": "sfv-d7ef8948222533e6726fa526",
+      "factor": "verification_mode",
+      "value": "catalog_query_pg_ts_dict",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATETEXTSEARCHDICTIONARY00044"
+      ]
+    },
+    {
+      "row_id": "sfv-55c12c112c8b8cd33426ba62",
+      "factor": "verification_mode",
+      "value": "error_assertion",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATETEXTSEARCHDICTIONARY00045"
+      ]
+    }
+  ],
+  "generation_mode": "factor_value_independent_loop_v1",
+  "decision_count": 45,
+  "local_sql_decision_count": 45,
+  "extension_case_count": 4608,
+  "delegated_decision_count": 0,
+  "obligation_multiset_sha256": "659228e75179e452f1db8c76cf66d1a4563cff7d72c9c935f0f207090574b17c"
+}

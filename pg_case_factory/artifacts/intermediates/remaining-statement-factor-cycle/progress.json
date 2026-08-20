@@ -6,7 +6,7 @@
   "statement_count": 183,
   "retained_statement_count": 6,
   "pending_statement_count": 177,
-  "next_pending_statement": "create_text_search_dictionary",
+  "next_pending_statement": "create_text_search_parser",
   "statements": {
     "abort": {
       "status": "completed",
@@ -611,11 +611,11 @@
       "validation_evidence_sha256": "dfe5f058b3b6cfd91257ed83561717aa01a6e346ccea4bab362476a8ae26ab6c"
     },
     "create_text_search_dictionary": {
-      "status": "pending",
-      "package_path": null,
-      "sql_file_count": null,
-      "validation_evidence": null,
-      "validation_evidence_sha256": null
+      "status": "completed",
+      "package_path": "artifacts/regress/by-factor/ddl/text_search_dictionary/create_text_search_dictionary",
+      "sql_file_count": 4653,
+      "validation_evidence": "/Users/yuyu/PyCharmMiscProject/pg_case_factory/artifacts/intermediates/remaining-statement-factor-cycle/create_text_search_dictionary/validation.json",
+      "validation_evidence_sha256": "76941fd466056098054b28b11e0c15b6a2ff7189598e1c74bfd56584daf14de0"
     },
     "create_text_search_parser": {
       "status": "pending",
