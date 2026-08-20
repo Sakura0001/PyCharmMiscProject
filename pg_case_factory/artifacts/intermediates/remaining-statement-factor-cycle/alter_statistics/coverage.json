@@ -1,0 +1,521 @@
+{
+  "schema_version": 1,
+  "statement_key": "alter_statistics",
+  "cycle_fingerprint": "606b9e710210e50ff88b14de7052163f9ee31f6f1d1e744bc0bd9935f399a9d9",
+  "factor_value_count": 50,
+  "factor_disposition_counts": {
+    "covered": 33,
+    "expected_failure": 17,
+    "justified_na": 0
+  },
+  "missing_row_ids": [],
+  "duplicate_row_ids": [],
+  "decisions": [
+    {
+      "row_id": "sfv-29b06c52130146a9c3a07649",
+      "factor": "cleanup_mode",
+      "value": "drop_statistics",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERSTATISTICS00005"
+      ]
+    },
+    {
+      "row_id": "sfv-1662d303865d606d4afa71f5",
+      "factor": "executor_privilege",
+      "value": "non_owner_no_privilege",
+      "disposition": "expected_failure",
+      "reason": "insufficient_privilege_provisional",
+      "case_ids": [
+        "ALTERSTATISTICS00006"
+      ]
+    },
+    {
+      "row_id": "sfv-70d25dae1f1daeb17fb05fe9",
+      "factor": "executor_privilege",
+      "value": "superuser",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERSTATISTICS00007"
+      ]
+    },
+    {
+      "row_id": "sfv-aa11294933a6ae124244b94b",
+      "factor": "executor_privilege",
+      "value": "table_owner",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERSTATISTICS00008"
+      ]
+    },
+    {
+      "row_id": "sfv-97fa1e1b7a93d64d83e43884",
+      "factor": "expected_status",
+      "value": "failure",
+      "disposition": "expected_failure",
+      "reason": "statistics_does_not_exist_provisional",
+      "case_ids": [
+        "ALTERSTATISTICS00009"
+      ]
+    },
+    {
+      "row_id": "sfv-ac31a887ac6e35e7af39f399",
+      "factor": "expected_status",
+      "value": "success",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERSTATISTICS00010"
+      ]
+    },
+    {
+      "row_id": "sfv-b07b2194f4ece266d13431a6",
+      "factor": "new_name_shape",
+      "value": "existing_name_conflict",
+      "disposition": "expected_failure",
+      "reason": "duplicate_object_provisional",
+      "case_ids": [
+        "ALTERSTATISTICS00011"
+      ]
+    },
+    {
+      "row_id": "sfv-7d67485396b0f1aac5ce89ed",
+      "factor": "new_name_shape",
+      "value": "quoted_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERSTATISTICS00012"
+      ]
+    },
+    {
+      "row_id": "sfv-3b2aaa22cfc1d7a052af7fa3",
+      "factor": "new_name_shape",
+      "value": "simple_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERSTATISTICS00013"
+      ]
+    },
+    {
+      "row_id": "sfv-429e473092fb65e15ea82976",
+      "factor": "new_owner_shape",
+      "value": "existing_role",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERSTATISTICS00014"
+      ]
+    },
+    {
+      "row_id": "sfv-115f32e570d215c3efd83f30",
+      "factor": "new_owner_shape",
+      "value": "nonexistent_role",
+      "disposition": "expected_failure",
+      "reason": "role_does_not_exist_provisional",
+      "case_ids": [
+        "ALTERSTATISTICS00015"
+      ]
+    },
+    {
+      "row_id": "sfv-2e8067074a41e7cd1d08ba1b",
+      "factor": "new_schema_shape",
+      "value": "existing_schema",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERSTATISTICS00016"
+      ]
+    },
+    {
+      "row_id": "sfv-b898c592b4dbaac16bc99d17",
+      "factor": "new_schema_shape",
+      "value": "nonexistent_schema",
+      "disposition": "expected_failure",
+      "reason": "schema_does_not_exist_provisional",
+      "case_ids": [
+        "ALTERSTATISTICS00017"
+      ]
+    },
+    {
+      "row_id": "sfv-205ab2106276e8ad451ae16c",
+      "factor": "nonexistent_owner",
+      "value": "owner_role_does_not_exist",
+      "disposition": "expected_failure",
+      "reason": "role_does_not_exist_provisional",
+      "case_ids": [
+        "ALTERSTATISTICS00018"
+      ]
+    },
+    {
+      "row_id": "sfv-7f5c3c79213f9f86acdb2431",
+      "factor": "nonexistent_schema",
+      "value": "schema_does_not_exist",
+      "disposition": "expected_failure",
+      "reason": "schema_does_not_exist_provisional",
+      "case_ids": [
+        "ALTERSTATISTICS00019"
+      ]
+    },
+    {
+      "row_id": "sfv-28461e515086a9133a12fc8b",
+      "factor": "nonexistent_statistics",
+      "value": "statistics_does_not_exist",
+      "disposition": "expected_failure",
+      "reason": "statistics_does_not_exist_provisional",
+      "case_ids": [
+        "ALTERSTATISTICS00020"
+      ]
+    },
+    {
+      "row_id": "sfv-f7e22592e0503b3b6bf6840f",
+      "factor": "owner_to_shape",
+      "value": "current_role_keyword",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERSTATISTICS00021"
+      ]
+    },
+    {
+      "row_id": "sfv-1348cd325bfe6ed7ae31d9e4",
+      "factor": "owner_to_shape",
+      "value": "current_user_keyword",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERSTATISTICS00022"
+      ]
+    },
+    {
+      "row_id": "sfv-3c5e0c2a599b63b768907728",
+      "factor": "owner_to_shape",
+      "value": "explicit_role_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERSTATISTICS00023"
+      ]
+    },
+    {
+      "row_id": "sfv-5736dfd14c55db656d4bf584",
+      "factor": "owner_to_shape",
+      "value": "session_user_keyword",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERSTATISTICS00024"
+      ]
+    },
+    {
+      "row_id": "sfv-41272eb6216ea4fafb425fc6",
+      "factor": "privilege_insufficient",
+      "value": "non_table_owner_altering_statistics",
+      "disposition": "expected_failure",
+      "reason": "insufficient_privilege_provisional",
+      "case_ids": [
+        "ALTERSTATISTICS00025"
+      ]
+    },
+    {
+      "row_id": "sfv-a5007492db4c595849c4c45d",
+      "factor": "rename_behavior",
+      "value": "rename_to_existing_name_conflict",
+      "disposition": "expected_failure",
+      "reason": "duplicate_object_provisional",
+      "case_ids": [
+        "ALTERSTATISTICS00026"
+      ]
+    },
+    {
+      "row_id": "sfv-a18493949dbe588b95e71900",
+      "factor": "rename_behavior",
+      "value": "rename_to_new_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERSTATISTICS00027"
+      ]
+    },
+    {
+      "row_id": "sfv-a4af3ac68f89d49b10080965",
+      "factor": "rename_conflict",
+      "value": "new_name_already_exists",
+      "disposition": "expected_failure",
+      "reason": "duplicate_object_provisional",
+      "case_ids": [
+        "ALTERSTATISTICS00028"
+      ]
+    },
+    {
+      "row_id": "sfv-0a8b3e8b0256daafd4a12af3",
+      "factor": "set_schema_behavior",
+      "value": "existing_schema",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERSTATISTICS00029"
+      ]
+    },
+    {
+      "row_id": "sfv-c8690287579282a03a14ec83",
+      "factor": "set_schema_behavior",
+      "value": "nonexistent_schema",
+      "disposition": "expected_failure",
+      "reason": "schema_does_not_exist_provisional",
+      "case_ids": [
+        "ALTERSTATISTICS00030"
+      ]
+    },
+    {
+      "row_id": "sfv-9ab1a0c19510f98b220c7068",
+      "factor": "statement_branch",
+      "value": "branch_owner_to",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERSTATISTICS00031"
+      ]
+    },
+    {
+      "row_id": "sfv-13ca6712cb8d07da13b3760c",
+      "factor": "statement_branch",
+      "value": "branch_rename",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERSTATISTICS00032"
+      ]
+    },
+    {
+      "row_id": "sfv-31b099f0049c6accce023ac8",
+      "factor": "statement_branch",
+      "value": "branch_set_schema",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERSTATISTICS00033"
+      ]
+    },
+    {
+      "row_id": "sfv-4ffdefbcde7a640cdc546044",
+      "factor": "statement_branch",
+      "value": "branch_set_statistics",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERSTATISTICS00034"
+      ]
+    },
+    {
+      "row_id": "sfv-630cbfe4856d7a89d4ae4951",
+      "factor": "statistics_name_shape",
+      "value": "non_existent_name",
+      "disposition": "expected_failure",
+      "reason": "statistics_does_not_exist_provisional",
+      "case_ids": [
+        "ALTERSTATISTICS00035"
+      ]
+    },
+    {
+      "row_id": "sfv-63844e3e8b8f5efef655b2cd",
+      "factor": "statistics_name_shape",
+      "value": "quoted_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERSTATISTICS00036"
+      ]
+    },
+    {
+      "row_id": "sfv-a24bbb32865fea9cbc738627",
+      "factor": "statistics_name_shape",
+      "value": "schema_qualified_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERSTATISTICS00037"
+      ]
+    },
+    {
+      "row_id": "sfv-3e5a2a991de868c3af923590",
+      "factor": "statistics_name_shape",
+      "value": "simple_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERSTATISTICS00038"
+      ]
+    },
+    {
+      "row_id": "sfv-43454b49f16b1c4b6bc222be",
+      "factor": "statistics_state",
+      "value": "exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERSTATISTICS00039"
+      ]
+    },
+    {
+      "row_id": "sfv-3cf578809e57dbab6739a68e",
+      "factor": "statistics_state",
+      "value": "non_existent",
+      "disposition": "expected_failure",
+      "reason": "statistics_does_not_exist_provisional",
+      "case_ids": [
+        "ALTERSTATISTICS00040"
+      ]
+    },
+    {
+      "row_id": "sfv-2d26ae0bab259de2df47c268",
+      "factor": "statistics_target_value",
+      "value": "default_keyword",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERSTATISTICS00041"
+      ]
+    },
+    {
+      "row_id": "sfv-5ac1450e6c768556b73cf405",
+      "factor": "statistics_target_value",
+      "value": "maximum_value_10000",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERSTATISTICS00042"
+      ]
+    },
+    {
+      "row_id": "sfv-aaaabc56199e87df29e5221a",
+      "factor": "statistics_target_value",
+      "value": "negative_one_default",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERSTATISTICS00043"
+      ]
+    },
+    {
+      "row_id": "sfv-0c31b2bf7f5d99fe3499c98f",
+      "factor": "statistics_target_value",
+      "value": "out_of_range",
+      "disposition": "expected_failure",
+      "reason": "invalid_parameter_value_provisional",
+      "case_ids": [
+        "ALTERSTATISTICS00044"
+      ]
+    },
+    {
+      "row_id": "sfv-78139f9cb7e9c2c48187a530",
+      "factor": "statistics_target_value",
+      "value": "positive_integer",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERSTATISTICS00045"
+      ]
+    },
+    {
+      "row_id": "sfv-c76c81539f9251ba828427a8",
+      "factor": "statistics_target_value",
+      "value": "zero",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERSTATISTICS00046"
+      ]
+    },
+    {
+      "row_id": "sfv-a80596a2265d7bb618c2e8da",
+      "factor": "table_dependency",
+      "value": "underlying_table_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERSTATISTICS00047"
+      ]
+    },
+    {
+      "row_id": "sfv-57694c0f4e49d596c3b7092d",
+      "factor": "target_out_of_range",
+      "value": "negative_other_than_minus_one",
+      "disposition": "expected_failure",
+      "reason": "invalid_parameter_value_provisional",
+      "case_ids": [
+        "ALTERSTATISTICS00048"
+      ]
+    },
+    {
+      "row_id": "sfv-aa240f64d2c7c9c83aaffd38",
+      "factor": "target_value_shape",
+      "value": "default_keyword",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERSTATISTICS00049"
+      ]
+    },
+    {
+      "row_id": "sfv-c7e11ac5473530f0171ddc43",
+      "factor": "target_value_shape",
+      "value": "integer_value",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERSTATISTICS00050"
+      ]
+    },
+    {
+      "row_id": "sfv-3f2f939dc0d36716f163c158",
+      "factor": "target_value_shape",
+      "value": "negative_one",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERSTATISTICS00051"
+      ]
+    },
+    {
+      "row_id": "sfv-4adc0a6b50b6b9adffa09de4",
+      "factor": "target_value_shape",
+      "value": "very_large_value",
+      "disposition": "expected_failure",
+      "reason": "invalid_parameter_value_provisional",
+      "case_ids": [
+        "ALTERSTATISTICS00052"
+      ]
+    },
+    {
+      "row_id": "sfv-e5e83bf4bc040c688ccdf1f4",
+      "factor": "verification_mode",
+      "value": "error_assertion",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERSTATISTICS00053"
+      ]
+    },
+    {
+      "row_id": "sfv-0c1516f2fd8dbb82bc76c54a",
+      "factor": "verification_mode",
+      "value": "pg_statistic_ext_catalog",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERSTATISTICS00054"
+      ]
+    }
+  ],
+  "generation_mode": "factor_value_independent_loop_v1",
+  "decision_count": 56,
+  "local_sql_decision_count": 56,
+  "extension_case_count": 1404,
+  "delegated_decision_count": 0,
+  "obligation_multiset_sha256": "6d3747705817a7b3f78538617356b160b8e20b11fb5c66f3f1c4aa6fe4dc0229"
+}
