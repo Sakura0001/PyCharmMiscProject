@@ -6,7 +6,7 @@
   "statement_count": 183,
   "retained_statement_count": 6,
   "pending_statement_count": 177,
-  "next_pending_statement": "vacuum",
+  "next_pending_statement": "values",
   "statements": {
     "abort": {
       "status": "completed",
@@ -1276,11 +1276,11 @@
       "validation_evidence_sha256": "a87c6ff2f9dedc365e9a9447ad459f879c23ddfc4dbe1948916009b87b8cfbf4"
     },
     "vacuum": {
-      "status": "pending",
-      "package_path": null,
-      "sql_file_count": null,
-      "validation_evidence": null,
-      "validation_evidence_sha256": null
+      "status": "completed",
+      "package_path": "artifacts/regress/by-factor/utility/maintenance/vacuum",
+      "sql_file_count": 1415,
+      "validation_evidence": "/Users/yuyu/PyCharmMiscProject/pg_case_factory/artifacts/intermediates/remaining-statement-factor-cycle/vacuum/validation.json",
+      "validation_evidence_sha256": "aba7fd36930b2a0701efa7a31081bf1451d205204cefcd0a45a8cabac7501fed"
     },
     "values": {
       "status": "pending",
