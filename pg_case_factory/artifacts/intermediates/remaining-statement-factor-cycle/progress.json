@@ -6,7 +6,7 @@
   "statement_count": 183,
   "retained_statement_count": 6,
   "pending_statement_count": 177,
-  "next_pending_statement": "alter_sequence",
+  "next_pending_statement": "alter_server",
   "statements": {
     "abort": {
       "status": "completed",
@@ -198,11 +198,11 @@
       "validation_evidence_sha256": "ba7b4c49fec3f50671af0669116381bf16b2d172889318d0d1da02b5deceaf13"
     },
     "alter_sequence": {
-      "status": "pending",
-      "package_path": null,
-      "sql_file_count": null,
-      "validation_evidence": null,
-      "validation_evidence_sha256": null
+      "status": "completed",
+      "package_path": "artifacts/regress/by-factor/ddl/sequence/alter_sequence",
+      "sql_file_count": 28591,
+      "validation_evidence": "/Users/yuyu/PyCharmMiscProject/pg_case_factory/artifacts/intermediates/remaining-statement-factor-cycle/alter_sequence/validation.json",
+      "validation_evidence_sha256": "40b14f21c309ddc32236e899172b253079a99c3bf6aa74a93abb3ef4fa287171"
     },
     "alter_server": {
       "status": "pending",
