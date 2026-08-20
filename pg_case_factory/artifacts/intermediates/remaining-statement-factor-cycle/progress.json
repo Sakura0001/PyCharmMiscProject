@@ -6,7 +6,7 @@
   "statement_count": 183,
   "retained_statement_count": 6,
   "pending_statement_count": 177,
-  "next_pending_statement": "rollback_prepared",
+  "next_pending_statement": "rollback_to_savepoint",
   "statements": {
     "abort": {
       "status": "completed",
@@ -1164,11 +1164,11 @@
       "validation_evidence_sha256": "706173331dc5862d4dc09697671f1e7fd98b5fa8d01d7cec83c7358948307435"
     },
     "rollback_prepared": {
-      "status": "pending",
-      "package_path": null,
-      "sql_file_count": null,
-      "validation_evidence": null,
-      "validation_evidence_sha256": null
+      "status": "completed",
+      "package_path": "artifacts/regress/by-factor/tcl/two_phase_transaction/rollback_prepared",
+      "sql_file_count": 12284,
+      "validation_evidence": "/Users/yuyu/PyCharmMiscProject/pg_case_factory/artifacts/intermediates/remaining-statement-factor-cycle/rollback_prepared/validation.json",
+      "validation_evidence_sha256": "19593ac12715d606d5ff6a3e80b64d2a12c50f48e7f2f0cbb477e6d3c498f48d"
     },
     "rollback_to_savepoint": {
       "status": "pending",
