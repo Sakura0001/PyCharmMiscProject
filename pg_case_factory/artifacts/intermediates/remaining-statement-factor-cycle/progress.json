@@ -6,7 +6,7 @@
   "statement_count": 183,
   "retained_statement_count": 6,
   "pending_statement_count": 177,
-  "next_pending_statement": "create_domain",
+  "next_pending_statement": "create_event_trigger",
   "statements": {
     "abort": {
       "status": "completed",
@@ -422,11 +422,11 @@
       "validation_evidence_sha256": "452d52ecd21baf66643a895f91692cfc0683d0bc237d2406aed0f31b51702fa6"
     },
     "create_domain": {
-      "status": "pending",
-      "package_path": null,
-      "sql_file_count": null,
-      "validation_evidence": null,
-      "validation_evidence_sha256": null
+      "status": "completed",
+      "package_path": "artifacts/regress/by-factor/ddl/domain/create_domain",
+      "sql_file_count": 2977,
+      "validation_evidence": "/Users/yuyu/PyCharmMiscProject/pg_case_factory/artifacts/intermediates/remaining-statement-factor-cycle/create_domain/validation.json",
+      "validation_evidence_sha256": "16ea71f6316d4c02492510634fb2f83b68a7379ae147062c3d0025194dd3ef84"
     },
     "create_event_trigger": {
       "status": "pending",
