@@ -1,0 +1,561 @@
+{
+  "schema_version": 1,
+  "statement_key": "alter_user_mapping",
+  "cycle_fingerprint": "606b9e710210e50ff88b14de7052163f9ee31f6f1d1e744bc0bd9935f399a9d9",
+  "factor_value_count": 54,
+  "factor_disposition_counts": {
+    "covered": 40,
+    "expected_failure": 14,
+    "justified_na": 0
+  },
+  "missing_row_ids": [],
+  "duplicate_row_ids": [],
+  "decisions": [
+    {
+      "row_id": "sfv-a6fbac591c64074df26a4ef4",
+      "factor": "cleanup_mode",
+      "value": "drop_server",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSERMAPPING00002"
+      ]
+    },
+    {
+      "row_id": "sfv-c41a8deabdda304595a22647",
+      "factor": "cleanup_mode",
+      "value": "drop_user_mapping",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSERMAPPING00003"
+      ]
+    },
+    {
+      "row_id": "sfv-bcebc31742dd9e3c1c3c5341",
+      "factor": "cleanup_mode",
+      "value": "revert_option",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSERMAPPING00004"
+      ]
+    },
+    {
+      "row_id": "sfv-14cbdf079c861599d3c2ac85",
+      "factor": "duplicate_option_name",
+      "value": "duplicate_option",
+      "disposition": "expected_failure",
+      "reason": "duplicate_option_provisional",
+      "case_ids": [
+        "ALTERUSERMAPPING00005"
+      ]
+    },
+    {
+      "row_id": "sfv-18ba73bbe657a1c5e6f0791c",
+      "factor": "duplicate_option_name",
+      "value": "unique_options",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSERMAPPING00006"
+      ]
+    },
+    {
+      "row_id": "sfv-ddec943e69d4249605fc89a7",
+      "factor": "expected_status",
+      "value": "failure",
+      "disposition": "expected_failure",
+      "reason": "user_mapping_does_not_exist_provisional",
+      "case_ids": [
+        "ALTERUSERMAPPING00007"
+      ]
+    },
+    {
+      "row_id": "sfv-86e1a4868837d657358ca0a9",
+      "factor": "expected_status",
+      "value": "success",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSERMAPPING00008"
+      ]
+    },
+    {
+      "row_id": "sfv-26520ad1068dfeea9b9b0021",
+      "factor": "insufficient_privilege",
+      "value": "has_privilege",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSERMAPPING00009"
+      ]
+    },
+    {
+      "row_id": "sfv-1f0a73ddd3c97b283310150c",
+      "factor": "insufficient_privilege",
+      "value": "lacks_privilege",
+      "disposition": "expected_failure",
+      "reason": "insufficient_privilege_provisional",
+      "case_ids": [
+        "ALTERUSERMAPPING00010"
+      ]
+    },
+    {
+      "row_id": "sfv-e19c4c760f66a99fa72fc2d1",
+      "factor": "invalid_option",
+      "value": "invalid_option_name",
+      "disposition": "expected_failure",
+      "reason": "invalid_option_name_provisional",
+      "case_ids": [
+        "ALTERUSERMAPPING00011"
+      ]
+    },
+    {
+      "row_id": "sfv-349252635b219b663b7fdb99",
+      "factor": "invalid_option",
+      "value": "invalid_option_value",
+      "disposition": "expected_failure",
+      "reason": "invalid_option_value_provisional",
+      "case_ids": [
+        "ALTERUSERMAPPING00012"
+      ]
+    },
+    {
+      "row_id": "sfv-d6335e1411566b4c104f18ce",
+      "factor": "invalid_option",
+      "value": "valid_option_and_value",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSERMAPPING00013"
+      ]
+    },
+    {
+      "row_id": "sfv-4208f6a7939a58a07ee37dfc",
+      "factor": "mapping_existence",
+      "value": "mapping_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSERMAPPING00014"
+      ]
+    },
+    {
+      "row_id": "sfv-e3f36affb9960be9829a2d38",
+      "factor": "mapping_existence",
+      "value": "mapping_not_exists",
+      "disposition": "expected_failure",
+      "reason": "user_mapping_does_not_exist_provisional",
+      "case_ids": [
+        "ALTERUSERMAPPING00015"
+      ]
+    },
+    {
+      "row_id": "sfv-30f3eb095cace0823113958e",
+      "factor": "nonexistent_mapping",
+      "value": "mapping_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSERMAPPING00016"
+      ]
+    },
+    {
+      "row_id": "sfv-d7d34663847c04dd32e67dba",
+      "factor": "nonexistent_mapping",
+      "value": "mapping_missing",
+      "disposition": "expected_failure",
+      "reason": "user_mapping_does_not_exist_provisional",
+      "case_ids": [
+        "ALTERUSERMAPPING00017"
+      ]
+    },
+    {
+      "row_id": "sfv-284efcc121784c54f27344e6",
+      "factor": "nonexistent_server",
+      "value": "server_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSERMAPPING00018"
+      ]
+    },
+    {
+      "row_id": "sfv-454a5b00335e75e73ffe3527",
+      "factor": "nonexistent_server",
+      "value": "server_missing",
+      "disposition": "expected_failure",
+      "reason": "foreign_server_does_not_exist_provisional",
+      "case_ids": [
+        "ALTERUSERMAPPING00019"
+      ]
+    },
+    {
+      "row_id": "sfv-4a960f842970aea37e3f6502",
+      "factor": "object_state",
+      "value": "exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSERMAPPING00020"
+      ]
+    },
+    {
+      "row_id": "sfv-50ddb74de2d5045844efddb1",
+      "factor": "object_state",
+      "value": "not_exists",
+      "disposition": "expected_failure",
+      "reason": "user_mapping_does_not_exist_provisional",
+      "case_ids": [
+        "ALTERUSERMAPPING00021"
+      ]
+    },
+    {
+      "row_id": "sfv-4f260e9eacc96dbb5e069925",
+      "factor": "option_action",
+      "value": "add",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSERMAPPING00022"
+      ]
+    },
+    {
+      "row_id": "sfv-43eba2910fd63da01876b221",
+      "factor": "option_action",
+      "value": "default_add",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSERMAPPING00023"
+      ]
+    },
+    {
+      "row_id": "sfv-5e95961a4c19a75b795a081f",
+      "factor": "option_action",
+      "value": "drop",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSERMAPPING00024"
+      ]
+    },
+    {
+      "row_id": "sfv-a233bf295ec43e19bba9e5ef",
+      "factor": "option_action",
+      "value": "set",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSERMAPPING00025"
+      ]
+    },
+    {
+      "row_id": "sfv-6056b18b86e433ab78b09350",
+      "factor": "option_clause",
+      "value": "multiple_options_mixed",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSERMAPPING00026"
+      ]
+    },
+    {
+      "row_id": "sfv-4c3d4ae368cd5fecf0d61fda",
+      "factor": "option_clause",
+      "value": "single_option_add",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSERMAPPING00027"
+      ]
+    },
+    {
+      "row_id": "sfv-2cc722716a53c0a2b1318832",
+      "factor": "option_clause",
+      "value": "single_option_drop",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSERMAPPING00028"
+      ]
+    },
+    {
+      "row_id": "sfv-976bbcf9cd7265daee69aff3",
+      "factor": "option_clause",
+      "value": "single_option_set",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSERMAPPING00029"
+      ]
+    },
+    {
+      "row_id": "sfv-8eb0d54931e44a783f10bb35",
+      "factor": "option_name_shape",
+      "value": "invalid_option",
+      "disposition": "expected_failure",
+      "reason": "invalid_option_name_provisional",
+      "case_ids": [
+        "ALTERUSERMAPPING00030"
+      ]
+    },
+    {
+      "row_id": "sfv-bc50791bd2fbca3a83a2ca28",
+      "factor": "option_name_shape",
+      "value": "valid_option",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSERMAPPING00031"
+      ]
+    },
+    {
+      "row_id": "sfv-3b706e8b1faf0fc393339991",
+      "factor": "option_value_shape",
+      "value": "drop_no_value",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSERMAPPING00032"
+      ]
+    },
+    {
+      "row_id": "sfv-a004c594826bfc141dece79f",
+      "factor": "option_value_shape",
+      "value": "quoted_value",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSERMAPPING00033"
+      ]
+    },
+    {
+      "row_id": "sfv-9e36a6d8a92ffdbfd5bb3aef",
+      "factor": "option_value_shape",
+      "value": "valid_value",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSERMAPPING00034"
+      ]
+    },
+    {
+      "row_id": "sfv-667d9f0cfa9e8f31d984a365",
+      "factor": "privilege_level",
+      "value": "non_privileged",
+      "disposition": "expected_failure",
+      "reason": "insufficient_privilege_provisional",
+      "case_ids": [
+        "ALTERUSERMAPPING00035"
+      ]
+    },
+    {
+      "row_id": "sfv-c0ce14cdc2aafc9f77777ac8",
+      "factor": "privilege_level",
+      "value": "server_owner",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSERMAPPING00036"
+      ]
+    },
+    {
+      "row_id": "sfv-2fa9c601832f13a2fbe724dd",
+      "factor": "privilege_level",
+      "value": "user_with_usage",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSERMAPPING00037"
+      ]
+    },
+    {
+      "row_id": "sfv-3ea6d100dc3a2c52cdfc1a22",
+      "factor": "server_dependency",
+      "value": "server_exists_and_valid",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSERMAPPING00038"
+      ]
+    },
+    {
+      "row_id": "sfv-bb07bfaf9d3825faaa1968cf",
+      "factor": "server_dependency",
+      "value": "server_missing",
+      "disposition": "expected_failure",
+      "reason": "foreign_server_does_not_exist_provisional",
+      "case_ids": [
+        "ALTERUSERMAPPING00039"
+      ]
+    },
+    {
+      "row_id": "sfv-96186f6f9cf6771b2761916d",
+      "factor": "server_name_shape",
+      "value": "nonexistent_name",
+      "disposition": "expected_failure",
+      "reason": "foreign_server_does_not_exist_provisional",
+      "case_ids": [
+        "ALTERUSERMAPPING00040"
+      ]
+    },
+    {
+      "row_id": "sfv-1885adbfaf02f8112f48ff5f",
+      "factor": "server_name_shape",
+      "value": "simple_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSERMAPPING00041"
+      ]
+    },
+    {
+      "row_id": "sfv-2e660054b0fbbb6783eca107",
+      "factor": "statement_branch",
+      "value": "branch_1",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSERMAPPING00042"
+      ]
+    },
+    {
+      "row_id": "sfv-8e0eda57e2f8a9df16c2dd7a",
+      "factor": "user_name_shape",
+      "value": "nonexistent_name",
+      "disposition": "expected_failure",
+      "reason": "user_mapping_does_not_exist_provisional",
+      "case_ids": [
+        "ALTERUSERMAPPING00043"
+      ]
+    },
+    {
+      "row_id": "sfv-9ff047a138144ac62410bfe9",
+      "factor": "user_name_shape",
+      "value": "public_keyword",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSERMAPPING00044"
+      ]
+    },
+    {
+      "row_id": "sfv-36556506019a594e9de5496b",
+      "factor": "user_name_shape",
+      "value": "quoted_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSERMAPPING00045"
+      ]
+    },
+    {
+      "row_id": "sfv-d21e73353846f569250af240",
+      "factor": "user_name_shape",
+      "value": "simple_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSERMAPPING00046"
+      ]
+    },
+    {
+      "row_id": "sfv-515d1379aafab36fa41b2ae4",
+      "factor": "user_specification",
+      "value": "current_role",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSERMAPPING00047"
+      ]
+    },
+    {
+      "row_id": "sfv-d758a09a4d4f69245147b02e",
+      "factor": "user_specification",
+      "value": "current_user",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSERMAPPING00048"
+      ]
+    },
+    {
+      "row_id": "sfv-d20fa130bb305ec59ddca42f",
+      "factor": "user_specification",
+      "value": "named_user",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSERMAPPING00049"
+      ]
+    },
+    {
+      "row_id": "sfv-743e3e8af1084508bdd464b5",
+      "factor": "user_specification",
+      "value": "public",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSERMAPPING00050"
+      ]
+    },
+    {
+      "row_id": "sfv-72f104b6ed1ba7a567b70243",
+      "factor": "user_specification",
+      "value": "session_user",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSERMAPPING00051"
+      ]
+    },
+    {
+      "row_id": "sfv-198c839c1d7a96fd7f9e8040",
+      "factor": "user_specification",
+      "value": "user_keyword",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSERMAPPING00052"
+      ]
+    },
+    {
+      "row_id": "sfv-befbbca08f5855fab7eb23cb",
+      "factor": "verification_mode",
+      "value": "catalog_query_pg_user_mapping",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSERMAPPING00053"
+      ]
+    },
+    {
+      "row_id": "sfv-1c867b8646faa0921084e42b",
+      "factor": "verification_mode",
+      "value": "error_assertion",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSERMAPPING00054"
+      ]
+    },
+    {
+      "row_id": "sfv-4bc9b131da9147ffdd46da16",
+      "factor": "verification_mode",
+      "value": "option_query",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERUSERMAPPING00055"
+      ]
+    }
+  ],
+  "generation_mode": "factor_value_independent_loop_v1",
+  "decision_count": 55,
+  "local_sql_decision_count": 55,
+  "extension_case_count": 6048,
+  "delegated_decision_count": 0,
+  "obligation_multiset_sha256": "1ead1f461aea1cb05f07b2365daa62e438b6991f55184a9cfd064987ff9aa344"
+}
