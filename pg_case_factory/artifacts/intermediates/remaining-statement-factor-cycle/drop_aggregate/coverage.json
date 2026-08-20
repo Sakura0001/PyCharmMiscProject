@@ -1,0 +1,391 @@
+{
+  "schema_version": 1,
+  "statement_key": "drop_aggregate",
+  "cycle_fingerprint": "606b9e710210e50ff88b14de7052163f9ee31f6f1d1e744bc0bd9935f399a9d9",
+  "factor_value_count": 37,
+  "factor_disposition_counts": {
+    "covered": 27,
+    "expected_failure": 10,
+    "justified_na": 0
+  },
+  "missing_row_ids": [],
+  "duplicate_row_ids": [],
+  "decisions": [
+    {
+      "row_id": "sfv-9dd914350941201fc6715ae7",
+      "factor": "aggregate_name_shape",
+      "value": "plain_identifier",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPAGGREGATE00002"
+      ]
+    },
+    {
+      "row_id": "sfv-706159a781f6d2b7467fc72a",
+      "factor": "aggregate_name_shape",
+      "value": "quoted_identifier",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPAGGREGATE00003"
+      ]
+    },
+    {
+      "row_id": "sfv-1e1757e82bacc72d86c03beb",
+      "factor": "aggregate_name_shape",
+      "value": "schema_qualified",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPAGGREGATE00004"
+      ]
+    },
+    {
+      "row_id": "sfv-efb9684230b2ed269fa37cef",
+      "factor": "aggregate_signature",
+      "value": "multi_argtype",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPAGGREGATE00005"
+      ]
+    },
+    {
+      "row_id": "sfv-100b5ca6aab7498abe2d982f",
+      "factor": "aggregate_signature",
+      "value": "ordered_set_signature",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPAGGREGATE00006"
+      ]
+    },
+    {
+      "row_id": "sfv-a260c423f5a81b8c3e9bc522",
+      "factor": "aggregate_signature",
+      "value": "single_argtype",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPAGGREGATE00007"
+      ]
+    },
+    {
+      "row_id": "sfv-87887bc75df8cdcfb60d0318",
+      "factor": "aggregate_signature",
+      "value": "star_zero_arg",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPAGGREGATE00008"
+      ]
+    },
+    {
+      "row_id": "sfv-712cc32afa501425dc3bfb45",
+      "factor": "cascade_restrict",
+      "value": "CASCADE",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPAGGREGATE00009"
+      ]
+    },
+    {
+      "row_id": "sfv-39b56cc740bec14eadc2b472",
+      "factor": "cascade_restrict",
+      "value": "RESTRICT_default",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPAGGREGATE00010"
+      ]
+    },
+    {
+      "row_id": "sfv-ff15d909abec048678ad9f9b",
+      "factor": "cascade_restrict",
+      "value": "RESTRICT_explicit",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPAGGREGATE00011"
+      ]
+    },
+    {
+      "row_id": "sfv-244fa732e6f3a639745f9261",
+      "factor": "cleanup_mode",
+      "value": "DROP_AGGREGATE_CASCADE",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPAGGREGATE00012"
+      ]
+    },
+    {
+      "row_id": "sfv-d99591b97bd346713071c324",
+      "factor": "cleanup_mode",
+      "value": "DROP_DEPENDENT_OBJECTS_FIRST",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPAGGREGATE00013"
+      ]
+    },
+    {
+      "row_id": "sfv-ab141d4958d7eba9b8e4e57c",
+      "factor": "dependency_state",
+      "value": "has_dependent_function",
+      "disposition": "expected_failure",
+      "reason": "dependent_objects_restricted",
+      "case_ids": [
+        "DROPAGGREGATE00014"
+      ]
+    },
+    {
+      "row_id": "sfv-837c66ac9c8c50ff81acb7a8",
+      "factor": "dependency_state",
+      "value": "has_dependent_view",
+      "disposition": "expected_failure",
+      "reason": "dependent_objects_restricted",
+      "case_ids": [
+        "DROPAGGREGATE00015"
+      ]
+    },
+    {
+      "row_id": "sfv-dfe7bdeb9e44613982ce8add",
+      "factor": "dependency_state",
+      "value": "no_dependencies",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPAGGREGATE00016"
+      ]
+    },
+    {
+      "row_id": "sfv-fc9e4a020f68ea5aa57d36e7",
+      "factor": "dependent_objects_exist",
+      "value": "restrict_with_dependencies",
+      "disposition": "expected_failure",
+      "reason": "dependent_objects_restricted",
+      "case_ids": [
+        "DROPAGGREGATE00017"
+      ]
+    },
+    {
+      "row_id": "sfv-cf2fe228c90310239a16e7d4",
+      "factor": "expected_status",
+      "value": "failure",
+      "disposition": "expected_failure",
+      "reason": "missing_aggregate_without_if_exists",
+      "case_ids": [
+        "DROPAGGREGATE00018"
+      ]
+    },
+    {
+      "row_id": "sfv-1c0bfa24745bb1b9ae3192cd",
+      "factor": "expected_status",
+      "value": "success",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPAGGREGATE00019"
+      ]
+    },
+    {
+      "row_id": "sfv-f73ee545031e86c0b4fcb9e2",
+      "factor": "if_exists_clause",
+      "value": "absent",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPAGGREGATE00020"
+      ]
+    },
+    {
+      "row_id": "sfv-2e44ff062ae4e52644302d73",
+      "factor": "if_exists_clause",
+      "value": "present",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPAGGREGATE00021"
+      ]
+    },
+    {
+      "row_id": "sfv-e76bc625cb03fdc07064587a",
+      "factor": "insufficient_privilege",
+      "value": "non_owner_drop",
+      "disposition": "expected_failure",
+      "reason": "insufficient_aggregate_privilege",
+      "case_ids": [
+        "DROPAGGREGATE00022"
+      ]
+    },
+    {
+      "row_id": "sfv-5470a7eaf230679947f52690",
+      "factor": "multiple_aggregates",
+      "value": "multiple_comma_separated",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPAGGREGATE00023"
+      ]
+    },
+    {
+      "row_id": "sfv-eac8ac12d77dcec01bfb4a21",
+      "factor": "multiple_aggregates",
+      "value": "single",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPAGGREGATE00024"
+      ]
+    },
+    {
+      "row_id": "sfv-08b2fc6e9e2fb9b5325c4436",
+      "factor": "nonexistent_aggregate",
+      "value": "with_if_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPAGGREGATE00025"
+      ]
+    },
+    {
+      "row_id": "sfv-c0622d6336b2c35a5954f05c",
+      "factor": "nonexistent_aggregate",
+      "value": "without_if_exists",
+      "disposition": "expected_failure",
+      "reason": "missing_aggregate_without_if_exists",
+      "case_ids": [
+        "DROPAGGREGATE00026"
+      ]
+    },
+    {
+      "row_id": "sfv-f1e1772b26847e7dd1053b34",
+      "factor": "object_state",
+      "value": "already_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPAGGREGATE00027"
+      ]
+    },
+    {
+      "row_id": "sfv-0c07b0311a60d7cfffd1129c",
+      "factor": "object_state",
+      "value": "exists_with_dependencies",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPAGGREGATE00028"
+      ]
+    },
+    {
+      "row_id": "sfv-dd650b41a859541758be48e3",
+      "factor": "object_state",
+      "value": "not_exists",
+      "disposition": "expected_failure",
+      "reason": "missing_aggregate_without_if_exists",
+      "case_ids": [
+        "DROPAGGREGATE00029"
+      ]
+    },
+    {
+      "row_id": "sfv-1c4bbdbb1331d697991ae40e",
+      "factor": "privilege_level",
+      "value": "aggregate_owner",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPAGGREGATE00030"
+      ]
+    },
+    {
+      "row_id": "sfv-98d08e91276dc4df8032269d",
+      "factor": "privilege_level",
+      "value": "non_owner",
+      "disposition": "expected_failure",
+      "reason": "insufficient_aggregate_privilege",
+      "case_ids": [
+        "DROPAGGREGATE00031"
+      ]
+    },
+    {
+      "row_id": "sfv-203f76e19c584db7d3666593",
+      "factor": "signature_argtype_shape",
+      "value": "plain_type",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPAGGREGATE00032"
+      ]
+    },
+    {
+      "row_id": "sfv-915ee5bd0d2b00ccb76c9e82",
+      "factor": "signature_argtype_shape",
+      "value": "schema_qualified_type",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPAGGREGATE00033"
+      ]
+    },
+    {
+      "row_id": "sfv-b4e17c435a4717a92daa24e1",
+      "factor": "signature_mismatch",
+      "value": "wrong_arg_count",
+      "disposition": "expected_failure",
+      "reason": "aggregate_signature_mismatch",
+      "case_ids": [
+        "DROPAGGREGATE00034"
+      ]
+    },
+    {
+      "row_id": "sfv-39003d5724f834f2e2519a58",
+      "factor": "signature_mismatch",
+      "value": "wrong_arg_type",
+      "disposition": "expected_failure",
+      "reason": "aggregate_signature_mismatch",
+      "case_ids": [
+        "DROPAGGREGATE00035"
+      ]
+    },
+    {
+      "row_id": "sfv-19b39ac0293236ca4299727c",
+      "factor": "statement_branch",
+      "value": "branch_1",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPAGGREGATE00036"
+      ]
+    },
+    {
+      "row_id": "sfv-0ed843f078ad3d5da85fc1b1",
+      "factor": "verification_mode",
+      "value": "pg_aggregate_catalog_query",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPAGGREGATE00037"
+      ]
+    },
+    {
+      "row_id": "sfv-9a93c4058369411bebbb0e96",
+      "factor": "verification_mode",
+      "value": "pg_aggregate_removed_assertion",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPAGGREGATE00038"
+      ]
+    }
+  ],
+  "generation_mode": "factor_value_independent_loop_v1",
+  "decision_count": 40,
+  "local_sql_decision_count": 40,
+  "extension_case_count": 336,
+  "delegated_decision_count": 0,
+  "obligation_multiset_sha256": "f4872448b35b1709f2b0c240a13d063858d94dee16bb53bbc03157fd2e14c0be"
+}
