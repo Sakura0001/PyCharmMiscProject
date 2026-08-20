@@ -1,0 +1,351 @@
+{
+  "schema_version": 1,
+  "statement_key": "drop_text_search_parser",
+  "cycle_fingerprint": "606b9e710210e50ff88b14de7052163f9ee31f6f1d1e744bc0bd9935f399a9d9",
+  "factor_value_count": 33,
+  "factor_disposition_counts": {
+    "covered": 23,
+    "expected_failure": 10,
+    "justified_na": 0
+  },
+  "missing_row_ids": [],
+  "duplicate_row_ids": [],
+  "decisions": [
+    {
+      "row_id": "sfv-587ccfde57a881dc977c5dc9",
+      "factor": "cascade_restrict",
+      "value": "default_restrict",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTEXTSEARCHPARSER00002"
+      ]
+    },
+    {
+      "row_id": "sfv-4b6d44603fbf088e07f9a48f",
+      "factor": "cascade_restrict",
+      "value": "explicit_cascade",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTEXTSEARCHPARSER00003"
+      ]
+    },
+    {
+      "row_id": "sfv-f1e6a8ee37b5495a47f1a4d9",
+      "factor": "cascade_restrict",
+      "value": "explicit_restrict",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTEXTSEARCHPARSER00004"
+      ]
+    },
+    {
+      "row_id": "sfv-5fbdc137d0e7809b1e6c2108",
+      "factor": "cleanup_mode",
+      "value": "cascade_cleanup",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTEXTSEARCHPARSER00005"
+      ]
+    },
+    {
+      "row_id": "sfv-9c6552b3102a5d5226488efc",
+      "factor": "cleanup_mode",
+      "value": "manual_dependency_cleanup",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTEXTSEARCHPARSER00006"
+      ]
+    },
+    {
+      "row_id": "sfv-b4a8b1734750798b0de28e8c",
+      "factor": "dependency_context",
+      "value": "config_using_parser",
+      "disposition": "expected_failure",
+      "reason": "dependent_objects_restricted",
+      "case_ids": [
+        "DROPTEXTSEARCHPARSER00007"
+      ]
+    },
+    {
+      "row_id": "sfv-4dcc5db16de2229368e689b8",
+      "factor": "dependency_context",
+      "value": "no_dependencies",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTEXTSEARCHPARSER00008"
+      ]
+    },
+    {
+      "row_id": "sfv-cfd65d687bb272770c91c1b5",
+      "factor": "dependency_status",
+      "value": "has_config_dependencies",
+      "disposition": "expected_failure",
+      "reason": "dependent_objects_restricted",
+      "case_ids": [
+        "DROPTEXTSEARCHPARSER00009"
+      ]
+    },
+    {
+      "row_id": "sfv-89ab2aefbada11871b38d05e",
+      "factor": "dependency_status",
+      "value": "no_dependencies",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTEXTSEARCHPARSER00010"
+      ]
+    },
+    {
+      "row_id": "sfv-f9ec803ad0c7ade534d995c1",
+      "factor": "error_type",
+      "value": "dependent_object_exists",
+      "disposition": "expected_failure",
+      "reason": "dependent_objects_restricted",
+      "case_ids": [
+        "DROPTEXTSEARCHPARSER00011"
+      ]
+    },
+    {
+      "row_id": "sfv-fbfac5ff2170904c80031f2c",
+      "factor": "error_type",
+      "value": "insufficient_privilege",
+      "disposition": "expected_failure",
+      "reason": "insufficient_ts_parser_privilege",
+      "case_ids": [
+        "DROPTEXTSEARCHPARSER00012"
+      ]
+    },
+    {
+      "row_id": "sfv-4cec658b0580b7bc85826ada",
+      "factor": "error_type",
+      "value": "non_existent_without_if_exists",
+      "disposition": "expected_failure",
+      "reason": "undefined_ts_parser_no_if_exists",
+      "case_ids": [
+        "DROPTEXTSEARCHPARSER00013"
+      ]
+    },
+    {
+      "row_id": "sfv-2f781aa0caef1146260ce5ee",
+      "factor": "error_type",
+      "value": "none",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTEXTSEARCHPARSER00014"
+      ]
+    },
+    {
+      "row_id": "sfv-8ad16fc3a5fbc37fd692eacb",
+      "factor": "expected_status",
+      "value": "failure",
+      "disposition": "expected_failure",
+      "reason": "drop_ts_parser_declared_failure",
+      "case_ids": [
+        "DROPTEXTSEARCHPARSER00015"
+      ]
+    },
+    {
+      "row_id": "sfv-dbcff54faf09845f43c23421",
+      "factor": "expected_status",
+      "value": "success",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTEXTSEARCHPARSER00016"
+      ]
+    },
+    {
+      "row_id": "sfv-8afdc83531c7a00475de4d66",
+      "factor": "if_exists_clause",
+      "value": "absent",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTEXTSEARCHPARSER00017"
+      ]
+    },
+    {
+      "row_id": "sfv-3dedb122c841517e5aac8cf0",
+      "factor": "if_exists_clause",
+      "value": "present",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTEXTSEARCHPARSER00018"
+      ]
+    },
+    {
+      "row_id": "sfv-a4871ac7f2648e29fbedec9f",
+      "factor": "object_state",
+      "value": "absent",
+      "disposition": "expected_failure",
+      "reason": "undefined_ts_parser_absent",
+      "case_ids": [
+        "DROPTEXTSEARCHPARSER00019"
+      ]
+    },
+    {
+      "row_id": "sfv-f69a6096b7ace083f2d1cd8c",
+      "factor": "object_state",
+      "value": "exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTEXTSEARCHPARSER00020"
+      ]
+    },
+    {
+      "row_id": "sfv-b25f08cb2f5f75cd24b3ac81",
+      "factor": "parser_name_shape",
+      "value": "non_existent_name",
+      "disposition": "expected_failure",
+      "reason": "undefined_ts_parser_name",
+      "case_ids": [
+        "DROPTEXTSEARCHPARSER00021"
+      ]
+    },
+    {
+      "row_id": "sfv-5f3ce011fa9ecfc0513e033a",
+      "factor": "parser_name_shape",
+      "value": "quoted_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTEXTSEARCHPARSER00022"
+      ]
+    },
+    {
+      "row_id": "sfv-030ba3ee559ac1c46f6bf0a3",
+      "factor": "parser_name_shape",
+      "value": "reserved_word_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTEXTSEARCHPARSER00023"
+      ]
+    },
+    {
+      "row_id": "sfv-aa5785e0d7c4c13d00ce7f36",
+      "factor": "parser_name_shape",
+      "value": "schema_qualified_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTEXTSEARCHPARSER00024"
+      ]
+    },
+    {
+      "row_id": "sfv-907b5cd9b74391ebf906464d",
+      "factor": "parser_name_shape",
+      "value": "simple_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTEXTSEARCHPARSER00025"
+      ]
+    },
+    {
+      "row_id": "sfv-7ea9377ba9625793bef4ec3b",
+      "factor": "privilege_context",
+      "value": "non_superuser_session",
+      "disposition": "expected_failure",
+      "reason": "insufficient_ts_parser_privilege",
+      "case_ids": [
+        "DROPTEXTSEARCHPARSER00026"
+      ]
+    },
+    {
+      "row_id": "sfv-8d968da9c86806f1a115325d",
+      "factor": "privilege_context",
+      "value": "superuser_session",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTEXTSEARCHPARSER00027"
+      ]
+    },
+    {
+      "row_id": "sfv-bb2a0df32cb0f4c6c0e2b8fc",
+      "factor": "privilege_requirement",
+      "value": "non_superuser",
+      "disposition": "expected_failure",
+      "reason": "insufficient_ts_parser_privilege",
+      "case_ids": [
+        "DROPTEXTSEARCHPARSER00028"
+      ]
+    },
+    {
+      "row_id": "sfv-13a204a025d4a7d176c951bf",
+      "factor": "privilege_requirement",
+      "value": "superuser",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTEXTSEARCHPARSER00029"
+      ]
+    },
+    {
+      "row_id": "sfv-9be60bb7cdda19d043c913e4",
+      "factor": "statement_branch",
+      "value": "branch_drop_ts_parser",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTEXTSEARCHPARSER00030"
+      ]
+    },
+    {
+      "row_id": "sfv-1f615ef9c6abd2cf71bc6f1c",
+      "factor": "statement_branch",
+      "value": "branch_drop_ts_parser_if_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTEXTSEARCHPARSER00031"
+      ]
+    },
+    {
+      "row_id": "sfv-a795ecdf3a256e2a48f60af6",
+      "factor": "verification_mode",
+      "value": "catalog_query",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTEXTSEARCHPARSER00032"
+      ]
+    },
+    {
+      "row_id": "sfv-a30a1147dbf468d1624e9556",
+      "factor": "verification_mode",
+      "value": "error_assertion",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTEXTSEARCHPARSER00033"
+      ]
+    },
+    {
+      "row_id": "sfv-0a900bf54bccd62e1821c557",
+      "factor": "verification_mode",
+      "value": "notice_assertion",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPTEXTSEARCHPARSER00034"
+      ]
+    }
+  ],
+  "generation_mode": "factor_value_independent_loop_v1",
+  "decision_count": 36,
+  "local_sql_decision_count": 36,
+  "extension_case_count": 984,
+  "delegated_decision_count": 0,
+  "obligation_multiset_sha256": "b5aad9e7cf04b3517ec346cd595b9d0a1a87732a47379c62e34f42c4979808c6"
+}
