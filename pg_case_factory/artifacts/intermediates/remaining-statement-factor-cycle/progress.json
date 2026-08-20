@@ -6,7 +6,7 @@
   "statement_count": 183,
   "retained_statement_count": 6,
   "pending_statement_count": 177,
-  "next_pending_statement": "import_foreign_schema",
+  "next_pending_statement": "insert",
   "statements": {
     "abort": {
       "status": "completed",
@@ -1045,11 +1045,11 @@
       "validation_evidence_sha256": null
     },
     "import_foreign_schema": {
-      "status": "pending",
-      "package_path": null,
-      "sql_file_count": null,
-      "validation_evidence": null,
-      "validation_evidence_sha256": null
+      "status": "completed",
+      "package_path": "artifacts/regress/by-factor/ddl/foreign_schema/import_foreign_schema",
+      "sql_file_count": 633,
+      "validation_evidence": "/Users/yuyu/PyCharmMiscProject/pg_case_factory/artifacts/intermediates/remaining-statement-factor-cycle/import_foreign_schema/validation.json",
+      "validation_evidence_sha256": "a5229c0856c1a47647955b5ff1b2957c2223a66ab1ee0084f58279a3870e6497"
     },
     "insert": {
       "status": "pending",

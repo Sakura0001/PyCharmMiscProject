@@ -1,0 +1,581 @@
+{
+  "schema_version": 1,
+  "statement_key": "import_foreign_schema",
+  "cycle_fingerprint": "606b9e710210e50ff88b14de7052163f9ee31f6f1d1e744bc0bd9935f399a9d9",
+  "factor_value_count": 56,
+  "factor_disposition_counts": {
+    "covered": 55,
+    "expected_failure": 1,
+    "justified_na": 0
+  },
+  "missing_row_ids": [],
+  "duplicate_row_ids": [],
+  "decisions": [
+    {
+      "row_id": "sfv-dae2da3278f5617717e55b36",
+      "factor": "cleanup_mode",
+      "value": "drop_fdw",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00002"
+      ]
+    },
+    {
+      "row_id": "sfv-b7bc4ec5cfe037f08e80ba7c",
+      "factor": "cleanup_mode",
+      "value": "drop_foreign_tables",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00003"
+      ]
+    },
+    {
+      "row_id": "sfv-6eb19a89c56f14893bc05d1b",
+      "factor": "cleanup_mode",
+      "value": "drop_schema",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00004"
+      ]
+    },
+    {
+      "row_id": "sfv-cc8d2c10a0f270e0e3cb139a",
+      "factor": "cleanup_mode",
+      "value": "drop_server",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00005"
+      ]
+    },
+    {
+      "row_id": "sfv-3a276c00d60cd92fc79787d8",
+      "factor": "duplicate_foreign_table",
+      "value": "name_conflict",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00006"
+      ]
+    },
+    {
+      "row_id": "sfv-895b75ce18ec12f7eec0749f",
+      "factor": "duplicate_foreign_table",
+      "value": "no_conflict",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00007"
+      ]
+    },
+    {
+      "row_id": "sfv-7fc65b19bc7549b2c8f3abf4",
+      "factor": "expected_status",
+      "value": "failure",
+      "disposition": "expected_failure",
+      "reason": "import_foreign_schema_declared_failure_provisional",
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00008"
+      ]
+    },
+    {
+      "row_id": "sfv-78e6f7f6055bde9f7d35cbc6",
+      "factor": "expected_status",
+      "value": "success",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00009"
+      ]
+    },
+    {
+      "row_id": "sfv-7bb38ccfe7e867c0f086a4c8",
+      "factor": "fdw_dependency",
+      "value": "fdw_not_support_import",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00010"
+      ]
+    },
+    {
+      "row_id": "sfv-51b1b92150f4b15b6c54f53b",
+      "factor": "fdw_dependency",
+      "value": "fdw_supports_import",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00011"
+      ]
+    },
+    {
+      "row_id": "sfv-a72f56659e62e97805a6b6f3",
+      "factor": "fdw_import_capability",
+      "value": "not_supports_import",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00012"
+      ]
+    },
+    {
+      "row_id": "sfv-53011d5e3cd53c45369fa95b",
+      "factor": "fdw_import_capability",
+      "value": "supports_import",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00013"
+      ]
+    },
+    {
+      "row_id": "sfv-d90a95f33b7d2adceeebdcd2",
+      "factor": "fdw_not_support_import",
+      "value": "fdw_not_supports",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00014"
+      ]
+    },
+    {
+      "row_id": "sfv-0fc03a57fffd963462d14eb3",
+      "factor": "fdw_not_support_import",
+      "value": "fdw_supports",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00015"
+      ]
+    },
+    {
+      "row_id": "sfv-2939cea8d13a34ebde96af43",
+      "factor": "filter_clause",
+      "value": "except",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00016"
+      ]
+    },
+    {
+      "row_id": "sfv-63e2ac41de050a3e72a2e277",
+      "factor": "filter_clause",
+      "value": "limit_to",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00017"
+      ]
+    },
+    {
+      "row_id": "sfv-de77461690bdfcb2ef7bdac8",
+      "factor": "filter_clause",
+      "value": "no_filter",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00018"
+      ]
+    },
+    {
+      "row_id": "sfv-2843525b1c5b92a25f701a57",
+      "factor": "local_schema_name_shape",
+      "value": "nonexistent_schema",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00019"
+      ]
+    },
+    {
+      "row_id": "sfv-f472083ad2dbe4f96a68a257",
+      "factor": "local_schema_name_shape",
+      "value": "quoted_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00020"
+      ]
+    },
+    {
+      "row_id": "sfv-89bbeb331742102b3953b695",
+      "factor": "local_schema_name_shape",
+      "value": "simple_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00021"
+      ]
+    },
+    {
+      "row_id": "sfv-ae066fd3f427c75793793b9e",
+      "factor": "no_create_privilege",
+      "value": "has_create",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00022"
+      ]
+    },
+    {
+      "row_id": "sfv-394f4d8805a0a723b3bcb694",
+      "factor": "no_create_privilege",
+      "value": "lacks_create",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00023"
+      ]
+    },
+    {
+      "row_id": "sfv-0441fb3dbd0d4ed95bd37874",
+      "factor": "no_usage_privilege",
+      "value": "has_usage",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00024"
+      ]
+    },
+    {
+      "row_id": "sfv-71df1bcb6ae52f1a0012d4c4",
+      "factor": "no_usage_privilege",
+      "value": "lacks_usage",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00025"
+      ]
+    },
+    {
+      "row_id": "sfv-adbb477eed5c6a002ac579ee",
+      "factor": "nonexistent_local_schema",
+      "value": "schema_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00026"
+      ]
+    },
+    {
+      "row_id": "sfv-cda2162fe211950613b1a894",
+      "factor": "nonexistent_local_schema",
+      "value": "schema_missing",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00027"
+      ]
+    },
+    {
+      "row_id": "sfv-b7a3593a1d588eaa76728a06",
+      "factor": "nonexistent_server",
+      "value": "server_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00028"
+      ]
+    },
+    {
+      "row_id": "sfv-d7b8e532be178660da2a90d9",
+      "factor": "nonexistent_server",
+      "value": "server_missing",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00029"
+      ]
+    },
+    {
+      "row_id": "sfv-870363125b4b33cc3e16d31e",
+      "factor": "object_state",
+      "value": "exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00030"
+      ]
+    },
+    {
+      "row_id": "sfv-dd8f5247bee68e67dd7abe6b",
+      "factor": "object_state",
+      "value": "not_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00031"
+      ]
+    },
+    {
+      "row_id": "sfv-43aa60bd95053f0a47733b13",
+      "factor": "options_clause",
+      "value": "omitted",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00032"
+      ]
+    },
+    {
+      "row_id": "sfv-2b89e6344b555d4986a93e72",
+      "factor": "options_clause",
+      "value": "specified",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00033"
+      ]
+    },
+    {
+      "row_id": "sfv-9228eb8dd0199a62fd2d11dd",
+      "factor": "privilege_level",
+      "value": "no_create",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00034"
+      ]
+    },
+    {
+      "row_id": "sfv-06b89631be7dfcef2f9c5fc7",
+      "factor": "privilege_level",
+      "value": "no_usage",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00035"
+      ]
+    },
+    {
+      "row_id": "sfv-8ffe8aa72329a3f676022bd5",
+      "factor": "privilege_level",
+      "value": "superuser",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00036"
+      ]
+    },
+    {
+      "row_id": "sfv-bb544fdfb6a7a06baaa7db8b",
+      "factor": "privilege_level",
+      "value": "usage_and_create",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00037"
+      ]
+    },
+    {
+      "row_id": "sfv-f8cfc7f2094290664f44748e",
+      "factor": "remote_schema_name_shape",
+      "value": "quoted_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00038"
+      ]
+    },
+    {
+      "row_id": "sfv-608ea86de6f025688c69d4a2",
+      "factor": "remote_schema_name_shape",
+      "value": "simple_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00039"
+      ]
+    },
+    {
+      "row_id": "sfv-18b4d7e3320db45b5fc50b13",
+      "factor": "schema_existence",
+      "value": "schema_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00040"
+      ]
+    },
+    {
+      "row_id": "sfv-973fdf52a734169e24f65ced",
+      "factor": "schema_existence",
+      "value": "schema_not_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00041"
+      ]
+    },
+    {
+      "row_id": "sfv-4278933ebece3a96adc50fd0",
+      "factor": "server_dependency",
+      "value": "invalid_server",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00042"
+      ]
+    },
+    {
+      "row_id": "sfv-9146d216593b462e78150ade",
+      "factor": "server_dependency",
+      "value": "no_usage_privilege",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00043"
+      ]
+    },
+    {
+      "row_id": "sfv-e6e0e82f4ead9399106d318c",
+      "factor": "server_dependency",
+      "value": "valid_server",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00044"
+      ]
+    },
+    {
+      "row_id": "sfv-d3dd6ee1462c4e0d438580e3",
+      "factor": "server_existence",
+      "value": "server_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00045"
+      ]
+    },
+    {
+      "row_id": "sfv-ac942fa60f06edbceb7d8df7",
+      "factor": "server_existence",
+      "value": "server_not_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00046"
+      ]
+    },
+    {
+      "row_id": "sfv-cd65cd6ca4e3e17c5ebb94b3",
+      "factor": "server_name_shape",
+      "value": "nonexistent_server",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00047"
+      ]
+    },
+    {
+      "row_id": "sfv-bec1c543cc2689ec88d1b377",
+      "factor": "server_name_shape",
+      "value": "simple_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00048"
+      ]
+    },
+    {
+      "row_id": "sfv-9440ccab5075614a246bdef3",
+      "factor": "statement_branch",
+      "value": "branch_basic",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00049"
+      ]
+    },
+    {
+      "row_id": "sfv-0fc15b6613dfb7daae536e37",
+      "factor": "statement_branch",
+      "value": "branch_except",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00050"
+      ]
+    },
+    {
+      "row_id": "sfv-2af0d4cb7ece6eedb57eb9bb",
+      "factor": "statement_branch",
+      "value": "branch_limit_to",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00051"
+      ]
+    },
+    {
+      "row_id": "sfv-3e641e575ae2e95b52145648",
+      "factor": "table_name_mismatch",
+      "value": "table_exists_remote",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00052"
+      ]
+    },
+    {
+      "row_id": "sfv-ac916bf70ef12689c4cf43f8",
+      "factor": "table_name_mismatch",
+      "value": "table_not_exists_remote",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00053"
+      ]
+    },
+    {
+      "row_id": "sfv-c8cc77e171d4d857f0e47a7d",
+      "factor": "table_name_shape",
+      "value": "nonexistent_table",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00054"
+      ]
+    },
+    {
+      "row_id": "sfv-2ca9a6b5abba140ea5f627cb",
+      "factor": "table_name_shape",
+      "value": "simple_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00055"
+      ]
+    },
+    {
+      "row_id": "sfv-18a1547b42c2ec8a642f29a3",
+      "factor": "verification_mode",
+      "value": "error_assertion",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00056"
+      ]
+    },
+    {
+      "row_id": "sfv-0b05051b6acd6e3b3fb76292",
+      "factor": "verification_mode",
+      "value": "pg_class_catalog_query",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "IMPORTFOREIGNSCHEMA00057"
+      ]
+    }
+  ],
+  "generation_mode": "factor_value_independent_loop_v1",
+  "decision_count": 57,
+  "local_sql_decision_count": 57,
+  "extension_case_count": 576,
+  "delegated_decision_count": 0,
+  "obligation_multiset_sha256": "0d28e34b16b0bcc84eeee9dff8c54babfa9f8f558196ea4fcb41baa0269ca0af"
+}
