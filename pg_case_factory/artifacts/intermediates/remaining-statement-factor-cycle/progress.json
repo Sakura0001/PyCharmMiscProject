@@ -6,7 +6,7 @@
   "statement_count": 183,
   "retained_statement_count": 6,
   "pending_statement_count": 177,
-  "next_pending_statement": "show",
+  "next_pending_statement": "start_transaction",
   "statements": {
     "abort": {
       "status": "completed",
@@ -1241,11 +1241,11 @@
       "validation_evidence_sha256": "230e12fa91c79309bb5f5062d88d6c4ae04f57913a5c554352f33ec97524d6d1"
     },
     "show": {
-      "status": "pending",
-      "package_path": null,
-      "sql_file_count": null,
-      "validation_evidence": null,
-      "validation_evidence_sha256": null
+      "status": "completed",
+      "package_path": "artifacts/regress/by-factor/session/runtime_parameter/show",
+      "sql_file_count": 5036,
+      "validation_evidence": "/Users/yuyu/PyCharmMiscProject/pg_case_factory/artifacts/intermediates/remaining-statement-factor-cycle/show/validation.json",
+      "validation_evidence_sha256": "211bb860dfd80ae3f3cd513a44c1aeefbf50195161f9b8b144c2a90f7b8c1884"
     },
     "start_transaction": {
       "status": "pending",
