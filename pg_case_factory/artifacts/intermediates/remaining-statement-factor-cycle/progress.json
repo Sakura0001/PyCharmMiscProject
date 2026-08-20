@@ -6,7 +6,7 @@
   "statement_count": 183,
   "retained_statement_count": 6,
   "pending_statement_count": 177,
-  "next_pending_statement": "drop_group",
+  "next_pending_statement": "drop_index",
   "statements": {
     "abort": {
       "status": "completed",
@@ -793,11 +793,11 @@
       "validation_evidence_sha256": "e283bf9f3b3c9c9e43529a41c7d7904247c6e7d8e3c845690e72b1dbe782623a"
     },
     "drop_group": {
-      "status": "pending",
-      "package_path": null,
-      "sql_file_count": null,
-      "validation_evidence": null,
-      "validation_evidence_sha256": null
+      "status": "completed",
+      "package_path": "artifacts/regress/by-factor/ddl/group/drop_group",
+      "sql_file_count": 197,
+      "validation_evidence": "/Users/yuyu/PyCharmMiscProject/pg_case_factory/artifacts/intermediates/remaining-statement-factor-cycle/drop_group/validation.json",
+      "validation_evidence_sha256": "ec6ccd706f16358c08ea9d9adebc9a9d91185a9edbc16fce8a3f386d0db0fd24"
     },
     "drop_index": {
       "status": "pending",
