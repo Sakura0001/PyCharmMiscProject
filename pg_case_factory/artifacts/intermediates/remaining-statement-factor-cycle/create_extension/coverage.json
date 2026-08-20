@@ -1,0 +1,641 @@
+{
+  "schema_version": 1,
+  "statement_key": "create_extension",
+  "cycle_fingerprint": "606b9e710210e50ff88b14de7052163f9ee31f6f1d1e744bc0bd9935f399a9d9",
+  "factor_value_count": 62,
+  "factor_disposition_counts": {
+    "covered": 43,
+    "expected_failure": 19,
+    "justified_na": 0
+  },
+  "missing_row_ids": [],
+  "duplicate_row_ids": [],
+  "decisions": [
+    {
+      "row_id": "sfv-f7bf6796894014f6343a081c",
+      "factor": "cascade_clause",
+      "value": "omitted",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEXTENSION00002"
+      ]
+    },
+    {
+      "row_id": "sfv-7d5b8de14af31e98506908f6",
+      "factor": "cascade_clause",
+      "value": "specified",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEXTENSION00003"
+      ]
+    },
+    {
+      "row_id": "sfv-670bc36074864c10d8d77470",
+      "factor": "cleanup_mode",
+      "value": "drop_extension",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEXTENSION00004"
+      ]
+    },
+    {
+      "row_id": "sfv-fbb5a7a34536eeace63823ce",
+      "factor": "cleanup_mode",
+      "value": "drop_extension_cascade",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEXTENSION00005"
+      ]
+    },
+    {
+      "row_id": "sfv-e252f8236ce9e20684132c92",
+      "factor": "cleanup_mode",
+      "value": "schema_cleanup",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEXTENSION00006"
+      ]
+    },
+    {
+      "row_id": "sfv-12e1be9ab693b90831d7abe7",
+      "factor": "control_file_presence",
+      "value": "installed_in_extension_control_path",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEXTENSION00007"
+      ]
+    },
+    {
+      "row_id": "sfv-21a78878d5491697384638a4",
+      "factor": "control_file_presence",
+      "value": "installed_on_system",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEXTENSION00008"
+      ]
+    },
+    {
+      "row_id": "sfv-b552b9e4da92d83a4ff94394",
+      "factor": "control_file_presence",
+      "value": "not_installed_on_system",
+      "disposition": "expected_failure",
+      "reason": "undefined_file_provisional",
+      "case_ids": [
+        "CREATEEXTENSION00009"
+      ]
+    },
+    {
+      "row_id": "sfv-50c057ddd42f87710d068eaa",
+      "factor": "control_file_schema_conflict",
+      "value": "conflict_with_cascade_ignored",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEXTENSION00010"
+      ]
+    },
+    {
+      "row_id": "sfv-b8b7ba34a7d9c1e1c01dbe69",
+      "factor": "control_file_schema_conflict",
+      "value": "conflict_without_cascade",
+      "disposition": "expected_failure",
+      "reason": "invalid_schema_definition_provisional",
+      "case_ids": [
+        "CREATEEXTENSION00011"
+      ]
+    },
+    {
+      "row_id": "sfv-d0ce8796c1a87f7246718b9a",
+      "factor": "control_file_schema_conflict",
+      "value": "no_conflict",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEXTENSION00012"
+      ]
+    },
+    {
+      "row_id": "sfv-50ddae2f68cf4bf2ae67e8ec",
+      "factor": "dependency_extension_state",
+      "value": "already_installed",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEXTENSION00013"
+      ]
+    },
+    {
+      "row_id": "sfv-909e07db1551660c2087c6e2",
+      "factor": "dependency_extension_state",
+      "value": "not_installed_no_cascade",
+      "disposition": "expected_failure",
+      "reason": "extension_violation_provisional",
+      "case_ids": [
+        "CREATEEXTENSION00014"
+      ]
+    },
+    {
+      "row_id": "sfv-ac95b41d0329f8b0e53249f4",
+      "factor": "dependency_extension_state",
+      "value": "not_installed_with_cascade",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEXTENSION00015"
+      ]
+    },
+    {
+      "row_id": "sfv-7423236cf3baa3a4489b3389",
+      "factor": "duplicate_extension_name",
+      "value": "no_conflict",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEXTENSION00016"
+      ]
+    },
+    {
+      "row_id": "sfv-8ee71db29d40933ceac44892",
+      "factor": "duplicate_extension_name",
+      "value": "same_name_conflict",
+      "disposition": "expected_failure",
+      "reason": "duplicate_object_provisional",
+      "case_ids": [
+        "CREATEEXTENSION00017"
+      ]
+    },
+    {
+      "row_id": "sfv-ea969177298e017a0895cfca",
+      "factor": "expected_status",
+      "value": "failure",
+      "disposition": "expected_failure",
+      "reason": "duplicate_object_provisional",
+      "case_ids": [
+        "CREATEEXTENSION00018"
+      ]
+    },
+    {
+      "row_id": "sfv-265d4071ed2a5d2dc78e4279",
+      "factor": "expected_status",
+      "value": "success",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEXTENSION00019"
+      ]
+    },
+    {
+      "row_id": "sfv-50151d193048055e5a16ba49",
+      "factor": "extension_name_shape",
+      "value": "duplicate_name",
+      "disposition": "expected_failure",
+      "reason": "duplicate_object_provisional",
+      "case_ids": [
+        "CREATEEXTENSION00020"
+      ]
+    },
+    {
+      "row_id": "sfv-206e9bc9ba7cf15bbd939dd9",
+      "factor": "extension_name_shape",
+      "value": "nonexistent_extension",
+      "disposition": "expected_failure",
+      "reason": "undefined_object_provisional",
+      "case_ids": [
+        "CREATEEXTENSION00021"
+      ]
+    },
+    {
+      "row_id": "sfv-8286916ce7cdbd1b0bc6aa75",
+      "factor": "extension_name_shape",
+      "value": "quoted_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEXTENSION00022"
+      ]
+    },
+    {
+      "row_id": "sfv-7681f41fb938def807971e24",
+      "factor": "extension_name_shape",
+      "value": "reserved_word_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEXTENSION00023"
+      ]
+    },
+    {
+      "row_id": "sfv-574a6367ec23175cf92ef82b",
+      "factor": "extension_name_shape",
+      "value": "simple_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEXTENSION00024"
+      ]
+    },
+    {
+      "row_id": "sfv-e1f624921d0fe95dba0224f5",
+      "factor": "extension_trust_level",
+      "value": "trusted",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEXTENSION00025"
+      ]
+    },
+    {
+      "row_id": "sfv-cef02694359af03c606ba53f",
+      "factor": "extension_trust_level",
+      "value": "untrusted",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEXTENSION00026"
+      ]
+    },
+    {
+      "row_id": "sfv-1191c9b4e9e83e9a311f7fe6",
+      "factor": "if_not_exists_clause",
+      "value": "omitted",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEXTENSION00027"
+      ]
+    },
+    {
+      "row_id": "sfv-e45c12eea3c3c42a9a28fecc",
+      "factor": "if_not_exists_clause",
+      "value": "specified",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEXTENSION00028"
+      ]
+    },
+    {
+      "row_id": "sfv-d02d2aac30b12a597d4592ca",
+      "factor": "if_not_exists_no_op",
+      "value": "new_install",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEXTENSION00029"
+      ]
+    },
+    {
+      "row_id": "sfv-12da3d92ae698ed9257040a6",
+      "factor": "if_not_exists_no_op",
+      "value": "no_op_notice",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEXTENSION00030"
+      ]
+    },
+    {
+      "row_id": "sfv-7ff2c765360dc208c6acbc01",
+      "factor": "insufficient_privilege",
+      "value": "no_create_privilege_trusted",
+      "disposition": "expected_failure",
+      "reason": "insufficient_privilege_provisional",
+      "case_ids": [
+        "CREATEEXTENSION00031"
+      ]
+    },
+    {
+      "row_id": "sfv-945bfaed4f92f86467c5bb59",
+      "factor": "insufficient_privilege",
+      "value": "non_superuser_untrusted_extension",
+      "disposition": "expected_failure",
+      "reason": "insufficient_privilege_provisional",
+      "case_ids": [
+        "CREATEEXTENSION00032"
+      ]
+    },
+    {
+      "row_id": "sfv-ae3def9e80a3965f21a4ecee",
+      "factor": "insufficient_privilege",
+      "value": "sufficient_privilege",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEXTENSION00033"
+      ]
+    },
+    {
+      "row_id": "sfv-e9a484bbc2ab671827f126b7",
+      "factor": "invalid_version",
+      "value": "nonexistent_version",
+      "disposition": "expected_failure",
+      "reason": "invalid_parameter_value_provisional",
+      "case_ids": [
+        "CREATEEXTENSION00034"
+      ]
+    },
+    {
+      "row_id": "sfv-be2c8934151bf58eea7bf4d2",
+      "factor": "invalid_version",
+      "value": "valid_version",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEXTENSION00035"
+      ]
+    },
+    {
+      "row_id": "sfv-9fb06f1479c58a0c0a9deef7",
+      "factor": "nonexistent_extension_script",
+      "value": "script_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEXTENSION00036"
+      ]
+    },
+    {
+      "row_id": "sfv-12eae5b0e8ce7be4ea676c5e",
+      "factor": "nonexistent_extension_script",
+      "value": "script_missing",
+      "disposition": "expected_failure",
+      "reason": "undefined_file_provisional",
+      "case_ids": [
+        "CREATEEXTENSION00037"
+      ]
+    },
+    {
+      "row_id": "sfv-6a7992d9c3faf2e3f0509ca4",
+      "factor": "nonexistent_schema",
+      "value": "schema_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEXTENSION00038"
+      ]
+    },
+    {
+      "row_id": "sfv-b440bce6503eb16e87161de1",
+      "factor": "nonexistent_schema",
+      "value": "schema_missing",
+      "disposition": "expected_failure",
+      "reason": "invalid_schema_provisional",
+      "case_ids": [
+        "CREATEEXTENSION00039"
+      ]
+    },
+    {
+      "row_id": "sfv-8feeb109df14d4b775ae073a",
+      "factor": "object_state",
+      "value": "already_exists",
+      "disposition": "expected_failure",
+      "reason": "duplicate_object_provisional",
+      "case_ids": [
+        "CREATEEXTENSION00040"
+      ]
+    },
+    {
+      "row_id": "sfv-f04a3623b19392f78453c4fa",
+      "factor": "object_state",
+      "value": "not_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEXTENSION00041"
+      ]
+    },
+    {
+      "row_id": "sfv-e77aa4ee3cb354d50cbaf1cb",
+      "factor": "privilege_level",
+      "value": "create_privilege_user",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEXTENSION00042"
+      ]
+    },
+    {
+      "row_id": "sfv-b1c03bb92f54413c3a0d7932",
+      "factor": "privilege_level",
+      "value": "non_superuser_no_create",
+      "disposition": "expected_failure",
+      "reason": "insufficient_privilege_provisional",
+      "case_ids": [
+        "CREATEEXTENSION00043"
+      ]
+    },
+    {
+      "row_id": "sfv-4dec7ddf2550d1d6c1f28428",
+      "factor": "privilege_level",
+      "value": "superuser",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEXTENSION00044"
+      ]
+    },
+    {
+      "row_id": "sfv-504d5eb88a3e6d8d8901d465",
+      "factor": "schema_clause",
+      "value": "control_file_schema_conflict",
+      "disposition": "expected_failure",
+      "reason": "invalid_schema_definition_provisional",
+      "case_ids": [
+        "CREATEEXTENSION00045"
+      ]
+    },
+    {
+      "row_id": "sfv-a4f0a3de109ecbcffa3cdd05",
+      "factor": "schema_clause",
+      "value": "omitted",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEXTENSION00046"
+      ]
+    },
+    {
+      "row_id": "sfv-97b760e6326e0d95c57a02be",
+      "factor": "schema_clause",
+      "value": "specified_schema",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEXTENSION00047"
+      ]
+    },
+    {
+      "row_id": "sfv-05ce3d93eaf18eb9276c9cbc",
+      "factor": "schema_existence",
+      "value": "schema_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEXTENSION00048"
+      ]
+    },
+    {
+      "row_id": "sfv-0501e0a2d77c1dc6a7860954",
+      "factor": "schema_existence",
+      "value": "schema_not_exists",
+      "disposition": "expected_failure",
+      "reason": "invalid_schema_provisional",
+      "case_ids": [
+        "CREATEEXTENSION00049"
+      ]
+    },
+    {
+      "row_id": "sfv-0968e3ce199d0aee895df505",
+      "factor": "schema_name_shape",
+      "value": "nonexistent_schema",
+      "disposition": "expected_failure",
+      "reason": "invalid_schema_provisional",
+      "case_ids": [
+        "CREATEEXTENSION00050"
+      ]
+    },
+    {
+      "row_id": "sfv-843d8ac646a570f123586f48",
+      "factor": "schema_name_shape",
+      "value": "quoted_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEXTENSION00051"
+      ]
+    },
+    {
+      "row_id": "sfv-83c0c17e4d613077c98deba5",
+      "factor": "schema_name_shape",
+      "value": "simple_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEXTENSION00052"
+      ]
+    },
+    {
+      "row_id": "sfv-4f22bd4462d86aacaea92d78",
+      "factor": "statement_branch",
+      "value": "branch_create_extension",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEXTENSION00053"
+      ]
+    },
+    {
+      "row_id": "sfv-e4ca67e9bff5a7c80ade80a0",
+      "factor": "statement_branch",
+      "value": "branch_create_extension_if_not_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEXTENSION00054"
+      ]
+    },
+    {
+      "row_id": "sfv-e593a27b518d0edf1080ff4a",
+      "factor": "verification_mode",
+      "value": "error_assertion",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEXTENSION00055"
+      ]
+    },
+    {
+      "row_id": "sfv-e42065c56e448e143c5c93de",
+      "factor": "verification_mode",
+      "value": "pg_available_extensions_query",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEXTENSION00056"
+      ]
+    },
+    {
+      "row_id": "sfv-d1ac85c0b02f3a558fb2a9e8",
+      "factor": "verification_mode",
+      "value": "pg_extension_catalog_query",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEXTENSION00057"
+      ]
+    },
+    {
+      "row_id": "sfv-0f4cf35d795bc80bb58d5a21",
+      "factor": "version_clause",
+      "value": "invalid_version",
+      "disposition": "expected_failure",
+      "reason": "invalid_parameter_value_provisional",
+      "case_ids": [
+        "CREATEEXTENSION00058"
+      ]
+    },
+    {
+      "row_id": "sfv-b73fff0ba6c3f5dce935ed93",
+      "factor": "version_clause",
+      "value": "omitted",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEXTENSION00059"
+      ]
+    },
+    {
+      "row_id": "sfv-72107d9bc796e7eded5c6052",
+      "factor": "version_clause",
+      "value": "specified_version",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEXTENSION00060"
+      ]
+    },
+    {
+      "row_id": "sfv-020a329870f610eceeeb9b15",
+      "factor": "version_string_shape",
+      "value": "identifier_form",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEXTENSION00061"
+      ]
+    },
+    {
+      "row_id": "sfv-f2313a8706a55e4a3e572447",
+      "factor": "version_string_shape",
+      "value": "invalid_version_string",
+      "disposition": "expected_failure",
+      "reason": "invalid_parameter_value_provisional",
+      "case_ids": [
+        "CREATEEXTENSION00062"
+      ]
+    },
+    {
+      "row_id": "sfv-42479c1b9c6d15210ffbe28a",
+      "factor": "version_string_shape",
+      "value": "string_literal_form",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEEXTENSION00063"
+      ]
+    }
+  ],
+  "generation_mode": "factor_value_independent_loop_v1",
+  "decision_count": 63,
+  "local_sql_decision_count": 63,
+  "extension_case_count": 4320,
+  "delegated_decision_count": 0,
+  "obligation_multiset_sha256": "f4990c83940102a9ddf74dd74ad1e7d643edf8a2507716be81ce4744322b70bf"
+}
