@@ -353,7 +353,8 @@ def _probe_select(
         )
     return (
         f"SELECT count(*) AS seq_exists FROM pg_catalog.pg_class "
-        f"WHERE relname = '{name}' AND relkind = 'S';",
+        f"WHERE relname = '{name}' AND relkind = 'S' "
+        f"ORDER BY count(*);",
     )
 
 
