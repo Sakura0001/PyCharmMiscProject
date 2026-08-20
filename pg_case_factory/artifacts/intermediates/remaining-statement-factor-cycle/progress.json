@@ -6,7 +6,7 @@
   "statement_count": 183,
   "retained_statement_count": 6,
   "pending_statement_count": 177,
-  "next_pending_statement": "create_collation",
+  "next_pending_statement": "create_conversion",
   "statements": {
     "abort": {
       "status": "completed",
@@ -401,11 +401,11 @@
       "validation_evidence_sha256": "37dda5f945a55681afa86facf82e532679b0d765e9a7d28be1c528d550118a1c"
     },
     "create_collation": {
-      "status": "pending",
-      "package_path": null,
-      "sql_file_count": null,
-      "validation_evidence": null,
-      "validation_evidence_sha256": null
+      "status": "completed",
+      "package_path": "artifacts/regress/by-factor/ddl/collation/create_collation",
+      "sql_file_count": 1135,
+      "validation_evidence": "/Users/yuyu/PyCharmMiscProject/pg_case_factory/artifacts/intermediates/remaining-statement-factor-cycle/create_collation/validation.json",
+      "validation_evidence_sha256": "237366b70dd4e0bba15302a544dc10e9259ad15221547d1685b4f9a7a9280fee"
     },
     "create_conversion": {
       "status": "pending",
