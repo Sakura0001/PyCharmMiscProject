@@ -1,0 +1,821 @@
+{
+  "schema_version": 1,
+  "statement_key": "alter_routine",
+  "cycle_fingerprint": "606b9e710210e50ff88b14de7052163f9ee31f6f1d1e744bc0bd9935f399a9d9",
+  "factor_value_count": 80,
+  "factor_disposition_counts": {
+    "covered": 60,
+    "expected_failure": 20,
+    "justified_na": 0
+  },
+  "missing_row_ids": [],
+  "duplicate_row_ids": [],
+  "decisions": [
+    {
+      "row_id": "sfv-08ddbc7d7d70edb5b57a864d",
+      "factor": "action_option",
+      "value": "cost",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00034"
+      ]
+    },
+    {
+      "row_id": "sfv-561febc0f3fe8a4b98381356",
+      "factor": "action_option",
+      "value": "immutable",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00035"
+      ]
+    },
+    {
+      "row_id": "sfv-d8ad3cc784833e34a6f7c414",
+      "factor": "action_option",
+      "value": "leakproof",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00036"
+      ]
+    },
+    {
+      "row_id": "sfv-3883d8cdc3e7ecdf9edce22a",
+      "factor": "action_option",
+      "value": "not_leakproof",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00037"
+      ]
+    },
+    {
+      "row_id": "sfv-5e2942b9ed8560d1caf8aced",
+      "factor": "action_option",
+      "value": "parallel_restricted",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00038"
+      ]
+    },
+    {
+      "row_id": "sfv-60b47b79c39cd73b98c5c8c4",
+      "factor": "action_option",
+      "value": "parallel_safe",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00039"
+      ]
+    },
+    {
+      "row_id": "sfv-5db62b71d56f046559ff9bac",
+      "factor": "action_option",
+      "value": "parallel_unsafe",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00040"
+      ]
+    },
+    {
+      "row_id": "sfv-0ca796da921bba7af4496a9c",
+      "factor": "action_option",
+      "value": "reset_all",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00041"
+      ]
+    },
+    {
+      "row_id": "sfv-e6dcf8c24571e278b2272b3b",
+      "factor": "action_option",
+      "value": "reset_config_parameter",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00042"
+      ]
+    },
+    {
+      "row_id": "sfv-96c3adb3d1d24f6e8133579e",
+      "factor": "action_option",
+      "value": "rows",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00043"
+      ]
+    },
+    {
+      "row_id": "sfv-a2bd7ba49266489bf4fea277",
+      "factor": "action_option",
+      "value": "security_definer",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00044"
+      ]
+    },
+    {
+      "row_id": "sfv-429a0237e66e0dc0b580916e",
+      "factor": "action_option",
+      "value": "security_invoker",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00045"
+      ]
+    },
+    {
+      "row_id": "sfv-63ffd7ca71b509b094e4a5f7",
+      "factor": "action_option",
+      "value": "set_config_from_current",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00046"
+      ]
+    },
+    {
+      "row_id": "sfv-7dfae6e93e0f6d3cb7619ed4",
+      "factor": "action_option",
+      "value": "set_config_parameter",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00047"
+      ]
+    },
+    {
+      "row_id": "sfv-f829ed6e06a78bdb0d0337e2",
+      "factor": "action_option",
+      "value": "stable",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00048"
+      ]
+    },
+    {
+      "row_id": "sfv-add41a2589abdc1d4d8dd866",
+      "factor": "action_option",
+      "value": "volatile",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00049"
+      ]
+    },
+    {
+      "row_id": "sfv-ac09c018b4ed8af986c755f6",
+      "factor": "arg_signature",
+      "value": "mismatched_signature",
+      "disposition": "expected_failure",
+      "reason": "routine_signature_does_not_exist_provisional",
+      "case_ids": [
+        "ALTERROUTINE00050"
+      ]
+    },
+    {
+      "row_id": "sfv-b5bffccba576dbdffbde6773",
+      "factor": "arg_signature",
+      "value": "multiple_args",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00051"
+      ]
+    },
+    {
+      "row_id": "sfv-e96ff7f1325d185a76caac64",
+      "factor": "arg_signature",
+      "value": "no_args",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00052"
+      ]
+    },
+    {
+      "row_id": "sfv-35ebce450b3314d525f36f3e",
+      "factor": "arg_signature",
+      "value": "single_arg",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00053"
+      ]
+    },
+    {
+      "row_id": "sfv-384270d4e73d35aa368b4ad0",
+      "factor": "arg_signature",
+      "value": "with_argmode",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00054"
+      ]
+    },
+    {
+      "row_id": "sfv-e5ad20741b1a91c2038a1687",
+      "factor": "arg_signature",
+      "value": "with_argname",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00055"
+      ]
+    },
+    {
+      "row_id": "sfv-3603251f3138c0ec35a17988",
+      "factor": "cleanup_mode",
+      "value": "drop_aggregate",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00056"
+      ]
+    },
+    {
+      "row_id": "sfv-ebd963f3629707dad0ece780",
+      "factor": "cleanup_mode",
+      "value": "drop_function",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00057"
+      ]
+    },
+    {
+      "row_id": "sfv-52ba9067a9c0dc7aa06323d4",
+      "factor": "cleanup_mode",
+      "value": "drop_procedure",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00058"
+      ]
+    },
+    {
+      "row_id": "sfv-56658c2e98db9e4743ee995c",
+      "factor": "cleanup_mode",
+      "value": "drop_routine",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00059"
+      ]
+    },
+    {
+      "row_id": "sfv-14d6e592f4a676beec0e2b3a",
+      "factor": "cleanup_mode",
+      "value": "reset_config_parameter",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00060"
+      ]
+    },
+    {
+      "row_id": "sfv-1d58858153fbdfca9fc3aa11",
+      "factor": "conflicting_routine_signature",
+      "value": "wrong_argument_types",
+      "disposition": "expected_failure",
+      "reason": "routine_signature_does_not_exist_provisional",
+      "case_ids": [
+        "ALTERROUTINE00061"
+      ]
+    },
+    {
+      "row_id": "sfv-5b8dc32f37f48e691c540021",
+      "factor": "executor_privilege",
+      "value": "non_owner_no_privilege",
+      "disposition": "expected_failure",
+      "reason": "must_be_owner_of_routine_provisional",
+      "case_ids": [
+        "ALTERROUTINE00062"
+      ]
+    },
+    {
+      "row_id": "sfv-83a887352a12587f351387e4",
+      "factor": "executor_privilege",
+      "value": "non_owner_with_grant_option",
+      "disposition": "expected_failure",
+      "reason": "must_be_owner_of_routine_provisional",
+      "case_ids": [
+        "ALTERROUTINE00063"
+      ]
+    },
+    {
+      "row_id": "sfv-0783ec2d61486d5ad22009ce",
+      "factor": "executor_privilege",
+      "value": "owner_of_routine",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00064"
+      ]
+    },
+    {
+      "row_id": "sfv-8f86f630479c297e83dfbdc1",
+      "factor": "executor_privilege",
+      "value": "superuser",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00065"
+      ]
+    },
+    {
+      "row_id": "sfv-de62fbcfe9ca150430a96290",
+      "factor": "expected_status",
+      "value": "failure",
+      "disposition": "expected_failure",
+      "reason": "expected_status_failure_routine_not_found_provisional",
+      "case_ids": [
+        "ALTERROUTINE00066"
+      ]
+    },
+    {
+      "row_id": "sfv-5719aabf30af76aa072bfdb7",
+      "factor": "expected_status",
+      "value": "success",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00067"
+      ]
+    },
+    {
+      "row_id": "sfv-b2bd501a42e51fe230660bc1",
+      "factor": "extension_dependency",
+      "value": "depends_on_existing_extension",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00068"
+      ]
+    },
+    {
+      "row_id": "sfv-c8c7594ba633f3742aa98131",
+      "factor": "extension_dependency",
+      "value": "depends_on_nonexistent_extension",
+      "disposition": "expected_failure",
+      "reason": "extension_does_not_exist_provisional",
+      "case_ids": [
+        "ALTERROUTINE00069"
+      ]
+    },
+    {
+      "row_id": "sfv-d4b2db092ae1769cc66ab905",
+      "factor": "extension_dependency",
+      "value": "no_depends_removing_dependency",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00070"
+      ]
+    },
+    {
+      "row_id": "sfv-96dfc731902e4614b727ce84",
+      "factor": "extension_dependency_state",
+      "value": "extension_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00071"
+      ]
+    },
+    {
+      "row_id": "sfv-0fa796f485fc6c71662fc16b",
+      "factor": "extension_dependency_state",
+      "value": "extension_not_exists",
+      "disposition": "expected_failure",
+      "reason": "extension_does_not_exist_provisional",
+      "case_ids": [
+        "ALTERROUTINE00072"
+      ]
+    },
+    {
+      "row_id": "sfv-e04be3d29eaf0ddc341f6eb2",
+      "factor": "new_name_shape",
+      "value": "existing_name_conflict",
+      "disposition": "expected_failure",
+      "reason": "duplicate_function_provisional",
+      "case_ids": [
+        "ALTERROUTINE00073"
+      ]
+    },
+    {
+      "row_id": "sfv-2d6a4d0296787e89bfc824be",
+      "factor": "new_name_shape",
+      "value": "quoted_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00074"
+      ]
+    },
+    {
+      "row_id": "sfv-d063234d252389afe9f42a19",
+      "factor": "new_name_shape",
+      "value": "simple_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00075"
+      ]
+    },
+    {
+      "row_id": "sfv-cec9ebb10d42bf1af0bfae08",
+      "factor": "new_schema_shape",
+      "value": "existing_schema",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00076"
+      ]
+    },
+    {
+      "row_id": "sfv-adf54aebc2b97d01e44afd87",
+      "factor": "new_schema_shape",
+      "value": "nonexistent_schema",
+      "disposition": "expected_failure",
+      "reason": "schema_does_not_exist_provisional",
+      "case_ids": [
+        "ALTERROUTINE00077"
+      ]
+    },
+    {
+      "row_id": "sfv-acface0b06df3762d94ef4ae",
+      "factor": "nonexistent_extension",
+      "value": "extension_does_not_exist",
+      "disposition": "expected_failure",
+      "reason": "extension_does_not_exist_provisional",
+      "case_ids": [
+        "ALTERROUTINE00078"
+      ]
+    },
+    {
+      "row_id": "sfv-abf456733bcc04e48432b02f",
+      "factor": "nonexistent_owner",
+      "value": "owner_role_does_not_exist",
+      "disposition": "expected_failure",
+      "reason": "role_does_not_exist_provisional",
+      "case_ids": [
+        "ALTERROUTINE00079"
+      ]
+    },
+    {
+      "row_id": "sfv-9d1af5400fcc64e53ccf2a51",
+      "factor": "nonexistent_routine",
+      "value": "routine_does_not_exist",
+      "disposition": "expected_failure",
+      "reason": "routine_does_not_exist_provisional",
+      "case_ids": [
+        "ALTERROUTINE00080"
+      ]
+    },
+    {
+      "row_id": "sfv-86277e87d5cb4e82e332f0dd",
+      "factor": "nonexistent_schema",
+      "value": "schema_does_not_exist",
+      "disposition": "expected_failure",
+      "reason": "schema_does_not_exist_provisional",
+      "case_ids": [
+        "ALTERROUTINE00081"
+      ]
+    },
+    {
+      "row_id": "sfv-e5eaf5381a19a3ce7044c396",
+      "factor": "owner_to_shape",
+      "value": "current_role_keyword",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00082"
+      ]
+    },
+    {
+      "row_id": "sfv-3c9286ca386191cb803fcb59",
+      "factor": "owner_to_shape",
+      "value": "current_user_keyword",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00083"
+      ]
+    },
+    {
+      "row_id": "sfv-5707ab4c7584bcb334b35374",
+      "factor": "owner_to_shape",
+      "value": "explicit_role_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00084"
+      ]
+    },
+    {
+      "row_id": "sfv-b90b33ba9ca8039d9a3936ce",
+      "factor": "owner_to_shape",
+      "value": "session_user_keyword",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00085"
+      ]
+    },
+    {
+      "row_id": "sfv-32466dedcb7dedad77241d91",
+      "factor": "privilege_insufficient",
+      "value": "non_owner_altering_routine",
+      "disposition": "expected_failure",
+      "reason": "must_be_owner_of_routine_provisional",
+      "case_ids": [
+        "ALTERROUTINE00086"
+      ]
+    },
+    {
+      "row_id": "sfv-cc3ebe2e2a17f6574b006ae8",
+      "factor": "privilege_insufficient",
+      "value": "non_superuser_setting_leakproof",
+      "disposition": "expected_failure",
+      "reason": "leakproof_requires_superuser_provisional",
+      "case_ids": [
+        "ALTERROUTINE00087"
+      ]
+    },
+    {
+      "row_id": "sfv-ed22f4b2d123f5a202adbc1d",
+      "factor": "privilege_insufficient",
+      "value": "non_superuser_setting_security_definer",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00088"
+      ]
+    },
+    {
+      "row_id": "sfv-d2956e49d2c31695c2ccbe26",
+      "factor": "restrict_clause",
+      "value": "omitted",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00089"
+      ]
+    },
+    {
+      "row_id": "sfv-5d55c58af0897e4dbfcec184",
+      "factor": "restrict_clause",
+      "value": "restrict",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00090"
+      ]
+    },
+    {
+      "row_id": "sfv-35ffd2504141d5e9a6898ddf",
+      "factor": "routine_name_shape",
+      "value": "non_existent_name",
+      "disposition": "expected_failure",
+      "reason": "routine_does_not_exist_provisional",
+      "case_ids": [
+        "ALTERROUTINE00091"
+      ]
+    },
+    {
+      "row_id": "sfv-d8c5910208710d0de313ea79",
+      "factor": "routine_name_shape",
+      "value": "quoted_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00092"
+      ]
+    },
+    {
+      "row_id": "sfv-8a9a01d14de6489cd5c688ac",
+      "factor": "routine_name_shape",
+      "value": "schema_qualified_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00093"
+      ]
+    },
+    {
+      "row_id": "sfv-d9d76c158a2b6350c49fcecf",
+      "factor": "routine_name_shape",
+      "value": "simple_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00094"
+      ]
+    },
+    {
+      "row_id": "sfv-93163de54be1c77f5c408066",
+      "factor": "routine_state",
+      "value": "exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00095"
+      ]
+    },
+    {
+      "row_id": "sfv-3a90216be31678dfd7ad3dbe",
+      "factor": "routine_state",
+      "value": "exists_as_aggregate",
+      "disposition": "expected_failure",
+      "reason": "wrong_object_type_is_aggregate_provisional",
+      "case_ids": [
+        "ALTERROUTINE00096"
+      ]
+    },
+    {
+      "row_id": "sfv-c8ef1a9a924360fbb864134f",
+      "factor": "routine_state",
+      "value": "exists_as_function",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00097"
+      ]
+    },
+    {
+      "row_id": "sfv-25bfcd113de029feec09f54a",
+      "factor": "routine_state",
+      "value": "exists_as_procedure",
+      "disposition": "expected_failure",
+      "reason": "wrong_object_type_is_procedure_provisional",
+      "case_ids": [
+        "ALTERROUTINE00098"
+      ]
+    },
+    {
+      "row_id": "sfv-a71dffde1baedeaff299bb15",
+      "factor": "routine_state",
+      "value": "non_existent",
+      "disposition": "expected_failure",
+      "reason": "routine_does_not_exist_provisional",
+      "case_ids": [
+        "ALTERROUTINE00099"
+      ]
+    },
+    {
+      "row_id": "sfv-2a82e5637326fec6aacd815f",
+      "factor": "routine_type",
+      "value": "aggregate",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00100"
+      ]
+    },
+    {
+      "row_id": "sfv-29571b03f6065adb4cf801dd",
+      "factor": "routine_type",
+      "value": "function",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00101"
+      ]
+    },
+    {
+      "row_id": "sfv-0b8ebaa3e398aeeb2d92fc41",
+      "factor": "routine_type",
+      "value": "procedure",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00102"
+      ]
+    },
+    {
+      "row_id": "sfv-e7cd30ff464bbe46749c8cb1",
+      "factor": "schema_change",
+      "value": "existing_schema",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00103"
+      ]
+    },
+    {
+      "row_id": "sfv-3be6d3a088ae8f320b0f0c7a",
+      "factor": "schema_change",
+      "value": "nonexistent_schema",
+      "disposition": "expected_failure",
+      "reason": "schema_does_not_exist_provisional",
+      "case_ids": [
+        "ALTERROUTINE00104"
+      ]
+    },
+    {
+      "row_id": "sfv-e65504065b3ee8e85af84519",
+      "factor": "statement_branch",
+      "value": "branch_action",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00105"
+      ]
+    },
+    {
+      "row_id": "sfv-ede87ee39e79304b34464b98",
+      "factor": "statement_branch",
+      "value": "branch_depends_on_extension",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00106"
+      ]
+    },
+    {
+      "row_id": "sfv-34ef62cf497b568b9cfd3ecd",
+      "factor": "statement_branch",
+      "value": "branch_owner_to",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00107"
+      ]
+    },
+    {
+      "row_id": "sfv-57e682b078950287d2a7db7a",
+      "factor": "statement_branch",
+      "value": "branch_rename",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00108"
+      ]
+    },
+    {
+      "row_id": "sfv-a2f30af16a8812a57c734901",
+      "factor": "statement_branch",
+      "value": "branch_set_schema",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00109"
+      ]
+    },
+    {
+      "row_id": "sfv-94ca1c598ef025b5ccf5b09a",
+      "factor": "verification_mode",
+      "value": "effect_query",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00110"
+      ]
+    },
+    {
+      "row_id": "sfv-cf04a16cbc8058f77219ad10",
+      "factor": "verification_mode",
+      "value": "error_assertion",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00111"
+      ]
+    },
+    {
+      "row_id": "sfv-60ddc9a36e3864c350ba9bd5",
+      "factor": "verification_mode",
+      "value": "pg_aggregate_catalog",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00112"
+      ]
+    },
+    {
+      "row_id": "sfv-5992933b520c231660d62cde",
+      "factor": "verification_mode",
+      "value": "pg_proc_catalog",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "ALTERROUTINE00113"
+      ]
+    }
+  ],
+  "generation_mode": "factor_value_independent_loop_v1",
+  "decision_count": 115,
+  "local_sql_decision_count": 115,
+  "extension_case_count": 5440,
+  "delegated_decision_count": 0,
+  "obligation_multiset_sha256": "12c18ef6030eec946884d987811c47324a7de48797f783cf931bb5c263b759d0"
+}
