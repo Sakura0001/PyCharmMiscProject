@@ -142,7 +142,7 @@ def object_references(sql: str) -> set[str]:
             statement,
         ) is not None
         create_collation_or_transform = re.match(
-            r"(?is)^\s*CREATE\s+(?:COLLATION|TRANSFORM)\b",
+            r"(?is)^\s*CREATE\s+(?:OR\s+REPLACE\s+)?(?:COLLATION|TRANSFORM)\b",
             statement,
         ) is not None
         cte_names = {
@@ -152,7 +152,11 @@ def object_references(sql: str) -> set[str]:
         for pattern in persistent_patterns:
             for match in re.finditer(pattern, statement, flags=re.IGNORECASE):
                 name = normalize_identifier(match.group("name"))
-                if name not in {"select", "values", "only", "lateral"}:
+                # "on"/"or" are reserved keywords that can never be a real
+                # object name; the TRUNCATE/UPDATE persistent patterns
+                # otherwise mis-capture them from trigger event lists
+                # ("BEFORE TRUNCATE ON t", "INSERT OR UPDATE OR DELETE ON t").
+                if name not in {"select", "values", "only", "lateral", "on", "or"}:
                     names.add(name)
         if not create_conversion and not alter_database and not create_collation_or_transform:
             for pattern in relation_reference_patterns:

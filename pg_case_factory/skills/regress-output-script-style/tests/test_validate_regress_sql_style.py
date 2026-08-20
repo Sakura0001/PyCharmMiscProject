@@ -40,6 +40,58 @@ class ValidateRegressSqlStyleTest(unittest.TestCase):
 
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
+    def test_create_or_replace_transform_from_sql_clause_is_not_an_object(self) -> None:
+        # CREATE [OR REPLACE] TRANSFORM uses "FROM SQL WITH FUNCTION" and
+        # "TO SQL WITH FUNCTION" clauses; the SQL keyword there is grammar,
+        # not a file-scoped relation, so it must not be flagged as object 'sql'.
+        with TemporaryDirectory() as raw_dir:
+            sql_dir = Path(raw_dir)
+            (sql_dir / "CREATETRANSFORM00001.sql").write_text(
+                textwrap.dedent(
+                    """
+                    CREATE OR REPLACE TRANSFORM FOR createtransform_00001_schema.createtransform_00001_type
+                    LANGUAGE plpgsql (
+                        FROM SQL WITH FUNCTION createtransform_00001_schema.createtransform_00001_fromsql(internal),
+                        TO SQL WITH FUNCTION createtransform_00001_schema.createtransform_00001_tosql(internal)
+                    );
+                    DROP TRANSFORM IF EXISTS FOR createtransform_00001_schema.createtransform_00001_type LANGUAGE plpgsql CASCADE;
+                    """
+                ).strip()
+            )
+
+            result = run_validator(sql_dir, "--prefix", "CREATETRANSFORM")
+
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_trigger_event_keywords_on_and_or_are_not_objects(self) -> None:
+        # A trigger event list ("BEFORE INSERT OR UPDATE OR DELETE ON t") and
+        # a TRUNCATE trigger event ("BEFORE TRUNCATE ON t") reuse DML keywords;
+        # the ON / OR tokens are grammar, not file-scoped object names.
+        with TemporaryDirectory() as raw_dir:
+            sql_dir = Path(raw_dir)
+            (sql_dir / "CREATETRIGGER00001.sql").write_text(
+                textwrap.dedent(
+                    """
+                    DROP TABLE IF EXISTS createtrigger_00001_tbl CASCADE;
+                    CREATE TABLE createtrigger_00001_tbl (id integer);
+                    CREATE FUNCTION createtrigger_00001_fn() RETURNS trigger
+                        LANGUAGE plpgsql AS $$ BEGIN END; $$;
+                    CREATE TRIGGER createtrigger_00001_trig
+                        BEFORE INSERT OR UPDATE OR DELETE ON createtrigger_00001_tbl
+                        FOR EACH ROW EXECUTE FUNCTION createtrigger_00001_fn();
+                    CREATE TRIGGER createtrigger_00001_t2
+                        BEFORE TRUNCATE ON createtrigger_00001_tbl
+                        FOR EACH ROW EXECUTE FUNCTION createtrigger_00001_fn();
+                    DROP TRIGGER IF EXISTS createtrigger_00001_trig ON createtrigger_00001_tbl;
+                    DROP TABLE IF EXISTS createtrigger_00001_tbl CASCADE;
+                    """
+                ).strip()
+            )
+
+            result = run_validator(sql_dir, "--prefix", "CREATETRIGGER")
+
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
     def test_postgresql_table_functions_and_row_lock_keywords_are_not_objects(self) -> None:
         with TemporaryDirectory() as raw_dir:
             sql_dir = Path(raw_dir)
