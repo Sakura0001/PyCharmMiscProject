@@ -145,6 +145,17 @@ def _creates_view(a: dict[str, str]) -> bool:
     return a.get("contained_objects_state") == "schema_with_views"
 
 
+def _schema_name_is_simple(a: dict[str, str]) -> bool:
+    """Whether the target schema name is a plain unquoted identifier.
+
+    The bookend gate's identifier normalizer rejects quoted, reserved-word
+    and dotted schema names (they contain quotes or spaces), so a
+    schema-qualified table fixture ``{sch}.{p}tab`` is only statically
+    parseable when the schema name is simple.
+    """
+    return a.get("schema_name_shape", "simple") == "simple"
+
+
 def _schema_name(a: dict[str, str], p: str) -> str:
     """The schema identifier used inside ALTER SCHEMA and fixtures."""
 
@@ -282,7 +293,8 @@ def _probe_select(
         return (
             f"SELECT count(*) {cmp_op} 0 AS schema_state "
             f"FROM information_schema.schemata "
-            f"WHERE schema_name = '{check}';"
+            f"WHERE schema_name = '{check}' "
+            f"ORDER BY count(*);"
         )
     if mode == "current_schema_query":
         if present:
@@ -298,8 +310,34 @@ def _probe_select(
     return (
         f"SELECT count(*) {cmp_op} 0 AS schema_state "
         f"FROM pg_catalog.pg_namespace "
-        f"WHERE nspname = '{check}';"
+        f"WHERE nspname = '{check}' "
+        f"ORDER BY count(*);"
     )
+
+
+def _tables_to_drop(case: AlterSchemaFactorCase) -> list[str]:
+    """Fixture tables the case CREATEs, as the bookend gate must drop them.
+
+    ALTER SCHEMA's only table fixture is ``{p}tab`` created inside the
+    target schema when ``contained_objects_state`` is ``schema_with_tables``
+    and the target schema exists.  View-only and missing-schema cases create
+    no table and must not be classified as table-based.
+
+    For a simple schema name the table is created schema-qualified
+    (``{sch}.{p}tab``) and dropped by that name.  For a quoted / reserved /
+    dotted schema name the gate's identifier normalizer cannot parse a
+    schema-qualified identifier, so the table is created with a plain
+    unqualified name (after ``SET search_path`` to the target schema) and the
+    bookend drops the unqualified name.
+    """
+    a = _baseline(case)
+    p = case.object_prefix
+    if _schema_missing(a) or not _creates_table(a):
+        return []
+    if _schema_name_is_simple(a):
+        sch = _schema_name(a, p)
+        return [f"{sch}.{p}tab"]
+    return [f"{p}tab"]
 
 
 def _resolve_case(case: AlterSchemaFactorCase) -> _CasePlan:
@@ -349,9 +387,23 @@ def _resolve_case(case: AlterSchemaFactorCase) -> _CasePlan:
 
         # contained objects inside the schema
         if _creates_table(a):
-            setup.append(
-                f"CREATE TABLE {sch}.{p}tab ({p}col integer);"
-            )
+            if _schema_name_is_simple(a):
+                setup.append(
+                    f"CREATE TABLE {sch}.{p}tab ({p}col integer);"
+                )
+            else:
+                # The schema name is quoted / reserved / dotted, so the
+                # bookend gate cannot parse a schema-qualified table
+                # identifier (its normalizer rejects quotes and spaces).
+                # Create the contained table with a plain unqualified name
+                # after pointing search_path at the target schema, then
+                # restore search_path so later schema-qualified statements
+                # are unaffected.  The bookend drops the unqualified name.
+                setup.append(f"SET search_path TO {sch};")
+                setup.append(
+                    f"CREATE TABLE {p}tab ({p}col integer);"
+                )
+                setup.append("RESET search_path;")
             locus = "fixture.contained_table"
         elif _creates_view(a):
             setup.append(
@@ -449,18 +501,35 @@ def _resolve_case(case: AlterSchemaFactorCase) -> _CasePlan:
                 f"DROP SCHEMA IF EXISTS {new_drop} CASCADE;"
             )
 
-    # pre-cleanup: residual schema + role drops
-    pre_cleanup: list[str] = list(schema_drops)
+    # BOOKEND (CANONICAL RENDER CONTRACT (d)): every table-creating case
+    # must open with DROP TABLE IF EXISTS <created tables> and close with
+    # the same DROP TABLE IF EXISTS as the final executable statement.
+    # Non-table cases (view-only / missing schema) create no table and are
+    # not classified as table-based, so they emit no DROP TABLE bookend.
+    tables = _tables_to_drop(case)
+
+    # pre-cleanup: DROP TABLE bookend first, then residual schema + role
+    # drops.
+    pre_cleanup: list[str] = []
+    if tables:
+        pre_cleanup.append(
+            f"DROP TABLE IF EXISTS {', '.join(tables)} CASCADE;"
+        )
+    pre_cleanup.extend(schema_drops)
     pre_cleanup.extend(role_drops)
     if not pre_cleanup:
         pre_cleanup.append("SELECT 1 AS residual_check_no_objects;")
 
-    # cleanup: schema drops then role drops
+    # cleanup: schema drops then role drops, then DROP TABLE bookend last.
     cleanup: list[str] = []
     if effective:
         cleanup.append("RESET ROLE;")
     cleanup.extend(schema_drops)
     cleanup.extend(role_drops)
+    if tables:
+        cleanup.append(
+            f"DROP TABLE IF EXISTS {', '.join(tables)} CASCADE;"
+        )
     if not cleanup:
         cleanup.append("SELECT 1 AS residual_check_no_objects;")
 
