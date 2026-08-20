@@ -1,0 +1,421 @@
+{
+  "schema_version": 1,
+  "statement_key": "drop_procedure",
+  "cycle_fingerprint": "606b9e710210e50ff88b14de7052163f9ee31f6f1d1e744bc0bd9935f399a9d9",
+  "factor_value_count": 40,
+  "factor_disposition_counts": {
+    "covered": 29,
+    "expected_failure": 11,
+    "justified_na": 0
+  },
+  "missing_row_ids": [],
+  "duplicate_row_ids": [],
+  "decisions": [
+    {
+      "row_id": "sfv-8a5cff42211cce9ae3b1ebe3",
+      "factor": "argtype_specification",
+      "value": "with_full_signature",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPPROCEDURE00002"
+      ]
+    },
+    {
+      "row_id": "sfv-9d03670b33565cb3293308ee",
+      "factor": "argtype_specification",
+      "value": "without_signature_multiple",
+      "disposition": "expected_failure",
+      "reason": "procedure_not_unique",
+      "case_ids": [
+        "DROPPROCEDURE00003"
+      ]
+    },
+    {
+      "row_id": "sfv-14da098e454abc02c1026036",
+      "factor": "argtype_specification",
+      "value": "without_signature_single",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPPROCEDURE00004"
+      ]
+    },
+    {
+      "row_id": "sfv-79c6c1a7dd40930e511e6c38",
+      "factor": "cascade_destroys_dependents",
+      "value": "cascade_removes_trigger",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPPROCEDURE00005"
+      ]
+    },
+    {
+      "row_id": "sfv-8426958af160014fff858446",
+      "factor": "cascade_restrict_clause",
+      "value": "CASCADE",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPPROCEDURE00006"
+      ]
+    },
+    {
+      "row_id": "sfv-3584f539a9f1074994cbd700",
+      "factor": "cascade_restrict_clause",
+      "value": "RESTRICT",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPPROCEDURE00007"
+      ]
+    },
+    {
+      "row_id": "sfv-167038c40624c33759dc4bf2",
+      "factor": "cascade_restrict_clause",
+      "value": "absent",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPPROCEDURE00008"
+      ]
+    },
+    {
+      "row_id": "sfv-6530a6ccc7e076826f25ea11",
+      "factor": "cleanup_mode",
+      "value": "DROP_PROCEDURE_cascade",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPPROCEDURE00009"
+      ]
+    },
+    {
+      "row_id": "sfv-27fddbbfb96f4b18a9cf1116",
+      "factor": "cleanup_mode",
+      "value": "DROP_PROCEDURE_if_exists_cascade",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPPROCEDURE00010"
+      ]
+    },
+    {
+      "row_id": "sfv-d3efc1355be19c0e5e692e04",
+      "factor": "cleanup_mode",
+      "value": "no_cleanup_needed",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPPROCEDURE00011"
+      ]
+    },
+    {
+      "row_id": "sfv-de1b78886f8670e4e0b1a739",
+      "factor": "dependent_objects",
+      "value": "has_dependents_cascade_removes",
+      "disposition": "expected_failure",
+      "reason": "dependent_objects_restricted",
+      "case_ids": [
+        "DROPPROCEDURE00012"
+      ]
+    },
+    {
+      "row_id": "sfv-dacd6434f48310dd10b3a95c",
+      "factor": "dependent_objects",
+      "value": "has_dependents_restrict_blocks",
+      "disposition": "expected_failure",
+      "reason": "dependent_objects_restricted",
+      "case_ids": [
+        "DROPPROCEDURE00013"
+      ]
+    },
+    {
+      "row_id": "sfv-63263f48ce7c84371be39d06",
+      "factor": "dependent_objects",
+      "value": "no_dependencies",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPPROCEDURE00014"
+      ]
+    },
+    {
+      "row_id": "sfv-7e6fdf4038fac2f80ffebd14",
+      "factor": "expected_status",
+      "value": "failure",
+      "disposition": "expected_failure",
+      "reason": "drop_procedure_declared_failure",
+      "case_ids": [
+        "DROPPROCEDURE00015"
+      ]
+    },
+    {
+      "row_id": "sfv-07f491daa31dc69587274a02",
+      "factor": "expected_status",
+      "value": "success",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPPROCEDURE00016"
+      ]
+    },
+    {
+      "row_id": "sfv-ffec6ee3670a705ebe2889ff",
+      "factor": "identifier_length_exceeded",
+      "value": "over_63_chars",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPPROCEDURE00017"
+      ]
+    },
+    {
+      "row_id": "sfv-9537e6ca99042b0a013be7aa",
+      "factor": "if_exists_clause",
+      "value": "absent",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPPROCEDURE00018"
+      ]
+    },
+    {
+      "row_id": "sfv-5b808bcab9a874270013c408",
+      "factor": "if_exists_clause",
+      "value": "present",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPPROCEDURE00019"
+      ]
+    },
+    {
+      "row_id": "sfv-ed8c026bcb98e21e4e34ec44",
+      "factor": "multiple_objects",
+      "value": "multiple_procedures",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPPROCEDURE00020"
+      ]
+    },
+    {
+      "row_id": "sfv-e600d822b2378622c468d087",
+      "factor": "multiple_objects",
+      "value": "single_procedure",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPPROCEDURE00021"
+      ]
+    },
+    {
+      "row_id": "sfv-f552b7f0b5cb42aa1538609d",
+      "factor": "object_state",
+      "value": "different_signature_exists",
+      "disposition": "expected_failure",
+      "reason": "undefined_procedure_signature_mismatch",
+      "case_ids": [
+        "DROPPROCEDURE00022"
+      ]
+    },
+    {
+      "row_id": "sfv-5641fc5e62a19f805f5db84b",
+      "factor": "object_state",
+      "value": "exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPPROCEDURE00023"
+      ]
+    },
+    {
+      "row_id": "sfv-6381496921266ed19ef6bbc3",
+      "factor": "object_state",
+      "value": "not_exists",
+      "disposition": "expected_failure",
+      "reason": "undefined_procedure_absent",
+      "case_ids": [
+        "DROPPROCEDURE00024"
+      ]
+    },
+    {
+      "row_id": "sfv-c15f54a57e5937b28c91a800",
+      "factor": "permission_insufficient",
+      "value": "not_owner",
+      "disposition": "expected_failure",
+      "reason": "insufficient_procedure_privilege_not_owner",
+      "case_ids": [
+        "DROPPROCEDURE00025"
+      ]
+    },
+    {
+      "row_id": "sfv-a018dcbfc9d75ee7b2966097",
+      "factor": "privilege_level",
+      "value": "non_owner_no_privilege",
+      "disposition": "expected_failure",
+      "reason": "insufficient_procedure_privilege",
+      "case_ids": [
+        "DROPPROCEDURE00026"
+      ]
+    },
+    {
+      "row_id": "sfv-26f2568f7fca416d5f0446fc",
+      "factor": "privilege_level",
+      "value": "procedure_owner",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPPROCEDURE00027"
+      ]
+    },
+    {
+      "row_id": "sfv-48706d1bd26918bce929389d",
+      "factor": "privilege_level",
+      "value": "superuser",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPPROCEDURE00028"
+      ]
+    },
+    {
+      "row_id": "sfv-d37f905c74db3106e932ea74",
+      "factor": "procedure_name_shape",
+      "value": "quoted",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPPROCEDURE00029"
+      ]
+    },
+    {
+      "row_id": "sfv-4782a5e57acb27a4a1772b48",
+      "factor": "procedure_name_shape",
+      "value": "reserved_word",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPPROCEDURE00030"
+      ]
+    },
+    {
+      "row_id": "sfv-bb88e52595cfe1735cfabb8b",
+      "factor": "procedure_name_shape",
+      "value": "schema_qualified",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPPROCEDURE00031"
+      ]
+    },
+    {
+      "row_id": "sfv-8f7637f0f7eea7dbe80ccbed",
+      "factor": "procedure_name_shape",
+      "value": "simple",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPPROCEDURE00032"
+      ]
+    },
+    {
+      "row_id": "sfv-3ca430bd04578990f9b0c0b5",
+      "factor": "schema_dependency",
+      "value": "schema_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPPROCEDURE00033"
+      ]
+    },
+    {
+      "row_id": "sfv-427fe581b0cfbf75f1b1627a",
+      "factor": "schema_dependency",
+      "value": "schema_not_exists",
+      "disposition": "expected_failure",
+      "reason": "invalid_schema_name",
+      "case_ids": [
+        "DROPPROCEDURE00034"
+      ]
+    },
+    {
+      "row_id": "sfv-7f94ebe1922c9906522d546f",
+      "factor": "statement_branch",
+      "value": "branch_1",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPPROCEDURE00035"
+      ]
+    },
+    {
+      "row_id": "sfv-ebdee7932f6a77295d18efb3",
+      "factor": "statement_branch",
+      "value": "branch_2",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPPROCEDURE00036"
+      ]
+    },
+    {
+      "row_id": "sfv-f4dc733e5a55fd2465f5243a",
+      "factor": "target_procedure_different_type",
+      "value": "same_name_is_function",
+      "disposition": "expected_failure",
+      "reason": "wrong_object_type_not_procedure",
+      "case_ids": [
+        "DROPPROCEDURE00037"
+      ]
+    },
+    {
+      "row_id": "sfv-807959b6efacdd450d603e0b",
+      "factor": "target_procedure_not_exists",
+      "value": "with_IF_EXISTS_noop",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPPROCEDURE00038"
+      ]
+    },
+    {
+      "row_id": "sfv-3ae00a7d6b4eaf3dbf1a2ad9",
+      "factor": "target_procedure_not_exists",
+      "value": "without_IF_EXISTS_error",
+      "disposition": "expected_failure",
+      "reason": "undefined_procedure_no_if_exists",
+      "case_ids": [
+        "DROPPROCEDURE00039"
+      ]
+    },
+    {
+      "row_id": "sfv-f89b462e9984b15e41868140",
+      "factor": "verification_mode",
+      "value": "information_schema_routines",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPPROCEDURE00040"
+      ]
+    },
+    {
+      "row_id": "sfv-3fd58c2219e3f884f6a73b8b",
+      "factor": "verification_mode",
+      "value": "pg_proc_catalog_query",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "DROPPROCEDURE00041"
+      ]
+    }
+  ],
+  "generation_mode": "factor_value_independent_loop_v1",
+  "decision_count": 43,
+  "local_sql_decision_count": 43,
+  "extension_case_count": 1896,
+  "delegated_decision_count": 0,
+  "obligation_multiset_sha256": "3251a1ea617725679e37f8756da08a0a2c1b290f8eba14fe884abdaf9c257240"
+}
