@@ -6,7 +6,7 @@
   "statement_count": 183,
   "retained_statement_count": 6,
   "pending_statement_count": 177,
-  "next_pending_statement": "merge",
+  "next_pending_statement": "notify",
   "statements": {
     "abort": {
       "status": "completed",
@@ -1080,11 +1080,11 @@
       "validation_evidence_sha256": "0037b17c0b1cfc171ab010482980732b9a0fe96cabf522033aa349b8714995d4"
     },
     "merge": {
-      "status": "pending",
-      "package_path": null,
-      "sql_file_count": null,
-      "validation_evidence": null,
-      "validation_evidence_sha256": null
+      "status": "completed",
+      "package_path": "artifacts/regress/by-factor/dml/table/merge",
+      "sql_file_count": 17716,
+      "validation_evidence": "/Users/yuyu/PyCharmMiscProject/pg_case_factory/artifacts/intermediates/remaining-statement-factor-cycle/merge/validation.json",
+      "validation_evidence_sha256": "fb26f6d1bf90b1f8fd7efaf845f4b51a1847626ba96aef5fc9a53a71af5c73ae"
     },
     "move": {
       "status": "retained_existing",

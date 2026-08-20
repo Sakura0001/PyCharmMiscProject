@@ -1,0 +1,531 @@
+{
+  "schema_version": 1,
+  "statement_key": "merge",
+  "cycle_fingerprint": "606b9e710210e50ff88b14de7052163f9ee31f6f1d1e744bc0bd9935f399a9d9",
+  "factor_value_count": 51,
+  "factor_disposition_counts": {
+    "covered": 43,
+    "expected_failure": 8,
+    "justified_na": 0
+  },
+  "missing_row_ids": [],
+  "duplicate_row_ids": [],
+  "decisions": [
+    {
+      "row_id": "sfv-820bdc9109389c902d85d1c2",
+      "factor": "cleanup_mode",
+      "value": "drop_objects",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "MERGE00002"
+      ]
+    },
+    {
+      "row_id": "sfv-04efbf6d18664c3f95c978a2",
+      "factor": "cleanup_mode",
+      "value": "reset_state",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "MERGE00003"
+      ]
+    },
+    {
+      "row_id": "sfv-7fc8d426aee0eb5d97062612",
+      "factor": "cleanup_mode",
+      "value": "rollback",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "MERGE00004"
+      ]
+    },
+    {
+      "row_id": "sfv-ebfc0ee28cd60b916751da28",
+      "factor": "condition_shape",
+      "value": "cursor_or_conflict_target",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "MERGE00005"
+      ]
+    },
+    {
+      "row_id": "sfv-1d3965d547d833c7627f683d",
+      "factor": "condition_shape",
+      "value": "join_or_match_condition",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "MERGE00006"
+      ]
+    },
+    {
+      "row_id": "sfv-01236ecb68ee29e578b4b75a",
+      "factor": "condition_shape",
+      "value": "none",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "MERGE00007"
+      ]
+    },
+    {
+      "row_id": "sfv-5c93f12e19d3760f309f80d3",
+      "factor": "condition_shape",
+      "value": "not_matched_by_source",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "MERGE00008"
+      ]
+    },
+    {
+      "row_id": "sfv-df57e2c6e92538d0b3dfb72c",
+      "factor": "condition_shape",
+      "value": "not_matched_by_target",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "MERGE00009"
+      ]
+    },
+    {
+      "row_id": "sfv-13f060bfed4716f41f34dcf9",
+      "factor": "condition_shape",
+      "value": "simple_predicate",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "MERGE00010"
+      ]
+    },
+    {
+      "row_id": "sfv-e85b0a9610d838e50354f863",
+      "factor": "constraint_boundary",
+      "value": "constraint_satisfied",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "MERGE00011"
+      ]
+    },
+    {
+      "row_id": "sfv-b66c3c60ec6607cdbffb6676",
+      "factor": "constraint_boundary",
+      "value": "constraint_violation",
+      "disposition": "expected_failure",
+      "reason": "constraint_violation_or_boundary_error_provisional",
+      "case_ids": [
+        "MERGE00012"
+      ]
+    },
+    {
+      "row_id": "sfv-5f2a649534f217c1be74d7e6",
+      "factor": "constraint_boundary",
+      "value": "empty_input",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "MERGE00013"
+      ]
+    },
+    {
+      "row_id": "sfv-4b11d3477850d2dff6e3f8e8",
+      "factor": "constraint_boundary",
+      "value": "none",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "MERGE00014"
+      ]
+    },
+    {
+      "row_id": "sfv-e607977bf7d98457a60230d0",
+      "factor": "data_or_query_shape",
+      "value": "cte_source",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "MERGE00015"
+      ]
+    },
+    {
+      "row_id": "sfv-dc00d86c13370960c5895980",
+      "factor": "data_or_query_shape",
+      "value": "explicit_values",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "MERGE00016"
+      ]
+    },
+    {
+      "row_id": "sfv-02f4665acc1491eaf002188f",
+      "factor": "data_or_query_shape",
+      "value": "minimal",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "MERGE00017"
+      ]
+    },
+    {
+      "row_id": "sfv-beadbcef68b03ea17b97d67b",
+      "factor": "data_or_query_shape",
+      "value": "query_source",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "MERGE00018"
+      ]
+    },
+    {
+      "row_id": "sfv-bb0392b91f914c5374aeed5b",
+      "factor": "dependency_state",
+      "value": "missing_dependency",
+      "disposition": "expected_failure",
+      "reason": "missing_dependency_provisional",
+      "case_ids": [
+        "MERGE00019"
+      ]
+    },
+    {
+      "row_id": "sfv-bd897975bdd4a9b321ce22f8",
+      "factor": "dependency_state",
+      "value": "ready",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "MERGE00020"
+      ]
+    },
+    {
+      "row_id": "sfv-65a9453e1b4c2994ac535cd0",
+      "factor": "expected_status",
+      "value": "failure",
+      "disposition": "expected_failure",
+      "reason": "missing_target_relation_provisional",
+      "case_ids": [
+        "MERGE00021"
+      ]
+    },
+    {
+      "row_id": "sfv-35dad07de85309991b7c51d8",
+      "factor": "expected_status",
+      "value": "success",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "MERGE00022"
+      ]
+    },
+    {
+      "row_id": "sfv-887f39caaef16416b209c929",
+      "factor": "expression_shape",
+      "value": "column_reference",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "MERGE00023"
+      ]
+    },
+    {
+      "row_id": "sfv-bd6b00f7a5d78d4eb5b57368",
+      "factor": "expression_shape",
+      "value": "function_call",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "MERGE00024"
+      ]
+    },
+    {
+      "row_id": "sfv-fe5463f8730109ad48d8440d",
+      "factor": "expression_shape",
+      "value": "literal",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "MERGE00025"
+      ]
+    },
+    {
+      "row_id": "sfv-6c0101b3338ccf6a795d681b",
+      "factor": "expression_shape",
+      "value": "subquery_expression",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "MERGE00026"
+      ]
+    },
+    {
+      "row_id": "sfv-74215654b71ffd32931df61a",
+      "factor": "invalid_combination",
+      "value": "none",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "MERGE00027"
+      ]
+    },
+    {
+      "row_id": "sfv-8ab3cbae339b83392cde05b1",
+      "factor": "invalid_combination",
+      "value": "object_type_mismatch",
+      "disposition": "expected_failure",
+      "reason": "wrong_object_type_provisional",
+      "case_ids": [
+        "MERGE00028"
+      ]
+    },
+    {
+      "row_id": "sfv-416245bf932eaab43e246552",
+      "factor": "invalid_combination",
+      "value": "syntax_valid_semantic_error",
+      "disposition": "expected_failure",
+      "reason": "syntax_valid_semantic_error_provisional",
+      "case_ids": [
+        "MERGE00029"
+      ]
+    },
+    {
+      "row_id": "sfv-4efc3a4d617cb77657d7ab47",
+      "factor": "name_shape",
+      "value": "alias_used",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "MERGE00030"
+      ]
+    },
+    {
+      "row_id": "sfv-662a66fdee4ed2000abe1557",
+      "factor": "name_shape",
+      "value": "plain_identifier",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "MERGE00031"
+      ]
+    },
+    {
+      "row_id": "sfv-f88c9b23d3e00787632d210f",
+      "factor": "name_shape",
+      "value": "quoted_identifier",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "MERGE00032"
+      ]
+    },
+    {
+      "row_id": "sfv-a9eb2537afe421dc7c8d720f",
+      "factor": "name_shape",
+      "value": "schema_qualified",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "MERGE00033"
+      ]
+    },
+    {
+      "row_id": "sfv-243adf3ee3d32d41909be318",
+      "factor": "privilege_context",
+      "value": "granted_role",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "MERGE00034"
+      ]
+    },
+    {
+      "row_id": "sfv-fa437938b111dfcacf6ef2df",
+      "factor": "privilege_context",
+      "value": "insufficient_privilege",
+      "disposition": "expected_failure",
+      "reason": "insufficient_privilege_provisional",
+      "case_ids": [
+        "MERGE00035"
+      ]
+    },
+    {
+      "row_id": "sfv-a5fda7fcdf20324bf7552521",
+      "factor": "privilege_context",
+      "value": "owner",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "MERGE00036"
+      ]
+    },
+    {
+      "row_id": "sfv-32e043cb179862a015aa15f9",
+      "factor": "result_shape",
+      "value": "none",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "MERGE00037"
+      ]
+    },
+    {
+      "row_id": "sfv-ca84a081ac4880a7ab0beea8",
+      "factor": "result_shape",
+      "value": "returning_expression",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "MERGE00038"
+      ]
+    },
+    {
+      "row_id": "sfv-29463ba6868af0201e0ae459",
+      "factor": "result_shape",
+      "value": "returning_old_new_aliases",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "MERGE00039"
+      ]
+    },
+    {
+      "row_id": "sfv-296edc6f1c04e057bf489a2c",
+      "factor": "result_shape",
+      "value": "returning_star",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "MERGE00040"
+      ]
+    },
+    {
+      "row_id": "sfv-95fb5d35e3a2889228169b6d",
+      "factor": "result_shape",
+      "value": "rowset_projection",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "MERGE00041"
+      ]
+    },
+    {
+      "row_id": "sfv-a1c5a07b8eca77b006a356e1",
+      "factor": "statement_branch",
+      "value": "branch_1",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "MERGE00042"
+      ]
+    },
+    {
+      "row_id": "sfv-ad05f6ab3371f0ab6b1a1610",
+      "factor": "target_relation_state",
+      "value": "exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "MERGE00043"
+      ]
+    },
+    {
+      "row_id": "sfv-4c6457d82ff2e5540262178f",
+      "factor": "target_relation_state",
+      "value": "missing",
+      "disposition": "expected_failure",
+      "reason": "missing_target_relation_provisional",
+      "case_ids": [
+        "MERGE00044"
+      ]
+    },
+    {
+      "row_id": "sfv-147f734538918d7520e236aa",
+      "factor": "target_relation_state",
+      "value": "wrong_object_type",
+      "disposition": "expected_failure",
+      "reason": "wrong_object_type_provisional",
+      "case_ids": [
+        "MERGE00045"
+      ]
+    },
+    {
+      "row_id": "sfv-e6f6deed5ccf51b16c37c31c",
+      "factor": "verification_mode",
+      "value": "catalog_query",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "MERGE00046"
+      ]
+    },
+    {
+      "row_id": "sfv-f7e860e41ca75dc6a698e0a2",
+      "factor": "verification_mode",
+      "value": "effect_query",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "MERGE00047"
+      ]
+    },
+    {
+      "row_id": "sfv-06d63937d8282284414f40d7",
+      "factor": "verification_mode",
+      "value": "error_assertion",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "MERGE00048"
+      ]
+    },
+    {
+      "row_id": "sfv-2c17afe784dee8bf87b93dba",
+      "factor": "verification_mode",
+      "value": "returned_rows",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "MERGE00049"
+      ]
+    },
+    {
+      "row_id": "sfv-6fc53a667d980fb66a7ea563",
+      "factor": "with_clause",
+      "value": "absent",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "MERGE00050"
+      ]
+    },
+    {
+      "row_id": "sfv-c16ca41947c8453805cf2692",
+      "factor": "with_clause",
+      "value": "non_recursive",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "MERGE00051"
+      ]
+    },
+    {
+      "row_id": "sfv-8ae637d6a6ef5fe217192ade",
+      "factor": "with_clause",
+      "value": "recursive",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "MERGE00052"
+      ]
+    }
+  ],
+  "generation_mode": "factor_value_independent_loop_v1",
+  "decision_count": 52,
+  "local_sql_decision_count": 52,
+  "extension_case_count": 17664,
+  "delegated_decision_count": 0,
+  "obligation_multiset_sha256": "5e73e42903ae605ca5b102c1f46facd46464badf82d90a13ce21d8a6b8561c70"
+}
