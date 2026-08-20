@@ -6,7 +6,7 @@
   "statement_count": 183,
   "retained_statement_count": 6,
   "pending_statement_count": 177,
-  "next_pending_statement": "drop_owned",
+  "next_pending_statement": "drop_policy",
   "statements": {
     "abort": {
       "status": "completed",
@@ -842,11 +842,11 @@
       "validation_evidence_sha256": "8e6561bcba9e151038f2c5864ba45b19c198c8ad7c2356274eeb682136b1586a"
     },
     "drop_owned": {
-      "status": "pending",
-      "package_path": null,
-      "sql_file_count": null,
-      "validation_evidence": null,
-      "validation_evidence_sha256": null
+      "status": "completed",
+      "package_path": "artifacts/regress/by-factor/ddl/ownership/drop_owned",
+      "sql_file_count": 4652,
+      "validation_evidence": "/Users/yuyu/PyCharmMiscProject/pg_case_factory/artifacts/intermediates/remaining-statement-factor-cycle/drop_owned/validation.json",
+      "validation_evidence_sha256": "b868f14d86b4de7ea6c65177b8b93d691ac7a6bfa5f70bb05eafa62c03d785e4"
     },
     "drop_policy": {
       "status": "pending",
