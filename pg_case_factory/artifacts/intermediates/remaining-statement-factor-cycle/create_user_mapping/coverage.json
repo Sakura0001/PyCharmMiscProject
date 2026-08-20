@@ -1,0 +1,471 @@
+{
+  "schema_version": 1,
+  "statement_key": "create_user_mapping",
+  "cycle_fingerprint": "606b9e710210e50ff88b14de7052163f9ee31f6f1d1e744bc0bd9935f399a9d9",
+  "factor_value_count": 45,
+  "factor_disposition_counts": {
+    "covered": 33,
+    "expected_failure": 12,
+    "justified_na": 0
+  },
+  "missing_row_ids": [],
+  "duplicate_row_ids": [],
+  "decisions": [
+    {
+      "row_id": "sfv-00e4595396154b4d07eb5b0a",
+      "factor": "cleanup_mode",
+      "value": "drop_fdw",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEUSERMAPPING00002"
+      ]
+    },
+    {
+      "row_id": "sfv-3ee698c2fd8bc47ec5071efe",
+      "factor": "cleanup_mode",
+      "value": "drop_server",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEUSERMAPPING00003"
+      ]
+    },
+    {
+      "row_id": "sfv-1c10f77f7981f99f09e6e2ba",
+      "factor": "cleanup_mode",
+      "value": "drop_user_mapping",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEUSERMAPPING00004"
+      ]
+    },
+    {
+      "row_id": "sfv-b3f3a01b56fd73b1d4e33d92",
+      "factor": "duplicate_mapping",
+      "value": "existing_mapping_without_if_not_exists",
+      "disposition": "expected_failure",
+      "reason": "duplicate_object_provisional",
+      "case_ids": [
+        "CREATEUSERMAPPING00005"
+      ]
+    },
+    {
+      "row_id": "sfv-4fcb7547b78408ba9cfad0ca",
+      "factor": "duplicate_mapping",
+      "value": "no_conflict",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEUSERMAPPING00006"
+      ]
+    },
+    {
+      "row_id": "sfv-ae57fb9aa72a2fda005ddd30",
+      "factor": "duplicate_option_name",
+      "value": "duplicate_option",
+      "disposition": "expected_failure",
+      "reason": "duplicate_object_provisional",
+      "case_ids": [
+        "CREATEUSERMAPPING00007"
+      ]
+    },
+    {
+      "row_id": "sfv-ddc087854134b811a00589f7",
+      "factor": "duplicate_option_name",
+      "value": "unique_options",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEUSERMAPPING00008"
+      ]
+    },
+    {
+      "row_id": "sfv-4c17d555caa0692fc4ffe2c3",
+      "factor": "expected_status",
+      "value": "failure",
+      "disposition": "expected_failure",
+      "reason": "duplicate_object_provisional",
+      "case_ids": [
+        "CREATEUSERMAPPING00009"
+      ]
+    },
+    {
+      "row_id": "sfv-675bdf2f41b59340031b7c00",
+      "factor": "expected_status",
+      "value": "success",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEUSERMAPPING00010"
+      ]
+    },
+    {
+      "row_id": "sfv-e1fb12ae662432c75cdcfa38",
+      "factor": "if_not_exists_clause",
+      "value": "omitted",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEUSERMAPPING00011"
+      ]
+    },
+    {
+      "row_id": "sfv-54752ec5ffcb26abed821bad",
+      "factor": "if_not_exists_clause",
+      "value": "present",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEUSERMAPPING00012"
+      ]
+    },
+    {
+      "row_id": "sfv-6756bff7a20d70938690a095",
+      "factor": "insufficient_privilege",
+      "value": "has_privilege",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEUSERMAPPING00013"
+      ]
+    },
+    {
+      "row_id": "sfv-d41dd341aadf3a5bff107d79",
+      "factor": "insufficient_privilege",
+      "value": "lacks_privilege",
+      "disposition": "expected_failure",
+      "reason": "insufficient_privilege_provisional",
+      "case_ids": [
+        "CREATEUSERMAPPING00014"
+      ]
+    },
+    {
+      "row_id": "sfv-eb047c62926e80e648c8d462",
+      "factor": "nonexistent_server",
+      "value": "server_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEUSERMAPPING00015"
+      ]
+    },
+    {
+      "row_id": "sfv-020240587ab690b5db96296e",
+      "factor": "nonexistent_server",
+      "value": "server_missing",
+      "disposition": "expected_failure",
+      "reason": "undefined_object_provisional",
+      "case_ids": [
+        "CREATEUSERMAPPING00016"
+      ]
+    },
+    {
+      "row_id": "sfv-70c459e9d1e890ba9d4f44a5",
+      "factor": "object_state",
+      "value": "exists",
+      "disposition": "expected_failure",
+      "reason": "duplicate_object_provisional",
+      "case_ids": [
+        "CREATEUSERMAPPING00017"
+      ]
+    },
+    {
+      "row_id": "sfv-ca4fe75f42cfd7e04b9bf99e",
+      "factor": "object_state",
+      "value": "not_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEUSERMAPPING00018"
+      ]
+    },
+    {
+      "row_id": "sfv-94e0e4c0335fd94bb4f22509",
+      "factor": "option_value_shape",
+      "value": "duplicate_option_name",
+      "disposition": "expected_failure",
+      "reason": "duplicate_object_provisional",
+      "case_ids": [
+        "CREATEUSERMAPPING00019"
+      ]
+    },
+    {
+      "row_id": "sfv-c04cf778126d804cfd295373",
+      "factor": "option_value_shape",
+      "value": "quoted_value",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEUSERMAPPING00020"
+      ]
+    },
+    {
+      "row_id": "sfv-b19cad00ce5887edd6db2c7d",
+      "factor": "option_value_shape",
+      "value": "valid_value",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEUSERMAPPING00021"
+      ]
+    },
+    {
+      "row_id": "sfv-abdf281e8039b904f21e7d63",
+      "factor": "options_clause",
+      "value": "multiple_options",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEUSERMAPPING00022"
+      ]
+    },
+    {
+      "row_id": "sfv-5cc36d6c64590fad8f3e3905",
+      "factor": "options_clause",
+      "value": "omitted",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEUSERMAPPING00023"
+      ]
+    },
+    {
+      "row_id": "sfv-a31315465b36afe00d6157f4",
+      "factor": "options_clause",
+      "value": "single_option",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEUSERMAPPING00024"
+      ]
+    },
+    {
+      "row_id": "sfv-8eb7a8862d994ee158f7d956",
+      "factor": "privilege_level",
+      "value": "non_privileged",
+      "disposition": "expected_failure",
+      "reason": "insufficient_privilege_provisional",
+      "case_ids": [
+        "CREATEUSERMAPPING00025"
+      ]
+    },
+    {
+      "row_id": "sfv-bb84c162cc4398aecc5c9344",
+      "factor": "privilege_level",
+      "value": "server_owner",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEUSERMAPPING00026"
+      ]
+    },
+    {
+      "row_id": "sfv-4268c3a6f47d561c0c062072",
+      "factor": "privilege_level",
+      "value": "user_with_usage",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEUSERMAPPING00027"
+      ]
+    },
+    {
+      "row_id": "sfv-ba67719c47f42fccd7e5ca34",
+      "factor": "server_dependency",
+      "value": "server_exists_and_valid",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEUSERMAPPING00028"
+      ]
+    },
+    {
+      "row_id": "sfv-8969ae2e09b1213ec9f0d24f",
+      "factor": "server_dependency",
+      "value": "server_missing",
+      "disposition": "expected_failure",
+      "reason": "undefined_object_provisional",
+      "case_ids": [
+        "CREATEUSERMAPPING00029"
+      ]
+    },
+    {
+      "row_id": "sfv-570c5bc899e2005165e9b5a6",
+      "factor": "server_existence",
+      "value": "server_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEUSERMAPPING00030"
+      ]
+    },
+    {
+      "row_id": "sfv-cedb9550264abb770f99855c",
+      "factor": "server_existence",
+      "value": "server_not_exists",
+      "disposition": "expected_failure",
+      "reason": "undefined_object_provisional",
+      "case_ids": [
+        "CREATEUSERMAPPING00031"
+      ]
+    },
+    {
+      "row_id": "sfv-ce7fd5a8751aa992976375c9",
+      "factor": "server_name_shape",
+      "value": "nonexistent_name",
+      "disposition": "expected_failure",
+      "reason": "undefined_object_provisional",
+      "case_ids": [
+        "CREATEUSERMAPPING00032"
+      ]
+    },
+    {
+      "row_id": "sfv-3770a1663ced3a9cc1157656",
+      "factor": "server_name_shape",
+      "value": "simple_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEUSERMAPPING00033"
+      ]
+    },
+    {
+      "row_id": "sfv-a46e7f64f76750d787d6c974",
+      "factor": "statement_branch",
+      "value": "branch_create_user_mapping",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEUSERMAPPING00034"
+      ]
+    },
+    {
+      "row_id": "sfv-51ee4273b35f9fe429aafe7c",
+      "factor": "statement_branch",
+      "value": "branch_create_user_mapping_if_not_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEUSERMAPPING00035"
+      ]
+    },
+    {
+      "row_id": "sfv-991004d201278e12bdce5c5b",
+      "factor": "user_name_shape",
+      "value": "nonexistent_name",
+      "disposition": "expected_failure",
+      "reason": "undefined_object_provisional",
+      "case_ids": [
+        "CREATEUSERMAPPING00036"
+      ]
+    },
+    {
+      "row_id": "sfv-9d81d1989aa2b5c0201321bc",
+      "factor": "user_name_shape",
+      "value": "public_keyword",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEUSERMAPPING00037"
+      ]
+    },
+    {
+      "row_id": "sfv-3547f6da493d0644eb47437c",
+      "factor": "user_name_shape",
+      "value": "quoted_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEUSERMAPPING00038"
+      ]
+    },
+    {
+      "row_id": "sfv-85ac89fab462ebaee77cd81f",
+      "factor": "user_name_shape",
+      "value": "simple_id",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEUSERMAPPING00039"
+      ]
+    },
+    {
+      "row_id": "sfv-af1b4947b0a16911397067fa",
+      "factor": "user_specification",
+      "value": "current_role",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEUSERMAPPING00040"
+      ]
+    },
+    {
+      "row_id": "sfv-7617d113c3b4c8d0f05e25b2",
+      "factor": "user_specification",
+      "value": "current_user",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEUSERMAPPING00041"
+      ]
+    },
+    {
+      "row_id": "sfv-ae8f36a4505286c83580c02a",
+      "factor": "user_specification",
+      "value": "named_user",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEUSERMAPPING00042"
+      ]
+    },
+    {
+      "row_id": "sfv-b34ef316f88eacae3138f341",
+      "factor": "user_specification",
+      "value": "public",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEUSERMAPPING00043"
+      ]
+    },
+    {
+      "row_id": "sfv-d5be820e989cb37f75a255d3",
+      "factor": "user_specification",
+      "value": "user_keyword",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEUSERMAPPING00044"
+      ]
+    },
+    {
+      "row_id": "sfv-627270b10045dc3e6af5ce59",
+      "factor": "verification_mode",
+      "value": "catalog_query_pg_user_mapping",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEUSERMAPPING00045"
+      ]
+    },
+    {
+      "row_id": "sfv-b827b546e1523cea5074d47f",
+      "factor": "verification_mode",
+      "value": "error_assertion",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATEUSERMAPPING00046"
+      ]
+    }
+  ],
+  "generation_mode": "factor_value_independent_loop_v1",
+  "decision_count": 46,
+  "local_sql_decision_count": 46,
+  "extension_case_count": 1920,
+  "delegated_decision_count": 0,
+  "obligation_multiset_sha256": "0ead0db0d3a67b5267751e2c6ad48c392fc5b53c1c0b5cc83b2654674914777b"
+}

@@ -6,7 +6,7 @@
   "statement_count": 183,
   "retained_statement_count": 6,
   "pending_statement_count": 177,
-  "next_pending_statement": "create_user_mapping",
+  "next_pending_statement": "create_view",
   "statements": {
     "abort": {
       "status": "completed",
@@ -660,11 +660,11 @@
       "validation_evidence_sha256": "d7c3d75ef207adaa453a43ec8562b6247422a2d8d60be7b77b50be0aefc020eb"
     },
     "create_user_mapping": {
-      "status": "pending",
-      "package_path": null,
-      "sql_file_count": null,
-      "validation_evidence": null,
-      "validation_evidence_sha256": null
+      "status": "completed",
+      "package_path": "artifacts/regress/by-factor/ddl/user_mapping/create_user_mapping",
+      "sql_file_count": 1966,
+      "validation_evidence": "/Users/yuyu/PyCharmMiscProject/pg_case_factory/artifacts/intermediates/remaining-statement-factor-cycle/create_user_mapping/validation.json",
+      "validation_evidence_sha256": "db0c99fc2ffcbab94c5608f2347e474f31c5ebbfc99fbf58cba5df9c7f793571"
     },
     "create_view": {
       "status": "pending",
