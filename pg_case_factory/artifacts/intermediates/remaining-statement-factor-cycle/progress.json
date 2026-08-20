@@ -6,7 +6,7 @@
   "statement_count": 183,
   "retained_statement_count": 6,
   "pending_statement_count": 177,
-  "next_pending_statement": "alter_publication",
+  "next_pending_statement": "alter_routine",
   "statements": {
     "abort": {
       "status": "completed",
@@ -163,18 +163,18 @@
       "validation_evidence_sha256": "3b9b6a576cff9131ce32d4a3e86bb30c90993b7b7b525b6363c7d69158e806b6"
     },
     "alter_publication": {
-      "status": "pending",
-      "package_path": null,
-      "sql_file_count": null,
-      "validation_evidence": null,
-      "validation_evidence_sha256": null
+      "status": "completed",
+      "package_path": "artifacts/regress/by-factor/ddl/publication/alter_publication",
+      "sql_file_count": 20016,
+      "validation_evidence": "/Users/yuyu/PyCharmMiscProject/pg_case_factory/artifacts/intermediates/remaining-statement-factor-cycle/alter_publication/validation.json",
+      "validation_evidence_sha256": "1f9c7326dc3afa959dee018e66d82851927153a3b4fbb04a0b8d97b6876cbc2e"
     },
     "alter_role": {
-      "status": "pending",
-      "package_path": null,
-      "sql_file_count": null,
-      "validation_evidence": null,
-      "validation_evidence_sha256": null
+      "status": "completed",
+      "package_path": "artifacts/regress/by-factor/ddl/role/alter_role",
+      "sql_file_count": 1743,
+      "validation_evidence": "/Users/yuyu/PyCharmMiscProject/pg_case_factory/artifacts/intermediates/remaining-statement-factor-cycle/alter_role/validation.json",
+      "validation_evidence_sha256": "0e2ee855b430e2757f295b84b1d647753ed873721a78ddd5f237ea574ebe6916"
     },
     "alter_routine": {
       "status": "pending",
