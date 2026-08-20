@@ -6,7 +6,7 @@
   "statement_count": 183,
   "retained_statement_count": 6,
   "pending_statement_count": 177,
-  "next_pending_statement": "drop_foreign_table",
+  "next_pending_statement": "drop_function",
   "statements": {
     "abort": {
       "status": "completed",
@@ -779,11 +779,11 @@
       "validation_evidence_sha256": "a7ad47ad019ad5070e32a5e0791de6d649c58b2154744ad3461244a491debd7a"
     },
     "drop_foreign_table": {
-      "status": "pending",
-      "package_path": null,
-      "sql_file_count": null,
-      "validation_evidence": null,
-      "validation_evidence_sha256": null
+      "status": "completed",
+      "package_path": "artifacts/regress/by-factor/ddl/foreign_table/drop_foreign_table",
+      "sql_file_count": 512,
+      "validation_evidence": "/Users/yuyu/PyCharmMiscProject/pg_case_factory/artifacts/intermediates/remaining-statement-factor-cycle/drop_foreign_table/validation.json",
+      "validation_evidence_sha256": "467322f1ea8e33d2fdfdec950976b9604fc63a17990b8856b256bf0b8b4c11d4"
     },
     "drop_function": {
       "status": "pending",
