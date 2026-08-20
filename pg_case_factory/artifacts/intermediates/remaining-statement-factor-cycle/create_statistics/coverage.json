@@ -1,0 +1,561 @@
+{
+  "schema_version": 1,
+  "statement_key": "create_statistics",
+  "cycle_fingerprint": "606b9e710210e50ff88b14de7052163f9ee31f6f1d1e744bc0bd9935f399a9d9",
+  "factor_value_count": 54,
+  "factor_disposition_counts": {
+    "covered": 41,
+    "expected_failure": 13,
+    "justified_na": 0
+  },
+  "missing_row_ids": [],
+  "duplicate_row_ids": [],
+  "decisions": [
+    {
+      "row_id": "sfv-119d9d268004d4ffee6c23b9",
+      "factor": "cleanup_mode",
+      "value": "drop_statistics",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESTATISTICS00003"
+      ]
+    },
+    {
+      "row_id": "sfv-2f5f2a2bc65878937649dc5c",
+      "factor": "column_combination",
+      "value": "column_and_expression_mix",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESTATISTICS00004"
+      ]
+    },
+    {
+      "row_id": "sfv-07bb8a33c27e7ad5fe6e795f",
+      "factor": "column_combination",
+      "value": "single_expression_univariate",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESTATISTICS00005"
+      ]
+    },
+    {
+      "row_id": "sfv-94d87fed958e4e20149b95d1",
+      "factor": "column_combination",
+      "value": "three_columns",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESTATISTICS00006"
+      ]
+    },
+    {
+      "row_id": "sfv-8daacd5c0d23b0ae2e277196",
+      "factor": "column_combination",
+      "value": "two_columns",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESTATISTICS00007"
+      ]
+    },
+    {
+      "row_id": "sfv-de7493095abb7daf9360073b",
+      "factor": "column_dependency",
+      "value": "column_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESTATISTICS00008"
+      ]
+    },
+    {
+      "row_id": "sfv-474cd7a4bccc1bf84597b9b0",
+      "factor": "column_dependency",
+      "value": "column_not_exists",
+      "disposition": "expected_failure",
+      "reason": "undefined_column_provisional",
+      "case_ids": [
+        "CREATESTATISTICS00009"
+      ]
+    },
+    {
+      "row_id": "sfv-3a26b8d57df0d4bb6ec693ef",
+      "factor": "column_name_shape",
+      "value": "nonexistent_column",
+      "disposition": "expected_failure",
+      "reason": "undefined_column_provisional",
+      "case_ids": [
+        "CREATESTATISTICS00010"
+      ]
+    },
+    {
+      "row_id": "sfv-569b862d2e15b11178f3eb3f",
+      "factor": "column_name_shape",
+      "value": "quoted_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESTATISTICS00011"
+      ]
+    },
+    {
+      "row_id": "sfv-d471401611e6c9613905ae2f",
+      "factor": "column_name_shape",
+      "value": "simple_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESTATISTICS00012"
+      ]
+    },
+    {
+      "row_id": "sfv-39c689679289fae9f9c8ab1a",
+      "factor": "duplicate_statistics_name",
+      "value": "none",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESTATISTICS00013"
+      ]
+    },
+    {
+      "row_id": "sfv-583efc5e2bb8925f9f33a369",
+      "factor": "duplicate_statistics_name",
+      "value": "same_name_exists",
+      "disposition": "expected_failure",
+      "reason": "duplicate_statistics_provisional",
+      "case_ids": [
+        "CREATESTATISTICS00014"
+      ]
+    },
+    {
+      "row_id": "sfv-a8b05ccca1faef11e9adefd9",
+      "factor": "executor_privilege",
+      "value": "non_owner_no_privilege",
+      "disposition": "expected_failure",
+      "reason": "insufficient_privilege_provisional",
+      "case_ids": [
+        "CREATESTATISTICS00015"
+      ]
+    },
+    {
+      "row_id": "sfv-7531b696e9b79494e682e4b6",
+      "factor": "executor_privilege",
+      "value": "superuser",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESTATISTICS00016"
+      ]
+    },
+    {
+      "row_id": "sfv-d3ac5461cd6607fa030097bd",
+      "factor": "executor_privilege",
+      "value": "table_owner",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESTATISTICS00017"
+      ]
+    },
+    {
+      "row_id": "sfv-18ae5afba1daacace5a96abe",
+      "factor": "expected_status",
+      "value": "failure",
+      "disposition": "expected_failure",
+      "reason": "duplicate_statistics_provisional",
+      "case_ids": [
+        "CREATESTATISTICS00018"
+      ]
+    },
+    {
+      "row_id": "sfv-002cb412a4891756118101fd",
+      "factor": "expected_status",
+      "value": "success",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESTATISTICS00019"
+      ]
+    },
+    {
+      "row_id": "sfv-2b02bbe58b8b9da4ba4ad2f7",
+      "factor": "expression_shape",
+      "value": "arithmetic_expression",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESTATISTICS00020"
+      ]
+    },
+    {
+      "row_id": "sfv-4f2e9d50374087757aa66c23",
+      "factor": "expression_shape",
+      "value": "function_call_expression",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESTATISTICS00021"
+      ]
+    },
+    {
+      "row_id": "sfv-94fd89ea1a3849c16ea3d154",
+      "factor": "expression_shape",
+      "value": "simple_column_reference",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESTATISTICS00022"
+      ]
+    },
+    {
+      "row_id": "sfv-670bee98cb5018d999aa5c4d",
+      "factor": "expression_syntax_error",
+      "value": "invalid_expression_failure",
+      "disposition": "expected_failure",
+      "reason": "syntax_error_provisional",
+      "case_ids": [
+        "CREATESTATISTICS00023"
+      ]
+    },
+    {
+      "row_id": "sfv-1b761ef6a0de8be8be0c51e7",
+      "factor": "if_not_exists_clause",
+      "value": "with_if_not_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESTATISTICS00024"
+      ]
+    },
+    {
+      "row_id": "sfv-ca3a36d3edcee7ee474bfe9b",
+      "factor": "if_not_exists_clause",
+      "value": "without_if_not_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESTATISTICS00025"
+      ]
+    },
+    {
+      "row_id": "sfv-6e8c62e69190de725856e57b",
+      "factor": "nonexistent_column",
+      "value": "column_not_exists_failure",
+      "disposition": "expected_failure",
+      "reason": "undefined_column_provisional",
+      "case_ids": [
+        "CREATESTATISTICS00026"
+      ]
+    },
+    {
+      "row_id": "sfv-05dd2b8bb605858ea257668d",
+      "factor": "nonexistent_table",
+      "value": "table_not_exists_failure",
+      "disposition": "expected_failure",
+      "reason": "undefined_table_provisional",
+      "case_ids": [
+        "CREATESTATISTICS00027"
+      ]
+    },
+    {
+      "row_id": "sfv-2ab7ac0593648386c6569e63",
+      "factor": "privilege_insufficient",
+      "value": "non_table_owner_creating_statistics",
+      "disposition": "expected_failure",
+      "reason": "insufficient_privilege_provisional",
+      "case_ids": [
+        "CREATESTATISTICS00028"
+      ]
+    },
+    {
+      "row_id": "sfv-eaade4a668aed97985d2dca4",
+      "factor": "single_column_for_multivariate",
+      "value": "single_column_multivariate_failure",
+      "disposition": "expected_failure",
+      "reason": "single_column_multivariate_provisional",
+      "case_ids": [
+        "CREATESTATISTICS00029"
+      ]
+    },
+    {
+      "row_id": "sfv-5cc5f911a8984940528a9543",
+      "factor": "statement_branch",
+      "value": "branch_multivariate_columns",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESTATISTICS00030"
+      ]
+    },
+    {
+      "row_id": "sfv-ca318f3a6225fdac1ffb4f5f",
+      "factor": "statement_branch",
+      "value": "branch_univariate_expression",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESTATISTICS00031"
+      ]
+    },
+    {
+      "row_id": "sfv-1e8ac1fc44888276ccd72c76",
+      "factor": "statistics_identity",
+      "value": "exists",
+      "disposition": "expected_failure",
+      "reason": "duplicate_statistics_provisional",
+      "case_ids": [
+        "CREATESTATISTICS00032"
+      ]
+    },
+    {
+      "row_id": "sfv-d4487cb21e2e5e21288e7c3e",
+      "factor": "statistics_identity",
+      "value": "exists_with_if_not_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESTATISTICS00033"
+      ]
+    },
+    {
+      "row_id": "sfv-ddf4026bfee5f68476fa03b6",
+      "factor": "statistics_identity",
+      "value": "not_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESTATISTICS00034"
+      ]
+    },
+    {
+      "row_id": "sfv-b7857053162071c3f4e86079",
+      "factor": "statistics_identity",
+      "value": "reserved_word_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESTATISTICS00035"
+      ]
+    },
+    {
+      "row_id": "sfv-ad809bca22f26d8d77aab48b",
+      "factor": "statistics_kind_clause",
+      "value": "all_three_kinds",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESTATISTICS00036"
+      ]
+    },
+    {
+      "row_id": "sfv-5ce48a5fd069643045104eb2",
+      "factor": "statistics_kind_clause",
+      "value": "dependencies_only",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESTATISTICS00037"
+      ]
+    },
+    {
+      "row_id": "sfv-2c402643dbb5da447501fb0a",
+      "factor": "statistics_kind_clause",
+      "value": "mcv_only",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESTATISTICS00038"
+      ]
+    },
+    {
+      "row_id": "sfv-89df90664ef679b870e9f8c5",
+      "factor": "statistics_kind_clause",
+      "value": "ndistinct_and_dependencies",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESTATISTICS00039"
+      ]
+    },
+    {
+      "row_id": "sfv-186cc01ae958eed6f817591d",
+      "factor": "statistics_kind_clause",
+      "value": "ndistinct_only",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESTATISTICS00040"
+      ]
+    },
+    {
+      "row_id": "sfv-ab9366e49184fdfdeb086086",
+      "factor": "statistics_kind_clause",
+      "value": "omitted_all_kinds",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESTATISTICS00041"
+      ]
+    },
+    {
+      "row_id": "sfv-66e3b1edc913d8de7d79ce0f",
+      "factor": "statistics_name_presence",
+      "value": "auto_generated_name_omitted",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESTATISTICS00042"
+      ]
+    },
+    {
+      "row_id": "sfv-052814da0f9193b0f24fb73b",
+      "factor": "statistics_name_presence",
+      "value": "explicit_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESTATISTICS00043"
+      ]
+    },
+    {
+      "row_id": "sfv-21c1266e07db80d43e0ecb52",
+      "factor": "statistics_name_shape",
+      "value": "non_existing_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESTATISTICS00044"
+      ]
+    },
+    {
+      "row_id": "sfv-1b0bd6fa20c13848c30c4d66",
+      "factor": "statistics_name_shape",
+      "value": "quoted_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESTATISTICS00045"
+      ]
+    },
+    {
+      "row_id": "sfv-d61b725f388d7ae65bbdc381",
+      "factor": "statistics_name_shape",
+      "value": "reserved_word_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESTATISTICS00046"
+      ]
+    },
+    {
+      "row_id": "sfv-ff8f93f1bad60c1f897bf4b4",
+      "factor": "statistics_name_shape",
+      "value": "schema_qualified_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESTATISTICS00047"
+      ]
+    },
+    {
+      "row_id": "sfv-ffe9aa5d3951c53e0c55499b",
+      "factor": "statistics_name_shape",
+      "value": "simple_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESTATISTICS00048"
+      ]
+    },
+    {
+      "row_id": "sfv-28d3db3af076d6e633bc2df4",
+      "factor": "table_dependency",
+      "value": "table_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESTATISTICS00049"
+      ]
+    },
+    {
+      "row_id": "sfv-f342c0d24aa13024d91ac0ac",
+      "factor": "table_dependency",
+      "value": "table_not_exists",
+      "disposition": "expected_failure",
+      "reason": "undefined_table_provisional",
+      "case_ids": [
+        "CREATESTATISTICS00050"
+      ]
+    },
+    {
+      "row_id": "sfv-345e76c2f0757832e0792836",
+      "factor": "table_name_shape",
+      "value": "nonexistent_table",
+      "disposition": "expected_failure",
+      "reason": "undefined_table_provisional",
+      "case_ids": [
+        "CREATESTATISTICS00051"
+      ]
+    },
+    {
+      "row_id": "sfv-1814853732d338773316d3be",
+      "factor": "table_name_shape",
+      "value": "quoted_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESTATISTICS00052"
+      ]
+    },
+    {
+      "row_id": "sfv-d2719091212c4407f7b356f4",
+      "factor": "table_name_shape",
+      "value": "schema_qualified_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESTATISTICS00053"
+      ]
+    },
+    {
+      "row_id": "sfv-c2a35de03d1dc4455f496b68",
+      "factor": "table_name_shape",
+      "value": "simple_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESTATISTICS00054"
+      ]
+    },
+    {
+      "row_id": "sfv-c18c91c94f49ee7edb274c19",
+      "factor": "verification_mode",
+      "value": "error_assertion",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESTATISTICS00055"
+      ]
+    },
+    {
+      "row_id": "sfv-08d860bfa62f886fd9672295",
+      "factor": "verification_mode",
+      "value": "pg_statistic_ext_catalog",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "CREATESTATISTICS00056"
+      ]
+    }
+  ],
+  "generation_mode": "factor_value_independent_loop_v1",
+  "decision_count": 56,
+  "local_sql_decision_count": 56,
+  "extension_case_count": 2584,
+  "delegated_decision_count": 0,
+  "obligation_multiset_sha256": "2c8d6490d6ae3c85645b1d4266b07f3340424db4e34e78433de6e5f86add4f82"
+}
