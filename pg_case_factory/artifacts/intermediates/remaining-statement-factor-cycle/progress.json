@@ -6,7 +6,7 @@
   "statement_count": 183,
   "retained_statement_count": 6,
   "pending_statement_count": 177,
-  "next_pending_statement": "create_rule",
+  "next_pending_statement": "create_schema",
   "statements": {
     "abort": {
       "status": "completed",
@@ -541,11 +541,11 @@
       "validation_evidence_sha256": "05004a580a5a90fef2baff486bb3ca9367d5940cd77c18fab49203813dd13f64"
     },
     "create_rule": {
-      "status": "pending",
-      "package_path": null,
-      "sql_file_count": null,
-      "validation_evidence": null,
-      "validation_evidence_sha256": null
+      "status": "completed",
+      "package_path": "artifacts/regress/by-factor/ddl/rule/create_rule",
+      "sql_file_count": 7668,
+      "validation_evidence": "/Users/yuyu/PyCharmMiscProject/pg_case_factory/artifacts/intermediates/remaining-statement-factor-cycle/create_rule/validation.json",
+      "validation_evidence_sha256": "5a2123a2bbe0f32737d711edb1910094c9545540e68b804b7d599f1301673c01"
     },
     "create_schema": {
       "status": "pending",
