@@ -1,0 +1,35 @@
+-- --------------------------------------------------------
+-- 版权所有(C)  2021-2030 华为技术有限公司
+--
+-- --
+-- author       : codex
+-- create at    : 2026-08-20
+-- version      : 1.0
+-- description  : CREATE TABLE table_type=temp_short
+-- FE           : PG18-STATEMENT-FACTOR-LOOP
+-- ++
+-- --------------------------------------------------------
+-- case_id: CREATETABLE01348
+-- source_md: skills/pg-sql-generation/references/statements/ddl/table/create_table.md
+-- factor_md: skills/pg-sql-generation/references/combinations/ddl/table/create_table.yaml
+-- primary_obligation_id: CT-EXT|01348|pg_attribute_query|DROP_TABLE_CASCADE_RESTRICT|main
+-- expected_outcome: success
+-- expected_sqlstate: 00000
+-- 1. 清理本编号对象，保证脚本可重复执行。
+DROP TABLE IF EXISTS createtable_01348_t, createtable_01348_reftab CASCADE;
+\set ON_ERROR_STOP on
+SELECT 1 AS setup_boundary;
+-- 2. 创建完整本地表和因子专用夹具。
+CREATE TABLE createtable_01348_reftab (createtable_01348_col integer PRIMARY KEY);
+SELECT 1 AS pre_target_boundary;
+-- 3. 执行唯一获得覆盖信用的 CREATE TABLE。
+-- primary-target-begin
+CREATE TEMP TABLE createtable_01348_t (createtable_01348_col integer, FOREIGN KEY (createtable_01348_col) REFERENCES createtable_01348_reftab(createtable_01348_col)) PARTITION BY LIST (createtable_01348_col);
+-- primary-target-end
+\set target_sqlstate :SQLSTATE
+\echo PGCF_TARGET_SQLSTATE=:target_sqlstate
+-- 4. 验证 SQLSTATE、目录状态和数据行为。
+SELECT :'target_sqlstate' = '00000' AS target_sqlstate_matches_expected;
+SELECT count(*) AS attr_count FROM pg_catalog.pg_attribute WHERE attrelid = 'createtable_01348_t'::regclass ORDER BY count(*);
+-- 5. 清理全部本编号对象。
+DROP TABLE IF EXISTS createtable_01348_t, createtable_01348_reftab RESTRICT;
