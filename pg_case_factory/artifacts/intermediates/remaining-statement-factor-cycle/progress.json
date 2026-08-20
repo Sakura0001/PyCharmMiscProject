@@ -6,7 +6,7 @@
   "statement_count": 183,
   "retained_statement_count": 6,
   "pending_statement_count": 177,
-  "next_pending_statement": "create_foreign_data_wrapper",
+  "next_pending_statement": "create_foreign_table",
   "statements": {
     "abort": {
       "status": "completed",
@@ -443,11 +443,11 @@
       "validation_evidence_sha256": "6e23827abc8be11e42c55ff5ca1c6f680a26d9eddce17913240ae7af2c994896"
     },
     "create_foreign_data_wrapper": {
-      "status": "pending",
-      "package_path": null,
-      "sql_file_count": null,
-      "validation_evidence": null,
-      "validation_evidence_sha256": null
+      "status": "completed",
+      "package_path": "artifacts/regress/by-factor/ddl/foreign_data_wrapper/create_foreign_data_wrapper",
+      "sql_file_count": 2650,
+      "validation_evidence": "/Users/yuyu/PyCharmMiscProject/pg_case_factory/artifacts/intermediates/remaining-statement-factor-cycle/create_foreign_data_wrapper/validation.json",
+      "validation_evidence_sha256": "1447e23bba7de78cb2187043812a0a8dbe2f584b281e35eae34b30f026bddf34"
     },
     "create_foreign_table": {
       "status": "pending",
