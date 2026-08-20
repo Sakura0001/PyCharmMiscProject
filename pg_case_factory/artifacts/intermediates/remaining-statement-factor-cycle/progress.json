@@ -6,7 +6,7 @@
   "statement_count": 183,
   "retained_statement_count": 6,
   "pending_statement_count": 177,
-  "next_pending_statement": "deallocate",
+  "next_pending_statement": "delete",
   "statements": {
     "abort": {
       "status": "completed",
@@ -674,11 +674,11 @@
       "validation_evidence_sha256": "61bcdfce38ca5130001e99131ad4152faa6ef5ffcccdec39e470e95f34ea14a3"
     },
     "deallocate": {
-      "status": "pending",
-      "package_path": null,
-      "sql_file_count": null,
-      "validation_evidence": null,
-      "validation_evidence_sha256": null
+      "status": "completed",
+      "package_path": "artifacts/regress/by-factor/prepared/prepared_statement/deallocate",
+      "sql_file_count": 7698,
+      "validation_evidence": "/Users/yuyu/PyCharmMiscProject/pg_case_factory/artifacts/intermediates/remaining-statement-factor-cycle/deallocate/validation.json",
+      "validation_evidence_sha256": "667c5f1cf96acd1d43ba497021ca50349d373a60d46c02940b867d0969f33998"
     },
     "declare": {
       "status": "retained_existing",
