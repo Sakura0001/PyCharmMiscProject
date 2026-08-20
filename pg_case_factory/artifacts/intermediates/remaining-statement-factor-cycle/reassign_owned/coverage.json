@@ -1,0 +1,481 @@
+{
+  "schema_version": 1,
+  "statement_key": "reassign_owned",
+  "cycle_fingerprint": "606b9e710210e50ff88b14de7052163f9ee31f6f1d1e744bc0bd9935f399a9d9",
+  "factor_value_count": 46,
+  "factor_disposition_counts": {
+    "covered": 42,
+    "expected_failure": 4,
+    "justified_na": 0
+  },
+  "missing_row_ids": [],
+  "duplicate_row_ids": [],
+  "decisions": [
+    {
+      "row_id": "sfv-ba019556ca11945679fa0195",
+      "factor": "cleanup_mode",
+      "value": "drop_owned_then_drop_role",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "REASSIGNOWNED00002"
+      ]
+    },
+    {
+      "row_id": "sfv-d4c659869f13cc4d748c6b79",
+      "factor": "cleanup_mode",
+      "value": "drop_role_cascade",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "REASSIGNOWNED00003"
+      ]
+    },
+    {
+      "row_id": "sfv-b9c1615dd81c7e61f0c3f82a",
+      "factor": "cleanup_mode",
+      "value": "reassign_owned_then_drop_role",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "REASSIGNOWNED00004"
+      ]
+    },
+    {
+      "row_id": "sfv-3d783b2713d2ce2579138b4e",
+      "factor": "cross_database_limitation",
+      "value": "only_current_database_objects",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "REASSIGNOWNED00005"
+      ]
+    },
+    {
+      "row_id": "sfv-e7e756e7e5360f876be267de",
+      "factor": "executor_privilege",
+      "value": "createrole_privilege",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "REASSIGNOWNED00006"
+      ]
+    },
+    {
+      "row_id": "sfv-64c5c3b6026bcd959051e624",
+      "factor": "executor_privilege",
+      "value": "normal_user_no_privilege",
+      "disposition": "expected_failure",
+      "reason": "insufficient_privilege",
+      "case_ids": [
+        "REASSIGNOWNED00007"
+      ]
+    },
+    {
+      "row_id": "sfv-cc6a7a0e5b61da5aab41d608",
+      "factor": "executor_privilege",
+      "value": "superuser",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "REASSIGNOWNED00008"
+      ]
+    },
+    {
+      "row_id": "sfv-d3ecbe69c64400d3935ec4c0",
+      "factor": "expected_status",
+      "value": "failure",
+      "disposition": "expected_failure",
+      "reason": "reassign_owned_declared_failure",
+      "case_ids": [
+        "REASSIGNOWNED00009"
+      ]
+    },
+    {
+      "row_id": "sfv-2eb7695b2817cdd61d779bcd",
+      "factor": "expected_status",
+      "value": "success",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "REASSIGNOWNED00010"
+      ]
+    },
+    {
+      "row_id": "sfv-03ac38d78a3d59e700f7cd59",
+      "factor": "multi_old_role",
+      "value": "multiple_old_roles",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "REASSIGNOWNED00011"
+      ]
+    },
+    {
+      "row_id": "sfv-b686d3e1e7e6bd108cfc4c25",
+      "factor": "multi_old_role",
+      "value": "single_old_role",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "REASSIGNOWNED00012"
+      ]
+    },
+    {
+      "row_id": "sfv-153857b4cc6bbb69eadfd431",
+      "factor": "new_role_identity",
+      "value": "role_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "REASSIGNOWNED00013"
+      ]
+    },
+    {
+      "row_id": "sfv-fefe56e5e6972cf64e54bc4d",
+      "factor": "new_role_identity",
+      "value": "role_is_current_user",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "REASSIGNOWNED00014"
+      ]
+    },
+    {
+      "row_id": "sfv-c1dbe041c502b61b1fee3fb6",
+      "factor": "new_role_identity",
+      "value": "role_not_exists",
+      "disposition": "expected_failure",
+      "reason": "undefined_new_role",
+      "case_ids": [
+        "REASSIGNOWNED00015"
+      ]
+    },
+    {
+      "row_id": "sfv-bd5ce526be364b89dfdb6e65",
+      "factor": "new_role_shape",
+      "value": "current_role_keyword",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "REASSIGNOWNED00016"
+      ]
+    },
+    {
+      "row_id": "sfv-dcee315495935e05e7e24770",
+      "factor": "new_role_shape",
+      "value": "current_user_keyword",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "REASSIGNOWNED00017"
+      ]
+    },
+    {
+      "row_id": "sfv-4aa3d403aea518d5711e2dfa",
+      "factor": "new_role_shape",
+      "value": "explicit_role_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "REASSIGNOWNED00018"
+      ]
+    },
+    {
+      "row_id": "sfv-b7c47154064dcfe24302cc99",
+      "factor": "new_role_shape",
+      "value": "session_user_keyword",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "REASSIGNOWNED00019"
+      ]
+    },
+    {
+      "row_id": "sfv-21cf80a3f3e7c126dfbefe2f",
+      "factor": "nonexistent_new_role",
+      "value": "new_role_does_not_exist",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "REASSIGNOWNED00020"
+      ]
+    },
+    {
+      "row_id": "sfv-fe08ee97542b172e3b8e50c3",
+      "factor": "nonexistent_old_role",
+      "value": "old_role_does_not_exist",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "REASSIGNOWNED00021"
+      ]
+    },
+    {
+      "row_id": "sfv-20bd6129d0341090b55b3697",
+      "factor": "old_role_identity",
+      "value": "role_exists",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "REASSIGNOWNED00022"
+      ]
+    },
+    {
+      "row_id": "sfv-af31a6f4de918db5b6f66aa0",
+      "factor": "old_role_identity",
+      "value": "role_is_current_user",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "REASSIGNOWNED00023"
+      ]
+    },
+    {
+      "row_id": "sfv-bbed0daa2a153d9bc4ab5f97",
+      "factor": "old_role_identity",
+      "value": "role_is_superuser",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "REASSIGNOWNED00024"
+      ]
+    },
+    {
+      "row_id": "sfv-4ec4b7eaadeb7d415586bc9f",
+      "factor": "old_role_identity",
+      "value": "role_not_exists",
+      "disposition": "expected_failure",
+      "reason": "undefined_old_role",
+      "case_ids": [
+        "REASSIGNOWNED00025"
+      ]
+    },
+    {
+      "row_id": "sfv-40ec3284fc0f7e4d2f1725a1",
+      "factor": "old_role_shape",
+      "value": "current_role_keyword",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "REASSIGNOWNED00026"
+      ]
+    },
+    {
+      "row_id": "sfv-23418e944415034bcc5aeb48",
+      "factor": "old_role_shape",
+      "value": "current_user_keyword",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "REASSIGNOWNED00027"
+      ]
+    },
+    {
+      "row_id": "sfv-040a3b694ba1fbd196f85d6b",
+      "factor": "old_role_shape",
+      "value": "explicit_role_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "REASSIGNOWNED00028"
+      ]
+    },
+    {
+      "row_id": "sfv-0254217d90327aced2fe2f7a",
+      "factor": "old_role_shape",
+      "value": "session_user_keyword",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "REASSIGNOWNED00029"
+      ]
+    },
+    {
+      "row_id": "sfv-fa2200912f1fd8d912675543",
+      "factor": "owned_objects_state",
+      "value": "owns_multiple_objects",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "REASSIGNOWNED00030"
+      ]
+    },
+    {
+      "row_id": "sfv-e59f64c970ec8344f0e3fe0f",
+      "factor": "owned_objects_state",
+      "value": "owns_no_objects",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "REASSIGNOWNED00031"
+      ]
+    },
+    {
+      "row_id": "sfv-16af03160f0f93c2d37a238b",
+      "factor": "owned_objects_state",
+      "value": "owns_tables",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "REASSIGNOWNED00032"
+      ]
+    },
+    {
+      "row_id": "sfv-f83b4ea88b0a7de38a3e6d79",
+      "factor": "privilege_insufficient",
+      "value": "no_createrole_privilege",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "REASSIGNOWNED00033"
+      ]
+    },
+    {
+      "row_id": "sfv-874f193dd72f5891e976733d",
+      "factor": "privilege_insufficient",
+      "value": "non_superuser_reassigning_other_role",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "REASSIGNOWNED00034"
+      ]
+    },
+    {
+      "row_id": "sfv-eb773c7f4edcf288c00ebed0",
+      "factor": "quoted_identifier",
+      "value": "double_quoted",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "REASSIGNOWNED00035"
+      ]
+    },
+    {
+      "row_id": "sfv-f1ba4d93daaaa0bfbfb19f7c",
+      "factor": "quoted_identifier",
+      "value": "mixed_case_quoted",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "REASSIGNOWNED00036"
+      ]
+    },
+    {
+      "row_id": "sfv-7e744734ba12833ad5fc5096",
+      "factor": "quoted_identifier",
+      "value": "unquoted",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "REASSIGNOWNED00037"
+      ]
+    },
+    {
+      "row_id": "sfv-fc0bac2900f130ec1503d90a",
+      "factor": "role_name_shape",
+      "value": "case_sensitive_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "REASSIGNOWNED00038"
+      ]
+    },
+    {
+      "row_id": "sfv-f5f4ce3a8a9f780168daa3c4",
+      "factor": "role_name_shape",
+      "value": "non_existing_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "REASSIGNOWNED00039"
+      ]
+    },
+    {
+      "row_id": "sfv-6f605ea54dde3e332e9062a9",
+      "factor": "role_name_shape",
+      "value": "quoted_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "REASSIGNOWNED00040"
+      ]
+    },
+    {
+      "row_id": "sfv-88b57ff7f5477fb1f148db20",
+      "factor": "role_name_shape",
+      "value": "reserved_word_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "REASSIGNOWNED00041"
+      ]
+    },
+    {
+      "row_id": "sfv-5079a77bc4c1ca4c6cbe26b6",
+      "factor": "role_name_shape",
+      "value": "simple_name",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "REASSIGNOWNED00042"
+      ]
+    },
+    {
+      "row_id": "sfv-a3fcd52bf2841fa1bff5a6a1",
+      "factor": "self_reassign",
+      "value": "same_role_no_effect",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "REASSIGNOWNED00043"
+      ]
+    },
+    {
+      "row_id": "sfv-34ee3e0730dd53cc10536b70",
+      "factor": "statement_branch",
+      "value": "branch_reassign_owned",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "REASSIGNOWNED00044"
+      ]
+    },
+    {
+      "row_id": "sfv-3a6401658992f2e3ff6420d5",
+      "factor": "verification_mode",
+      "value": "error_assertion",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "REASSIGNOWNED00045"
+      ]
+    },
+    {
+      "row_id": "sfv-6bb7a459c7765a1b58eb8a83",
+      "factor": "verification_mode",
+      "value": "pg_class_owner_query",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "REASSIGNOWNED00046"
+      ]
+    },
+    {
+      "row_id": "sfv-16f6e5f1f5301978c12fed78",
+      "factor": "verification_mode",
+      "value": "pg_roles_catalog_query",
+      "disposition": "covered",
+      "reason": null,
+      "case_ids": [
+        "REASSIGNOWNED00047"
+      ]
+    }
+  ],
+  "generation_mode": "factor_value_independent_loop_v1",
+  "decision_count": 49,
+  "local_sql_decision_count": 49,
+  "extension_case_count": 4032,
+  "delegated_decision_count": 0,
+  "obligation_multiset_sha256": "f9a72e9f00383b6fe22da3bd2a5e0351801853b67f620529b804fef445e09e3d"
+}
