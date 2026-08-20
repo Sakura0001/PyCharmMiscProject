@@ -6,7 +6,7 @@
   "statement_count": 183,
   "retained_statement_count": 6,
   "pending_statement_count": 177,
-  "next_pending_statement": "set_constraints",
+  "next_pending_statement": "set_role",
   "statements": {
     "abort": {
       "status": "completed",
@@ -1213,11 +1213,11 @@
       "validation_evidence_sha256": "8fb72b866d3d0e9f4c70e74fb8898fd76c94aceea549707c78b8b5d9325d062d"
     },
     "set_constraints": {
-      "status": "pending",
-      "package_path": null,
-      "sql_file_count": null,
-      "validation_evidence": null,
-      "validation_evidence_sha256": null
+      "status": "completed",
+      "package_path": "artifacts/regress/by-factor/session/constraint_mode/set_constraints",
+      "sql_file_count": 4266,
+      "validation_evidence": "/Users/yuyu/PyCharmMiscProject/pg_case_factory/artifacts/intermediates/remaining-statement-factor-cycle/set_constraints/validation.json",
+      "validation_evidence_sha256": "dd9b8c93e1a70c5aaa1242714aadf604cff24286a13c98c196c1f07f97315445"
     },
     "set_role": {
       "status": "pending",
