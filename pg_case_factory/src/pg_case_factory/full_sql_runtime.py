@@ -1065,41 +1065,239 @@ def run_runtime_batches(
 
 def report_runtime_results(output_root: Path) -> dict[str, Any]:
     output = Path(output_root)
+    manifest_path = output / "manifest.jsonl"
+    manifest = load_runtime_manifest(manifest_path)
+    expected_by_ordinal = {case.ordinal: case for case in manifest}
     classifications: Counter[str] = Counter()
     levels: Counter[str] = Counter()
+    evidence_classifications: dict[str, Counter[str]] = {}
+    outcome_classifications: dict[str, Counter[str]] = {}
     statements: dict[str, Counter[str]] = {}
+    statement_details: dict[str, dict[str, Any]] = {}
+    expected_to_actual: dict[str, Counter[str]] = {}
+    error_sqlstates: Counter[str] = Counter()
+    failure_examples: dict[str, list[dict[str, Any]]] = {}
     case_count = 0
     passed_count = 0
-    for path in sorted((output / "results").glob("batch-*.jsonl")):
+    paired_case_count = 0
+    execution_count = 0
+    duplicate_ordinal_count = 0
+    unknown_ordinal_count = 0
+    sql_sha_mismatch_count = 0
+    case_metadata_mismatch_count = 0
+    result_schema_mismatch_count = 0
+    seen_ordinals: set[int] = set()
+    transcript_mismatch_count = 0
+    structured_mismatch_count = 0
+    duration_ms = 0
+    result_paths = sorted((output / "results").glob("batch-*.jsonl"))
+    for path in result_paths:
         for record in _load_batch_results(path):
             case_count += 1
             comparison = record["comparison"]
             case = record["case"]
+            ordinal = int(case["ordinal"])
+            if ordinal in seen_ordinals:
+                duplicate_ordinal_count += 1
+            seen_ordinals.add(ordinal)
+            expected = expected_by_ordinal.get(ordinal)
+            if expected is None:
+                unknown_ordinal_count += 1
+            else:
+                if str(case.get("sql_sha256")) != expected.sql_sha256:
+                    sql_sha_mismatch_count += 1
+                if case != expected.to_dict():
+                    case_metadata_mismatch_count += 1
+            if int(record.get("schema_version", -1)) != 1:
+                result_schema_mismatch_count += 1
+            has_pair = "run_01" in record and "run_02" in record
+            paired_case_count += has_pair
+            execution_count += int("run_01" in record) + int("run_02" in record)
+            if not has_pair:
+                continue
+            for run_name in ("run_01", "run_02"):
+                duration_ms += int(record[run_name].get("duration_ms", 0))
             classification = str(comparison["classification"])
             statement = str(case["statement_key"])
+            evidence = str(case["evidence_level"])
+            outcome = str(case.get("expected_outcome"))
             classifications[classification] += 1
-            levels[str(case["evidence_level"])] += 1
+            levels[evidence] += 1
+            evidence_classifications.setdefault(evidence, Counter())[classification] += 1
+            outcome_classifications.setdefault(outcome, Counter())[classification] += 1
             statements.setdefault(statement, Counter())[classification] += 1
-            passed_count += bool(comparison["passed"])
+            passed = bool(comparison["passed"])
+            passed_count += passed
+            details = statement_details.setdefault(
+                statement,
+                {
+                    "case_count": 0,
+                    "passed_count": 0,
+                    "not_passed_count": 0,
+                    "classifications": Counter(),
+                    "evidence_levels": Counter(),
+                    "expected_outcomes": Counter(),
+                },
+            )
+            details["case_count"] += 1
+            details["passed_count"] += passed
+            details["not_passed_count"] += not passed
+            details["classifications"][classification] += 1
+            details["evidence_levels"][evidence] += 1
+            details["expected_outcomes"][outcome] += 1
+            transcript_mismatch_count += not bool(
+                comparison.get("transcript_matches", False)
+            )
+            structured_mismatch_count += not bool(
+                comparison.get("structured_matches", False)
+            )
+            run_01 = record["run_01"]
+            expected_state = str(case.get("expected_sqlstate") or "<undefined>")
+            actual_state = str(run_01.get("target_sqlstate") or "<missing>")
+            expected_to_actual.setdefault(expected_state, Counter())[actual_state] += 1
+            error_sqlstates.update(
+                str(value) for value in run_01.get("error_sqlstates", [])
+            )
+            if not passed and len(failure_examples.setdefault(classification, [])) < 20:
+                failure_examples[classification].append(
+                    {
+                        "ordinal": ordinal,
+                        "case_id": str(case["case_id"]),
+                        "statement_key": statement,
+                        "sql_path": str(case["sql_path"]),
+                        "expected_sqlstate": case.get("expected_sqlstate"),
+                        "actual_target_sqlstate": run_01.get("target_sqlstate"),
+                        "error_sqlstates": run_01.get("error_sqlstates", []),
+                    }
+                )
+    missing_ordinals = sorted(set(expected_by_ordinal) - seen_ordinals)
+    checkpoint_path = output / "checkpoint.json"
+    checkpoint = (
+        json.loads(checkpoint_path.read_text(encoding="utf-8"))
+        if checkpoint_path.is_file()
+        else {}
+    )
+    server_version_num = checkpoint.get("server_version_num")
+    run_metadata_path = output / "run.json"
+    run_metadata = (
+        json.loads(run_metadata_path.read_text(encoding="utf-8"))
+        if run_metadata_path.is_file()
+        else {}
+    )
+    manifest_sha256 = hashlib.sha256(manifest_path.read_bytes()).hexdigest()
+    integrity = {
+        "complete": False,
+        "manifest_case_count": len(manifest),
+        "result_case_count": case_count,
+        "paired_case_count": paired_case_count,
+        "execution_count": execution_count,
+        "missing_ordinal_count": len(missing_ordinals),
+        "missing_ordinal_examples": missing_ordinals[:20],
+        "duplicate_ordinal_count": duplicate_ordinal_count,
+        "unknown_ordinal_count": unknown_ordinal_count,
+        "sql_sha_mismatch_count": sql_sha_mismatch_count,
+        "case_metadata_mismatch_count": case_metadata_mismatch_count,
+        "result_schema_mismatch_count": result_schema_mismatch_count,
+        "server_version_num": server_version_num,
+        "manifest_sha256": manifest_sha256,
+        "manifest_sha_matches_run_metadata": (
+            run_metadata.get("manifest_sha256") in (None, manifest_sha256)
+        ),
+        "checkpoint_total_cases": checkpoint.get("total_cases"),
+        "checkpoint_completed_cases": checkpoint.get("completed_cases"),
+        "checkpoint_completed_executions": checkpoint.get("completed_executions"),
+        "checkpoint_batch_count": checkpoint.get("batch_count"),
+        "checkpoint_completed_batches": checkpoint.get("completed_batches"),
+        "result_batch_file_count": len(result_paths),
+    }
+    integrity["complete"] = all(
+        (
+            case_count == len(manifest),
+            paired_case_count == len(manifest),
+            execution_count == len(manifest) * 2,
+            not missing_ordinals,
+            duplicate_ordinal_count == 0,
+            unknown_ordinal_count == 0,
+            sql_sha_mismatch_count == 0,
+            case_metadata_mismatch_count == 0,
+            result_schema_mismatch_count == 0,
+            server_version_num == 180004,
+            checkpoint.get("total_cases") == len(manifest),
+            checkpoint.get("completed_cases") == len(manifest),
+            checkpoint.get("completed_executions") == len(manifest) * 2,
+            checkpoint.get("completed_batches") == len(result_paths),
+            run_metadata.get("manifest_sha256") in (None, manifest_sha256),
+        )
+    )
     payload = {
         "schema_version": 1,
-        "server_version_num": 180004,
+        "server_version_num": server_version_num,
         "case_count": case_count,
-        "execution_count": case_count * 2,
+        "execution_count": execution_count,
         "passed_count": passed_count,
         "not_passed_count": case_count - passed_count,
         "classifications": dict(sorted(classifications.items())),
         "evidence_levels": dict(sorted(levels.items())),
+        "evidence_classifications": {
+            key: dict(sorted(value.items()))
+            for key, value in sorted(evidence_classifications.items())
+        },
+        "expected_outcome_classifications": {
+            key: dict(sorted(value.items()))
+            for key, value in sorted(outcome_classifications.items())
+        },
+        "determinism": {
+            "transcript_mismatch_count": transcript_mismatch_count,
+            "structured_mismatch_count": structured_mismatch_count,
+        },
+        "total_duration_ms": duration_ms,
+        "integrity": integrity,
         "statements": {
             key: dict(sorted(value.items()))
             for key, value in sorted(statements.items())
         },
+        "failure_examples": {
+            key: value for key, value in sorted(failure_examples.items())
+        },
     }
     reports = output / "reports"
     reports.mkdir(parents=True, exist_ok=True)
+    statement_payload = {
+        "schema_version": 1,
+        "server_version_num": server_version_num,
+        "statement_count": len(statement_details),
+        "statements": {
+            key: {
+                name: dict(sorted(value.items()))
+                if isinstance(value, Counter)
+                else value
+                for name, value in details.items()
+            }
+            for key, details in sorted(statement_details.items())
+        },
+    }
+    sqlstate_payload = {
+        "schema_version": 1,
+        "server_version_num": server_version_num,
+        "expected_to_actual": {
+            key: dict(sorted(value.items()))
+            for key, value in sorted(expected_to_actual.items())
+        },
+        "run_01_error_sqlstates": dict(sorted(error_sqlstates.items())),
+    }
     _atomic_write_text(
         reports / "final-summary.json",
         json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+    )
+    _atomic_write_text(
+        reports / "statement-summary.json",
+        json.dumps(statement_payload, ensure_ascii=False, indent=2, sort_keys=True)
+        + "\n",
+    )
+    _atomic_write_text(
+        reports / "sqlstate-summary.json",
+        json.dumps(sqlstate_payload, ensure_ascii=False, indent=2, sort_keys=True)
+        + "\n",
     )
     return payload
 

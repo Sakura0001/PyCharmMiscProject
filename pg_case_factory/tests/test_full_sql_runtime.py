@@ -8,6 +8,7 @@ import unittest
 from unittest.mock import patch
 
 from pg_case_factory.full_sql_runtime import (
+    _start_workers,
     CaseExecution,
     EVIDENCE_COMPATIBILITY,
     EVIDENCE_OBSERVATIONAL,
@@ -19,6 +20,7 @@ from pg_case_factory.full_sql_runtime import (
     build_worker_configs,
     load_runtime_manifest,
     partition_cases,
+    report_runtime_results,
     run_case_pair,
     write_runtime_manifest,
     compare_case_runs,
@@ -300,6 +302,42 @@ class RuntimeEvaluationTest(unittest.TestCase):
 
 
 class PostgresWorkerTest(unittest.TestCase):
+    def test_start_failure_stops_each_started_worker_once(self) -> None:
+        created = []
+
+        class FakeWorker:
+            def __init__(self, config, *, timeout_seconds: int) -> None:
+                self.index = len(created)
+                self.stop_calls = 0
+                created.append(self)
+
+            def start(self) -> None:
+                if self.index == 1:
+                    raise RuntimeError("startup failed")
+
+            def stop(self) -> None:
+                self.stop_calls += 1
+
+        configs = (object(), object())
+        with (
+            patch(
+                "pg_case_factory.full_sql_runtime.build_worker_configs",
+                return_value=configs,
+            ),
+            patch("pg_case_factory.full_sql_runtime.PostgresWorker", FakeWorker),
+            self.assertRaises(RuntimeError),
+        ):
+            _start_workers(
+                output_root=Path("/runtime"),
+                bin_dir=Path("/pg/bin"),
+                worker_count=2,
+                base_port=55720,
+                timeout_seconds=30,
+            )
+
+        self.assertEqual(1, created[0].stop_calls)
+        self.assertEqual(0, created[1].stop_calls)
+
     def test_worker_configs_are_isolated_and_bounded(self) -> None:
         with tempfile.TemporaryDirectory() as raw:
             configs = build_worker_configs(
@@ -491,6 +529,97 @@ class RuntimeBatchingTest(unittest.TestCase):
         pair = run_case_pair(worker, Path("/repo"), self.manifest_case(1))
         self.assertEqual(0, worker.rebuilds)
         self.assertEqual("unexpected_psql_error", pair["comparison"]["classification"])
+
+    def test_report_audits_manifest_pairs_and_writes_statement_and_sqlstate_summaries(self) -> None:
+        cases = (
+            self.manifest_case(1, statement="select", outcome="success"),
+            self.manifest_case(
+                2, statement="insert", outcome="expected_failure"
+            ),
+        )
+        passed = {
+            "schema_version": 1,
+            "case": cases[0].to_dict(),
+            "run_01": {
+                "target_sqlstate": "00000",
+                "error_sqlstates": [],
+                "duration_ms": 2,
+            },
+            "run_02": {
+                "target_sqlstate": "00000",
+                "error_sqlstates": [],
+                "duration_ms": 3,
+            },
+            "comparison": {
+                "classification": "strict_pass",
+                "passed": True,
+                "transcript_matches": True,
+                "structured_matches": True,
+            },
+        }
+        failed = {
+            "schema_version": 1,
+            "case": cases[1].to_dict(),
+            "run_01": {
+                "target_sqlstate": "42P01",
+                "error_sqlstates": ["42P01"],
+                "duration_ms": 5,
+            },
+            "run_02": {
+                "target_sqlstate": "42P01",
+                "error_sqlstates": ["42P01"],
+                "duration_ms": 7,
+            },
+            "comparison": {
+                "classification": "sqlstate_mismatch",
+                "passed": False,
+                "transcript_matches": True,
+                "structured_matches": True,
+            },
+        }
+        with tempfile.TemporaryDirectory() as raw:
+            output = Path(raw)
+            write_runtime_manifest(output / "manifest.jsonl", cases)
+            (output / "checkpoint.json").write_text(
+                json.dumps(
+                    {
+                        "server_version_num": 180004,
+                        "total_cases": 2,
+                        "completed_cases": 2,
+                        "completed_executions": 4,
+                        "batch_count": 1,
+                        "completed_batches": 1,
+                    }
+                )
+            )
+            results = output / "results"
+            results.mkdir()
+            (results / "batch-00001.jsonl").write_text(
+                "\n".join(json.dumps(record) for record in (passed, failed))
+                + "\n"
+            )
+
+            summary = report_runtime_results(output)
+
+            self.assertTrue(summary["integrity"]["complete"])
+            self.assertEqual(2, summary["integrity"]["paired_case_count"])
+            self.assertEqual(4, summary["integrity"]["execution_count"])
+            self.assertEqual(
+                {"strict_pass": 1, "sqlstate_mismatch": 1},
+                summary["classifications"],
+            )
+            statement_summary = json.loads(
+                (output / "reports/statement-summary.json").read_text()
+            )
+            sqlstate_summary = json.loads(
+                (output / "reports/sqlstate-summary.json").read_text()
+            )
+
+        self.assertEqual(1, statement_summary["statements"]["insert"]["not_passed_count"])
+        self.assertEqual(
+            1,
+            sqlstate_summary["expected_to_actual"]["42704"]["42P01"],
+        )
 
 
 if __name__ == "__main__":
