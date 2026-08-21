@@ -5,8 +5,11 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
+import subprocess
+import time
 from typing import Any, Mapping
 
 
@@ -129,6 +132,294 @@ class CaseTwoRunComparison:
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
+
+
+@dataclass(frozen=True)
+class WorkerConfig:
+    worker_id: int
+    bin_dir: Path
+    worker_root: Path
+    port: int
+    database: str = "pgcf_cop"
+    role: str = "pgcf_superuser"
+
+    def __post_init__(self) -> None:
+        if self.worker_id < 1 or self.worker_id > 4:
+            raise ValueError("worker_id must be between 1 and 4")
+        if self.port < 1024 or self.port > 65535:
+            raise ValueError("worker port must be between 1024 and 65535")
+
+
+def build_worker_configs(
+    runtime_root: Path,
+    bin_dir: Path,
+    *,
+    workers: int,
+    base_port: int = 55720,
+) -> tuple[WorkerConfig, ...]:
+    if workers < 1 or workers > 4:
+        raise ValueError("workers must be between 1 and 4")
+    root = Path(runtime_root).resolve()
+    return tuple(
+        WorkerConfig(
+            worker_id=index,
+            bin_dir=Path(bin_dir),
+            worker_root=root / "workers" / f"worker-{index:02d}",
+            port=base_port + index - 1,
+        )
+        for index in range(1, workers + 1)
+    )
+
+
+class PostgresWorker:
+    """One serial psql worker backed by its own PostgreSQL cluster."""
+
+    def __init__(self, config: WorkerConfig, *, timeout_seconds: int = 30) -> None:
+        if timeout_seconds < 1 or timeout_seconds > 300:
+            raise ValueError("timeout_seconds must be between 1 and 300")
+        self.config = config
+        self.timeout_seconds = timeout_seconds
+        self.generation = 1
+        self.started = False
+
+    @property
+    def generation_root(self) -> Path:
+        return self.config.worker_root / f"generation-{self.generation:04d}"
+
+    @property
+    def data_dir(self) -> Path:
+        return self.generation_root / "data"
+
+    @property
+    def socket_dir(self) -> Path:
+        return self.generation_root / "socket"
+
+    @property
+    def log_path(self) -> Path:
+        return self.generation_root / "postgres.log"
+
+    @property
+    def psql(self) -> Path:
+        return self.config.bin_dir / "psql"
+
+    def _environment(self) -> dict[str, str]:
+        environment = dict(os.environ)
+        existing = environment.get("PGOPTIONS", "").strip()
+        setting = "-c client_min_messages=warning"
+        environment["PGOPTIONS"] = f"{existing} {setting}".strip()
+        return environment
+
+    def psql_command(self, sql_path: Path | None = None) -> list[str]:
+        command = [
+            str(self.psql),
+            "-X",
+            "-h",
+            str(self.socket_dir),
+            "-p",
+            str(self.config.port),
+            "-d",
+            self.config.database,
+            "-U",
+            self.config.role,
+            "-A",
+            "-t",
+            "-q",
+            "-v",
+            "VERBOSITY=sqlstate",
+            "-v",
+            "ON_ERROR_STOP=1",
+        ]
+        if sql_path is not None:
+            command.extend(["-f", str(sql_path)])
+        return command
+
+    @staticmethod
+    def _checked(command: list[str], *, timeout: int = 60) -> subprocess.CompletedProcess[bytes]:
+        result = subprocess.run(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=timeout,
+            check=False,
+        )
+        if result.returncode != 0:
+            raise FullSqlRuntimeError(
+                f"command failed ({result.returncode}): {' '.join(command)}\n"
+                + result.stderr.decode("utf-8", errors="replace")
+            )
+        return result
+
+    def start(self) -> None:
+        for executable in ("initdb", "pg_ctl", "createdb", "psql"):
+            path = self.config.bin_dir / executable
+            if not path.is_file():
+                raise FullSqlRuntimeError(f"missing PostgreSQL executable: {path}")
+        self.generation_root.mkdir(parents=True, exist_ok=True)
+        self.socket_dir.mkdir(parents=True, exist_ok=True)
+        if not (self.data_dir / "PG_VERSION").is_file():
+            self._checked(
+                [
+                    str(self.config.bin_dir / "initdb"),
+                    "-D",
+                    str(self.data_dir),
+                    "-A",
+                    "trust",
+                    "--no-locale",
+                    "--encoding=UTF8",
+                    "-U",
+                    self.config.role,
+                ],
+                timeout=120,
+            )
+        status = subprocess.run(
+            [
+                str(self.config.bin_dir / "pg_ctl"),
+                "-D",
+                str(self.data_dir),
+                "status",
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+        if status.returncode != 0:
+            options = " ".join(
+                [
+                    f"-k {self.socket_dir}",
+                    f"-p {self.config.port}",
+                    "-c listen_addresses=''",
+                    "-c fsync=off",
+                    "-c synchronous_commit=off",
+                    "-c full_page_writes=off",
+                    "-c max_connections=30",
+                    "-c log_min_messages=warning",
+                ]
+            )
+            self._checked(
+                [
+                    str(self.config.bin_dir / "pg_ctl"),
+                    "-D",
+                    str(self.data_dir),
+                    "-w",
+                    "-l",
+                    str(self.log_path),
+                    "-o",
+                    options,
+                    "start",
+                ],
+                timeout=120,
+            )
+        probe_database = "postgres"
+        exists = self._checked(
+            [
+                str(self.psql),
+                "-X",
+                "-h",
+                str(self.socket_dir),
+                "-p",
+                str(self.config.port),
+                "-d",
+                probe_database,
+                "-U",
+                self.config.role,
+                "-Atqc",
+                "SELECT 1 FROM pg_database WHERE datname = "
+                + "'"
+                + self.config.database.replace("'", "''")
+                + "'",
+            ]
+        )
+        if exists.stdout.strip() != b"1":
+            self._checked(
+                [
+                    str(self.config.bin_dir / "createdb"),
+                    "-h",
+                    str(self.socket_dir),
+                    "-p",
+                    str(self.config.port),
+                    "-U",
+                    self.config.role,
+                    self.config.database,
+                ]
+            )
+        version = self._checked(
+            [*self.psql_command(), "-c", "SHOW server_version_num"]
+        ).stdout.strip()
+        if version != b"180004":
+            raise FullSqlRuntimeError(
+                f"expected PostgreSQL 18.4, observed server_version_num={version!r}"
+            )
+        self._bootstrap_extensions()
+        self.started = True
+
+    def _bootstrap_extensions(self) -> None:
+        extension_dir = self.config.bin_dir.parent / "share" / "extension"
+        available = [
+            name
+            for name in ("dblink", "file_fdw", "postgres_fdw")
+            if (extension_dir / f"{name}.control").is_file()
+        ]
+        if not available:
+            return
+        sql = "; ".join(
+            f"CREATE EXTENSION IF NOT EXISTS {name}" for name in available
+        )
+        self._checked([*self.psql_command(), "-c", sql])
+
+    def stop(self) -> None:
+        if not (self.data_dir / "PG_VERSION").is_file():
+            self.started = False
+            return
+        subprocess.run(
+            [
+                str(self.config.bin_dir / "pg_ctl"),
+                "-D",
+                str(self.data_dir),
+                "-w",
+                "-m",
+                "fast",
+                "stop",
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=60,
+            check=False,
+        )
+        self.started = False
+
+    def rebuild(self) -> None:
+        self.stop()
+        self.generation += 1
+        self.start()
+
+    def execute(self, sql_path: Path) -> CaseExecution:
+        started_at = time.monotonic()
+        try:
+            result = subprocess.run(
+                self.psql_command(sql_path),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                timeout=self.timeout_seconds,
+                check=False,
+                env=self._environment(),
+            )
+            exit_code = result.returncode
+            stdout = result.stdout
+            stderr = result.stderr
+            timed_out = False
+        except subprocess.TimeoutExpired as exc:
+            exit_code = 124
+            stdout = exc.stdout or b""
+            stderr = exc.stderr or b""
+            timed_out = True
+        duration_ms = max(0, round((time.monotonic() - started_at) * 1000))
+        return CaseExecution(
+            exit_code=exit_code,
+            timed_out=timed_out,
+            stdout=stdout,
+            stderr=stderr,
+            duration_ms=duration_ms,
+        )
 
 
 def _normalize_transcript(payload: bytes) -> bytes:
@@ -337,9 +628,14 @@ def _manifest_case(
     sql = raw.decode("utf-8", errors="replace")
     headers = _header_values(sql)
     case_id = headers.get("case_id", sql_path.stem)
+    planned = compatibility_plan.get(sql_path.name, {})
     expected_outcome: str | None
     expected_sqlstate: str | None
-    object_prefix: str | None = None
+    object_prefix = (
+        str(planned["object_prefix"])
+        if "object_prefix" in planned
+        else None
+    )
     if "expected_outcome" in headers and "expected_sqlstate" in headers:
         evidence_level = EVIDENCE_STRICT
         expected_outcome = headers["expected_outcome"]
@@ -358,7 +654,6 @@ def _manifest_case(
         expected_sqlstate = None
     else:
         evidence_level = EVIDENCE_COMPATIBILITY
-        planned = compatibility_plan.get(sql_path.name, {})
         expected_outcome = (
             str(planned["outcome"]) if "outcome" in planned else None
         )
@@ -366,11 +661,6 @@ def _manifest_case(
         expected_sqlstate = (
             str(derived["expected_sqlstate"])
             if isinstance(derived, Mapping) and "expected_sqlstate" in derived
-            else None
-        )
-        object_prefix = (
-            str(planned["object_prefix"])
-            if "object_prefix" in planned
             else None
         )
     return RuntimeManifestCase(
@@ -425,9 +715,7 @@ def compile_runtime_manifest(
         )
         external_names = _schedule_names(package / "external_schedule")
         compatibility = (
-            {}
-            if retained
-            else _load_compatibility_plan(root, str(statement_key))
+            {} if retained else _load_compatibility_plan(root, str(statement_key))
         )
         for sql_path in sql_paths:
             identity = sql_path.resolve(strict=True)
@@ -460,7 +748,10 @@ __all__ = [
     "EVIDENCE_OBSERVATIONAL",
     "EVIDENCE_STRICT",
     "FullSqlRuntimeError",
+    "PostgresWorker",
     "RuntimeManifestCase",
+    "WorkerConfig",
+    "build_worker_configs",
     "compare_case_runs",
     "compile_runtime_manifest",
     "evaluate_case_execution",

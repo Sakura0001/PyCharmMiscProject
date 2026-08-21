@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from pg_case_factory.full_sql_runtime import (
     CaseExecution,
@@ -12,6 +13,9 @@ from pg_case_factory.full_sql_runtime import (
     EVIDENCE_OBSERVATIONAL,
     EVIDENCE_STRICT,
     RuntimeManifestCase,
+    PostgresWorker,
+    WorkerConfig,
+    build_worker_configs,
     compare_case_runs,
     compile_runtime_manifest,
     evaluate_case_execution,
@@ -268,6 +272,56 @@ class RuntimeEvaluationTest(unittest.TestCase):
         comparison = compare_case_runs(first, second)
         self.assertFalse(comparison.passed)
         self.assertEqual("two_run_mismatch", comparison.classification)
+
+
+class PostgresWorkerTest(unittest.TestCase):
+    def test_worker_configs_are_isolated_and_bounded(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            configs = build_worker_configs(
+                Path(raw), Path("/tmp/pg18/bin"), workers=4, base_port=55720
+            )
+            self.assertEqual(4, len(configs))
+            self.assertEqual(4, len({config.port for config in configs}))
+            self.assertEqual(4, len({config.worker_root for config in configs}))
+            with self.assertRaises(ValueError):
+                build_worker_configs(
+                    Path(raw), Path("/tmp/pg18/bin"), workers=5
+                )
+
+    def test_psql_command_uses_private_socket_and_pg18_contract(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            config = WorkerConfig(
+                worker_id=1,
+                bin_dir=Path("/tmp/pg18/bin"),
+                worker_root=Path(raw) / "worker-01",
+                port=55720,
+            )
+            worker = PostgresWorker(config, timeout_seconds=30)
+            command = worker.psql_command(Path("/repo/CASE0001.sql"))
+        self.assertIn(str(worker.socket_dir), command)
+        self.assertIn("55720", command)
+        self.assertIn("VERBOSITY=sqlstate", command)
+        self.assertIn("ON_ERROR_STOP=1", command)
+        self.assertNotIn("127.0.0.1", command)
+
+    def test_execute_converts_subprocess_timeout_to_bounded_result(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            config = WorkerConfig(
+                worker_id=1,
+                bin_dir=Path("/tmp/pg18/bin"),
+                worker_root=Path(raw) / "worker-01",
+                port=55720,
+            )
+            worker = PostgresWorker(config, timeout_seconds=7)
+            timeout = __import__("subprocess").TimeoutExpired(
+                ["psql"], 7, output=b"partial", stderr=b"late"
+            )
+            with patch("pg_case_factory.full_sql_runtime.subprocess.run", side_effect=timeout):
+                execution = worker.execute(Path("/repo/CASE0001.sql"))
+        self.assertTrue(execution.timed_out)
+        self.assertEqual(124, execution.exit_code)
+        self.assertEqual(b"partial", execution.stdout)
+        self.assertEqual(b"late", execution.stderr)
 
 
 if __name__ == "__main__":
