@@ -879,12 +879,12 @@ def run_case_pair(
     sql_path = Path(repository_root) / case.sql_path
     execution_01 = worker.execute(sql_path)
     run_01 = evaluate_case_execution(case, execution_01, run_ordinal=1)
-    if execution_01.timed_out or execution_01.exit_code != 0:
+    if execution_01.timed_out or execution_01.exit_code == 2:
         worker.rebuild()
     execution_02 = worker.execute(sql_path)
     run_02 = evaluate_case_execution(case, execution_02, run_ordinal=2)
     comparison = compare_case_runs(run_01, run_02)
-    if execution_02.timed_out or execution_02.exit_code != 0:
+    if execution_02.timed_out or execution_02.exit_code == 2:
         worker.rebuild()
     include_transcript = not comparison.passed
     return {

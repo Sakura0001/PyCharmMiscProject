@@ -470,6 +470,28 @@ class RuntimeBatchingTest(unittest.TestCase):
         self.assertIn("stdout", pair["run_01"])
         self.assertIn("stderr", pair["run_02"])
 
+    def test_sql_script_error_does_not_rebuild_healthy_unique_prefix_worker(self) -> None:
+        class FakeWorker:
+            def __init__(self) -> None:
+                self.rebuilds = 0
+
+            def execute(self, path: Path) -> CaseExecution:
+                return CaseExecution(
+                    exit_code=3,
+                    timed_out=False,
+                    stdout=b"",
+                    stderr=b"psql:/repo/case.sql:4: ERROR:  42704\n",
+                    duration_ms=1,
+                )
+
+            def rebuild(self) -> None:
+                self.rebuilds += 1
+
+        worker = FakeWorker()
+        pair = run_case_pair(worker, Path("/repo"), self.manifest_case(1))
+        self.assertEqual(0, worker.rebuilds)
+        self.assertEqual("unexpected_psql_error", pair["comparison"]["classification"])
+
 
 if __name__ == "__main__":
     unittest.main()
