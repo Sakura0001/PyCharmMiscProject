@@ -541,14 +541,20 @@ class RuntimeBatchingTest(unittest.TestCase):
             "schema_version": 1,
             "case": cases[0].to_dict(),
             "run_01": {
+                "classification": "strict_pass",
                 "target_sqlstate": "00000",
                 "error_sqlstates": [],
                 "duration_ms": 2,
+                "exit_code": 0,
+                "timed_out": False,
             },
             "run_02": {
+                "classification": "strict_pass",
                 "target_sqlstate": "00000",
                 "error_sqlstates": [],
                 "duration_ms": 3,
+                "exit_code": 0,
+                "timed_out": False,
             },
             "comparison": {
                 "classification": "strict_pass",
@@ -561,14 +567,20 @@ class RuntimeBatchingTest(unittest.TestCase):
             "schema_version": 1,
             "case": cases[1].to_dict(),
             "run_01": {
+                "classification": "sqlstate_mismatch",
                 "target_sqlstate": "42P01",
                 "error_sqlstates": ["42P01"],
                 "duration_ms": 5,
+                "exit_code": 0,
+                "timed_out": False,
             },
             "run_02": {
+                "classification": "unexpected_psql_error",
                 "target_sqlstate": "42P01",
                 "error_sqlstates": ["42P01"],
                 "duration_ms": 7,
+                "exit_code": 2,
+                "timed_out": False,
             },
             "comparison": {
                 "classification": "sqlstate_mismatch",
@@ -604,6 +616,15 @@ class RuntimeBatchingTest(unittest.TestCase):
             self.assertTrue(summary["integrity"]["complete"])
             self.assertEqual(2, summary["integrity"]["paired_case_count"])
             self.assertEqual(4, summary["integrity"]["execution_count"])
+            self.assertEqual(
+                {"0": 3, "2": 1}, summary["execution_health"]["exit_codes"]
+            )
+            self.assertEqual(
+                1,
+                summary["execution_health"][
+                    "server_crash_or_disconnect_execution_count"
+                ],
+            )
             self.assertEqual(
                 {"strict_pass": 1, "sqlstate_mismatch": 1},
                 summary["classifications"],

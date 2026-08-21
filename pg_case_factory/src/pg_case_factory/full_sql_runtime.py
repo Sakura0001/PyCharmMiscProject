@@ -1090,6 +1090,14 @@ def report_runtime_results(output_root: Path) -> dict[str, Any]:
     transcript_mismatch_count = 0
     structured_mismatch_count = 0
     duration_ms = 0
+    run_classifications: Counter[str] = Counter()
+    exit_codes: Counter[str] = Counter()
+    worker_generations: Counter[str] = Counter()
+    timed_out_execution_count = 0
+    nonzero_exit_case_count = 0
+    timed_out_case_count = 0
+    disconnect_execution_count = 0
+    disconnect_examples: list[dict[str, Any]] = []
     result_paths = sorted((output / "results").glob("batch-*.jsonl"))
     for path in result_paths:
         for record in _load_batch_results(path):
@@ -1115,8 +1123,40 @@ def report_runtime_results(output_root: Path) -> dict[str, Any]:
             execution_count += int("run_01" in record) + int("run_02" in record)
             if not has_pair:
                 continue
+            worker_key = "worker-{worker_id}-generation-{generation}".format(
+                worker_id=record.get("worker_id"),
+                generation=record.get("worker_generation"),
+            )
+            worker_generations[worker_key] += 1
+            case_has_nonzero_exit = False
+            case_timed_out = False
             for run_name in ("run_01", "run_02"):
-                duration_ms += int(record[run_name].get("duration_ms", 0))
+                run = record[run_name]
+                duration_ms += int(run.get("duration_ms", 0))
+                run_classifications[str(run.get("classification", "<missing>"))] += 1
+                exit_code = int(run.get("exit_code", -1))
+                exit_codes[str(exit_code)] += 1
+                case_has_nonzero_exit = case_has_nonzero_exit or exit_code != 0
+                timed_out = bool(run.get("timed_out", False))
+                timed_out_execution_count += timed_out
+                case_timed_out = case_timed_out or timed_out
+                if exit_code == 2:
+                    disconnect_execution_count += 1
+                    if len(disconnect_examples) < 20:
+                        disconnect_examples.append(
+                            {
+                                "ordinal": ordinal,
+                                "case_id": str(case["case_id"]),
+                                "statement_key": str(case["statement_key"]),
+                                "run": run_name,
+                                "worker_id": record.get("worker_id"),
+                                "worker_generation": record.get(
+                                    "worker_generation"
+                                ),
+                            }
+                        )
+            nonzero_exit_case_count += case_has_nonzero_exit
+            timed_out_case_count += case_timed_out
             classification = str(comparison["classification"])
             statement = str(case["statement_key"])
             evidence = str(case["evidence_level"])
@@ -1249,6 +1289,18 @@ def report_runtime_results(output_root: Path) -> dict[str, Any]:
         "determinism": {
             "transcript_mismatch_count": transcript_mismatch_count,
             "structured_mismatch_count": structured_mismatch_count,
+        },
+        "execution_health": {
+            "run_classifications": dict(sorted(run_classifications.items())),
+            "exit_codes": dict(sorted(exit_codes.items())),
+            "nonzero_exit_case_count": nonzero_exit_case_count,
+            "timed_out_execution_count": timed_out_execution_count,
+            "timed_out_case_count": timed_out_case_count,
+            "server_crash_or_disconnect_execution_count": (
+                disconnect_execution_count
+            ),
+            "server_crash_or_disconnect_examples": disconnect_examples,
+            "worker_generations": dict(sorted(worker_generations.items())),
         },
         "total_duration_ms": duration_ms,
         "integrity": integrity,
