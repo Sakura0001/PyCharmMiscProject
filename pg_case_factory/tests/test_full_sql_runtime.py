@@ -278,6 +278,26 @@ class RuntimeEvaluationTest(unittest.TestCase):
         self.assertFalse(comparison.passed)
         self.assertEqual("two_run_mismatch", comparison.classification)
 
+    def test_compatibility_normalizes_recreated_user_object_oids(self) -> None:
+        case = self.manifest_case(
+            evidence_level=EVIDENCE_COMPATIBILITY,
+            expected_outcome="success",
+            expected_sqlstate="00000",
+        )
+        first = evaluate_case_execution(
+            case,
+            self.execution(stdout=b"16446|legacy_object|16443|t\n"),
+            run_ordinal=1,
+        )
+        second = evaluate_case_execution(
+            case,
+            self.execution(stdout=b"16450|legacy_object|16447|t\n"),
+            run_ordinal=2,
+        )
+        comparison = compare_case_runs(first, second)
+        self.assertTrue(comparison.passed)
+        self.assertEqual(first.normalized_stdout, second.normalized_stdout)
+
 
 class PostgresWorkerTest(unittest.TestCase):
     def test_worker_configs_are_isolated_and_bounded(self) -> None:
@@ -309,6 +329,34 @@ class PostgresWorkerTest(unittest.TestCase):
         self.assertIn("ON_ERROR_STOP=1", command)
         self.assertNotIn("127.0.0.1", command)
 
+    def test_socket_path_stays_below_postgres_unix_socket_limit(self) -> None:
+        long_root = Path("/Users/example") / ("very-long-runtime-segment-" * 8)
+        worker = PostgresWorker(
+            WorkerConfig(
+                worker_id=4,
+                bin_dir=Path("/tmp/pg18/bin"),
+                worker_root=long_root,
+                port=55723,
+            )
+        )
+        socket_file = worker.socket_dir / ".s.PGSQL.55723"
+        self.assertLessEqual(len(str(socket_file)), 103)
+
+    def test_server_environment_routes_dblink_back_to_same_worker(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            worker = PostgresWorker(
+                WorkerConfig(
+                    worker_id=2,
+                    bin_dir=Path("/tmp/pg18/bin"),
+                    worker_root=Path(raw) / "worker-02",
+                    port=55721,
+                )
+            )
+            environment = worker.server_environment()
+        self.assertEqual(str(worker.socket_dir), environment["PGHOST"])
+        self.assertEqual("55721", environment["PGPORT"])
+        self.assertEqual("pgcf_superuser", environment["PGUSER"])
+
     def test_execute_converts_subprocess_timeout_to_bounded_result(self) -> None:
         with tempfile.TemporaryDirectory() as raw:
             config = WorkerConfig(
@@ -327,6 +375,27 @@ class PostgresWorkerTest(unittest.TestCase):
         self.assertEqual(124, execution.exit_code)
         self.assertEqual(b"partial", execution.stdout)
         self.assertEqual(b"late", execution.stderr)
+
+    def test_rebuild_archives_log_and_removes_old_cluster_generation(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            worker = PostgresWorker(
+                WorkerConfig(
+                    worker_id=1,
+                    bin_dir=Path("/tmp/pg18/bin"),
+                    worker_root=Path(raw) / "worker-01",
+                    port=55720,
+                )
+            )
+            old_root = worker.generation_root
+            old_root.mkdir(parents=True)
+            worker.log_path.write_text("diagnostic")
+            with patch.object(worker, "start") as start:
+                worker.rebuild()
+            archived = worker.config.worker_root / "rebuild-logs/generation-0001.log"
+            self.assertFalse(old_root.exists())
+            self.assertEqual("diagnostic", archived.read_text())
+            self.assertEqual(2, worker.generation)
+            start.assert_called_once_with()
 
 
 class RuntimeBatchingTest(unittest.TestCase):

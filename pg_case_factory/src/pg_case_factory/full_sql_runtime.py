@@ -11,6 +11,7 @@ import json
 import os
 from pathlib import Path
 import re
+import shutil
 import subprocess
 import time
 from typing import Any, Mapping, Sequence
@@ -195,7 +196,9 @@ class PostgresWorker:
 
     @property
     def socket_dir(self) -> Path:
-        return self.generation_root / "socket"
+        return Path("/tmp/pgcf-fsv1-sockets") / (
+            f"w{self.config.worker_id:02d}-p{self.config.port}-g{self.generation:04d}"
+        )
 
     @property
     def log_path(self) -> Path:
@@ -210,6 +213,13 @@ class PostgresWorker:
         existing = environment.get("PGOPTIONS", "").strip()
         setting = "-c client_min_messages=warning"
         environment["PGOPTIONS"] = f"{existing} {setting}".strip()
+        return environment
+
+    def server_environment(self) -> dict[str, str]:
+        environment = dict(os.environ)
+        environment["PGHOST"] = str(self.socket_dir)
+        environment["PGPORT"] = str(self.config.port)
+        environment["PGUSER"] = self.config.role
         return environment
 
     def psql_command(self, sql_path: Path | None = None) -> list[str]:
@@ -237,13 +247,19 @@ class PostgresWorker:
         return command
 
     @staticmethod
-    def _checked(command: list[str], *, timeout: int = 60) -> subprocess.CompletedProcess[bytes]:
+    def _checked(
+        command: list[str],
+        *,
+        timeout: int = 60,
+        environment: Mapping[str, str] | None = None,
+    ) -> subprocess.CompletedProcess[bytes]:
         result = subprocess.run(
             command,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             timeout=timeout,
             check=False,
+            env=environment,
         )
         if result.returncode != 0:
             raise FullSqlRuntimeError(
@@ -273,6 +289,7 @@ class PostgresWorker:
                     self.config.role,
                 ],
                 timeout=120,
+                environment=self.server_environment(),
             )
         status = subprocess.run(
             [
@@ -311,6 +328,7 @@ class PostgresWorker:
                     "start",
                 ],
                 timeout=120,
+                environment=self.server_environment(),
             )
         probe_database = "postgres"
         exists = self._checked(
@@ -391,7 +409,22 @@ class PostgresWorker:
         self.started = False
 
     def rebuild(self) -> None:
+        previous_root = self.generation_root
+        previous_socket = self.socket_dir
+        previous_log = self.log_path
         self.stop()
+        if previous_log.is_file():
+            archive = (
+                self.config.worker_root
+                / "rebuild-logs"
+                / f"generation-{self.generation:04d}.log"
+            )
+            archive.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(previous_log, archive)
+        if previous_root.is_dir():
+            shutil.rmtree(previous_root)
+        if previous_socket.is_dir():
+            shutil.rmtree(previous_socket)
         self.generation += 1
         self.start()
 
@@ -425,12 +458,26 @@ class PostgresWorker:
         )
 
 
-def _normalize_transcript(payload: bytes) -> bytes:
+def _normalize_transcript(
+    payload: bytes,
+    *,
+    normalize_dynamic_oids: bool = False,
+) -> bytes:
     normalized = payload.replace(b"\r\n", b"\n")
     normalized = re.sub(rb"(?m)^psql \([^\n]+\)\n", b"", normalized)
     normalized = re.sub(
         rb"(?m)psql:[^:\n]+:\d+:", b"psql:<SQL_PATH>:<LINE>:", normalized
     )
+    if normalize_dynamic_oids:
+        def replace_numeric_field(match: re.Match[bytes]) -> bytes:
+            prefix, value = match.groups()
+            return prefix + (b"<OID>" if int(value) >= 16384 else value)
+
+        normalized = re.sub(
+            rb"(?m)(^|\|)([0-9]{4,})(?=\||$)",
+            replace_numeric_field,
+            normalized,
+        )
     return normalized
 
 
@@ -455,8 +502,13 @@ def evaluate_case_execution(
 
     if run_ordinal not in {1, 2}:
         raise FullSqlRuntimeError("run ordinal must be 1 or 2")
-    stdout = _normalize_transcript(execution.stdout)
-    stderr = _normalize_transcript(execution.stderr)
+    normalize_dynamic_oids = case.evidence_level != EVIDENCE_STRICT
+    stdout = _normalize_transcript(
+        execution.stdout, normalize_dynamic_oids=normalize_dynamic_oids
+    )
+    stderr = _normalize_transcript(
+        execution.stderr, normalize_dynamic_oids=normalize_dynamic_oids
+    )
     compatibility = case.evidence_level == EVIDENCE_COMPATIBILITY
     target_sqlstate = _target_sqlstate(stdout, compatibility=compatibility)
     false_count = sum(line.strip() == b"f" for line in stdout.splitlines())
