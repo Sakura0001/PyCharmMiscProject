@@ -15,7 +15,12 @@ from pg_case_factory.full_sql_runtime import (
     RuntimeManifestCase,
     PostgresWorker,
     WorkerConfig,
+    calibration_cases,
     build_worker_configs,
+    load_runtime_manifest,
+    partition_cases,
+    run_case_pair,
+    write_runtime_manifest,
     compare_case_runs,
     compile_runtime_manifest,
     evaluate_case_execution,
@@ -322,6 +327,79 @@ class PostgresWorkerTest(unittest.TestCase):
         self.assertEqual(124, execution.exit_code)
         self.assertEqual(b"partial", execution.stdout)
         self.assertEqual(b"late", execution.stderr)
+
+
+class RuntimeBatchingTest(unittest.TestCase):
+    def manifest_case(
+        self,
+        ordinal: int,
+        *,
+        statement: str = "select",
+        outcome: str = "success",
+        external: bool = False,
+    ) -> RuntimeManifestCase:
+        return RuntimeManifestCase(
+            ordinal=ordinal,
+            statement_key=statement,
+            case_id=f"CASE{ordinal:05d}",
+            sql_path=f"sql/CASE{ordinal:05d}.sql",
+            sql_sha256=f"{ordinal:064x}",
+            package_path="sql",
+            evidence_level=EVIDENCE_STRICT,
+            expected_outcome=outcome,
+            expected_sqlstate="00000" if outcome == "success" else "42704",
+            object_prefix=f"case_{ordinal:05d}_",
+            external=external,
+        )
+
+    def test_manifest_jsonl_round_trip_and_batch_partition(self) -> None:
+        cases = tuple(self.manifest_case(index) for index in range(1, 6))
+        with tempfile.TemporaryDirectory() as raw:
+            path = Path(raw) / "manifest.jsonl"
+            write_runtime_manifest(path, cases)
+            loaded = load_runtime_manifest(path)
+        self.assertEqual(cases, loaded)
+        self.assertEqual([2, 2, 1], [len(batch) for batch in partition_cases(cases, 2)])
+        self.assertEqual([[1, 2], [3, 4], [5]], [[c.ordinal for c in b] for b in partition_cases(cases, 2)])
+
+    def test_calibration_selects_success_failure_and_all_external(self) -> None:
+        cases = (
+            self.manifest_case(1, statement="select", outcome="success"),
+            self.manifest_case(2, statement="select", outcome="expected_failure"),
+            self.manifest_case(3, statement="select", outcome="success", external=True),
+            self.manifest_case(4, statement="insert", outcome="success"),
+            self.manifest_case(5, statement="insert", outcome="success", external=True),
+        )
+        selected = calibration_cases(cases)
+        self.assertEqual({1, 2, 3, 4, 5}, {case.ordinal for case in selected})
+
+    def test_run_case_pair_executes_twice_and_preserves_failure_transcript(self) -> None:
+        class FakeWorker:
+            def __init__(self) -> None:
+                self.calls = 0
+                self.rebuilds = 0
+
+            def execute(self, path: Path) -> CaseExecution:
+                self.calls += 1
+                return CaseExecution(
+                    exit_code=2,
+                    timed_out=False,
+                    stdout=b"PGCF_TARGET_SQLSTATE=42P01\nf\n",
+                    stderr=b"psql:/repo/case.sql:4: ERROR:  42P01\n",
+                    duration_ms=1,
+                )
+
+            def rebuild(self) -> None:
+                self.rebuilds += 1
+
+        worker = FakeWorker()
+        case = self.manifest_case(1)
+        pair = run_case_pair(worker, Path("/repo"), case)
+        self.assertEqual(2, worker.calls)
+        self.assertGreaterEqual(worker.rebuilds, 1)
+        self.assertFalse(pair["comparison"]["passed"])
+        self.assertIn("stdout", pair["run_01"])
+        self.assertIn("stderr", pair["run_02"])
 
 
 if __name__ == "__main__":

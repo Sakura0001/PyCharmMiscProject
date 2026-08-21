@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
+import argparse
+from collections import Counter
+from concurrent.futures import ThreadPoolExecutor
 import hashlib
 import json
 import os
@@ -10,7 +13,7 @@ from pathlib import Path
 import re
 import subprocess
 import time
-from typing import Any, Mapping
+from typing import Any, Mapping, Sequence
 
 
 EVIDENCE_STRICT = "strict-contract"
@@ -30,7 +33,7 @@ _TARGET_SQLSTATE = re.compile(
 _COMPATIBILITY_TARGET_SQLSTATE = re.compile(
     rb"(?mi)^target_sqlstate(?:=|\s+|:\s*)([0-9A-Z]{5})\s*$"
 )
-_PSQL_ERROR = re.compile(rb"(?m)^ERROR:\s+(?:[A-Z]+:\s+)?([0-9A-Z]{5})\b")
+_PSQL_ERROR = re.compile(rb"\bERROR:\s+(?:[A-Z]+:\s+)?([0-9A-Z]{5})\b")
 
 
 class FullSqlRuntimeError(RuntimeError):
@@ -740,6 +743,450 @@ def compile_runtime_manifest(
     )
 
 
+def _atomic_write_text(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(path.name + ".tmp")
+    temporary.write_text(text, encoding="utf-8")
+    temporary.replace(path)
+
+
+def write_runtime_manifest(
+    path: Path,
+    cases: Sequence[RuntimeManifestCase],
+) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    temporary = target.with_name(target.name + ".tmp")
+    with temporary.open("w", encoding="utf-8") as handle:
+        for case in cases:
+            handle.write(
+                json.dumps(case.to_dict(), ensure_ascii=False, sort_keys=True)
+                + "\n"
+            )
+    temporary.replace(target)
+
+
+def load_runtime_manifest(path: Path) -> tuple[RuntimeManifestCase, ...]:
+    cases: list[RuntimeManifestCase] = []
+    with Path(path).open("r", encoding="utf-8") as handle:
+        for line_number, raw in enumerate(handle, start=1):
+            line = raw.strip()
+            if not line:
+                continue
+            try:
+                cases.append(RuntimeManifestCase(**json.loads(line)))
+            except (TypeError, ValueError, json.JSONDecodeError) as exc:
+                raise FullSqlRuntimeError(
+                    f"invalid manifest line {line_number}: {exc}"
+                ) from exc
+    expected = list(range(1, len(cases) + 1))
+    observed = [case.ordinal for case in cases]
+    if observed != expected:
+        raise FullSqlRuntimeError("manifest ordinals must be continuous from 1")
+    return tuple(cases)
+
+
+def partition_cases(
+    cases: Sequence[RuntimeManifestCase],
+    batch_size: int,
+) -> tuple[tuple[RuntimeManifestCase, ...], ...]:
+    if batch_size < 1:
+        raise ValueError("batch_size must be positive")
+    return tuple(
+        tuple(cases[start : start + batch_size])
+        for start in range(0, len(cases), batch_size)
+    )
+
+
+def calibration_cases(
+    cases: Sequence[RuntimeManifestCase],
+) -> tuple[RuntimeManifestCase, ...]:
+    """Select both outcome poles per statement plus every external case."""
+
+    selected: dict[int, RuntimeManifestCase] = {
+        case.ordinal: case for case in cases if case.external
+    }
+    seen: set[tuple[str, str | None]] = set()
+    seen_levels: set[str] = set()
+    for case in cases:
+        outcome_key = (case.statement_key, case.expected_outcome)
+        if outcome_key not in seen:
+            selected[case.ordinal] = case
+            seen.add(outcome_key)
+        if case.evidence_level not in seen_levels:
+            selected[case.ordinal] = case
+            seen_levels.add(case.evidence_level)
+    return tuple(selected[index] for index in sorted(selected))
+
+
+def run_case_pair(
+    worker: Any,
+    repository_root: Path,
+    case: RuntimeManifestCase,
+) -> dict[str, Any]:
+    sql_path = Path(repository_root) / case.sql_path
+    execution_01 = worker.execute(sql_path)
+    run_01 = evaluate_case_execution(case, execution_01, run_ordinal=1)
+    if execution_01.timed_out or execution_01.exit_code != 0:
+        worker.rebuild()
+    execution_02 = worker.execute(sql_path)
+    run_02 = evaluate_case_execution(case, execution_02, run_ordinal=2)
+    comparison = compare_case_runs(run_01, run_02)
+    if execution_02.timed_out or execution_02.exit_code != 0:
+        worker.rebuild()
+    include_transcript = not comparison.passed
+    return {
+        "schema_version": 1,
+        "case": case.to_dict(),
+        "run_01": run_01.to_dict(include_transcript=include_transcript),
+        "run_02": run_02.to_dict(include_transcript=include_transcript),
+        "comparison": comparison.to_dict(),
+        "worker_id": getattr(getattr(worker, "config", None), "worker_id", None),
+        "worker_generation": getattr(worker, "generation", None),
+    }
+
+
+def _verify_case_bytes(repository_root: Path, case: RuntimeManifestCase) -> None:
+    path = repository_root / case.sql_path
+    try:
+        digest = hashlib.sha256(path.read_bytes()).hexdigest()
+    except FileNotFoundError as exc:
+        raise FullSqlRuntimeError(f"manifest SQL is missing: {path}") from exc
+    if digest != case.sql_sha256:
+        raise FullSqlRuntimeError(f"manifest SQL SHA drift: {case.sql_path}")
+
+
+def run_runtime_batch(
+    workers: Sequence[PostgresWorker],
+    repository_root: Path,
+    cases: Sequence[RuntimeManifestCase],
+) -> tuple[dict[str, Any], ...]:
+    if not workers:
+        raise ValueError("at least one worker is required")
+    root = Path(repository_root).resolve(strict=True)
+    for case in cases:
+        _verify_case_bytes(root, case)
+    assignments = [list() for _ in workers]
+    for index, case in enumerate(cases):
+        assignments[index % len(workers)].append(case)
+
+    def execute_slice(index: int) -> list[dict[str, Any]]:
+        worker = workers[index]
+        return [run_case_pair(worker, root, case) for case in assignments[index]]
+
+    results: list[dict[str, Any]] = []
+    with ThreadPoolExecutor(max_workers=len(workers)) as pool:
+        for worker_results in pool.map(execute_slice, range(len(workers))):
+            results.extend(worker_results)
+    results.sort(key=lambda item: int(item["case"]["ordinal"]))
+    return tuple(results)
+
+
+def _batch_result_path(output_root: Path, batch_id: int) -> Path:
+    return output_root / "results" / f"batch-{batch_id:05d}.jsonl"
+
+
+def _write_batch_results(path: Path, results: Sequence[Mapping[str, Any]]) -> None:
+    payload = "".join(
+        json.dumps(result, ensure_ascii=False, sort_keys=True) + "\n"
+        for result in results
+    )
+    _atomic_write_text(path, payload)
+
+
+def _load_batch_results(path: Path) -> tuple[dict[str, Any], ...]:
+    return tuple(
+        json.loads(line)
+        for line in path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    )
+
+
+def _batch_is_complete(
+    path: Path,
+    cases: Sequence[RuntimeManifestCase],
+) -> bool:
+    if not path.is_file():
+        return False
+    try:
+        records = _load_batch_results(path)
+    except (OSError, json.JSONDecodeError):
+        return False
+    expected = [(case.ordinal, case.sql_sha256) for case in cases]
+    observed = [
+        (int(record["case"]["ordinal"]), str(record["case"]["sql_sha256"]))
+        for record in records
+    ]
+    return observed == expected and all(
+        "run_01" in record and "run_02" in record and "comparison" in record
+        for record in records
+    )
+
+
+def _write_checkpoint(
+    output_root: Path,
+    *,
+    mode: str,
+    total_cases: int,
+    completed_cases: int,
+    completed_batches: int,
+    batch_count: int,
+) -> None:
+    payload = {
+        "schema_version": 1,
+        "mode": mode,
+        "server_version_num": 180004,
+        "total_cases": total_cases,
+        "completed_cases": completed_cases,
+        "completed_executions": completed_cases * 2,
+        "completed_batches": completed_batches,
+        "batch_count": batch_count,
+    }
+    _atomic_write_text(
+        output_root / "checkpoint.json",
+        json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+    )
+
+
+def run_runtime_batches(
+    *,
+    workers: Sequence[PostgresWorker],
+    repository_root: Path,
+    output_root: Path,
+    cases: Sequence[RuntimeManifestCase],
+    batch_size: int,
+    mode: str,
+    resume: bool,
+) -> dict[str, Any]:
+    output = Path(output_root)
+    output.mkdir(parents=True, exist_ok=True)
+    batches = partition_cases(cases, batch_size)
+    completed_cases = 0
+    completed_batches = 0
+    classifications: Counter[str] = Counter()
+    for batch_id, batch in enumerate(batches, start=1):
+        path = _batch_result_path(output, batch_id)
+        if resume and _batch_is_complete(path, batch):
+            results = _load_batch_results(path)
+        else:
+            results = run_runtime_batch(workers, repository_root, batch)
+            _write_batch_results(path, results)
+        completed_batches += 1
+        completed_cases += len(batch)
+        classifications.update(
+            str(result["comparison"]["classification"]) for result in results
+        )
+        _write_checkpoint(
+            output,
+            mode=mode,
+            total_cases=len(cases),
+            completed_cases=completed_cases,
+            completed_batches=completed_batches,
+            batch_count=len(batches),
+        )
+        print(
+            json.dumps(
+                {
+                    "event": "batch_complete",
+                    "mode": mode,
+                    "batch_id": batch_id,
+                    "batch_count": len(batches),
+                    "completed_cases": completed_cases,
+                    "total_cases": len(cases),
+                    "classifications": dict(sorted(classifications.items())),
+                },
+                ensure_ascii=False,
+            ),
+            flush=True,
+        )
+    summary = {
+        "schema_version": 1,
+        "mode": mode,
+        "server_version_num": 180004,
+        "case_count": len(cases),
+        "execution_count": len(cases) * 2,
+        "batch_count": len(batches),
+        "classifications": dict(sorted(classifications.items())),
+    }
+    return summary
+
+
+def report_runtime_results(output_root: Path) -> dict[str, Any]:
+    output = Path(output_root)
+    classifications: Counter[str] = Counter()
+    levels: Counter[str] = Counter()
+    statements: dict[str, Counter[str]] = {}
+    case_count = 0
+    passed_count = 0
+    for path in sorted((output / "results").glob("batch-*.jsonl")):
+        for record in _load_batch_results(path):
+            case_count += 1
+            comparison = record["comparison"]
+            case = record["case"]
+            classification = str(comparison["classification"])
+            statement = str(case["statement_key"])
+            classifications[classification] += 1
+            levels[str(case["evidence_level"])] += 1
+            statements.setdefault(statement, Counter())[classification] += 1
+            passed_count += bool(comparison["passed"])
+    payload = {
+        "schema_version": 1,
+        "server_version_num": 180004,
+        "case_count": case_count,
+        "execution_count": case_count * 2,
+        "passed_count": passed_count,
+        "not_passed_count": case_count - passed_count,
+        "classifications": dict(sorted(classifications.items())),
+        "evidence_levels": dict(sorted(levels.items())),
+        "statements": {
+            key: dict(sorted(value.items()))
+            for key, value in sorted(statements.items())
+        },
+    }
+    reports = output / "reports"
+    reports.mkdir(parents=True, exist_ok=True)
+    _atomic_write_text(
+        reports / "final-summary.json",
+        json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+    )
+    return payload
+
+
+def _manifest_summary(cases: Sequence[RuntimeManifestCase]) -> dict[str, Any]:
+    return {
+        "schema_version": 1,
+        "case_count": len(cases),
+        "execution_count": len(cases) * 2,
+        "statement_count": len({case.statement_key for case in cases}),
+        "evidence_levels": dict(
+            sorted(Counter(case.evidence_level for case in cases).items())
+        ),
+        "expected_outcomes": {
+            str(key): value
+            for key, value in sorted(
+                Counter(case.expected_outcome for case in cases).items(),
+                key=lambda item: str(item[0]),
+            )
+        },
+        "external_case_count": sum(case.external for case in cases),
+    }
+
+
+def _start_workers(
+    *,
+    output_root: Path,
+    bin_dir: Path,
+    worker_count: int,
+    base_port: int,
+    timeout_seconds: int,
+) -> tuple[PostgresWorker, ...]:
+    workers = tuple(
+        PostgresWorker(config, timeout_seconds=timeout_seconds)
+        for config in build_worker_configs(
+            output_root, bin_dir, workers=worker_count, base_port=base_port
+        )
+    )
+    started: list[PostgresWorker] = []
+    try:
+        for worker in workers:
+            worker.start()
+            started.append(worker)
+    except BaseException:
+        for worker in reversed(started):
+            worker.stop()
+        raise
+    return workers
+
+
+def build_argument_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="python -m pg_case_factory.full_sql_runtime"
+    )
+    parser.add_argument("--repository-root", default=".")
+    parser.add_argument(
+        "--output", default="artifacts/runtime/pg18-full-sql-validation-v1"
+    )
+    commands = parser.add_subparsers(dest="command", required=True)
+    commands.add_parser("compile")
+    for name in ("calibrate", "run"):
+        command = commands.add_parser(name)
+        command.add_argument("--workers", type=int, default=4)
+        command.add_argument("--batch-size", type=int, default=500)
+        command.add_argument("--timeout-seconds", type=int, default=30)
+        command.add_argument("--base-port", type=int, default=55720)
+        command.add_argument(
+            "--bin-dir", default="/tmp/pgcf-postgresql-18.4-install/bin"
+        )
+        command.add_argument("--resume", action="store_true")
+    commands.add_parser("report")
+    return parser
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    arguments = build_argument_parser().parse_args(argv)
+    repository_root = Path(arguments.repository_root).resolve(strict=True)
+    output = Path(arguments.output)
+    if not output.is_absolute():
+        output = repository_root / output
+    manifest_path = output / "manifest.jsonl"
+    if arguments.command == "compile":
+        cases = compile_runtime_manifest(repository_root)
+        write_runtime_manifest(manifest_path, cases)
+        summary = _manifest_summary(cases)
+        summary["manifest_sha256"] = hashlib.sha256(
+            manifest_path.read_bytes()
+        ).hexdigest()
+        _atomic_write_text(
+            output / "run.json",
+            json.dumps(summary, ensure_ascii=False, indent=2, sort_keys=True)
+            + "\n",
+        )
+        print(json.dumps(summary, ensure_ascii=False, sort_keys=True), flush=True)
+        return 0
+    if arguments.command == "report":
+        payload = report_runtime_results(output)
+        print(json.dumps(payload, ensure_ascii=False, sort_keys=True), flush=True)
+        return 0
+    cases = load_runtime_manifest(manifest_path)
+    selected = calibration_cases(cases) if arguments.command == "calibrate" else cases
+    destination = output / "calibration" if arguments.command == "calibrate" else output
+    workers = _start_workers(
+        output_root=output,
+        bin_dir=Path(arguments.bin_dir),
+        worker_count=arguments.workers,
+        base_port=arguments.base_port,
+        timeout_seconds=arguments.timeout_seconds,
+    )
+    try:
+        summary = run_runtime_batches(
+            workers=workers,
+            repository_root=repository_root,
+            output_root=destination,
+            cases=selected,
+            batch_size=arguments.batch_size,
+            mode=arguments.command,
+            resume=arguments.resume,
+        )
+    finally:
+        for worker in reversed(workers):
+            worker.stop()
+    report_path = (
+        output / "reports" / "calibration.json"
+        if arguments.command == "calibrate"
+        else output / "reports" / "run-summary.json"
+    )
+    _atomic_write_text(
+        report_path,
+        json.dumps(summary, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+    )
+    print(json.dumps(summary, ensure_ascii=False, sort_keys=True), flush=True)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+
+
 __all__ = [
     "CaseExecution",
     "CaseRunResult",
@@ -751,8 +1198,18 @@ __all__ = [
     "PostgresWorker",
     "RuntimeManifestCase",
     "WorkerConfig",
+    "build_argument_parser",
     "build_worker_configs",
+    "calibration_cases",
     "compare_case_runs",
     "compile_runtime_manifest",
     "evaluate_case_execution",
+    "load_runtime_manifest",
+    "main",
+    "partition_cases",
+    "report_runtime_results",
+    "run_case_pair",
+    "run_runtime_batch",
+    "run_runtime_batches",
+    "write_runtime_manifest",
 ]
