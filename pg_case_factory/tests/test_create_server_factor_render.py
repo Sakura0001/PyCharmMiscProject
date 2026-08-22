@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 import unittest
 
 from pg_case_factory.create_server_factor_extension import (
@@ -115,6 +116,32 @@ class CreateServerFactorRenderTest(unittest.TestCase):
                 f"CREATE TABLE found in table-less case "
                 f"{case.case_id}",
             )
+
+    def test_cleanup_bookend_invariants(self) -> None:
+        """Fix-A guard: DROP OWNED BY is unreachable in pre-cleanup (the
+        granted_role fixture is created by setup, so on a fresh database the
+        role does not exist at pre-cleanup time and DROP OWNED BY would crash
+        under ON_ERROR_STOP=1 before the target statement).  In cleanup,
+        DROP OWNED BY must precede DROP ROLE IF EXISTS."""
+        self.assertGreater(len(self.all_cases), 0)
+        pre_drop_owned: list[str] = []
+        cleanup_order_bad: list[str] = []
+        for case in self.all_cases:
+            text = render_create_server_factor_case(case, ROOT)
+            if "cleanup-bookend: pre-cleanup-begin" not in text:
+                continue
+            pre = text.split("cleanup-bookend: pre-cleanup-begin", 1)[1]
+            pre = pre.split("cleanup-bookend: pre-cleanup-end", 1)[0]
+            if re.search(r"\bDROP\s+OWNED\s+BY\b", pre, re.IGNORECASE):
+                pre_drop_owned.append(case.case_id)
+            cln = text.split("cleanup-bookend: cleanup-begin", 1)[1]
+            cln = cln.split("cleanup-bookend: cleanup-end", 1)[0]
+            m_own = re.search(r"\bDROP\s+OWNED\s+BY\b", cln, re.IGNORECASE)
+            m_role = re.search(r"\bDROP\s+ROLE\b", cln, re.IGNORECASE)
+            if m_own and m_role and m_own.start() > m_role.start():
+                cleanup_order_bad.append(case.case_id)
+        self.assertEqual([], pre_drop_owned, "DROP OWNED BY leaked into pre-cleanup")
+        self.assertEqual([], cleanup_order_bad, "DROP OWNED BY after DROP ROLE in cleanup")
 
     def test_no_or_replace(self) -> None:
         for case in self.all_cases:
