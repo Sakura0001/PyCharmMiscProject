@@ -25,6 +25,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 
+from .cleanup_bookend import DropSpec, build_cleanup, build_pre_cleanup
 from .create_access_method_factor_extension import (
     CreateAccessMethodFactorExtensionCase,
     _present_failure_pair,
@@ -365,53 +366,36 @@ def _resolve_case(
     if probe is not None:
         assert_lines.append(probe)
 
-    # --- cleanup construction -----------------------------------------
-    am_drops: list[str] = []
+    # --- cleanup construction (shared idempotent bookends) -----------
+    # Migrated to cleanup_bookend so every DROP carries IF EXISTS and
+    # DROP OWNED BY is unreachable in pre-cleanup: the granted_role
+    # fixture is created by setup, so on a fresh database the role does
+    # not exist yet at pre-cleanup time and DROP OWNED BY would crash
+    # (ON_ERROR_STOP=1) before the target statement reaches execution.
+    # Pre-cleanup drops roles via DROP ROLE IF EXISTS only; the post-target
+    # cleanup runs DROP OWNED BY then DROP ROLE IF EXISTS once setup has
+    # created the role.  The DROP TABLE IF EXISTS anchor is first in
+    # pre-cleanup and last in cleanup, satisfying the table-bookend gate.
+    specs: list[DropSpec] = []
     if not _is_builtin_am(a):
-        am_drops.append(
-            f"DROP ACCESS METHOD IF EXISTS {am};"
-        )
-
-    role_drops = [
-        statement
-        for role in roles
-        for statement in (
-            f"DROP OWNED BY {role} CASCADE;",
-            f"DROP ROLE IF EXISTS {role};",
-        )
-    ]
-
-    handler_drops = [
-        f"DROP FUNCTION IF EXISTS {handler}(internal);"
-    ]
-
-    table_drops = [
-        f"DROP TABLE IF EXISTS {name};" for name in tables
-    ]
-
-    # pre-cleanup: tables first (bookend), then AM, handler, roles
-    pre_cleanup: list[str] = []
-    pre_cleanup.extend(table_drops)
-    pre_cleanup.extend(am_drops)
-    pre_cleanup.extend(handler_drops)
-    pre_cleanup.extend(role_drops)
-    if not pre_cleanup:
-        pre_cleanup.append(
-            "SELECT 1 AS residual_check_no_objects;"
-        )
-
-    # cleanup: RESET ROLE, AM, handler, roles, tables last (bookend)
-    cleanup: list[str] = []
-    if effective:
-        cleanup.append("RESET ROLE;")
-    cleanup.extend(am_drops)
-    cleanup.extend(handler_drops)
-    cleanup.extend(role_drops)
-    cleanup.extend(table_drops)
-    if not cleanup:
-        cleanup.append(
-            "SELECT 1 AS residual_check_no_objects;"
-        )
+        specs.append(DropSpec("ACCESS METHOD", am))
+    specs.append(DropSpec("FUNCTION", handler, "(internal)"))
+    table_names = list(tables)
+    role_list = list(roles)
+    pre_bookend = build_pre_cleanup(
+        tables=table_names,
+        specs=tuple(specs),
+        roles=role_list,
+    )
+    cln_bookend = build_cleanup(
+        tables=table_names,
+        specs=tuple(specs),
+        roles=role_list,
+        drop_owned=bool(role_list),
+        reset_role=bool(effective),
+    )
+    pre_cleanup = list(pre_bookend.statements)
+    cleanup = list(cln_bookend.statements)
 
     on_error_off = case.outcome == "expected_failure"
     return _CasePlan(

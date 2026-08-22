@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 import unittest
 
 from pg_case_factory.create_access_method_factor_extension import (
@@ -103,23 +104,19 @@ class CreateAccessMethodFactorRenderTest(unittest.TestCase):
             )
 
     def test_bookend_when_table_creating(self) -> None:
-        import re
-
         for case in self.all_cases:
             sql = render_create_access_method_factor_case(case, ROOT)
             has_create_table = bool(
                 re.search(r"(?im)^\s*CREATE\s+TABLE\b", sql)
             )
             if has_create_table:
-                stmts = [
-                    s.strip()
-                    for s in sql.split(";")
-                    if s.strip()
-                    and not all(
-                        l.strip().startswith(("--", "\\"))
-                        for l in s.split("\n")
-                    )
-                ]
+                # Strip comments and psql meta-commands so the helper's
+                # bracket markers (cleanup-bookend: *-begin/*-end) do not
+                # pollute the first/last executable-statement extraction.
+                text = re.sub(r"--[^\n]*", "", sql)
+                text = re.sub(r"/\*.*?\*/", "", text, flags=re.DOTALL)
+                text = re.sub(r"\\[a-zA-Z]+[^\n]*", "", text)
+                stmts = [s.strip() for s in text.split(";") if s.strip()]
                 if stmts:
                     first = stmts[0].lstrip().split("\n")[-1].strip()
                     last = stmts[-1].lstrip().split("\n")[-1].strip()
@@ -137,6 +134,31 @@ class CreateAccessMethodFactorRenderTest(unittest.TestCase):
                         f"bookend last mismatch for {case.case_id}: "
                         f"{last[:60]}",
                     )
+
+    def test_cleanup_bookend_invariants(self) -> None:
+        """Fix-A guard: DROP OWNED BY is unreachable in pre-cleanup (the
+        granted_role fixture is created by setup, so on a fresh database the
+        role does not exist at pre-cleanup time and DROP OWNED BY would crash
+        under ON_ERROR_STOP=1 before the target statement).  In cleanup,
+        DROP OWNED BY must precede DROP ROLE IF EXISTS."""
+        pre_drop_owned: list[str] = []
+        cleanup_order_bad: list[str] = []
+        for case in self.all_cases:
+            text = render_create_access_method_factor_case(case, ROOT)
+            if "cleanup-bookend: pre-cleanup-begin" not in text:
+                continue
+            pre = text.split("cleanup-bookend: pre-cleanup-begin", 1)[1]
+            pre = pre.split("cleanup-bookend: pre-cleanup-end", 1)[0]
+            if re.search(r"\bDROP\s+OWNED\s+BY\b", pre, re.IGNORECASE):
+                pre_drop_owned.append(case.case_id)
+            cln = text.split("cleanup-bookend: cleanup-begin", 1)[1]
+            cln = cln.split("cleanup-bookend: cleanup-end", 1)[0]
+            m_own = re.search(r"\bDROP\s+OWNED\s+BY\b", cln, re.IGNORECASE)
+            m_role = re.search(r"\bDROP\s+ROLE\b", cln, re.IGNORECASE)
+            if m_own and m_role and m_own.start() > m_role.start():
+                cleanup_order_bad.append(case.case_id)
+        self.assertEqual([], pre_drop_owned, "DROP OWNED BY leaked into pre-cleanup")
+        self.assertEqual([], cleanup_order_bad, "DROP OWNED BY after DROP ROLE in cleanup")
 
     def test_witness_resolution_succeeds(self) -> None:
         case = self.loop.cases[0]
