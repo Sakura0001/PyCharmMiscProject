@@ -21,6 +21,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 
+from .cleanup_bookend import DropSpec, build_cleanup, build_pre_cleanup
 from .create_materialized_view_factor_extension import (
     CreateMaterializedViewFactorExtensionCase,
     _present_failure_pair,
@@ -398,43 +399,38 @@ def _resolve_case(
     if probe is not None:
         assert_lines.append(probe)
 
-    # --- cleanup construction -----------------------------------------
-    mv_drop = f"DROP MATERIALIZED VIEW IF EXISTS {name};"
-    view_drops: list[str] = []
+    # --- cleanup construction (shared idempotent bookends) -----------
+    # Migrated to cleanup_bookend so every DROP carries IF EXISTS and
+    # DROP OWNED BY is unreachable in pre-cleanup: the {p}actor role is
+    # created by setup, so on a fresh database the role does not exist yet
+    # at pre-cleanup time and DROP OWNED BY would crash (ON_ERROR_STOP=1)
+    # before the target statement reaches execution.  Pre-cleanup drops
+    # roles via DROP ROLE IF EXISTS only; the post-target cleanup runs
+    # DROP OWNED BY then DROP ROLE IF EXISTS once setup has created the
+    # role.  This package never emits CREATE TABLE (fixture sources and
+    # conflicting relations are CREATE VIEW), so no DROP TABLE anchor is
+    # emitted (table-bookend gate is table-less-exempt here).
+    specs: list[DropSpec] = [DropSpec("MATERIALIZED VIEW", name)]
     if _needs_conflict_view(a):
-        view_drops.append(f"DROP VIEW IF EXISTS {_base_name(p)};")
+        specs.append(DropSpec("VIEW", _base_name(p)))
     if _needs_source_view(a):
-        view_drops.append(f"DROP VIEW IF EXISTS {p}src;")
-
-    func_drops: list[str] = []
+        specs.append(DropSpec("VIEW", f"{p}src"))
     if _needs_sec_function(a):
-        func_drops.append(f"DROP FUNCTION IF EXISTS {p}secfn();")
+        specs.append(DropSpec("FUNCTION", f"{p}secfn", args="()"))
 
-    role_drops: list[str] = []
-    if _needs_role(a):
-        role_drops.extend(
-            [
-                f"DROP OWNED BY {p}actor CASCADE;",
-                f"DROP ROLE IF EXISTS {p}actor;",
-            ]
-        )
-
-    pre_cleanup: list[str] = [mv_drop]
-    pre_cleanup.extend(view_drops)
-    pre_cleanup.extend(func_drops)
-    pre_cleanup.extend(role_drops)
-    if not pre_cleanup:
-        pre_cleanup.append("SELECT 1 AS residual_check_no_objects;")
-
-    cleanup: list[str] = []
-    if _needs_role(a):
-        cleanup.append("RESET ROLE;")
-    cleanup.append(mv_drop)
-    cleanup.extend(view_drops)
-    cleanup.extend(func_drops)
-    cleanup.extend(role_drops)
-    if not cleanup:
-        cleanup.append("SELECT 1 AS residual_check_no_objects;")
+    role_list = [f"{p}actor"] if _needs_role(a) else []
+    pre_bookend = build_pre_cleanup(
+        specs=tuple(specs),
+        roles=role_list,
+    )
+    cln_bookend = build_cleanup(
+        specs=tuple(specs),
+        roles=role_list,
+        drop_owned=bool(role_list),
+        reset_role=bool(role_list),
+    )
+    pre_cleanup = list(pre_bookend.statements)
+    cleanup = list(cln_bookend.statements)
 
     on_error_off = case.outcome == "expected_failure"
     return _CasePlan(
