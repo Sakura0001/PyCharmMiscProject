@@ -20,6 +20,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 
+from .cleanup_bookend import DropSpec, build_cleanup, build_pre_cleanup
 from .drop_statistics_factor_extension import (
     DropStatisticsFactorExtensionCase,
 )
@@ -324,40 +325,28 @@ def _resolve_case(case: DropStatisticsFactorCase) -> _CasePlan:
     )
     assert_lines.append(_probe_select(case, a, p))
 
-    # --- cleanup construction ---
-    stat_drop = [f"DROP STATISTICS IF EXISTS {stat_ref};"]
+    # --- cleanup construction (idempotent bookends via cleanup_bookend) ---
+    stat_specs = [DropSpec("STATISTICS", stat_ref)]
     if multi == "multi_target_all_exist":
-        stat_drop.append(f"DROP STATISTICS IF EXISTS {p}stat2;")
+        stat_specs.append(DropSpec("STATISTICS", f"{p}stat2"))
     elif multi == "multi_target_some_not_exist":
-        stat_drop.append(f"DROP STATISTICS IF EXISTS {p}nostat2;")
-    table_drop = [f"DROP TABLE IF EXISTS {p}t CASCADE;"]
+        stat_specs.append(DropSpec("STATISTICS", f"{p}nostat2"))
     roles = _role_names(case, p, effective)
-    role_drops = [
-        statement
-        for role in roles
-        for statement in (
-            f"DROP OWNED BY {role};",
-            f"DROP ROLE IF EXISTS {role};",
-        )
-    ]
 
-    # Pre-cleanup: DROP TABLE first (bookend gate), then stat/role.
-    pre_cleanup: list[str] = []
-    pre_cleanup.extend(table_drop)
-    pre_cleanup.extend(stat_drop)
-    pre_cleanup.extend(role_drops)
-    if not pre_cleanup:
-        pre_cleanup.append("SELECT 1 AS residual_check_no_objects;")
-
-    # Cleanup: RESET ROLE, then stat/role drops, then DROP TABLE last.
-    cleanup: list[str] = []
-    if effective:
-        cleanup.append("RESET ROLE;")
-    cleanup.extend(stat_drop)
-    cleanup.extend(role_drops)
-    cleanup.extend(table_drop)
-    if not cleanup:
-        cleanup.append("SELECT 1 AS residual_check_no_objects;")
+    pre_cleanup_bk = build_pre_cleanup(
+        tables=(f"{p}t",),
+        specs=tuple(stat_specs),
+        roles=tuple(roles),
+    )
+    cleanup_bk = build_cleanup(
+        tables=(f"{p}t",),
+        specs=tuple(stat_specs),
+        roles=tuple(roles),
+        drop_owned=bool(roles),
+        reset_role=effective,
+    )
+    pre_cleanup = list(pre_cleanup_bk.statements)
+    cleanup = list(cleanup_bk.statements)
 
     on_error_off = case.outcome == "expected_failure"
     return _CasePlan(
