@@ -17,6 +17,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 
+from .cleanup_bookend import DropSpec, build_cleanup, build_pre_cleanup
 from .drop_collation_factor_extension import (
     DropCollationFactorExtensionCase,
 )
@@ -359,62 +360,51 @@ def _resolve_case(case: DropCollationFactorCase) -> _CasePlan:
     )
     assert_lines.append(_probe_select(case, a, p))
 
-    # --- cleanup construction -------------------------------------------
+    # --- cleanup construction (shared idempotent bookends) ------------
+    # Migrated to cleanup_bookend so every DROP carries IF EXISTS and
+    # DROP OWNED BY is unreachable in pre-cleanup: the non-owner actor
+    # role is created by setup, so on a fresh database the role does not
+    # exist yet at pre-cleanup time and DROP OWNED BY would crash
+    # (ON_ERROR_STOP=1) before the target statement reaches execution.
+    # Pre-cleanup drops roles via DROP ROLE IF EXISTS only; the post-target
+    # cleanup runs DROP OWNED BY then DROP ROLE IF EXISTS once setup has
+    # created the role.  The DROP TABLE IF EXISTS anchor is first in
+    # pre-cleanup and last in cleanup, satisfying the table-bookend gate.
     drop_mode = a.get("cleanup_mode", "DROP_COLLATION_CASCADE")
     if case.factor_key == "cleanup_mode":
         drop_mode = case.factor_value
-    if drop_mode == "DROP_DEPENDENT_OBJECTS_FIRST":
-        collation_drop = f"DROP COLLATION IF EXISTS {coll_ref};"
-    else:
-        collation_drop = f"DROP COLLATION IF EXISTS {coll_ref} CASCADE;"
-    # The final safety-net cleanup always uses CASCADE so the collation is
-    # removed even when dependents persist (the cleanup_mode axis only
-    # models the pre-cleanup strategy; the section-5 safety net must
-    # guarantee a clean state for the post_clean probe).
-    cleanup_collation_drop = f"DROP COLLATION IF EXISTS {coll_ref} CASCADE;"
     roles = _role_names(case, p, effective)
-    schema_drop = (
-        [f"DROP SCHEMA IF EXISTS {p}schema CASCADE;"] if needs_schema else []
-    )
-    dep_drops = (
-        [f"DROP TABLE IF EXISTS {p}t CASCADE;"] if needs_dep else []
-    )
-    role_drops = [
-        statement
-        for role in roles
-        for statement in (
-            f"DROP OWNED BY {role};",
-            f"DROP ROLE IF EXISTS {role};",
-        )
+    role_list = list(roles)
+    # The collation is always dropped in both bookends (IF EXISTS makes it
+    # a harmless NOTICE when the collation never existed).  Pre-cleanup
+    # honours the cleanup_mode axis (RESTRICT when dependents are dropped
+    # first); the post-target safety net always uses CASCADE so the
+    # collation is removed even when dependents persist.
+    pre_cascade = drop_mode != "DROP_DEPENDENT_OBJECTS_FIRST"
+    pre_specs: list[DropSpec] = [
+        DropSpec("COLLATION", coll_ref, cascade=pre_cascade)
     ]
-
-    # Pre-cleanup: DROP TABLE first (table audit requires it as the first
-    # executable statement), then collation, schema, and role drops.
-    pre_cleanup: list[str] = []
-    pre_cleanup.extend(dep_drops)
-    pre_cleanup.append(collation_drop)
-    pre_cleanup.extend(schema_drop)
-    # DROP ROLE IF EXISTS is safe for non-existent roles (NOTICE, not
-    # error); DROP OWNED BY is NOT safe (42704 if role missing) so it
-    # stays only in the cleanup section where the role always exists.
-    pre_cleanup.extend(f"DROP ROLE IF EXISTS {role};" for role in roles)
-    if not pre_cleanup:
-        pre_cleanup.append("SELECT 1 AS residual_check_no_objects;")
-
-    # Cleanup: RESET ROLE, then collation/schema/role drops, then DROP
-    # TABLE last (the table audit requires the final executable statement
-    # to be DROP TABLE IF EXISTS for scripts that create tables).  The
-    # collation drop always uses CASCADE here so it succeeds even when
-    # the dependent table has not yet been dropped.
-    cleanup: list[str] = []
-    if effective:
-        cleanup.append("RESET ROLE;")
-    cleanup.append(cleanup_collation_drop)
-    cleanup.extend(schema_drop)
-    cleanup.extend(role_drops)
-    cleanup.extend(dep_drops)
-    if not cleanup:
-        cleanup.append("SELECT 1 AS residual_check_no_objects;")
+    cln_specs: list[DropSpec] = [
+        DropSpec("COLLATION", coll_ref, cascade=True)
+    ]
+    table_names = [f"{p}t"] if needs_dep else []
+    schemas = (f"{p}schema",) if needs_schema else ()
+    pre_bookend = build_pre_cleanup(
+        tables=table_names,
+        specs=tuple(pre_specs),
+        schemas=schemas,
+        roles=role_list,
+    )
+    cln_bookend = build_cleanup(
+        tables=table_names,
+        specs=tuple(cln_specs),
+        schemas=schemas,
+        roles=role_list,
+        drop_owned=bool(role_list),
+        reset_role=bool(effective),
+    )
+    pre_cleanup = list(pre_bookend.statements)
+    cleanup = list(cln_bookend.statements)
 
     on_error_off = case.outcome == "expected_failure"
     return _CasePlan(
