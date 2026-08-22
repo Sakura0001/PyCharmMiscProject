@@ -21,6 +21,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 
+from .cleanup_bookend import DropSpec, build_cleanup, build_pre_cleanup
 from .alter_text_search_configuration_factor_extension import (
     AlterTextSearchConfigurationFactorExtensionCase,
     _present_failure_pair,
@@ -442,7 +443,17 @@ def _resolve_case(
     if probe is not None:
         assert_lines.append(probe)
 
-    # --- cleanup construction -----------------------------------------
+    # --- cleanup construction (shared idempotent bookends) -----------
+    # Migrated to cleanup_bookend so every DROP carries IF EXISTS and
+    # DROP OWNED BY is unreachable in pre-cleanup: the role fixtures
+    # (actor / newowner) are created by setup, so on a fresh database
+    # the role does not exist yet at pre-cleanup time and DROP OWNED BY
+    # would crash (ON_ERROR_STOP=1) before the target statement reaches
+    # execution.  Pre-cleanup drops roles via DROP ROLE IF EXISTS only;
+    # the post-target cleanup runs DROP OWNED BY then DROP ROLE IF EXISTS
+    # once setup has created the role.  No case creates a TABLE, so the
+    # DROP TABLE IF EXISTS anchor is never emitted (build_pre_cleanup /
+    # build_cleanup still emit the bracket markers the bookend gate needs).
     configs_to_drop: list[str] = []
     if not missing:
         configs_to_drop.append(cfg)
@@ -475,47 +486,32 @@ def _resolve_case(
         if se == "schema_exists":
             schemas_to_drop.append(f"{p}schema")
 
-    role_drops = [
-        statement
-        for role in roles
-        for statement in (
-            f"DROP OWNED BY {role} CASCADE;",
-            f"DROP ROLE IF EXISTS {role};",
-        )
-    ]
-
-    config_drops = [
-        f"DROP TEXT SEARCH CONFIGURATION IF EXISTS {name};"
+    # Specs in reverse-dependency order: a TEXT SEARCH CONFIGURATION may
+    # reference dictionaries through its mappings, so it is dropped before
+    # the dictionaries it depended on.
+    specs: list[DropSpec] = [
+        DropSpec("TEXT SEARCH CONFIGURATION", name)
         for name in configs_to_drop
     ]
-    dict_drops = [
-        f"DROP TEXT SEARCH DICTIONARY IF EXISTS {name};"
+    specs.extend(
+        DropSpec("TEXT SEARCH DICTIONARY", name)
         for name in dicts_to_drop
-    ]
-    schema_drops = [
-        f"DROP SCHEMA IF EXISTS {name} CASCADE;"
-        for name in schemas_to_drop
-    ]
-
-    # pre-cleanup: configs, dicts, schemas, roles
-    pre_cleanup: list[str] = []
-    pre_cleanup.extend(config_drops)
-    pre_cleanup.extend(dict_drops)
-    pre_cleanup.extend(schema_drops)
-    pre_cleanup.extend(role_drops)
-    if not pre_cleanup:
-        pre_cleanup.append("SELECT 1 AS residual_check_no_objects;")
-
-    # cleanup: RESET ROLE, configs, dicts, schemas, roles
-    cleanup: list[str] = []
-    if effective:
-        cleanup.append("RESET ROLE;")
-    cleanup.extend(config_drops)
-    cleanup.extend(dict_drops)
-    cleanup.extend(schema_drops)
-    cleanup.extend(role_drops)
-    if not cleanup:
-        cleanup.append("SELECT 1 AS residual_check_no_objects;")
+    )
+    role_list = list(roles)
+    pre_bookend = build_pre_cleanup(
+        specs=tuple(specs),
+        schemas=tuple(schemas_to_drop),
+        roles=role_list,
+    )
+    cln_bookend = build_cleanup(
+        specs=tuple(specs),
+        schemas=tuple(schemas_to_drop),
+        roles=role_list,
+        drop_owned=bool(role_list),
+        reset_role=bool(effective),
+    )
+    pre_cleanup = list(pre_bookend.statements)
+    cleanup = list(cln_bookend.statements)
 
     on_error_off = case.outcome == "expected_failure"
     return _CasePlan(
