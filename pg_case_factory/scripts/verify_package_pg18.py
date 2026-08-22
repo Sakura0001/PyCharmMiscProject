@@ -183,10 +183,17 @@ def _print_per_case(run: Any, comparison: Any) -> None:
     print(header)
     print("-" * len(header))
     for case in rows:
+        # Coerce None -> "-": setup-aborted cases never reach the target, so
+        # target_sqlstate/exit_code/cleanup_exit_code are None. Numeric fields
+        # use an explicit None-check because 0 is a valid exit code (not falsy).
+        exp = case.expected_sqlstate or "-"
+        tgt = case.target_sqlstate or "-"
+        exit_code = case.exit_code if case.exit_code is not None else "-"
+        cln_exit = case.cleanup_exit_code if case.cleanup_exit_code is not None else "-"
         print(
-            f"{case.case_id:<26} {case.expected_sqlstate:<8} {case.target_sqlstate:<8} "
-            f"{case.exit_code:>4} {case.boolean_oracle_failure_count:>6} "
-            f"{str(case.pre_clean):>5} {str(case.post_clean):>5} {case.cleanup_exit_code:>8}"
+            f"{case.case_id:<26} {exp:<8} {tgt:<8} "
+            f"{str(exit_code):>4} {case.boolean_oracle_failure_count:>6} "
+            f"{str(case.pre_clean):>5} {str(case.post_clean):>5} {str(cln_exit):>8}"
         )
 
 
