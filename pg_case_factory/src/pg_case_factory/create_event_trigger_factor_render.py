@@ -24,6 +24,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 
+from .cleanup_bookend import DropSpec, build_cleanup, build_pre_cleanup
 from .create_event_trigger_factor_extension import (
     CreateEventTriggerFactorExtensionCase,
     _present_failure_pair,
@@ -350,40 +351,36 @@ def _resolve_case(
     if probe is not None:
         assert_lines.append(probe)
 
-    # --- cleanup construction -----------------------------------------
+    # --- cleanup construction (shared idempotent bookends) -----------
+    # Migrated to cleanup_bookend so every DROP carries IF EXISTS and
+    # DROP OWNED BY is unreachable in pre-cleanup: the non-superuser
+    # actor role is created by setup, so on a fresh database the role
+    # does not exist yet at pre-cleanup time and DROP OWNED BY would
+    # crash (ON_ERROR_STOP=1) before the target statement reaches
+    # execution.  Pre-cleanup drops roles via DROP ROLE IF EXISTS only;
+    # the post-target cleanup runs DROP OWNED BY then DROP ROLE IF
+    # EXISTS once setup has created the role.  CREATE EVENT TRIGGER
+    # never creates a TABLE, so no DROP TABLE anchor is emitted.
     name = _trigger_name(a, p)
     cm = a.get("cleanup_mode", "drop_event_trigger")
-    cascade = " CASCADE" if cm == "cascade_cleanup" else ""
-    trigger_drops = [f"DROP EVENT TRIGGER IF EXISTS {name}{cascade};"]
-    func_drops: list[str] = []
+    event_cascade = cm == "cascade_cleanup"
+    specs: list[DropSpec] = [
+        DropSpec("EVENT TRIGGER", name, cascade=event_cascade)
+    ]
     if _function_created(a):
-        func_drops.append(f"DROP FUNCTION IF EXISTS {fn};")
-    role_drops: list[str] = []
-    if _needs_role(a):
-        role_drops.extend(
-            [
-                f"DROP OWNED BY {p}actor CASCADE;",
-                f"DROP ROLE IF EXISTS {p}actor;",
-            ]
-        )
-
-    # pre-cleanup: trigger, function, role (all IF EXISTS)
-    pre_cleanup: list[str] = []
-    pre_cleanup.extend(trigger_drops)
-    pre_cleanup.extend(func_drops)
-    pre_cleanup.extend(role_drops)
-    if not pre_cleanup:
-        pre_cleanup.append("SELECT 1 AS residual_check_no_objects;")
-
-    # cleanup: RESET ROLE, trigger, function, role
-    cleanup: list[str] = []
-    if _needs_role(a):
-        cleanup.append("RESET ROLE;")
-    cleanup.extend(trigger_drops)
-    cleanup.extend(func_drops)
-    cleanup.extend(role_drops)
-    if not cleanup:
-        cleanup.append("SELECT 1 AS residual_check_no_objects;")
+        specs.append(DropSpec("FUNCTION", fn, cascade=False))
+    roles: tuple[str, ...] = (
+        (f"{p}actor",) if _needs_role(a) else ()
+    )
+    pre_bookend = build_pre_cleanup(specs=specs, roles=roles)
+    cln_bookend = build_cleanup(
+        specs=specs,
+        roles=roles,
+        drop_owned=bool(roles),
+        reset_role=bool(roles),
+    )
+    pre_cleanup = list(pre_bookend.statements)
+    cleanup = list(cln_bookend.statements)
 
     on_error_off = case.outcome == "expected_failure"
     return _CasePlan(
