@@ -24,6 +24,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 
+from .cleanup_bookend import DropSpec, build_cleanup, build_pre_cleanup
 from .drop_user_factor_extension import (
     DropUserFactorExtensionCase,
 )
@@ -355,36 +356,36 @@ def _resolve_case(case: DropUserFactorCase) -> _CasePlan:
     )
     assert_lines.append(_probe_select(case, a, p))
 
-    # --- cleanup construction -------------------------------------------
-    view_drop = (
-        [f"DROP VIEW IF EXISTS {p}ownv CASCADE;"] if needs_view else []
-    )
-    # Always include the target-role DROP (a harmless no-op when the role
-    # was intentionally absent) so cleanup is uniform across shapes.
-    role_drops: list[str] = [f"DROP ROLE IF EXISTS {role_ref};"]
+    # --- cleanup construction (shared idempotent bookends) -----------
+    # Migrated to cleanup_bookend so every DROP carries IF EXISTS and
+    # DROP OWNED BY is unreachable in pre-cleanup: the target role is
+    # created by setup, so on a fresh database the role does not exist
+    # yet at pre-cleanup time and DROP OWNED BY would crash
+    # (ON_ERROR_STOP=1) before the target statement reaches execution.
+    # Pre-cleanup drops roles via DROP ROLE IF EXISTS only; the post-target
+    # cleanup runs DROP OWNED BY then DROP ROLE IF EXISTS once setup has
+    # created the role.  The owned-VIEW fixture (2BP01 dependency) is a
+    # DropSpec so it drops before the roles, releasing ownership.
+    specs: list[DropSpec] = []
+    if needs_view:
+        specs.append(DropSpec("VIEW", f"{p}ownv"))
+    role_list: list[str] = [role_ref]
     if multi:
-        role_drops.append(f"DROP ROLE IF EXISTS {p}role2;")
-    actor_drops = (
-        [f"DROP ROLE IF EXISTS {p}actor;"] if effective else []
-    )
-
-    # Pre-cleanup: VIEW first (releases ownership), then roles.
-    pre_cleanup: list[str] = []
-    pre_cleanup.extend(view_drop)
-    pre_cleanup.extend(role_drops)
-    pre_cleanup.extend(actor_drops)
-    if not pre_cleanup:
-        pre_cleanup.append("SELECT 1 AS residual_check_no_objects;")
-
-    # Cleanup: RESET ROLE, then VIEW, then roles.
-    cleanup: list[str] = []
+        role_list.append(f"{p}role2")
     if effective:
-        cleanup.append("RESET ROLE;")
-    cleanup.extend(view_drop)
-    cleanup.extend(role_drops)
-    cleanup.extend(actor_drops)
-    if not cleanup:
-        cleanup.append("SELECT 1 AS residual_check_no_objects;")
+        role_list.append(f"{p}actor")
+    pre_bookend = build_pre_cleanup(
+        specs=tuple(specs),
+        roles=role_list,
+    )
+    cln_bookend = build_cleanup(
+        specs=tuple(specs),
+        roles=role_list,
+        drop_owned=bool(role_list),
+        reset_role=bool(effective),
+    )
+    pre_cleanup = list(pre_bookend.statements)
+    cleanup = list(cln_bookend.statements)
 
     on_error_off = case.outcome == "expected_failure"
     return _CasePlan(
