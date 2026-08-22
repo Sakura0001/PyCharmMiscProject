@@ -19,6 +19,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 
+from .cleanup_bookend import DropSpec, build_cleanup, build_pre_cleanup
 from .drop_procedure_factor_extension import (
     DropProcedureFactorExtensionCase,
 )
@@ -471,59 +472,41 @@ def _resolve_case(case: DropProcedureFactorCase) -> _CasePlan:
     )
     assert_lines.append(_probe_select(case, a, p))
 
-    # --- cleanup construction -------------------------------------------
-    proc_drop = f"DROP PROCEDURE IF EXISTS {name}(integer) CASCADE;"
-    proc2_drop = (
-        f"DROP PROCEDURE IF EXISTS {_proc_name2(p)}(integer) CASCADE;"
-    )
-    func_drop = f"DROP FUNCTION IF EXISTS {dep};"
-    target_func_drop = (
-        f"DROP FUNCTION IF EXISTS {name};" if fixture == "function" else ""
-    )
-    schema_drop = f"DROP SCHEMA IF EXISTS {p}schema CASCADE;"
+    # --- cleanup construction (shared idempotent bookends) -----------
+    # Migrated to cleanup_bookend so every DROP carries IF EXISTS and
+    # DROP OWNED BY is unreachable in pre-cleanup: the {p}actor role is
+    # created by setup, so on a fresh database the role does not exist
+    # yet at pre-cleanup time and DROP OWNED BY would crash
+    # (ON_ERROR_STOP=1) before the target statement reaches execution.
+    # Pre-cleanup drops roles via DROP ROLE IF EXISTS only; the
+    # post-target cleanup runs DROP OWNED BY then DROP ROLE IF EXISTS
+    # once setup has created the role. No case creates a table, so the
+    # DROP TABLE anchor is not emitted (bookend gate N/A per the module
+    # docstring); the residual SELECT keeps each region non-empty.
+    specs: list[DropSpec] = [DropSpec("PROCEDURE", name, "(integer)")]
+    if fixture == "multiple_drop":
+        specs.append(DropSpec("PROCEDURE", _proc_name2(p), "(integer)"))
+    if fixture == "function":
+        specs.append(DropSpec("FUNCTION", name))
+    if needs_dep:
+        specs.append(DropSpec("FUNCTION", dep))
+    schemas = (f"{p}schema",) if needs_schema else ()
     roles = _role_names(case, p, effective)
-    role_drops = [
-        statement
-        for role in roles
-        for statement in (
-            f"DROP OWNED BY {role};",
-            f"DROP ROLE IF EXISTS {role};",
-        )
-    ]
-
-    pre_cleanup: list[str] = []
-    if fixture == "multiple_drop":
-        pre_cleanup.append(proc_drop)
-        pre_cleanup.append(proc2_drop)
-    else:
-        pre_cleanup.append(proc_drop)
-    if fixture == "function":
-        pre_cleanup.append(target_func_drop)
-    if needs_dep:
-        pre_cleanup.append(func_drop)
-    if needs_schema:
-        pre_cleanup.append(schema_drop)
-    pre_cleanup.extend(role_drops)
-    if not pre_cleanup:
-        pre_cleanup.append("SELECT 1 AS residual_check_no_objects;")
-
-    cleanup: list[str] = []
-    if effective:
-        cleanup.append("RESET ROLE;")
-    if fixture == "multiple_drop":
-        cleanup.append(proc_drop)
-        cleanup.append(proc2_drop)
-    else:
-        cleanup.append(proc_drop)
-    if fixture == "function":
-        cleanup.append(target_func_drop)
-    if needs_dep:
-        cleanup.append(func_drop)
-    if needs_schema:
-        cleanup.append(schema_drop)
-    cleanup.extend(role_drops)
-    if not cleanup:
-        cleanup.append("SELECT 1 AS residual_check_no_objects;")
+    role_list = list(roles)
+    pre_bookend = build_pre_cleanup(
+        specs=tuple(specs),
+        schemas=schemas,
+        roles=role_list,
+    )
+    cln_bookend = build_cleanup(
+        specs=tuple(specs),
+        schemas=schemas,
+        roles=role_list,
+        drop_owned=bool(role_list),
+        reset_role=bool(effective),
+    )
+    pre_cleanup = list(pre_bookend.statements)
+    cleanup = list(cln_bookend.statements)
 
     on_error_off = case.outcome == "expected_failure"
     return _CasePlan(
