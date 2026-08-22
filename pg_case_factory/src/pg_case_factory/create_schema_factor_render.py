@@ -23,6 +23,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 
+from .cleanup_bookend import DropSpec, build_cleanup, build_pre_cleanup
 from .create_schema_factor_extension import (
     CreateSchemaFactorExtensionCase,
     _present_failure_pair,
@@ -316,15 +317,6 @@ def _tables_to_drop(case: CreateSchemaFactorCase) -> list[str]:
     return []
 
 
-def _cleanup_statement(a: dict[str, str], name: str) -> str:
-    mode = a.get("cleanup_mode", "DROP_SCHEMA_IF_EXISTS")
-    if mode == "DROP_SCHEMA":
-        return f"DROP SCHEMA {name} CASCADE;"
-    if mode == "DROP_SCHEMA_CASCADE":
-        return f"DROP SCHEMA {name} CASCADE;"
-    return f"DROP SCHEMA IF EXISTS {name} CASCADE;"
-
-
 def _resolve_case(case: CreateSchemaFactorCase) -> _CasePlan:
     a = _baseline(case)
     p = case.object_prefix
@@ -377,31 +369,32 @@ def _resolve_case(case: CreateSchemaFactorCase) -> _CasePlan:
     if probe is not None:
         assert_lines.append(probe)
 
-    # --- cleanup construction -----------------------------------------
-    role_drops = [
-        statement
-        for role in roles
-        for statement in (
-            f"DROP OWNED BY {role} CASCADE;",
-            f"DROP ROLE IF EXISTS {role};",
-        )
-    ]
-    schema_drop = _cleanup_statement(a, name)
-
-    pre_cleanup: list[str] = [
-        f"DROP SCHEMA IF EXISTS {name} CASCADE;"
-    ]
-    pre_cleanup.extend(role_drops)
-    if not pre_cleanup:
-        pre_cleanup.append("SELECT 1 AS residual_check_no_objects;")
-
-    cleanup: list[str] = []
-    if effective:
-        cleanup.append("RESET ROLE;")
-    cleanup.append(schema_drop)
-    cleanup.extend(role_drops)
-    if not cleanup:
-        cleanup.append("SELECT 1 AS residual_check_no_objects;")
+    # --- cleanup construction (shared idempotent bookends) -----------
+    # Migrated to cleanup_bookend so every DROP carries IF EXISTS and
+    # DROP OWNED BY is unreachable in pre-cleanup: the owner/actor role
+    # fixtures are created by setup, so on a fresh database the roles do
+    # not exist yet at pre-cleanup time and DROP OWNED BY would crash
+    # (ON_ERROR_STOP=1) before the target statement reaches execution.
+    # Pre-cleanup drops roles via DROP ROLE IF EXISTS only; the post-target
+    # cleanup runs DROP OWNED BY then DROP ROLE IF EXISTS once setup has
+    # created the roles.  The schema is dropped via schemas= (SCHEMA is a
+    # supported DropSpec kind); CREATE SCHEMA never creates a standalone
+    # TABLE, so tables= stays empty (any sub-clause table is removed by
+    # DROP SCHEMA ... CASCADE).
+    schema_list = (name,)
+    role_list = list(roles)
+    pre_bookend = build_pre_cleanup(
+        schemas=schema_list,
+        roles=role_list,
+    )
+    cln_bookend = build_cleanup(
+        schemas=schema_list,
+        roles=role_list,
+        drop_owned=bool(role_list),
+        reset_role=bool(effective),
+    )
+    pre_cleanup = list(pre_bookend.statements)
+    cleanup = list(cln_bookend.statements)
 
     on_error_off = case.outcome == "expected_failure"
     return _CasePlan(
