@@ -22,6 +22,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 
+from .cleanup_bookend import DropSpec, build_cleanup, build_pre_cleanup
 from .drop_text_search_parser_factor_extension import (
     DropTsParserFactorExtensionCase,
 )
@@ -358,44 +359,32 @@ def _resolve_case(case: DropTsParserFactorCase) -> _CasePlan:
     )
     assert_lines.append(_probe_select(case, a, p))
 
-    # --- cleanup construction -------------------------------------------
-    config_drop = (
-        [f"DROP TEXT SEARCH CONFIGURATION IF EXISTS {p}config CASCADE;"]
-        if needs_config
-        else []
+    # --- cleanup construction (shared idempotent bookends) -----------
+    # Migrated to cleanup_bookend so every DROP carries IF EXISTS and
+    # DROP OWNED BY is unreachable in pre-cleanup: the actor role fixture
+    # is created by setup, so on a fresh database the role does not exist
+    # yet at pre-cleanup time and DROP OWNED BY would crash
+    # (ON_ERROR_STOP=1) before the target statement reaches execution.
+    # Pre-cleanup drops roles via DROP ROLE IF EXISTS only; the post-target
+    # cleanup runs DROP OWNED BY then DROP ROLE IF EXISTS once setup has
+    # created the role.  Specs are in reverse-dependency order (the
+    # configuration depends on the parser, so the configuration drops
+    # first); the helper emits the bracket markers automatically.
+    specs: list[DropSpec] = []
+    if needs_config:
+        specs.append(DropSpec("TEXT SEARCH CONFIGURATION", f"{p}config"))
+    if parser_created:
+        specs.append(DropSpec("TEXT SEARCH PARSER", parser_ref))
+    role_list = list(_role_names(case, p, effective))
+    pre_bookend = build_pre_cleanup(specs=tuple(specs), roles=role_list)
+    cln_bookend = build_cleanup(
+        specs=tuple(specs),
+        roles=role_list,
+        drop_owned=bool(role_list),
+        reset_role=bool(effective),
     )
-    parser_drop = (
-        [f"DROP TEXT SEARCH PARSER IF EXISTS {parser_ref} CASCADE;"]
-        if parser_created
-        else []
-    )
-    roles = _role_names(case, p, effective)
-    role_drops = [
-        statement
-        for role in roles
-        for statement in (
-            f"DROP OWNED BY {role};",
-            f"DROP ROLE IF EXISTS {role};",
-        )
-    ]
-
-    # Pre-cleanup: config first, then parser, then roles.
-    pre_cleanup: list[str] = []
-    pre_cleanup.extend(config_drop)
-    pre_cleanup.extend(parser_drop)
-    pre_cleanup.extend(role_drops)
-    if not pre_cleanup:
-        pre_cleanup.append("SELECT 1 AS residual_check_no_objects;")
-
-    # Cleanup: RESET ROLE, then config/parser/role drops.
-    cleanup: list[str] = []
-    if effective:
-        cleanup.append("RESET ROLE;")
-    cleanup.extend(config_drop)
-    cleanup.extend(parser_drop)
-    cleanup.extend(role_drops)
-    if not cleanup:
-        cleanup.append("SELECT 1 AS residual_check_no_objects;")
+    pre_cleanup = list(pre_bookend.statements)
+    cleanup = list(cln_bookend.statements)
 
     on_error_off = case.outcome == "expected_failure"
     return _CasePlan(
