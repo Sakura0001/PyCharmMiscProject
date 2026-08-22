@@ -19,6 +19,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 
+from .cleanup_bookend import DropSpec, build_cleanup, build_pre_cleanup
 from .create_conversion_factor_extension import (
     CreateConversionFactorExtensionCase,
     _present_failure_pair,
@@ -404,59 +405,46 @@ def _resolve_case(
     if probe is not None:
         assert_lines.append(probe)
 
-    conversions_to_drop: list[str] = []
+    # --- cleanup construction (shared idempotent bookends) -----------
+    # Migrated to cleanup_bookend so every DROP carries IF EXISTS and
+    # DROP OWNED BY is unreachable in pre-cleanup: the role fixtures are
+    # created by setup, so on a fresh database the roles do not exist yet
+    # at pre-cleanup time and DROP OWNED BY would crash (ON_ERROR_STOP=1)
+    # before the target statement reaches execution.  Pre-cleanup drops
+    # roles via DROP ROLE IF EXISTS only; the post-target cleanup runs
+    # DROP OWNED BY then DROP ROLE IF EXISTS once setup has created the
+    # roles.  CREATE CONVERSION never creates a TABLE, so the DROP TABLE
+    # anchor is not emitted (no tables= passed).
+    conv_names: list[str] = []
     if case.outcome == "success":
-        conversions_to_drop.append(conv)
+        conv_names.append(conv)
     if _needs_existing_conversion(a):
-        conversions_to_drop.append(conv)
+        conv_names.append(conv)
     if _needs_existing_default(a):
-        conversions_to_drop.append(f"{p}existingdef")
+        conv_names.append(f"{p}existingdef")
 
-    role_drops = [
-        statement
-        for role_name in roles
-        for statement in (
-            f"DROP OWNED BY {role_name} CASCADE;",
-            f"DROP ROLE IF EXISTS {role_name};",
-        )
-    ]
-
-    conv_drops = [
-        f"DROP CONVERSION IF EXISTS {name} CASCADE;"
-        for name in dict.fromkeys(conversions_to_drop)
-    ]
-    func_drops: list[str] = []
+    specs: list[DropSpec] = []
+    for name in dict.fromkeys(conv_names):
+        specs.append(DropSpec("CONVERSION", name))
     if _needs_function(a):
-        func_drops.append(
-            f"DROP FUNCTION IF EXISTS {func} CASCADE;"
-        )
-    schema_drops: list[str] = []
-    if _needs_schema(a):
-        schema_drops.append(
-            f"DROP SCHEMA IF EXISTS {schema} CASCADE;"
-        )
+        specs.append(DropSpec("FUNCTION", func))
+    schemas = (schema,) if _needs_schema(a) else ()
+    role_list = list(roles)
 
-    pre_cleanup: list[str] = []
-    pre_cleanup.extend(conv_drops)
-    pre_cleanup.extend(func_drops)
-    pre_cleanup.extend(schema_drops)
-    pre_cleanup.extend(role_drops)
-    if not pre_cleanup:
-        pre_cleanup.append(
-            "SELECT 1 AS residual_check_no_objects;"
-        )
-
-    cleanup: list[str] = []
-    if role:
-        cleanup.append("RESET ROLE;")
-    cleanup.extend(conv_drops)
-    cleanup.extend(func_drops)
-    cleanup.extend(schema_drops)
-    cleanup.extend(role_drops)
-    if not cleanup:
-        cleanup.append(
-            "SELECT 1 AS residual_check_no_objects;"
-        )
+    pre_bookend = build_pre_cleanup(
+        specs=tuple(specs),
+        schemas=schemas,
+        roles=role_list,
+    )
+    cln_bookend = build_cleanup(
+        specs=tuple(specs),
+        schemas=schemas,
+        roles=role_list,
+        drop_owned=bool(role_list),
+        reset_role=bool(role),
+    )
+    pre_cleanup = list(pre_bookend.statements)
+    cleanup = list(cln_bookend.statements)
 
     on_error_off = case.outcome == "expected_failure"
     return _CasePlan(
