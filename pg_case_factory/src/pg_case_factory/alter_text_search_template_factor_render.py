@@ -21,6 +21,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 
+from .cleanup_bookend import DropSpec, build_cleanup, build_pre_cleanup
 from .alter_text_search_template_factor_extension import (
     AlterTextSearchTemplateFactorExtensionCase,
     _present_failure_pair,
@@ -350,60 +351,44 @@ def _resolve_case(
     if probe is not None:
         assert_lines.append(probe)
 
-    # --- cleanup construction -----------------------------------------
-    templates_to_drop: list[str] = []
+    # --- cleanup construction (shared idempotent bookends) -----------
+    # Migrated to cleanup_bookend so every DROP carries IF EXISTS and
+    # DROP OWNED BY is unreachable in pre-cleanup: the granted_role
+    # fixture is created by setup, so on a fresh database the role does
+    # not exist yet at pre-cleanup time and DROP OWNED BY would crash
+    # (ON_ERROR_STOP=1) before the target statement reaches execution.
+    # Pre-cleanup drops roles via DROP ROLE IF EXISTS only; the post-target
+    # cleanup runs DROP OWNED BY then DROP ROLE IF EXISTS once setup has
+    # created the role.  ALTER TEXT SEARCH TEMPLATE never creates a TABLE,
+    # so tables=() and no DROP TABLE anchor is emitted.
+    specs: list[DropSpec] = []
     if not missing:
-        templates_to_drop.append(tmpl)
+        specs.append(DropSpec("TEXT SEARCH TEMPLATE", tmpl))
     if action == "rename":
         new = _new_name(a, p)
         if new != tmpl:
-            templates_to_drop.append(new)
+            specs.append(DropSpec("TEXT SEARCH TEMPLATE", new))
         if (
             a.get("new_name_shape", "simple_id") == "duplicate_name"
             or a.get("duplicate_new_name", "no_conflict")
             == "same_name_conflict"
         ):
-            templates_to_drop.append(f"{p}conflict_tmpl")
+            specs.append(DropSpec("TEXT SEARCH TEMPLATE", f"{p}conflict_tmpl"))
 
-    schemas_to_drop: list[str] = []
-    if fixture_schema is not None:
-        schemas_to_drop.append(fixture_schema)
-
-    role_drops = [
-        statement
-        for role in roles
-        for statement in (
-            f"DROP OWNED BY {role} CASCADE;",
-            f"DROP ROLE IF EXISTS {role};",
-        )
-    ]
-
-    tmpl_drops = [
-        f"DROP TEXT SEARCH TEMPLATE IF EXISTS {name};"
-        for name in templates_to_drop
-    ]
-    sch_drops = [
-        f"DROP SCHEMA IF EXISTS {name} CASCADE;"
-        for name in schemas_to_drop
-    ]
-
-    # pre-cleanup: templates then schemas then roles
-    pre_cleanup: list[str] = []
-    pre_cleanup.extend(tmpl_drops)
-    pre_cleanup.extend(sch_drops)
-    pre_cleanup.extend(role_drops)
-    if not pre_cleanup:
-        pre_cleanup.append("SELECT 1 AS residual_check_no_objects;")
-
-    # cleanup: templates, schemas, roles
-    cleanup: list[str] = []
-    if effective:
-        cleanup.append("RESET ROLE;")
-    cleanup.extend(tmpl_drops)
-    cleanup.extend(sch_drops)
-    cleanup.extend(role_drops)
-    if not cleanup:
-        cleanup.append("SELECT 1 AS residual_check_no_objects;")
+    schemas = (fixture_schema,) if fixture_schema is not None else ()
+    role_list = list(roles)
+    pre_bookend = build_pre_cleanup(
+        specs=specs, schemas=schemas, roles=role_list
+    )
+    cln_bookend = build_cleanup(
+        specs=specs,
+        schemas=schemas,
+        roles=role_list,
+        drop_owned=bool(role_list),
+        reset_role=bool(effective),
+    )
+    pre_cleanup = list(pre_bookend.statements)
+    cleanup = list(cln_bookend.statements)
 
     on_error_off = case.outcome == "expected_failure"
     return _CasePlan(
