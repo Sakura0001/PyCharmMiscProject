@@ -17,6 +17,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 
+from .cleanup_bookend import DropSpec, build_cleanup, build_pre_cleanup
 from .drop_function_factor_extension import (
     DropFunctionFactorExtensionCase,
 )
@@ -407,68 +408,49 @@ def _resolve_case(case: DropFunctionFactorCase) -> _CasePlan:
     )
     assert_lines.append(_probe_select(case, a, p))
 
-    # --- cleanup construction -------------------------------------------
-    view_drop = f"DROP VIEW IF EXISTS {p}v CASCADE;"
-    table_drop = f"DROP TABLE IF EXISTS {p}t CASCADE;"
-    func_drop = f"DROP FUNCTION IF EXISTS {p}fn(integer) CASCADE;"
-    func_drop_text = f"DROP FUNCTION IF EXISTS {p}fn(text) CASCADE;"
-    proc_drop = f"DROP PROCEDURE IF EXISTS {p}fn(integer);"
-    agg_drop = f"DROP AGGREGATE IF EXISTS {p}fn(integer);"
-    # Bookend gate: when a table is created (needs_dep) the FIRST executable
-    # statement (pre-cleanup lead) and the LAST executable statement (cleanup
-    # tail) must each be DROP TABLE IF EXISTS.  DROP TABLE CASCADE removes the
-    # dependent view as well, so the trailing/leading view_drop is a harmless
-    # no-op kept for explicitness.  Order differs per section: table leads the
-    # pre-cleanup, table tails the cleanup.
-    dep_drops_pre: list[str] = []
-    dep_drops_post: list[str] = []
+    # --- cleanup construction (shared idempotent bookends) -----------
+    # Migrated to cleanup_bookend so every DROP carries IF EXISTS and
+    # DROP OWNED BY is unreachable in pre-cleanup: the non-superuser role
+    # is created by setup, so on a fresh database the role does not exist
+    # yet at pre-cleanup time and DROP OWNED BY would crash
+    # (ON_ERROR_STOP=1) before the target statement reaches execution.
+    # Pre-cleanup drops roles via DROP ROLE IF EXISTS only; the post-target
+    # cleanup runs DROP OWNED BY then DROP ROLE IF EXISTS once setup has
+    # created the role.  The DROP TABLE IF EXISTS anchor is first in
+    # pre-cleanup and last in cleanup, satisfying the table-bookend gate.
+    specs: list[DropSpec] = []
     if needs_dep:
-        dep_drops_pre.append(table_drop)
-        dep_drops_pre.append(view_drop)
-        dep_drops_post.append(view_drop)
-        dep_drops_post.append(table_drop)
-
-    roles = _role_names(case, p, effective)
-    role_drops = [
-        statement
-        for role in roles
-        for statement in (
-            f"DROP OWNED BY {role};",
-            f"DROP ROLE IF EXISTS {role};",
-        )
-    ]
-
-    # Determine which target-object drops to include.
-    target_drops: list[str] = []
+        specs.append(DropSpec("VIEW", f"{p}v"))
     if fixture_kind == "function_multiple":
-        target_drops.append(func_drop)
-        target_drops.append(func_drop_text)
+        specs.append(DropSpec("FUNCTION", f"{p}fn", "(integer)"))
+        specs.append(DropSpec("FUNCTION", f"{p}fn", "(text)"))
     elif fixture_kind == "aggregate":
-        target_drops.append(agg_drop)
+        specs.append(
+            DropSpec("AGGREGATE", f"{p}fn", "(integer)", cascade=False)
+        )
     elif fixture_kind == "procedure":
-        target_drops.append(proc_drop)
+        specs.append(
+            DropSpec("PROCEDURE", f"{p}fn", "(integer)", cascade=False)
+        )
     elif fixture_kind == "function":
-        target_drops.append(func_drop)
+        specs.append(DropSpec("FUNCTION", f"{p}fn", "(integer)"))
 
-    # Pre-cleanup: DROP TABLE/VIEW first (bookend gate), then function, then
-    # roles.
-    pre_cleanup: list[str] = []
-    pre_cleanup.extend(dep_drops_pre)
-    pre_cleanup.extend(target_drops)
-    pre_cleanup.extend(role_drops)
-    if not pre_cleanup:
-        pre_cleanup.append("SELECT 1 AS residual_check_no_objects;")
-
-    # Cleanup: RESET ROLE, then object drops, then DROP TABLE/VIEW last
-    # (bookend gate).
-    cleanup: list[str] = []
-    if effective:
-        cleanup.append("RESET ROLE;")
-    cleanup.extend(target_drops)
-    cleanup.extend(role_drops)
-    cleanup.extend(dep_drops_post)
-    if not cleanup:
-        cleanup.append("SELECT 1 AS residual_check_no_objects;")
+    table_names = [f"{p}t"] if needs_dep else []
+    role_list = list(_role_names(case, p, effective))
+    pre_bookend = build_pre_cleanup(
+        tables=table_names,
+        specs=tuple(specs),
+        roles=role_list,
+    )
+    cln_bookend = build_cleanup(
+        tables=table_names,
+        specs=tuple(specs),
+        roles=role_list,
+        drop_owned=bool(role_list),
+        reset_role=bool(effective),
+    )
+    pre_cleanup = list(pre_bookend.statements)
+    cleanup = list(cln_bookend.statements)
 
     on_error_off = case.outcome == "expected_failure"
     return _CasePlan(
