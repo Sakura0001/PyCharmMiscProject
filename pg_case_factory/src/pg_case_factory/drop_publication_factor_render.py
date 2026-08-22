@@ -18,6 +18,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 
+from .cleanup_bookend import DropSpec, build_cleanup, build_pre_cleanup
 from .drop_publication_factor_extension import (
     DropPublicationFactorExtensionCase,
 )
@@ -351,45 +352,35 @@ def _resolve_case(case: DropPublicationFactorCase) -> _CasePlan:
     )
     assert_lines.append(_probe_select(case, a, p))
 
-    # --- cleanup construction -------------------------------------------
-    pub_drop = f"DROP PUBLICATION IF EXISTS {pub_ref};"
-    pub2_drop = f"DROP PUBLICATION IF EXISTS {p}pub2;"
-    sub_drop = (
-        f"DROP SUBSCRIPTION IF EXISTS {p}sub;" if needs_sub else None
-    )
+    # --- cleanup construction (shared idempotent bookends) -----------
+    # Migrated to cleanup_bookend so every DROP carries IF EXISTS and
+    # DROP OWNED BY is unreachable in pre-cleanup: the non-owner role
+    # fixture is created by setup, so on a fresh database the role does
+    # not exist yet at pre-cleanup time and DROP OWNED BY would crash
+    # (ON_ERROR_STOP=1) before the target statement reaches execution.
+    # Pre-cleanup drops roles via DROP ROLE IF EXISTS only; the post-target
+    # cleanup runs DROP OWNED BY then DROP ROLE IF EXISTS once setup has
+    # created the role.
     roles = _role_names(case, p, effective)
-    role_drops = [
-        statement
-        for role in roles
-        for statement in (
-            f"DROP OWNED BY {role};",
-            f"DROP ROLE IF EXISTS {role};",
-        )
-    ]
-
-    # Pre-cleanup: subscription, publication(s), roles.
-    pre_cleanup: list[str] = []
-    if sub_drop:
-        pre_cleanup.append(sub_drop)
-    pre_cleanup.append(pub_drop)
+    specs: list[DropSpec] = []
+    if needs_sub:
+        specs.append(DropSpec("SUBSCRIPTION", f"{p}sub"))
+    specs.append(DropSpec("PUBLICATION", pub_ref))
     if needs_second:
-        pre_cleanup.append(pub2_drop)
-    pre_cleanup.extend(role_drops)
-    if not pre_cleanup:
-        pre_cleanup.append("SELECT 1 AS residual_check_no_objects;")
-
-    # Cleanup: RESET ROLE, then subscription/publication/role drops.
-    cleanup: list[str] = []
-    if effective:
-        cleanup.append("RESET ROLE;")
-    if sub_drop:
-        cleanup.append(sub_drop)
-    cleanup.append(pub_drop)
-    if needs_second:
-        cleanup.append(pub2_drop)
-    cleanup.extend(role_drops)
-    if not cleanup:
-        cleanup.append("SELECT 1 AS residual_check_no_objects;")
+        specs.append(DropSpec("PUBLICATION", f"{p}pub2"))
+    role_list = list(roles)
+    pre_bookend = build_pre_cleanup(
+        specs=tuple(specs),
+        roles=role_list,
+    )
+    cln_bookend = build_cleanup(
+        specs=tuple(specs),
+        roles=role_list,
+        drop_owned=bool(role_list),
+        reset_role=bool(effective),
+    )
+    pre_cleanup = list(pre_bookend.statements)
+    cleanup = list(cln_bookend.statements)
 
     on_error_off = case.outcome == "expected_failure"
     return _CasePlan(
