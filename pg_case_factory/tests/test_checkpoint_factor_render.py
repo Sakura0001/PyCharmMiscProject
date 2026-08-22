@@ -109,6 +109,25 @@ class CheckpointFactorRenderTest(unittest.TestCase):
                     f"missing ORDER BY in {f.name}",
                 )
 
+    def test_wal_lsn_oracle_is_stable_boolean(self) -> None:
+        """Fix-D guard: pg_current_wal_lsn() advances on every write, so a raw
+        value select diverges between run-01 and run-02 (two_run_mismatch,
+        the user's headline determinism contract).  Every occurrence must be
+        a stable IS NOT NULL boolean assertion, not a raw value."""
+        files = sorted(self.tmp.glob("*.sql"))
+        self.assertGreater(len(files), 0)
+        bad: list[str] = []
+        for f in files:
+            text = f.read_text()
+            for m in re.finditer(r"pg_current_wal_lsn\(\)", text):
+                tail = text[m.end(): m.end() + 24]
+                if "IS NOT NULL" not in tail:
+                    bad.append(f.name)
+                    break
+        self.assertEqual(
+            [], bad, "raw pg_current_wal_lsn() value (volatile) without IS NOT NULL"
+        )
+
     def test_no_quoted_or_dotted_from_targets(self) -> None:
         files = sorted(self.tmp.glob("*.sql"))
         for f in files:

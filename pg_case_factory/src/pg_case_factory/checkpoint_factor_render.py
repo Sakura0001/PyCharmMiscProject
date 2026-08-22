@@ -161,8 +161,15 @@ def _probe_select(
             "ORDER BY count(*)"
         ) + ";"
     if mode == "effect_query":
+        # Stable boolean oracle: pg_current_wal_lsn() advances on every
+        # write, so the raw value differs between run-01 and run-02 and
+        # triggers a two_run_mismatch (the user's headline determinism
+        # contract).  Assert presence rather than value so the transcript
+        # is identical across runs while still confirming WAL is tracked.
+        # Do NOT mask the LSN in normalization -- that would hide real drift.
         return (
-            "SELECT pg_current_wal_lsn() AS current_wal_lsn;"
+            "SELECT pg_current_wal_lsn() IS NOT NULL "
+            "AS current_wal_lsn_present;"
         )
     if mode == "returned_rows":
         return (
