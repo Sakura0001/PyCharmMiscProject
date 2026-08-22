@@ -23,6 +23,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 
+from .cleanup_bookend import DropSpec, build_cleanup, build_pre_cleanup
 from .alter_view_factor_extension import (
     AlterViewFactorExtensionCase,
     _present_failure_pair,
@@ -455,7 +456,17 @@ def _resolve_case(
     if probe is not None:
         assert_lines.append(probe)
 
-    # --- cleanup construction -----------------------------------------
+    # --- cleanup construction (shared idempotent bookends) -----------
+    # Migrated to cleanup_bookend so every DROP carries IF EXISTS and
+    # DROP OWNED BY is unreachable in pre-cleanup: the actor / newowner
+    # role fixtures are created by setup, so on a fresh database the role
+    # does not exist yet at pre-cleanup time and DROP OWNED BY would crash
+    # (ON_ERROR_STOP=1) before the target statement reaches execution.
+    # Pre-cleanup drops roles via DROP ROLE IF EXISTS only; the post-target
+    # cleanup runs DROP OWNED BY then DROP ROLE IF EXISTS once setup has
+    # created the role.  ALTER VIEW never creates a TABLE, so the DROP
+    # TABLE anchor is omitted (no tables= argument).  The bracket markers
+    # are emitted automatically by the builders.
     views_to_drop: list[str] = []
     if fixture is not None:
         views_to_drop.append(fixture)
@@ -489,43 +500,34 @@ def _resolve_case(
         sequences_to_drop.append(f"{p}seq")
 
     cleanup_mode = a.get("cleanup_mode", "drop_view_if_exists")
-    cascade = " CASCADE" if cleanup_mode == "drop_view_cascade" else ""
+    view_cascade = cleanup_mode == "drop_view_cascade"
 
-    view_drops = [
-        f"DROP VIEW IF EXISTS {v}{cascade};" for v in views_to_drop
-    ]
-    schema_drops = [
-        f"DROP SCHEMA IF EXISTS {s} CASCADE;" for s in schemas_to_drop
-    ]
-    seq_drops = [
-        f"DROP SEQUENCE IF EXISTS {s};" for s in sequences_to_drop
-    ]
-    role_drops = [
-        stmt
-        for role in roles
-        for stmt in (
-            f"DROP OWNED BY {role} CASCADE;",
-            f"DROP ROLE IF EXISTS {role};",
-        )
-    ]
-
-    pre_cleanup: list[str] = []
-    pre_cleanup.extend(view_drops)
-    pre_cleanup.extend(schema_drops)
-    pre_cleanup.extend(seq_drops)
-    pre_cleanup.extend(role_drops)
-    if not pre_cleanup:
-        pre_cleanup.append("SELECT 1 AS residual_check_no_objects;")
-
-    cleanup: list[str] = []
-    if effective:
-        cleanup.append("RESET ROLE;")
-    cleanup.extend(view_drops)
-    cleanup.extend(schema_drops)
-    cleanup.extend(seq_drops)
-    cleanup.extend(role_drops)
-    if not cleanup:
-        cleanup.append("SELECT 1 AS residual_check_no_objects;")
+    # Objects whose DROP kind is in the helper allowlist become DropSpec
+    # entries (views, sequences); schemas go to the dedicated schemas=
+    # argument (always CASCADE); roles go to roles= (pre-cleanup drops
+    # via DROP ROLE IF EXISTS only; post-target cleanup does DROP OWNED
+    # BY then DROP ROLE IF EXISTS).  The order mirrors the reverse-
+    # dependency order the existing code already used.
+    specs: list[DropSpec] = []
+    for v in views_to_drop:
+        specs.append(DropSpec("VIEW", v, cascade=view_cascade))
+    for s in sequences_to_drop:
+        specs.append(DropSpec("SEQUENCE", s, cascade=False))
+    role_list = list(roles)
+    pre_bookend = build_pre_cleanup(
+        specs=tuple(specs),
+        schemas=tuple(schemas_to_drop),
+        roles=role_list,
+    )
+    cln_bookend = build_cleanup(
+        specs=tuple(specs),
+        schemas=tuple(schemas_to_drop),
+        roles=role_list,
+        drop_owned=bool(role_list),
+        reset_role=bool(effective),
+    )
+    pre_cleanup = list(pre_bookend.statements)
+    cleanup = list(cln_bookend.statements)
 
     on_error_off = case.outcome == "expected_failure"
     return _CasePlan(
