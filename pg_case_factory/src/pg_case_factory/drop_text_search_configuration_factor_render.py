@@ -27,6 +27,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 
+from .cleanup_bookend import DropSpec, build_cleanup, build_pre_cleanup
 from .drop_text_search_configuration_factor_extension import (
     DropTextSearchConfigurationFactorExtensionCase,
 )
@@ -327,39 +328,35 @@ def _resolve_case(case: DropTextSearchConfigurationFactorCase) -> _CasePlan:
     if probe is not None:
         assert_lines.append(probe)
 
-    config_drops = (
-        [f"DROP TEXT SEARCH CONFIGURATION IF EXISTS {cfg};"]
-        if config_created
-        else []
-    )
-    function_drops = (
-        [f"DROP FUNCTION IF EXISTS {p}depfn;"] if needs_dep else []
-    )
+    # --- cleanup construction (shared idempotent bookends) -----------
+    # Migrated to cleanup_bookend so every DROP carries IF EXISTS and
+    # DROP OWNED BY is unreachable in pre-cleanup: the granted_role
+    # fixture is created by setup, so on a fresh database the role does
+    # not exist yet at pre-cleanup time and DROP OWNED BY would crash
+    # (ON_ERROR_STOP=1) before the target statement reaches execution.
+    # Pre-cleanup drops roles via DROP ROLE IF EXISTS only; the post-target
+    # cleanup runs DROP OWNED BY then DROP ROLE IF EXISTS once setup has
+    # created the role.  This statement is table-less, so no DROP TABLE
+    # anchor is emitted (bookend gate is N/A for table-less statements).
+    specs: list[DropSpec] = []
+    if needs_dep:
+        specs.append(DropSpec("FUNCTION", f"{p}depfn"))
+    if config_created:
+        specs.append(DropSpec("TEXT SEARCH CONFIGURATION", cfg))
     roles = _role_names(case, p, effective)
-    role_drops = [
-        statement
-        for role in roles
-        for statement in (
-            f"DROP OWNED BY {role};",
-            f"DROP ROLE IF EXISTS {role};",
-        )
-    ]
-
-    pre_cleanup: list[str] = []
-    pre_cleanup.extend(function_drops)
-    pre_cleanup.extend(config_drops)
-    pre_cleanup.extend(role_drops)
-    if not pre_cleanup:
-        pre_cleanup.append("SELECT 1 AS residual_check_no_objects;")
-
-    cleanup: list[str] = []
-    if effective:
-        cleanup.append("RESET ROLE;")
-    cleanup.extend(function_drops)
-    cleanup.extend(config_drops)
-    cleanup.extend(role_drops)
-    if not cleanup:
-        cleanup.append("SELECT 1 AS residual_check_no_objects;")
+    role_list = list(roles)
+    pre_bookend = build_pre_cleanup(
+        specs=tuple(specs),
+        roles=role_list,
+    )
+    cln_bookend = build_cleanup(
+        specs=tuple(specs),
+        roles=role_list,
+        drop_owned=bool(role_list),
+        reset_role=bool(effective),
+    )
+    pre_cleanup = list(pre_bookend.statements)
+    cleanup = list(cln_bookend.statements)
 
     on_error_off = case.outcome == "expected_failure"
     return _CasePlan(
