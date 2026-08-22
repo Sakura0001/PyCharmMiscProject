@@ -24,6 +24,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 
+from .cleanup_bookend import DropSpec, build_cleanup, build_pre_cleanup
 from .create_domain_factor_extension import (
     CreateDomainFactorExtensionCase,
     _present_failure_pair,
@@ -480,44 +481,37 @@ def _resolve_case(
     if probe is not None:
         assert_lines.append(probe)
 
-    # --- cleanup construction -----------------------------------------
-    domain_drops: list[str] = []
+    # --- cleanup construction (shared idempotent bookends) -----------
+    # Migrated to cleanup_bookend so every DROP carries IF EXISTS and
+    # DROP OWNED BY is unreachable in pre-cleanup: the {p}actor role
+    # fixture is created by setup, so on a fresh database the role does
+    # not exist yet at pre-cleanup time and DROP OWNED BY would crash
+    # (ON_ERROR_STOP=1) before the target statement reaches execution.
+    # Pre-cleanup drops roles via DROP ROLE IF EXISTS only; the post-target
+    # cleanup runs DROP OWNED BY then DROP ROLE IF EXISTS once setup has
+    # created the role.  CREATE DOMAIN never creates a TABLE, so the
+    # DROP TABLE IF EXISTS anchor is never emitted and a residual SELECT
+    # fills the region when nothing is dropped.
+    specs: list[DropSpec] = []
     if case.outcome == "success" or _is_duplicate(a):
-        domain_drops.append(f"DROP DOMAIN IF EXISTS {dom};")
-    type_drops: list[str] = []
+        specs.append(DropSpec("DOMAIN", dom))
     if _is_type_conflict(a):
-        type_drops.append(f"DROP TYPE IF EXISTS {dom};")
-    collation_drops: list[str] = []
+        specs.append(DropSpec("TYPE", dom))
     if _is_explicit_collation(a):
-        collation_drops.append(f"DROP COLLATION IF EXISTS {p}mycoll;")
-    role_drops: list[str] = []
-    if _needs_role(a):
-        role_drops.extend(
-            [
-                f"DROP OWNED BY {p}actor CASCADE;",
-                f"DROP ROLE IF EXISTS {p}actor;",
-            ]
-        )
-
-    # pre-cleanup: domains, types, collations, roles (all IF EXISTS)
-    pre_cleanup: list[str] = []
-    pre_cleanup.extend(domain_drops)
-    pre_cleanup.extend(type_drops)
-    pre_cleanup.extend(collation_drops)
-    pre_cleanup.extend(role_drops)
-    if not pre_cleanup:
-        pre_cleanup.append("SELECT 1 AS residual_check_no_objects;")
-
-    # cleanup: RESET ROLE, domains, types, collations, roles
-    cleanup: list[str] = []
-    if _needs_role(a):
-        cleanup.append("RESET ROLE;")
-    cleanup.extend(domain_drops)
-    cleanup.extend(type_drops)
-    cleanup.extend(collation_drops)
-    cleanup.extend(role_drops)
-    if not cleanup:
-        cleanup.append("SELECT 1 AS residual_check_no_objects;")
+        specs.append(DropSpec("COLLATION", f"{p}mycoll"))
+    role_list = [f"{p}actor"] if _needs_role(a) else []
+    pre_bookend = build_pre_cleanup(
+        specs=tuple(specs),
+        roles=role_list,
+    )
+    cln_bookend = build_cleanup(
+        specs=tuple(specs),
+        roles=role_list,
+        drop_owned=bool(role_list),
+        reset_role=bool(role_list),
+    )
+    pre_cleanup = list(pre_bookend.statements)
+    cleanup = list(cln_bookend.statements)
 
     on_error_off = case.outcome == "expected_failure"
     return _CasePlan(
