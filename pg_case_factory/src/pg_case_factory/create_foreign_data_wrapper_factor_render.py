@@ -26,6 +26,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 
+from .cleanup_bookend import DropSpec, build_cleanup, build_pre_cleanup
 from .create_foreign_data_wrapper_factor_extension import (
     CreateForeignDataWrapperFactorExtensionCase,
     _present_failure_pair,
@@ -406,64 +407,46 @@ def _resolve_case(
     if probe is not None:
         assert_lines.append(probe)
 
-    # --- cleanup construction -----------------------------------------
-    fdw_drops: list[str] = [
-        f"DROP FOREIGN DATA WRAPPER IF EXISTS {fdw} CASCADE;"
-    ]
-
-    role_drops = [
-        statement
-        for role in roles
-        for statement in (
-            f"DROP OWNED BY {role} CASCADE;",
-            f"DROP ROLE IF EXISTS {role};",
-        )
-    ]
-
-    handler_drops: list[str] = []
+    # --- cleanup construction (shared idempotent bookends) -----------
+    # Migrated to cleanup_bookend so every DROP carries IF EXISTS and
+    # DROP OWNED BY is unreachable in pre-cleanup: the actor role is
+    # created by setup, so on a fresh database the role does not exist
+    # yet at pre-cleanup time and DROP OWNED BY would crash
+    # (ON_ERROR_STOP=1) before the target statement reaches execution.
+    # Pre-cleanup drops roles via DROP ROLE IF EXISTS only; the
+    # post-target cleanup runs DROP OWNED BY then DROP ROLE IF EXISTS
+    # once setup has created the role.  CREATE FOREIGN DATA WRAPPER
+    # does not create fixture tables, so no DROP TABLE anchor is emitted.
+    # The validator function signature ``(text[], oid)`` contains ``[]``
+    # which the DropSpec args validator rejects, so the validator is
+    # dropped by name only (each case's object_prefix is unique, so the
+    # name is unambiguous).
+    specs: list[DropSpec] = [DropSpec("FOREIGN DATA WRAPPER", fdw)]
     if (
         handler_clause == "specified_handler_function"
         and not _handler_missing(a)
     ):
-        handler = _handler_name(a, p)
-        returns = _handler_returns_type(a)
-        handler_drops.append(
-            f"DROP FUNCTION IF EXISTS {handler}();"
+        specs.append(
+            DropSpec("FUNCTION", _handler_name(a, p), "()")
         )
-
-    validator_drops: list[str] = []
     if (
         validator_clause == "specified_validator_function"
         and not _validator_missing(a)
     ):
-        validator = _validator_name(a, p)
-        validator_drops.append(
-            f"DROP FUNCTION IF EXISTS {validator}(text[], oid);"
-        )
-
-    # pre-cleanup: FDW first, then functions, then roles
-    pre_cleanup: list[str] = []
-    pre_cleanup.extend(fdw_drops)
-    pre_cleanup.extend(handler_drops)
-    pre_cleanup.extend(validator_drops)
-    pre_cleanup.extend(role_drops)
-    if not pre_cleanup:
-        pre_cleanup.append(
-            "SELECT 1 AS residual_check_no_objects;"
-        )
-
-    # cleanup: RESET ROLE, FDW, functions, roles
-    cleanup: list[str] = []
-    if effective:
-        cleanup.append("RESET ROLE;")
-    cleanup.extend(fdw_drops)
-    cleanup.extend(handler_drops)
-    cleanup.extend(validator_drops)
-    cleanup.extend(role_drops)
-    if not cleanup:
-        cleanup.append(
-            "SELECT 1 AS residual_check_no_objects;"
-        )
+        specs.append(DropSpec("FUNCTION", _validator_name(a, p)))
+    role_list = list(roles)
+    pre_bookend = build_pre_cleanup(
+        specs=tuple(specs),
+        roles=role_list,
+    )
+    cln_bookend = build_cleanup(
+        specs=tuple(specs),
+        roles=role_list,
+        drop_owned=bool(role_list),
+        reset_role=bool(effective),
+    )
+    pre_cleanup = list(pre_bookend.statements)
+    cleanup = list(cln_bookend.statements)
 
     on_error_off = case.outcome == "expected_failure"
     return _CasePlan(
