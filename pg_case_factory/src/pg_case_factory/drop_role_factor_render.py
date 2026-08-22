@@ -18,6 +18,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 
+from .cleanup_bookend import DropSpec, build_cleanup, build_pre_cleanup
 from .drop_role_factor_extension import (
     DropRoleFactorExtensionCase,
 )
@@ -378,51 +379,45 @@ def _resolve_case(case: DropRoleFactorCase) -> _CasePlan:
     )
     assert_lines.append(_probe_select(case, a, p))
 
-    # --- cleanup construction -------------------------------------------
-    role_drops: list[str] = []
-    for role in created:
-        role_drops.append(f"DROP OWNED BY {role};")
-        role_drops.append(f"DROP ROLE IF EXISTS {role};")
-    # also drop any nonexistent target (no-op under IF EXISTS, but keeps
-    # cleanup complete for multi_target_some_not_exist)
-    for role in targets:
-        if role not in created:
-            role_drops.append(f"DROP ROLE IF EXISTS {role};")
-    actor_drops: list[str] = []
-    if effective:
-        actor_drops.append(f"DROP OWNED BY {p}actor;")
-        actor_drops.append(f"DROP ROLE IF EXISTS {p}actor;")
-    obj_drops: list[str] = []
+    # --- cleanup construction (shared idempotent bookends) -----------
+    # Migrated to cleanup_bookend so every DROP carries IF EXISTS and
+    # DROP OWNED BY is unreachable in pre-cleanup: on a fresh database the
+    # role fixture is created by setup, so the role does not exist yet at
+    # pre-cleanup time and DROP OWNED BY would crash (ON_ERROR_STOP=1)
+    # before the target statement reaches execution.  Pre-cleanup drops
+    # roles via DROP ROLE IF EXISTS only; the post-target cleanup runs
+    # DROP OWNED BY then DROP ROLE IF EXISTS once setup has created the
+    # role.  The DROP TABLE IF EXISTS anchor is first in pre-cleanup and
+    # last in cleanup, satisfying the table-bookend gate.  Only roles that
+    # setup actually creates (the target-role fixtures plus the actor) are
+    # passed to the helper so DROP OWNED BY is never emitted for a role
+    # that cannot exist; nonexistent target roles are a no-op and are
+    # intentionally omitted.
+    specs: list[DropSpec] = []
     if "function" in owned:
-        obj_drops.append(f"DROP FUNCTION IF EXISTS {p}fn();")
+        specs.append(DropSpec("FUNCTION", f"{p}fn", args="()"))
     if "view" in owned:
-        obj_drops.append(f"DROP VIEW IF EXISTS {p}v;")
+        specs.append(DropSpec("VIEW", f"{p}v"))
     if "sequence" in owned:
-        obj_drops.append(f"DROP SEQUENCE IF EXISTS {p}seq;")
-    table_drop = f"DROP TABLE IF EXISTS {p}t CASCADE;"
-
-    # Pre-cleanup: DROP TABLE first (bookend gate), then objects, then roles.
-    pre_cleanup: list[str] = []
-    if has_table:
-        pre_cleanup.append(table_drop)
-    pre_cleanup.extend(obj_drops)
-    pre_cleanup.extend(role_drops)
-    pre_cleanup.extend(actor_drops)
-    if not pre_cleanup:
-        pre_cleanup.append("SELECT 1 AS residual_check_no_objects;")
-
-    # Cleanup: RESET ROLE, then role/actor drops, then objects, then DROP
-    # TABLE last (bookend gate).
-    cleanup: list[str] = []
+        specs.append(DropSpec("SEQUENCE", f"{p}seq"))
+    table_names = [f"{p}t"] if has_table else []
+    cleanup_roles = list(created)
     if effective:
-        cleanup.append("RESET ROLE;")
-    cleanup.extend(role_drops)
-    cleanup.extend(actor_drops)
-    cleanup.extend(obj_drops)
-    if has_table:
-        cleanup.append(table_drop)
-    if not cleanup:
-        cleanup.append("SELECT 1 AS residual_check_no_objects;")
+        cleanup_roles.append(effective)
+    pre_bookend = build_pre_cleanup(
+        tables=table_names,
+        specs=tuple(specs),
+        roles=cleanup_roles,
+    )
+    cln_bookend = build_cleanup(
+        tables=table_names,
+        specs=tuple(specs),
+        roles=cleanup_roles,
+        drop_owned=bool(cleanup_roles),
+        reset_role=bool(effective),
+    )
+    pre_cleanup = list(pre_bookend.statements)
+    cleanup = list(cln_bookend.statements)
 
     on_error_off = case.outcome == "expected_failure"
     return _CasePlan(
