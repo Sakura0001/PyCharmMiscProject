@@ -18,6 +18,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 
+from .cleanup_bookend import DropSpec, build_cleanup, build_pre_cleanup
 from .drop_schema_factor_extension import (
     DropSchemaFactorExtensionCase,
 )
@@ -410,57 +411,46 @@ def _resolve_case(case: DropSchemaFactorCase) -> _CasePlan:
     )
     assert_lines.append(_probe_select(case, a, p))
 
-    # --- cleanup construction (bookend split) -------------------------------
+    # --- cleanup construction (shared idempotent bookends) -----------
+    # Migrated to cleanup_bookend so every DROP carries IF EXISTS and
+    # DROP OWNED BY is unreachable in pre-cleanup: the granted_role
+    # fixture is created by setup, so on a fresh database the role does
+    # not exist yet at pre-cleanup time and DROP OWNED BY would crash
+    # (ON_ERROR_STOP=1) before the target statement reaches execution.
+    # Pre-cleanup drops roles via DROP ROLE IF EXISTS only; the post-target
+    # cleanup runs DROP OWNED BY then DROP ROLE IF EXISTS once setup has
+    # created the role.  The DROP TABLE IF EXISTS anchor is first in
+    # pre-cleanup and last in cleanup, satisfying the table-bookend gate.
     role = _role_name(p)
-    role_drops: list[str] = []
-    if effective:
-        role_drops = [
-            f"DROP OWNED BY {role};",
-            f"DROP ROLE IF EXISTS {role};",
-        ]
-    # Drop every schema-qualified table this script created, as a single
-    # multi-target DROP TABLE statement.  The bookend gate requires the FIRST
-    # and LAST executable statement to EACH be a DROP TABLE IF EXISTS listing
-    # every created table (matched by set membership, schema-qualified and
-    # lowercased -- exactly as the CREATE TABLE statements emit them).
-    _table_targets: list[str] = []
+    specs: list[DropSpec] = []  # contained objects fall with DROP SCHEMA CASCADE
+    table_targets: list[str] = []
     if needs_table:
-        _table_targets.append(f"{p}sch.{p}t")
+        table_targets.append(f"{p}sch.{p}t")
     if (
         a.get("cross_schema_dependency", "no_cross_dependency")
         == "has_cross_schema_fk"
     ):
-        _table_targets.append(f"{p}sch2.{p}t2")
-    table_drop = (
-        [f"DROP TABLE IF EXISTS {', '.join(_table_targets)} CASCADE;"]
-        if _table_targets
-        else []
+        table_targets.append(f"{p}sch2.{p}t2")
+    schemas_list = [sch_name]
+    if needs_sch2:
+        schemas_list.append(f"{p}sch2")
+    role_list = [role] if effective else []
+    pre_bookend = build_pre_cleanup(
+        tables=table_targets,
+        specs=tuple(specs),
+        schemas=schemas_list,
+        roles=role_list,
     )
-    sch2_drop = (
-        [f"DROP SCHEMA IF EXISTS {p}sch2 CASCADE;"] if needs_sch2 else []
+    cln_bookend = build_cleanup(
+        tables=table_targets,
+        specs=tuple(specs),
+        schemas=schemas_list,
+        roles=role_list,
+        drop_owned=bool(role_list),
+        reset_role=bool(effective),
     )
-    sch_drop = f"DROP SCHEMA IF EXISTS {sch_name} CASCADE;"
-
-    # Pre-cleanup: DROP TABLE first (bookend lead), then schemas, then roles.
-    pre_cleanup: list[str] = []
-    pre_cleanup.extend(table_drop)
-    pre_cleanup.append(sch_drop)
-    pre_cleanup.extend(sch2_drop)
-    pre_cleanup.extend(role_drops)
-    if not pre_cleanup:
-        pre_cleanup.append("SELECT 1 AS residual_check_no_objects;")
-
-    # Cleanup: RESET ROLE, schema drops, role drops, then DROP TABLE last
-    # (bookend tail).
-    cleanup: list[str] = []
-    if effective:
-        cleanup.append("RESET ROLE;")
-    cleanup.append(sch_drop)
-    cleanup.extend(sch2_drop)
-    cleanup.extend(role_drops)
-    cleanup.extend(table_drop)
-    if not cleanup:
-        cleanup.append("SELECT 1 AS residual_check_no_objects;")
+    pre_cleanup = list(pre_bookend.statements)
+    cleanup = list(cln_bookend.statements)
 
     on_error_off = case.outcome == "expected_failure"
     return _CasePlan(
