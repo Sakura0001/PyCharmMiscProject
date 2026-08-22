@@ -29,6 +29,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 
+from .cleanup_bookend import DropSpec, build_cleanup, build_pre_cleanup
 from .drop_type_factor_extension import (
     DropTypeFactorExtensionCase,
 )
@@ -397,66 +398,48 @@ def _resolve_case(case: DropTypeFactorCase) -> _CasePlan:
     )
     assert_lines.append(_probe_select(case, a, p))
 
-    # --- cleanup construction -------------------------------------------
-    # Object drops, assembled so the bookend gate sees DROP TABLE at the
-    # boundaries when a table is created.
-    table_drop = (
-        [f"DROP TABLE IF EXISTS {table_name} CASCADE;"]
-        if creates_table
-        else []
-    )
+    # --- cleanup construction (shared idempotent bookends) -----------
+    # Migrated to cleanup_bookend so every DROP carries IF EXISTS and
+    # DROP OWNED BY is unreachable in pre-cleanup: the actor role
+    # fixture is created by setup, so on a fresh database the role does
+    # not exist yet at pre-cleanup time and DROP OWNED BY would crash
+    # (ON_ERROR_STOP=1) before the target statement reaches execution.
+    # Pre-cleanup drops roles via DROP ROLE IF EXISTS only; the post-target
+    # cleanup runs DROP OWNED BY then DROP ROLE IF EXISTS once setup has
+    # created the role.  The DROP TABLE IF EXISTS anchor is first in
+    # pre-cleanup and last in cleanup, satisfying the table-bookend gate.
+    #
+    # The operator ``#`` (a symbolic name the helper's identifier
+    # validator rejects, and PostgreSQL rejects as a quoted identifier)
+    # is dropped implicitly: ``DROP FUNCTION opfn CASCADE`` cascades to
+    # the operator whose ``PROCEDURE = opfn``, so no separate OPERATOR
+    # DropSpec is needed.
+    specs: list[DropSpec] = []
     dep = _dependency_kind(a)
-    func_drop = (
-        [f"DROP FUNCTION IF EXISTS {p}fn CASCADE;"]
-        if dep == "used_in_function_params"
-        else []
-    )
-    op_drop = (
-        [
-            f"DROP OPERATOR IF EXISTS #({type_ref}, {type_ref});",
-            f"DROP FUNCTION IF EXISTS {p}opfn CASCADE;",
-        ]
-        if dep == "used_in_operators"
-        else []
-    )
-    type_drop = [f"DROP TYPE IF EXISTS {type_ref} CASCADE;"]
+    if dep == "used_in_operators":
+        specs.append(DropSpec("FUNCTION", f"{p}opfn"))
+    if dep == "used_in_function_params":
+        specs.append(DropSpec("FUNCTION", f"{p}fn"))
+    specs.append(DropSpec("TYPE", type_ref))
     if multi:
-        type_drop.append(
-            f"DROP TYPE IF EXISTS {_second_type_ref(p)} CASCADE;"
-        )
+        specs.append(DropSpec("TYPE", _second_type_ref(p)))
+    table_names = [table_name] if creates_table else []
     roles = _role_names(case, p, effective)
-    role_drops = [
-        statement
-        for role in roles
-        for statement in (
-            f"DROP OWNED BY {role};",
-            f"DROP ROLE IF EXISTS {role};",
-        )
-    ]
-
-    # Pre-cleanup: DROP TABLE first (bookend gate), then operator/function/
-    # type/role.
-    pre_cleanup: list[str] = []
-    pre_cleanup.extend(table_drop)
-    pre_cleanup.extend(op_drop)
-    pre_cleanup.extend(func_drop)
-    pre_cleanup.extend(type_drop)
-    pre_cleanup.extend(role_drops)
-    if not pre_cleanup:
-        pre_cleanup.append("SELECT 1 AS residual_check_no_objects;")
-
-    # Cleanup: RESET ROLE, then operator/function/type/role drops, then
-    # DROP TABLE last (bookend gate).
-    cleanup: list[str] = []
-    if effective:
-        cleanup.append("RESET ROLE;")
-    cleanup.extend(op_drop)
-    cleanup.extend(func_drop)
-    cleanup.extend(type_drop)
-    cleanup.extend(role_drops)
-    cleanup.extend(table_drop)
-    if not cleanup:
-        cleanup.append("SELECT 1 AS residual_check_no_objects;")
+    role_list = list(roles)
+    pre_bookend = build_pre_cleanup(
+        tables=table_names,
+        specs=tuple(specs),
+        roles=role_list,
+    )
+    cln_bookend = build_cleanup(
+        tables=table_names,
+        specs=tuple(specs),
+        roles=role_list,
+        drop_owned=bool(role_list),
+        reset_role=bool(effective),
+    )
+    pre_cleanup = list(pre_bookend.statements)
+    cleanup = list(cln_bookend.statements)
 
     on_error_off = case.outcome == "expected_failure"
     return _CasePlan(
