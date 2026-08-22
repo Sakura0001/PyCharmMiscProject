@@ -110,9 +110,12 @@ class TestStandardSyntaxKinds(unittest.TestCase):
     """
 
     _STANDARD_KINDS: tuple[str, ...] = (
-        "CONVERSION",
         "ACCESS METHOD",
+        "CONVERSION",
         "EVENT TRIGGER",
+        "FOREIGN DATA WRAPPER",
+        "FOREIGN TABLE",
+        "SERVER",
         "TEXT SEARCH CONFIGURATION",
         "TEXT SEARCH DICTIONARY",
         "TEXT SEARCH PARSER",
