@@ -34,6 +34,7 @@ from .create_aggregate_factor_loop import (
     CreateAggregateFactorCase,
     CreateAggregateFactorLoopPlan,
 )
+from .cleanup_bookend import DropSpec, build_cleanup, build_pre_cleanup
 
 _PRIMARY_BEGIN = "-- primary-target-begin"
 _PRIMARY_END = "-- primary-target-end"
@@ -559,60 +560,33 @@ def _resolve_case(
     else:
         drop_sig = f"({atype})"
 
-    cleanup_mode = a.get("cleanup_mode", "DROP_AGGREGATE")
-    cascade = " CASCADE" if cleanup_mode == "DROP_AGGREGATE_CASCADE" else ""
-    if_exists = " IF EXISTS" if "IF_EXISTS" in cleanup_mode else ""
-
-    agg_drop = (
-        f"DROP AGGREGATE{if_exists} {agg_name}{drop_sig}{cascade};"
-    )
-
-    func_drops: list[str] = []
+    # Idempotent bookends via the shared cleanup_bookend helper. Every DROP
+    # carries IF EXISTS (safe on a fresh database AND on run-02, where run-01's
+    # cleanup already dropped the objects), and DROP OWNED BY is unreachable in
+    # pre-cleanup -- the role may not exist yet on a fresh database, which
+    # previously crashed the run before the target statement. Post-target
+    # cleanup drops owned objects then the role.
     sfunc = _sfunc_name(a, p)
-    func_drops.append(
-        f"DROP FUNCTION IF EXISTS {sfunc}({_sfunc_sig(a)});"
-    )
+    specs: list[DropSpec] = [DropSpec("AGGREGATE", agg_name, drop_sig)]
+    specs.append(DropSpec("FUNCTION", sfunc, f"({_sfunc_sig(a)})"))
     if ffd == "exists" or ffd == "wrong_return_type":
-        func_drops.append(
-            f"DROP FUNCTION IF EXISTS {_ffunc_name(p)}({stype});"
-        )
+        specs.append(DropSpec("FUNCTION", _ffunc_name(p), f"({stype})"))
     if cfd == "exists":
-        func_drops.append(
-            f"DROP FUNCTION IF EXISTS {_combinefunc_name(p)}({stype}, {stype});"
-        )
+        specs.append(DropSpec("FUNCTION", _combinefunc_name(p), f"({stype}, {stype})"))
 
-    role_drops: list[str] = []
-    if pl == "non_owner":
-        role_drops.extend([
-            f"DROP OWNED BY {p}actor CASCADE;",
-            f"DROP ROLE IF EXISTS {p}actor;",
-        ])
+    schemas = (_schema_name(p),) if _needs_schema(a) else ()
+    roles = (f"{p}actor",) if pl == "non_owner" else ()
 
-    schema_drops: list[str] = []
-    if _needs_schema(a):
-        schema_drops.append(
-            f"DROP SCHEMA IF EXISTS {_schema_name(p)} CASCADE;"
-        )
-
-    # pre-cleanup: aggregate, functions, roles, schema
-    pre_cleanup: list[str] = []
-    pre_cleanup.append(agg_drop)
-    pre_cleanup.extend(func_drops)
-    pre_cleanup.extend(role_drops)
-    pre_cleanup.extend(schema_drops)
-    if not pre_cleanup:
-        pre_cleanup.append("SELECT 1 AS residual_check_no_objects;")
-
-    # cleanup: RESET ROLE, aggregate, functions, roles, schema
-    cleanup: list[str] = []
-    if pl == "non_owner":
-        cleanup.append("RESET ROLE;")
-    cleanup.append(agg_drop)
-    cleanup.extend(func_drops)
-    cleanup.extend(role_drops)
-    cleanup.extend(schema_drops)
-    if not cleanup:
-        cleanup.append("SELECT 1 AS residual_check_no_objects;")
+    pre_bookend = build_pre_cleanup(specs=specs, schemas=schemas, roles=roles)
+    cln_bookend = build_cleanup(
+        specs=specs,
+        schemas=schemas,
+        roles=roles,
+        drop_owned=bool(roles),
+        reset_role=bool(roles),
+    )
+    pre_cleanup = pre_bookend.statements
+    cleanup = cln_bookend.statements
 
     on_error_off = case.outcome == "expected_failure"
     return _CasePlan(

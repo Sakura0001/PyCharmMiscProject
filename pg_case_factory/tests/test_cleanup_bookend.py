@@ -69,7 +69,27 @@ class TestIdempotentDrop(unittest.TestCase):
             idempotent_drop(DropSpec("ROLE", "r"))
 
     def test_invalid_identifier_rejected(self) -> None:
-        for bad in ("'inj'", "a; DROP x", "col--x", '"q"', "a b", ""):
+        for bad in ("'inj'", "a; DROP x", "col--x", "a b", ""):
+            with self.subTest(bad=bad):
+                with self.assertRaises(ValueError):
+                    idempotent_drop(DropSpec("AGGREGATE", bad, "(int)"))
+
+    def test_quoted_identifier_accepted(self) -> None:
+        # Quoted identifiers (reserved-word/spaced names used by renders like
+        # create_aggregate) are legitimate and safe: ';' inside "..." is literal.
+        self.assertEqual(
+            idempotent_drop(
+                DropSpec("AGGREGATE", '"createaggregate_00010_Mixed Agg"', "(int)")
+            ),
+            'DROP AGGREGATE IF EXISTS "createaggregate_00010_Mixed Agg"(int) CASCADE;',
+        )
+        self.assertEqual(
+            idempotent_drop(DropSpec("TABLE", '"q"')),
+            'DROP TABLE IF EXISTS "q" CASCADE;',
+        )
+
+    def test_malformed_quoted_identifier_rejected(self) -> None:
+        for bad in ('"q', 'q"', '"a"b"', '"a"b'):
             with self.subTest(bad=bad):
                 with self.assertRaises(ValueError):
                     idempotent_drop(DropSpec("AGGREGATE", bad, "(int)"))

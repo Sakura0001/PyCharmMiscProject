@@ -66,14 +66,15 @@ _DROP_KINDS: Final[frozenset[str]] = frozenset(
     }
 )
 
-# Plain or dot-qualified unquoted identifier (mirrors regression_style's
-# _normalize_identifier per-segment pattern, without lowercasing on emit).
-_IDENT_RE: Final[re.Pattern[str]] = re.compile(
-    r"[A-Za-z_][A-Za-z0-9_$]*(?:\.[A-Za-z_][A-Za-z0-9_$]*)*"
-)
+# A plain (unquoted) identifier segment, mirroring regression_style's
+# _normalize_identifier per-segment pattern without lowercasing on emit.
+_PLAIN_SEGMENT_RE: Final[re.Pattern[str]] = re.compile(r"[A-Za-z_][A-Za-z0-9_$]*")
+# A properly-quoted identifier segment: "..." with "" escaping a literal ".
+_QUOTED_SEGMENT_RE: Final[re.Pattern[str]] = re.compile(r'"(?:[^"]|"")*"')
 # args is either empty or a parenthesized argument-type list. We reject any
-# statement-terminator, comment starter, or quote that would allow injection.
+# statement-terminator or quote that would allow injection.
 _ARGS_RE: Final[re.Pattern[str]] = re.compile(r"\([A-Za-z0-9_,$. ]*\)")
+
 
 _RESIDUAL_SELECT: Final[str] = "SELECT 1 AS residual_check_no_objects;"
 
@@ -83,8 +84,8 @@ class DropSpec:
     """A validated, idempotent DROP specification.
 
     ``kind`` must be a member of the supported allowlist (not ROLE, not
-    DATABASE); ``name`` a plain or qualified identifier; ``args`` an optional
-    ``(type, ...)`` list. A bare DROP is impossible to express.
+    DATABASE); ``name`` a plain, quoted, or dot-qualified identifier; ``args``
+    an optional ``(type, ...)`` list. A bare DROP is impossible to express.
     """
 
     kind: str
@@ -101,11 +102,46 @@ class CleanupBookend:
     drop_kinds: tuple[str, ...] = ()
 
 
+def _split_qualified_segments(name: str) -> tuple[str, ...]:
+    """Split a (possibly dot-qualified) identifier on top-level '.' only.
+
+    Dots inside a quoted segment are preserved as part of that segment.
+    """
+    segments: list[str] = []
+    current: list[str] = []
+    in_quote = False
+    for ch in name:
+        if ch == '"':
+            in_quote = not in_quote
+            current.append(ch)
+        elif ch == "." and not in_quote:
+            segments.append("".join(current))
+            current = []
+        else:
+            current.append(ch)
+    segments.append("".join(current))
+    return tuple(segments)
+
+
+def _is_valid_identifier(name: str) -> bool:
+    """True if ``name`` is a plain, quoted, or dot-qualified-mix identifier."""
+    segments = _split_qualified_segments(name)
+    if not segments or any(seg == "" for seg in segments):
+        return False
+    for seg in segments:
+        if seg.startswith('"'):
+            if _QUOTED_SEGMENT_RE.fullmatch(seg) is None:
+                return False
+        elif _PLAIN_SEGMENT_RE.fullmatch(seg) is None:
+            return False
+    return True
+
+
 def _validate_identifier(name: str, field: str) -> str:
     if not isinstance(name, str) or not name.strip():
         raise ValueError(f"{field} must be a non-empty identifier")
-    if _IDENT_RE.fullmatch(name) is None:
-        raise ValueError(f"{field} is not a valid plain or qualified identifier: {name!r}")
+    if not _is_valid_identifier(name):
+        raise ValueError(f"{field} is not a valid plain or quoted identifier: {name!r}")
     return name
 
 

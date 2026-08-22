@@ -80,12 +80,20 @@ def load_package(key: str) -> Package:
         ) from exc
 
 
-def render_cases(package: Package, sql_dir: Path) -> tuple[tuple[Any, ...], dict[str, Path]]:
-    """Build the case set and write each case's SQL into ``sql_dir``."""
+def render_cases(
+    package: Package, sql_dir: Path, subset: set[str] | None = None
+) -> tuple[tuple[Any, ...], dict[str, Path]]:
+    """Build the case set and write SQL. With a subset, render only those cases.
+
+    Rendering is the expensive step (one file per case); for huge packages
+    (create_aggregate ships ~18k extension cases) we avoid writing all of them
+    when only a subset is verified. ``run_cases`` skips cases whose SQL is
+    absent, so the unrendered ones are never executed.
+    """
     cases, sql_paths = package.build_case_set(ROOT, sql_dir)
-    for case in cases:
-        path = sql_paths[case.case_id]
-        path.write_text(package.render_case(case, ROOT), encoding="utf-8")
+    targets = [c for c in cases if subset is None or c.case_id in subset]
+    for case in targets:
+        sql_paths[case.case_id].write_text(package.render_case(case, ROOT), encoding="utf-8")
     return cases, sql_paths
 
 
@@ -210,7 +218,7 @@ def main(argv: list[str] | None = None) -> int:
 
     with tempfile.TemporaryDirectory(prefix="pgcf-verify-sql-") as sql_temp:
         sql_dir = Path(sql_temp)
-        cases, sql_paths = render_cases(package, sql_dir)
+        cases, sql_paths = render_cases(package, sql_dir, subset)
         if subset:
             unknown = subset - {case.case_id for case in cases}
             if unknown:
