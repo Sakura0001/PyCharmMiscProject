@@ -71,6 +71,7 @@ _DROP_KINDS: Final[frozenset[str]] = frozenset(
         "SCHEMA",
         "SEQUENCE",
         "SERVER",
+        "STATISTICS",
         "SUBSCRIPTION",
         "TABLE",
         "TEXT SEARCH CONFIGURATION",

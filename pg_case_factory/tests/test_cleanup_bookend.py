@@ -117,6 +117,7 @@ class TestStandardSyntaxKinds(unittest.TestCase):
         "FOREIGN TABLE",
         "PUBLICATION",
         "SERVER",
+        "STATISTICS",
         "SUBSCRIPTION",
         "TEXT SEARCH CONFIGURATION",
         "TEXT SEARCH DICTIONARY",
