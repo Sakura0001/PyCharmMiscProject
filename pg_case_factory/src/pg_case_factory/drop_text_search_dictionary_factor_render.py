@@ -24,6 +24,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 
+from .cleanup_bookend import DropSpec, build_cleanup, build_pre_cleanup
 from .drop_text_search_dictionary_factor_extension import (
     DropTextSearchDictionaryFactorExtensionCase,
 )
@@ -326,44 +327,30 @@ def _resolve_case(case: DropTextSearchDictionaryFactorCase) -> _CasePlan:
     )
     assert_lines.append(_probe_select(case, a, p))
 
-    # --- cleanup construction -------------------------------------------
-    dep_drop = (
-        [f"DROP TEXT SEARCH CONFIGURATION IF EXISTS {p}cfg CASCADE;"]
-        if needs_dep
-        else []
-    )
-    dict_drop = (
-        [f"DROP TEXT SEARCH DICTIONARY IF EXISTS {dict_ref} CASCADE;"]
-        if dict_created
-        else [f"DROP TEXT SEARCH DICTIONARY IF EXISTS {dict_ref} CASCADE;"]
-    )
+    # --- cleanup construction (shared idempotent bookends) -----------
+    # Migrated to cleanup_bookend so every DROP carries IF EXISTS and
+    # DROP OWNED BY is unreachable in pre-cleanup: the actor role is
+    # created by setup, so on a fresh database the role does not exist
+    # yet at pre-cleanup time and DROP OWNED BY would crash
+    # (ON_ERROR_STOP=1) before the target statement reaches execution.
+    # Pre-cleanup drops roles via DROP ROLE IF EXISTS only; the post-target
+    # cleanup runs DROP OWNED BY then DROP ROLE IF EXISTS once setup has
+    # created the role.
     roles = _role_names(case, p, effective)
-    role_drops = [
-        statement
-        for role in roles
-        for statement in (
-            f"DROP OWNED BY {role};",
-            f"DROP ROLE IF EXISTS {role};",
-        )
-    ]
-
-    # Pre-cleanup: drop config first, then dictionary, then roles.
-    pre_cleanup: list[str] = []
-    pre_cleanup.extend(dep_drop)
-    pre_cleanup.extend(dict_drop)
-    pre_cleanup.extend(role_drops)
-    if not pre_cleanup:
-        pre_cleanup.append("SELECT 1 AS residual_check_no_objects;")
-
-    # Cleanup: RESET ROLE, then config/dict/role drops.
-    cleanup: list[str] = []
-    if effective:
-        cleanup.append("RESET ROLE;")
-    cleanup.extend(dep_drop)
-    cleanup.extend(dict_drop)
-    cleanup.extend(role_drops)
-    if not cleanup:
-        cleanup.append("SELECT 1 AS residual_check_no_objects;")
+    role_list = list(roles)
+    specs: list[DropSpec] = []
+    if needs_dep:
+        specs.append(DropSpec("TEXT SEARCH CONFIGURATION", f"{p}cfg"))
+    specs.append(DropSpec("TEXT SEARCH DICTIONARY", dict_ref))
+    pre_bookend = build_pre_cleanup(specs=tuple(specs), roles=role_list)
+    cln_bookend = build_cleanup(
+        specs=tuple(specs),
+        roles=role_list,
+        drop_owned=bool(role_list),
+        reset_role=bool(effective),
+    )
+    pre_cleanup = list(pre_bookend.statements)
+    cleanup = list(cln_bookend.statements)
 
     on_error_off = case.outcome == "expected_failure"
     return _CasePlan(
