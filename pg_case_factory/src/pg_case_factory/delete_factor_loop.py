@@ -169,8 +169,8 @@ _SFV_FAILURE_SQLSTATE: dict[tuple[str, str], tuple[str, str]] = {
         "wrong_object_type_provisional",
     ),
     ("constraint_boundary", "constraint_violation"): (
-        "23000",
-        "constraint_violation_or_boundary_error_provisional",
+        "23503",
+        "foreign_key_violation_provisional",
     ),
 }
 

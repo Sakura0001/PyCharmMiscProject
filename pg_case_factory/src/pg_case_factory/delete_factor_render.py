@@ -23,6 +23,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 
+from .cleanup_bookend import DropSpec, build_cleanup, build_pre_cleanup
 from .delete_factor_extension import (
     DeleteFactorExtensionCase,
     _present_failure_pair,
@@ -440,43 +441,35 @@ def _resolve_case(case: DeleteFactorCase) -> _CasePlan:
     if probe is not None:
         assert_lines.append(probe)
 
-    # --- cleanup construction ----------------------------------------
-    seq_drops = (
-        [f"DROP SEQUENCE IF EXISTS {seq};"] if wrong else []
+    # --- cleanup construction (shared idempotent bookends) -----------
+    # Migrated to cleanup_bookend so every DROP carries IF EXISTS and
+    # DROP OWNED BY is unreachable in pre-cleanup: the granted_role
+    # fixture is created by setup, so on a fresh database the role does
+    # not exist yet at pre-cleanup time and DROP OWNED BY would crash
+    # (ON_ERROR_STOP=1) before the target statement reaches execution.
+    # Pre-cleanup drops roles via DROP ROLE IF EXISTS only; the post-target
+    # cleanup runs DROP OWNED BY then DROP ROLE IF EXISTS once setup has
+    # created the role.  The DROP TABLE IF EXISTS anchor is first in
+    # pre-cleanup and last in cleanup, satisfying the table-bookend gate.
+    specs: list[DropSpec] = []
+    if wrong:
+        specs.append(DropSpec("SEQUENCE", seq))
+    table_names = [tbl, src, ref]
+    role_list = list(roles)
+    pre_bookend = build_pre_cleanup(
+        tables=table_names,
+        specs=tuple(specs),
+        roles=role_list,
     )
-    role_drops = [
-        statement
-        for role in roles
-        for statement in (
-            f"DROP OWNED BY {role} CASCADE;",
-            f"DROP ROLE IF EXISTS {role};",
-        )
-    ]
-    # Bookend gate: the final ;-segment must be a single DROP TABLE IF
-    # EXISTS covering every table this case may create (target, source,
-    # FK-referencing).  CASCADE removes dependent objects first.
-    table_drops = [
-        f"DROP TABLE IF EXISTS {tbl}, {src}, {ref} CASCADE;"
-    ]
-
-    # pre-cleanup: tables first (bookend), then sequence, then roles
-    pre_cleanup: list[str] = []
-    pre_cleanup.extend(table_drops)
-    pre_cleanup.extend(seq_drops)
-    pre_cleanup.append("RESET ROLE;")
-    pre_cleanup.extend(role_drops)
-    if not pre_cleanup:
-        pre_cleanup.append(
-            "SELECT 1 AS residual_check_no_objects;"
-        )
-
-    # cleanup: RESET ROLE, sequence, roles, tables last (bookend)
-    cleanup: list[str] = []
-    if effective:
-        cleanup.append("RESET ROLE;")
-    cleanup.extend(seq_drops)
-    cleanup.extend(role_drops)
-    cleanup.extend(table_drops)
+    cln_bookend = build_cleanup(
+        tables=table_names,
+        specs=tuple(specs),
+        roles=role_list,
+        drop_owned=bool(role_list),
+        reset_role=bool(effective),
+    )
+    pre_cleanup = list(pre_bookend.statements)
+    cleanup = list(cln_bookend.statements)
 
     on_error_off = case.outcome == "expected_failure"
     return _CasePlan(
