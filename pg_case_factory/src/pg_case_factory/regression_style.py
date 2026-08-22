@@ -1058,9 +1058,168 @@ def audit_complete_table_script(
     )
 
 
+_CLEANUP_BOOKEND_MARKER_RE = re.compile(
+    r"^\s*--\s*cleanup-bookend:\s*(pre-cleanup|cleanup)-(begin|end)\s*$"
+)
+_DROP_STMT_RE = re.compile(r"^\s*DROP\s+\S", re.IGNORECASE)
+_DROP_OWNED_RE = re.compile(r"\bDROP\s+OWNED\s+BY\b", re.IGNORECASE)
+_IF_EXISTS_RE = re.compile(r"\bIF\s+EXISTS\b", re.IGNORECASE)
+_MISSING_MARKER_MSG = (
+    "no cleanup-bookend markers found; script not migrated to shared cleanup_bookend helper"
+)
+
+
+@dataclass(frozen=True)
+class CleanupBookendAuditReport:
+    """Result of auditing the pre-cleanup and cleanup regions of a script."""
+
+    pre_cleanup_statements: tuple[str, ...]
+    cleanup_statements: tuple[str, ...]
+    issues: tuple[str, ...]
+    warnings: tuple[str, ...]
+
+    @property
+    def passed(self) -> bool:
+        return not self.issues
+
+
+def _extract_bookend_regions(sql_text: str) -> dict[str, dict[str, object]]:
+    """Split raw SQL into {region: {body, balanced}} keyed by marker pairs.
+
+    ``body`` is the joined text between a region's begin/end markers; ``balanced``
+    is False when a begin has no matching end (or a stray end appears).
+    """
+    regions: dict[str, dict[str, object]] = {}
+    active: Optional[str] = None
+    for line in sql_text.splitlines():
+        match = _CLEANUP_BOOKEND_MARKER_RE.match(line)
+        if match is not None:
+            region, phase = match.group(1), match.group(2)
+            slot = regions.setdefault(
+                region, {"body": [], "balanced": False}
+            )
+            if phase == "begin":
+                slot["body"] = []
+                active = region
+            else:
+                if active == region:
+                    slot["balanced"] = True
+                    active = None
+                else:
+                    slot["balanced"] = False
+            continue
+        if active is not None:
+            regions[active]["body"].append(line)  # type: ignore[union-attr]
+    if active is not None:
+        regions.setdefault(active, {"body": [], "balanced": False})[
+            "balanced"
+        ] = False
+    for slot in regions.values():
+        slot["body"] = "\n".join(slot["body"])  # type: ignore[arg-type]
+    return regions
+
+
+def _audit_bookend_drops(
+    statements: tuple[str, ...],
+    *,
+    in_pre_cleanup: bool,
+) -> list[str]:
+    """Flag non-idempotent DROPs and (in pre-cleanup) DROP OWNED BY."""
+    issues: list[str] = []
+    for statement in statements:
+        masked, _ = _mask_non_code(statement)
+        first_line = statement.splitlines()[0] if statement.splitlines() else statement
+        if _DROP_OWNED_RE.search(masked):
+            if in_pre_cleanup:
+                issues.append(
+                    "DROP OWNED BY is forbidden in pre-cleanup "
+                    "(use the post-target cleanup bookend)"
+                )
+            continue
+        if _DROP_STMT_RE.match(masked) and not _IF_EXISTS_RE.search(masked):
+            where = "pre-cleanup" if in_pre_cleanup else "cleanup"
+            issues.append(f"{where} DROP must use IF EXISTS: {first_line}")
+    return issues
+
+
+def audit_cleanup_bookends(
+    sql_text: str, *, strict_markers: bool = False
+) -> CleanupBookendAuditReport:
+    """Locate cleanup-bookend regions and enforce the two hard determinism rules.
+
+    * every DROP carries ``IF EXISTS`` (idempotent across run-01/run-02);
+    * ``DROP OWNED BY`` is forbidden in pre-cleanup (the role may not exist on a
+      fresh database, crashing the run before the target statement).
+
+    Reverse table-creation order remains a WARNING in ``audit_complete_table_script``
+    (not elevated here): the ``cleanup_bookend`` helper always emits ``CASCADE``,
+    so order is semantically moot, and elevating would newly fail same-order scripts.
+    """
+    if not isinstance(sql_text, str) or not sql_text:
+        raise RegressionStyleError("sql_text must be a non-empty string")
+
+    regions = _extract_bookend_regions(sql_text)
+    issues: list[str] = []
+    warnings: list[str] = []
+
+    if not regions:
+        warnings.append(_MISSING_MARKER_MSG)
+        if strict_markers:
+            issues.append(_MISSING_MARKER_MSG)
+        return CleanupBookendAuditReport((), (), tuple(issues), tuple(warnings))
+
+    pre = regions.get("pre-cleanup", {"body": "", "balanced": False})
+    cln = regions.get("cleanup", {"body": "", "balanced": False})
+    pre_body = str(pre["body"])
+    cln_body = str(cln["body"])
+    if not pre["balanced"]:
+        warnings.append("pre-cleanup markers unbalanced (begin without matching end)")
+    if not cln["balanced"]:
+        warnings.append("cleanup markers unbalanced (begin without matching end)")
+
+    pre_statements, _ = (
+        _split_sql_statements(pre_body) if pre_body.strip() else ((), ())
+    )
+    cln_statements, _ = (
+        _split_sql_statements(cln_body) if cln_body.strip() else ((), ())
+    )
+
+    issues.extend(_audit_bookend_drops(pre_statements, in_pre_cleanup=True))
+    issues.extend(_audit_bookend_drops(cln_statements, in_pre_cleanup=False))
+
+    return CleanupBookendAuditReport(
+        pre_statements,
+        cln_statements,
+        tuple(dict.fromkeys(issues)),
+        tuple(dict.fromkeys(warnings)),
+    )
+
+
+CLEANUP_BOOKEND_GATE_MODE: str = "warn"  # "warn" | "enforce"
+
+
+def enforce_cleanup_bookends(sql_text: str) -> CleanupBookendAuditReport:
+    """Publish-gate entry point; consults ``CLEANUP_BOOKEND_GATE_MODE``.
+
+    In ``enforce`` mode, bookend violations (and unmigrated scripts lacking
+    markers) raise ``RegressionStyleError``. In ``warn`` mode (default until the
+    migration completes) the report is returned without raising so the caller
+    can log the violations without blocking in-flight migrations.
+    """
+    strict = CLEANUP_BOOKEND_GATE_MODE == "enforce"
+    report = audit_cleanup_bookends(sql_text, strict_markers=strict)
+    if strict and report.issues:
+        raise RegressionStyleError(
+            "cleanup-bookend gate violations: " + "; ".join(report.issues)
+        )
+    return report
+
+
 __all__ = [
     "CatalogObservabilityReport",
     "CatalogQueryAudit",
+    "CLEANUP_BOOKEND_GATE_MODE",
+    "CleanupBookendAuditReport",
     "ExecutionTranscript",
     "HuaweiSqlHeader",
     "REGRESSION_MAPPING_SCHEMA_VERSION",
@@ -1070,7 +1229,9 @@ __all__ = [
     "TableScriptAuditReport",
     "TranscriptDeterminismReport",
     "audit_catalog_observability",
+    "audit_cleanup_bookends",
     "audit_complete_table_script",
+    "enforce_cleanup_bookends",
     "build_regression_batch_mapping",
     "compare_two_run_transcripts",
     "contains_create_table_statement",
