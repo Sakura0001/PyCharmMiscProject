@@ -22,6 +22,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 
+from .cleanup_bookend import DropSpec, build_cleanup, build_pre_cleanup
 from .checkpoint_factor_extension import (
     CheckpointFactorExtensionCase,
     _present_failure_pair,
@@ -236,32 +237,34 @@ def _resolve_case(
     if probe is not None:
         assert_lines.append(probe)
 
-    # --- cleanup construction -----------------------------------------
-    table_drops = [f"DROP TABLE IF EXISTS {t};" for t in _tables_to_drop(case)]
-    role_drops = [
-        statement
-        for role in roles
-        for statement in (
-            f"DROP OWNED BY {role} CASCADE;",
-            f"DROP ROLE IF EXISTS {role};",
-        )
-    ]
-
-    # pre-cleanup: table first (bookend first), then roles
-    pre_cleanup: list[str] = []
-    pre_cleanup.extend(table_drops)
-    pre_cleanup.extend(role_drops)
-    if not pre_cleanup:
-        pre_cleanup.append("SELECT 1 AS residual_check_no_objects;")
-
-    # cleanup: RESET ROLE, roles, then table last (bookend last)
-    cleanup: list[str] = []
-    if effective:
-        cleanup.append("RESET ROLE;")
-    cleanup.extend(role_drops)
-    cleanup.extend(table_drops)
-    if not cleanup:
-        cleanup.append("SELECT 1 AS residual_check_no_objects;")
+    # --- cleanup construction (shared idempotent bookends) -----------
+    # Migrated to cleanup_bookend so every DROP carries IF EXISTS and
+    # DROP OWNED BY is unreachable in pre-cleanup: the {p}actor role is
+    # created by setup, so on a fresh database the role does not exist
+    # yet at pre-cleanup time and DROP OWNED BY would crash
+    # (ON_ERROR_STOP=1) before the target CHECKPOINT reaches execution.
+    # Pre-cleanup drops roles via DROP ROLE IF EXISTS only; the
+    # post-target cleanup runs DROP OWNED BY then DROP ROLE IF EXISTS
+    # once setup has created the role. The DROP TABLE IF EXISTS anchor
+    # is first in pre-cleanup and last in cleanup, satisfying the
+    # table-bookend gate.
+    specs: list[DropSpec] = []
+    table_names = _tables_to_drop(case)
+    role_list = list(roles)
+    pre_bookend = build_pre_cleanup(
+        tables=table_names,
+        specs=tuple(specs),
+        roles=role_list,
+    )
+    cln_bookend = build_cleanup(
+        tables=table_names,
+        specs=tuple(specs),
+        roles=role_list,
+        drop_owned=bool(role_list),
+        reset_role=bool(effective),
+    )
+    pre_cleanup = list(pre_bookend.statements)
+    cleanup = list(cln_bookend.statements)
 
     on_error_off = case.outcome == "expected_failure"
     return _CasePlan(
