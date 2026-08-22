@@ -45,13 +45,20 @@ CLEANUP_END: Final[str] = "-- cleanup-bookend: cleanup-end"
 
 # Object kinds whose drop syntax is ``DROP <KIND> IF EXISTS <name>[<args>] [CASCADE]``.
 # ROLE is excluded: DROP ROLE does not accept CASCADE -> use guarded_drop_role.
-# Complex kinds needing USING/ON/(s AS t) clauses are intentionally absent;
+# Standard-syntax kinds with a single name and no ON/USING/(s AS t) clause are
+# members: CONVERSION, ACCESS METHOD, EVENT TRIGGER, and the four TEXT SEARCH
+# object kinds (CONFIGURATION/DICTIONARY/PARSER/TEMPLATE) all share this form.
+# Genuinely complex kinds needing USING/ON/(s AS t) clauses (CAST, TRIGGER,
+# POLICY, RULE, TRANSFORM, OPERATOR CLASS/FAMILY, CONSTRAINT) remain absent;
 # renders pass such drops through a dedicated builder when needed in later phases.
 _DROP_KINDS: Final[frozenset[str]] = frozenset(
     {
+        "ACCESS METHOD",
         "AGGREGATE",
         "COLLATION",
+        "CONVERSION",
         "DOMAIN",
+        "EVENT TRIGGER",
         "EXTENSION",
         "FUNCTION",
         "INDEX",
@@ -61,6 +68,10 @@ _DROP_KINDS: Final[frozenset[str]] = frozenset(
         "SCHEMA",
         "SEQUENCE",
         "TABLE",
+        "TEXT SEARCH CONFIGURATION",
+        "TEXT SEARCH DICTIONARY",
+        "TEXT SEARCH PARSER",
+        "TEXT SEARCH TEMPLATE",
         "TYPE",
         "VIEW",
     }

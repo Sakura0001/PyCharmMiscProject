@@ -99,6 +99,53 @@ class TestIdempotentDrop(unittest.TestCase):
             idempotent_drop(DropSpec("FUNCTION", "foo", "(int); DROP x"))
 
 
+class TestStandardSyntaxKinds(unittest.TestCase):
+    """Kinds whose DROP syntax is the plain ``DROP <KIND> IF EXISTS name CASCADE``.
+
+    These kinds (CONVERSION, ACCESS METHOD, EVENT TRIGGER, and the four
+    TEXT SEARCH object kinds) take a single name identifier and no ON/USING/
+    signature clause, so they fit the existing ``idempotent_drop`` template
+    without new fields. They were blocked in batch-2 because they were absent
+    from ``_DROP_KINDS``.
+    """
+
+    _STANDARD_KINDS: tuple[str, ...] = (
+        "CONVERSION",
+        "ACCESS METHOD",
+        "EVENT TRIGGER",
+        "TEXT SEARCH CONFIGURATION",
+        "TEXT SEARCH DICTIONARY",
+        "TEXT SEARCH PARSER",
+        "TEXT SEARCH TEMPLATE",
+    )
+
+    def test_each_standard_kind_emits_cascade_drop(self) -> None:
+        for kind in self._STANDARD_KINDS:
+            with self.subTest(kind=kind):
+                self.assertEqual(
+                    idempotent_drop(DropSpec(kind, "obj")),
+                    f"DROP {kind} IF EXISTS obj CASCADE;",
+                )
+
+    def test_each_standard_kind_in_drop_kinds(self) -> None:
+        for kind in self._STANDARD_KINDS:
+            with self.subTest(kind=kind):
+                bookend = build_pre_cleanup(specs=(DropSpec(kind, "obj"),))
+                self.assertEqual(bookend.drop_kinds, (kind,))
+
+    def test_text_search_configuration_qualified_name(self) -> None:
+        self.assertEqual(
+            idempotent_drop(DropSpec("TEXT SEARCH CONFIGURATION", "public.my_cfg")),
+            "DROP TEXT SEARCH CONFIGURATION IF EXISTS public.my_cfg CASCADE;",
+        )
+
+    def test_access_method_no_cascade_omits_suffix(self) -> None:
+        self.assertEqual(
+            idempotent_drop(DropSpec("ACCESS METHOD", "am", cascade=False)),
+            "DROP ACCESS METHOD IF EXISTS am;",
+        )
+
+
 class TestGuardedDropOwnedBy(unittest.TestCase):
     def test_emits_cascade(self) -> None:
         self.assertEqual(guarded_drop_owned_by("r"), "DROP OWNED BY r CASCADE;")
