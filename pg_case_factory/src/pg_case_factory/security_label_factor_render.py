@@ -20,6 +20,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 
+from .cleanup_bookend import DropSpec, build_cleanup, build_pre_cleanup
 from .security_label_factor_extension import (
     SecurityLabelFactorExtensionCase,
     _present_failure_pair,
@@ -433,6 +434,25 @@ def _remove_label_stmt(
     return target_fmt.format(provider_clause=pc, label="NULL")
 
 
+# Regex patterns for parsing fixture spec_cleanup items into structured
+# components for the shared cleanup_bookend helper.  The spec_cleanup
+# tuples in _FIXTURES are plain SQL strings; these patterns extract the
+# kind, name, and optional args so DropSpec entries can be constructed.
+_DROP_ITEM_RE = re.compile(
+    r"^DROP\s+(?P<kind>.+?)\s+IF\s+EXISTS\s+"
+    r"(?P<name>[^;\s()]+)"
+    r"(?P<args>\([A-Za-z0-9_,$. ]*\))?"
+    r"\s*(?:CASCADE)?;$"
+)
+_SCHEMA_DROP_RE = re.compile(
+    r"^DROP\s+SCHEMA\s+IF\s+EXISTS\s+(?P<name>[^;\s]+)"
+    r"(?:\s+CASCADE)?;$"
+)
+_ROLE_DROP_RE = re.compile(
+    r"^DROP\s+ROLE\s+IF\s+EXISTS\s+(?P<name>[^;\s]+);$"
+)
+
+
 def _resolve_case(
     case: SecurityLabelFactorCase,
 ) -> _CasePlan:
@@ -487,49 +507,72 @@ def _resolve_case(
         _fixture_spec(ot, p) if not missing else ((), "", (), ())
     )
 
-    # --- pre-cleanup construction --------------------------------
-    pre_cleanup: list[str] = []
-    if tables:
-        tbl_list = ", ".join(tables)
-        pre_cleanup.append(f"DROP TABLE IF EXISTS {tbl_list} CASCADE;")
-        for item in spec_cleanup:
-            if not item.startswith("DROP TABLE"):
-                pre_cleanup.append(item)
-    else:
-        pre_cleanup.extend(spec_cleanup)
+    # --- cleanup construction (shared idempotent bookends) -----------
+    # Migrated to cleanup_bookend so every DROP carries IF EXISTS and
+    # DROP OWNED BY is unreachable in pre-cleanup: the non-owner role
+    # is created by setup, so on a fresh database the role does not
+    # exist yet at pre-cleanup time and DROP OWNED BY would crash
+    # (ON_ERROR_STOP=1) before the target statement reaches execution.
+    # Pre-cleanup drops roles via DROP ROLE IF EXISTS only; the post-
+    # target cleanup runs DROP OWNED BY then DROP ROLE IF EXISTS once
+    # setup has created the role.  The DROP TABLE IF EXISTS anchor is
+    # first in pre-cleanup and last in cleanup, satisfying the bookend.
+    specs: list[DropSpec] = []
+    cleanup_schemas: list[str] = []
+    role_list: list[str] = []
+    passthroughs: list[str] = []
+    for item in spec_cleanup:
+        if item.startswith("DROP TABLE"):
+            continue
+        if item.startswith("DROP SCHEMA"):
+            m = _SCHEMA_DROP_RE.match(item)
+            if m:
+                cleanup_schemas.append(m.group("name"))
+            continue
+        if item.startswith("DROP ROLE"):
+            m = _ROLE_DROP_RE.match(item)
+            if m:
+                role_list.append(m.group("name"))
+            continue
+        m = _DROP_ITEM_RE.match(item)
+        if m:
+            specs.append(
+                DropSpec(
+                    m.group("kind").upper(),
+                    m.group("name"),
+                    m.group("args") or "",
+                )
+            )
+            continue
+        passthroughs.append(item)
     if non_owner:
-        pre_cleanup.extend(
-            [
-                f"DROP OWNED BY {p}actor CASCADE;",
-                f"DROP ROLE IF EXISTS {p}actor;",
-            ]
-        )
-    if not pre_cleanup:
-        pre_cleanup.append("SELECT 1 AS residual_check_no_objects;")
-
-    # --- cleanup construction ------------------------------------
-    # For table-creating cases, DROP TABLE must be the LAST ; stmt.
-    cleanup_list: list[str] = []
+        role_list.append(f"{p}actor")
     remove_label = _remove_label_stmt(a, p)
+    cleanup_passthroughs: list[str] = []
     if remove_label is not None:
-        cleanup_list.append(remove_label)
-    if non_owner:
-        cleanup_list.extend(
-            [
-                f"DROP OWNED BY {p}actor CASCADE;",
-                f"DROP ROLE IF EXISTS {p}actor;",
-            ]
-        )
-    if tables:
-        for item in spec_cleanup:
-            if not item.startswith("DROP TABLE"):
-                cleanup_list.append(item)
-        tbl_list = ", ".join(tables)
-        cleanup_list.append(f"DROP TABLE IF EXISTS {tbl_list};")
-    else:
-        cleanup_list.extend(spec_cleanup)
-    if not cleanup_list:
-        cleanup_list.append("SELECT 1 AS residual_check_no_objects;")
+        cleanup_passthroughs.append(remove_label)
+    cleanup_passthroughs.extend(passthroughs)
+
+    pre_bookend = build_pre_cleanup(
+        tables=tables,
+        specs=tuple(specs),
+        schemas=tuple(cleanup_schemas),
+        roles=tuple(role_list),
+    )
+    cln_bookend = build_cleanup(
+        tables=tables,
+        specs=tuple(specs),
+        schemas=tuple(cleanup_schemas),
+        roles=tuple(role_list),
+        drop_owned=bool(role_list),
+        reset_role=bool(non_owner),
+    )
+    pre_cleanup = list(pre_bookend.statements)
+    cleanup = list(cln_bookend.statements)
+    if passthroughs:
+        pre_cleanup[1:1] = passthroughs
+    if cleanup_passthroughs:
+        cleanup[1:1] = cleanup_passthroughs
 
     on_error_off = case.outcome == "expected_failure"
     return _CasePlan(
@@ -537,7 +580,7 @@ def _resolve_case(
         setup_lines=tuple(setup),
         assert_lines=tuple(assert_lines),
         pre_cleanup_lines=tuple(pre_cleanup),
-        cleanup_lines=tuple(cleanup_list),
+        cleanup_lines=tuple(cleanup),
         on_error_off=on_error_off,
         semantic_locus=locus,
     )
