@@ -25,6 +25,11 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 
+from .cleanup_bookend import (
+    OnDropSpec,
+    build_cleanup,
+    build_pre_cleanup,
+)
 from .create_rule_factor_extension import (
     CreateRuleFactorExtensionCase,
     _present_failure_pair,
@@ -294,66 +299,48 @@ def _build_setup(
     return lines, locus
 
 
-def _build_pre_cleanup(
+def _build_bookends(
     a: dict[str, str], p: str
-) -> tuple[str, ...]:
-    tables = _tables_to_drop(a, p)
-    lines: list[str] = [
-        f"DROP TABLE IF EXISTS {', '.join(tables)} CASCADE;"
-    ]
-    if a.get("table_type") == "view":
-        lines.append(f"DROP VIEW IF EXISTS {p}v CASCADE;")
+) -> tuple[tuple[str, ...], tuple[str, ...]]:
+    """Idempotent pre-cleanup + cleanup via the shared cleanup_bookend helper.
+
+    The RULE drop is shape A (``ON <table>``) and is routed to build_cleanup
+    ONLY: in pre_cleanup the host table drops first via ``DROP TABLE
+    CASCADE``, removing the rule's container relation, so a later ``DROP RULE
+    ON <gone-relation>`` would error regardless of ``IF EXISTS``.  The fixture
+    VIEW ``{p}v`` is never dropped explicitly -- ``DROP TABLE {p}t CASCADE``
+    removes it as a dependent, which also sidesteps the helper's
+    specs-before-complex_specs ordering hazard (the rule attaches to ``{p}v``
+    when ``table_type==view``, so an explicit ``DROP VIEW`` in ``specs`` would
+    drop the host before the rule drop).  The conditional ``DROP RULE`` is
+    kept only for structural absence (``nonexistent_table``): the container
+    was never created, so ``DROP RULE ON <missing-relation>`` is unsafe even
+    with ``IF EXISTS``; everywhere else the drop is unconditional (idempotent
+    no-op over a relation that exists).
+    """
+    tables = tuple(_tables_to_drop(a, p))
+    complex_specs: tuple[OnDropSpec, ...] = ()
     if not _is_nonexistent_table(a):
-        rname = _rule_name_plain(a, p)
-        table = _table_plain(a, p)
-        lines.append(f"DROP RULE IF EXISTS {rname} ON {table} CASCADE;")
-    if a.get("object_state") == "exists_different_table":
-        lines.append(
-            f"DROP RULE IF EXISTS {_rule_name_plain(a, p)} "
-            f"ON {p}other CASCADE;"
-        )
-    lines.append("RESET ROLE;")
-    if a.get("privilege_denied") == "non_owner_denied":
-        lines.append(f"DROP ROLE IF EXISTS {p}actor;")
-    return tuple(lines)
-
-
-def _build_cleanup(
-    a: dict[str, str], p: str
-) -> tuple[str, ...]:
-    cleanup_mode = a.get("cleanup_mode", "drop_rule")
-    lines: list[str] = []
-
-    if a.get("privilege_denied") == "non_owner_denied":
-        lines.append("RESET ROLE;")
-
-    if cleanup_mode == "drop_rule":
-        if not _is_nonexistent_table(a):
-            rname = _rule_name_plain(a, p)
-            table = _table_plain(a, p)
-            lines.append(
-                f"DROP RULE IF EXISTS {rname} ON {table} CASCADE;"
-            )
+        rule = _rule_name_plain(a, p)
+        host = _table_plain(a, p)
+        on_specs = [OnDropSpec("RULE", rule, host)]
         if a.get("object_state") == "exists_different_table":
-            lines.append(
-                f"DROP RULE IF EXISTS {_rule_name_plain(a, p)} "
-                f"ON {p}other CASCADE;"
-            )
-    elif cleanup_mode == "drop_view":
-        if a.get("table_type") == "view":
-            lines.append(f"DROP VIEW IF EXISTS {p}v CASCADE;")
-
-    if a.get("privilege_denied") == "non_owner_denied":
-        lines.append(f"DROP ROLE IF EXISTS {p}actor;")
-
-    if a.get("table_type") == "view" and cleanup_mode != "drop_view":
-        lines.append(f"DROP VIEW IF EXISTS {p}v CASCADE;")
-
-    tables = _tables_to_drop(a, p)
-    lines.append(
-        f"DROP TABLE IF EXISTS {', '.join(tables)} CASCADE;"
+            on_specs.append(OnDropSpec("RULE", rule, f"{p}other"))
+        complex_specs = tuple(on_specs)
+    roles = (
+        (f"{p}actor",)
+        if a.get("privilege_denied") == "non_owner_denied"
+        else ()
     )
-    return tuple(lines)
+    pre_cleanup = build_pre_cleanup(tables=tables, roles=roles)
+    cleanup = build_cleanup(
+        tables=tables,
+        complex_specs=complex_specs,
+        roles=roles,
+        drop_owned=bool(roles),
+        reset_role=bool(roles),
+    )
+    return pre_cleanup.statements, cleanup.statements
 
 
 def _probe_select(
@@ -433,8 +420,7 @@ def _resolve_case(case: CreateRuleFactorCase) -> _CasePlan:
     setup, locus = _build_setup(a, p)
     target = _build_target(a, p)
     assert_lines = _build_assert(case, a, p)
-    pre_cleanup = _build_pre_cleanup(a, p)
-    cleanup = _build_cleanup(a, p)
+    pre_cleanup, cleanup = _build_bookends(a, p)
     on_error_off = case.outcome == "expected_failure"
     return _CasePlan(
         target_fragment=target,

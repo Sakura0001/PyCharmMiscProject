@@ -137,6 +137,47 @@ class TestCreateRuleFactorRender(unittest.TestCase):
             sql = f.read_text()
             self.assertIn("-- 5. 清理全部本编号对象。", sql)
 
+    def test_cleanup_bookend_invariants(self) -> None:
+        """Fix-A guard: DROP OWNED BY is unreachable in pre-cleanup (the
+        actor role fixture is created by setup, so on a fresh database the
+        role does not exist at pre-cleanup time and DROP OWNED BY would crash
+        under ON_ERROR_STOP=1 before the target statement).  In cleanup,
+        DROP OWNED BY must precede DROP ROLE IF EXISTS."""
+        files = sorted(self.out.glob("*.sql"))
+        self.assertGreater(len(files), 0)
+        pre_drop_owned: list[str] = []
+        cleanup_order_bad: list[str] = []
+        for f in files:
+            text = f.read_text()
+            if "cleanup-bookend: pre-cleanup-begin" not in text:
+                continue
+            pre = text.split(
+                "cleanup-bookend: pre-cleanup-begin", 1
+            )[1]
+            pre = pre.split(
+                "cleanup-bookend: pre-cleanup-end", 1
+            )[0]
+            if re.search(r"\bDROP\s+OWNED\s+BY\b", pre, re.IGNORECASE):
+                pre_drop_owned.append(f.name)
+            cln = text.split(
+                "cleanup-bookend: cleanup-begin", 1
+            )[1]
+            cln = cln.split(
+                "cleanup-bookend: cleanup-end", 1
+            )[0]
+            m_own = re.search(r"\bDROP\s+OWNED\s+BY\b", cln, re.IGNORECASE)
+            m_role = re.search(r"\bDROP\s+ROLE\b", cln, re.IGNORECASE)
+            if m_own and m_role and m_own.start() > m_role.start():
+                cleanup_order_bad.append(f.name)
+        self.assertEqual(
+            [], pre_drop_owned, "DROP OWNED BY leaked into pre-cleanup"
+        )
+        self.assertEqual(
+            [],
+            cleanup_order_bad,
+            "DROP OWNED BY after DROP ROLE in cleanup",
+        )
+
     def test_no_placeholder_leakage(self) -> None:
         for f in sorted(self.out.iterdir()):
             sql = f.read_text()
