@@ -22,6 +22,12 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 
+from .cleanup_bookend import (
+    DropSpec,
+    UserMappingDropSpec,
+    build_cleanup,
+    build_pre_cleanup,
+)
 from .drop_user_mapping_factor_extension import (
     DropUserMappingFactorExtensionCase,
 )
@@ -401,6 +407,27 @@ def _cleanup_role_names(
     return tuple(dict.fromkeys(names))
 
 
+def _mapping_drop_specs(
+    a: dict[str, str],
+    p: str,
+    roles: tuple[str, ...],
+) -> tuple[UserMappingDropSpec, ...]:
+    """Build the shape-E ``DROP USER MAPPING`` specs (FOR <user> SERVER <s>).
+
+    The fixture server is always ``{p}srv``.  PG18 ``DROP USER MAPPING IF
+    EXISTS`` is a lenient NOTICE-only no-op when the server (or role) is
+    absent, so the spec is emitted unconditionally for every created role plus
+    ``PUBLIC`` when the target mapped the PUBLIC role -- ``IF EXISTS`` makes a
+    ``server_created`` gate redundant (the Fix-A improvement).
+    """
+    specs: list[UserMappingDropSpec] = [
+        UserMappingDropSpec(role, f"{p}srv") for role in roles
+    ]
+    if _is_public(a):
+        specs.append(UserMappingDropSpec("PUBLIC", f"{p}srv"))
+    return tuple(specs)
+
+
 def _resolve_case(case: DropUserMappingFactorCase) -> _CasePlan:
     a = _baseline(case)
     p = case.object_prefix
@@ -492,46 +519,24 @@ def _resolve_case(case: DropUserMappingFactorCase) -> _CasePlan:
     )
     assert_lines.append(_probe_select(case, a, p, effective))
 
-    # --- cleanup construction -------------------------------------------
+    # --- cleanup construction (idempotent bookends via cleanup_bookend) ---
     roles = _cleanup_role_names(case, a, p, effective)
-    role_drops = [
-        statement
-        for role in roles
-        for statement in (
-            f"DROP USER MAPPING IF EXISTS FOR {role} SERVER {p}srv;"
-            if server_created
-            else "SELECT 1 AS no_server_cleanup;",
-            f"DROP OWNED BY {role};",
-            f"DROP ROLE IF EXISTS {role};",
-        )
-    ]
-    # Also drop PUBLIC mapping if the target was PUBLIC
-    public_drop = []
-    if _is_public(a) and server_created:
-        public_drop.append(
-            f"DROP USER MAPPING IF EXISTS FOR PUBLIC SERVER {p}srv;"
-        )
-    server_drop = (
-        [f"DROP SERVER IF EXISTS {p}srv;"] if server_created else []
+    server_specs = (DropSpec("SERVER", f"{p}srv"),) if server_created else ()
+    mapping_specs = _mapping_drop_specs(a, p, roles)
+    pre_cleanup_bk = build_pre_cleanup(
+        specs=server_specs,
+        complex_specs=mapping_specs,
+        roles=roles,
     )
-
-    # Pre-cleanup: server/mapping/role drops (no bookend gate for table-less)
-    pre_cleanup: list[str] = []
-    pre_cleanup.extend(public_drop)
-    pre_cleanup.extend(role_drops)
-    pre_cleanup.extend(server_drop)
-    if not pre_cleanup:
-        pre_cleanup.append("SELECT 1 AS residual_check_no_objects;")
-
-    # Cleanup: mapping drops, server drop, role drops
-    cleanup: list[str] = []
-    if effective:
-        cleanup.append("RESET ROLE;")
-    cleanup.extend(public_drop)
-    cleanup.extend(role_drops)
-    cleanup.extend(server_drop)
-    if not cleanup:
-        cleanup.append("SELECT 1 AS residual_check_no_objects;")
+    cleanup_bk = build_cleanup(
+        specs=server_specs,
+        complex_specs=mapping_specs,
+        roles=roles,
+        drop_owned=bool(roles),
+        reset_role=effective,
+    )
+    pre_cleanup = list(pre_cleanup_bk.statements)
+    cleanup = list(cleanup_bk.statements)
 
     on_error_off = case.outcome == "expected_failure"
     return _CasePlan(
