@@ -22,6 +22,12 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 
+from .cleanup_bookend import (
+    DropSpec,
+    OnDropSpec,
+    build_cleanup,
+    build_pre_cleanup,
+)
 from .create_trigger_factor_extension import (
     CreateTriggerFactorExtensionCase,
     _present_failure_pair,
@@ -232,15 +238,6 @@ def _tables_to_drop(
         if ref_name not in tables:
             tables.append(ref_name)
     return tables
-
-def _table_boundary_cleanup(
-    case: CreateTriggerFactorCase,
-) -> str:
-    return (
-        "DROP TABLE IF EXISTS "
-        + ", ".join(_tables_to_drop(case))
-        + " CASCADE;"
-    )
 
 def _event_clause(a: dict[str, str]) -> str:
     event = a.get("trigger_event", "INSERT")
@@ -573,90 +570,61 @@ def _resolve_case(
     probe = _probe_select(case, a, p)
     assert_lines.append(probe)
 
-    # --- cleanup construction -----------------------------------------
-    role_drops = [
-        statement
-        for role in roles
-        for statement in (
-            f"DROP OWNED BY {role} CASCADE;",
-            f"DROP ROLE IF EXISTS {role};",
-        )
+    # --- cleanup construction (idempotent bookends via cleanup_bookend) ---
+    # The TRIGGER drop is shape A (``ON <table>``) and goes through
+    # ``complex_specs``.  It is routed to ``build_cleanup`` ONLY (quirk
+    # Q2): in pre-cleanup the table is dropped first (``DROP TABLE
+    # CASCADE`` removes the trigger), so a later ``DROP TRIGGER ON
+    # <gone-table>`` would error on the missing relation; ``IF EXISTS``
+    # on the trigger does not suppress a missing-table error.  Per Q3 the
+    # complex DROP is unconditional except when the container relation was
+    # never created (``table_missing``) -- structural absence keeps the
+    # guard because ``DROP TRIGGER ON <missing-relation>`` errors
+    # regardless of IF EXISTS.
+    cleanup_specs: list[DropSpec] = [
+        DropSpec("FUNCTION", fn, args="()")
     ]
+    if instead_of:
+        cleanup_specs.append(DropSpec("VIEW", view))
+    if is_foreign:
+        cleanup_specs.append(DropSpec("FOREIGN TABLE", ftable))
+        cleanup_specs.append(DropSpec("SERVER", f"{p}srv"))
 
-    trigger_drop = ""
-    cleanup_mode = a.get("cleanup_mode", "DROP_TRIGGER")
-    if cleanup_mode in ("DROP_TRIGGER", "DROP_TRIGGER_IF_EXISTS"):
-        if (
-            not table_missing
-            and not function_missing
-            and not function_wrong
-        ):
-            trigger_drop = (
-                f"DROP TRIGGER IF EXISTS "
-                f"{_trigger_name(case, a, p)} "
-                f"ON {_table_name_for_target(a, p)};"
-            )
-
-    func_drop = f"DROP FUNCTION IF EXISTS {fn}() CASCADE;"
-
-    view_drop = ""
-    if instead_of and not table_missing:
-        view_drop = f"DROP VIEW IF EXISTS {view} CASCADE;"
-
-    ftable_drop = ""
-    if is_foreign and not table_missing:
-        ftable_drop = (
-            f"DROP FOREIGN TABLE IF EXISTS {ftable} CASCADE;"
-        )
-
-    schema_drop = ""
+    schemas: list[str] = []
     if (
         a.get("table_name_shape") == "schema_qualified"
         or a.get("function_name_shape") == "schema_qualified"
     ):
-        schema_drop = f"DROP SCHEMA IF EXISTS {p}schema CASCADE;"
+        schemas.append(f"{p}schema")
 
-    server_drop = ""
-    if is_foreign and not table_missing:
-        server_drop = f"DROP SERVER IF EXISTS {p}srv CASCADE;"
-
-    # pre-cleanup: table boundary (bookend first), then schema, func,
-    # view, ftable, server, role
-    pre_cleanup: list[str] = []
-    pre_cleanup.append(_table_boundary_cleanup(case))
-    if schema_drop:
-        pre_cleanup.append(schema_drop)
-    pre_cleanup.append(func_drop)
-    if view_drop:
-        pre_cleanup.append(view_drop)
-    if ftable_drop:
-        pre_cleanup.append(ftable_drop)
-    if server_drop:
-        pre_cleanup.append(server_drop)
-    pre_cleanup.extend(role_drops)
-    pre_cleanup.append("RESET ROLE;")
-    if len(pre_cleanup) <= 1:
-        pre_cleanup.append(
-            "SELECT 1 AS residual_check_no_objects;"
+    tables = _tables_to_drop(case)
+    complex_specs: tuple[OnDropSpec, ...] = ()
+    if not table_missing:
+        complex_specs = (
+            OnDropSpec(
+                "TRIGGER",
+                _trigger_name(case, a, p),
+                _table_name_for_target(a, p),
+            ),
         )
 
-    # cleanup: reset role, trigger, function, view, ftable, server,
-    # schema, role drops, table boundary (bookend last)
-    cleanup: list[str] = []
-    cleanup.append("RESET ROLE;")
-    if trigger_drop:
-        cleanup.append(trigger_drop)
-    cleanup.append(func_drop)
-    if view_drop:
-        cleanup.append(view_drop)
-    if ftable_drop:
-        cleanup.append(ftable_drop)
-    if server_drop:
-        cleanup.append(server_drop)
-    cleanup.extend(role_drops)
-    if schema_drop:
-        cleanup.append(schema_drop)
-    cleanup.append(_table_boundary_cleanup(case))
+    pre_cleanup_bk = build_pre_cleanup(
+        tables=tuple(tables),
+        specs=tuple(cleanup_specs),
+        schemas=tuple(schemas),
+        roles=tuple(roles),
+    )
+    cleanup_bk = build_cleanup(
+        tables=tuple(tables),
+        specs=tuple(cleanup_specs),
+        complex_specs=complex_specs,
+        schemas=tuple(schemas),
+        roles=tuple(roles),
+        drop_owned=bool(roles),
+        reset_role=bool(effective),
+    )
+    pre_cleanup = list(pre_cleanup_bk.statements)
+    cleanup = list(cleanup_bk.statements)
 
     on_error_off = case.outcome == "expected_failure"
     return _CasePlan(
@@ -737,9 +705,8 @@ def render_create_trigger_factor_case(
     resolved = _resolve_case(rc)
     lines: list[str] = list(_header(rc))
     lines.append("-- 1. 清理本编号对象，保证脚本可重复执行。")
-    lines.append(resolved.pre_cleanup_lines[0])
+    lines.extend(resolved.pre_cleanup_lines)
     lines.append("\\set ON_ERROR_STOP on")
-    lines.extend(resolved.pre_cleanup_lines[1:])
     lines.append("-- 2. 创建完整本地规则和因子专用夹具。")
     lines.extend(resolved.setup_lines)
     if resolved.on_error_off:
@@ -757,9 +724,9 @@ def render_create_trigger_factor_case(
     lines.append("-- 5. 清理全部本编号对象。")
     lines.extend(resolved.cleanup_lines)
     text = "\n".join(lines)
-    if not text.endswith("\n"):
-        text += "\n"
-    return text
+    if not text.endswith(";"):
+        text += ";"
+    return text + "\n"
 
 
 def _write_program(
