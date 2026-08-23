@@ -30,6 +30,12 @@ from .alter_trigger_factor_loop import (
     AlterTriggerFactorCase,
     AlterTriggerFactorLoopPlan,
 )
+from .cleanup_bookend import (
+    DropSpec,
+    OnDropSpec,
+    build_cleanup,
+    build_pre_cleanup,
+)
 
 _PRIMARY_BEGIN = "-- primary-target-begin"
 _PRIMARY_END = "-- primary-target-end"
@@ -259,16 +265,6 @@ def _tables_to_drop(
     return tables
 
 
-def _table_boundary_cleanup(
-    case: AlterTriggerFactorCase,
-) -> str:
-    return (
-        "DROP TABLE IF EXISTS "
-        + ", ".join(_tables_to_drop(case))
-        + " CASCADE;"
-    )
-
-
 def _probe_select(
     case: AlterTriggerFactorCase,
     a: dict[str, str],
@@ -406,64 +402,50 @@ def _resolve_case(
     probe = _probe_select(case, a, p)
     assert_lines.append(probe)
 
-    # --- cleanup construction -----------------------------------------
-    role_drops = [
-        statement
-        for role in roles
-        for statement in (
-            f"DROP OWNED BY {role} CASCADE;",
-            f"DROP ROLE IF EXISTS {role};",
-        )
-    ]
+    # --- cleanup construction (idempotent bookends via cleanup_bookend) ---
+    # The TRIGGER drop is shape A (ON <table>) and goes through complex_specs.
+    # It is routed to build_cleanup ONLY: in pre_cleanup the table is dropped
+    # first (DROP TABLE CASCADE removes the trigger), so a later DROP TRIGGER
+    # ON <already-gone-table> errors even with IF EXISTS (the missing-relation
+    # error is not suppressed by IF EXISTS).  complex_specs therefore stays
+    # out of build_pre_cleanup.  DROP OWNED BY is unreachable in pre_cleanup
+    # (Fix-A): the actor role fixture is created by setup, so on a fresh
+    # database the role does not yet exist at pre_cleanup time and DROP OWNED
+    # BY would crash under ON_ERROR_STOP=1 before the target statement.
+    schemas: tuple[str, ...] = (
+        (f"{p}schema",)
+        if a.get("table_name_shape") == "schema_qualified"
+        else ()
+    )
+    tables = tuple(_tables_to_drop(case))
 
-    trigger_drop = ""
-    cleanup_mode = a.get("cleanup_mode", "DROP_TRIGGER")
-    if cleanup_mode == "DROP_TRIGGER_IF_EXISTS":
-        if not missing and not table_missing:
-            trigger_drop = (
-                f"DROP TRIGGER IF EXISTS {trigger} ON {table};"
-            )
-    else:
-        if not missing and not table_missing:
-            if action == "rename" and case.outcome == "success":
-                new_trigger = _new_name(a, p)
-                trigger_drop = (
-                    f"DROP TRIGGER IF EXISTS {new_trigger} ON {table};"
-                )
-            else:
-                trigger_drop = (
-                    f"DROP TRIGGER IF EXISTS {trigger} ON {table};"
-                )
+    cleanup_specs: list[DropSpec] = []
+    complex_specs: tuple[OnDropSpec, ...] = ()
+    if not table_missing:
+        cleanup_specs.append(DropSpec("FUNCTION", f"{p}trigfn", args="()"))
+        if action == "rename" and case.outcome == "success":
+            drop_trigger_name = _new_name(a, p)
+        else:
+            drop_trigger_name = trigger
+        complex_specs = (OnDropSpec("TRIGGER", drop_trigger_name, table),)
 
-    func_drop = f"DROP FUNCTION IF EXISTS {p}trigfn() CASCADE;"
-
-    # pre-cleanup: table boundary (bookend first), then schema, func, role
-    pre_cleanup: list[str] = []
-    pre_cleanup.append(_table_boundary_cleanup(case))
-    if a.get("table_name_shape") == "schema_qualified":
-        pre_cleanup.append(
-            f"DROP SCHEMA IF EXISTS {p}schema CASCADE;"
-        )
-    pre_cleanup.append(func_drop)
-    pre_cleanup.extend(role_drops)
-    pre_cleanup.append("RESET ROLE;")
-    if len(pre_cleanup) <= 1:
-        pre_cleanup.append(
-            "SELECT 1 AS residual_check_no_objects;"
-        )
-
-    # cleanup: reset role, trigger, function, table boundary (bookend last)
-    cleanup: list[str] = []
-    cleanup.append("RESET ROLE;")
-    if trigger_drop:
-        cleanup.append(trigger_drop)
-    cleanup.append(func_drop)
-    cleanup.extend(role_drops)
-    if a.get("table_name_shape") == "schema_qualified":
-        cleanup.append(
-            f"DROP SCHEMA IF EXISTS {p}schema CASCADE;"
-        )
-    cleanup.append(_table_boundary_cleanup(case))
+    pre_cleanup_bk = build_pre_cleanup(
+        tables=tables,
+        specs=tuple(cleanup_specs),
+        schemas=schemas,
+        roles=tuple(roles),
+    )
+    cleanup_bk = build_cleanup(
+        tables=tables,
+        specs=tuple(cleanup_specs),
+        complex_specs=complex_specs,
+        schemas=schemas,
+        roles=tuple(roles),
+        drop_owned=bool(roles),
+        reset_role=bool(effective),
+    )
+    pre_cleanup = list(pre_cleanup_bk.statements)
+    cleanup = list(cleanup_bk.statements)
 
     on_error_off = case.outcome == "expected_failure"
     return _CasePlan(
@@ -557,9 +539,8 @@ def render_alter_trigger_factor_case(
     resolved = _resolve_case(rc)
     lines: list[str] = list(_header(rc))
     lines.append("-- 1. 清理本编号对象，保证脚本可重复执行。")
-    lines.append(resolved.pre_cleanup_lines[0])
+    lines.extend(resolved.pre_cleanup_lines)
     lines.append("\\set ON_ERROR_STOP on")
-    lines.extend(resolved.pre_cleanup_lines[1:])
     lines.append("-- 2. 创建完整本地规则和因子专用夹具。")
     lines.extend(resolved.setup_lines)
     if resolved.on_error_off:
