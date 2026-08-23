@@ -31,6 +31,12 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 
+from .cleanup_bookend import (
+    DropSpec,
+    TransformDropSpec,
+    build_cleanup,
+    build_pre_cleanup,
+)
 from .drop_transform_factor_extension import (
     DropTransformFactorExtensionCase,
 )
@@ -398,58 +404,36 @@ def _resolve_case(case: DropTransformFactorCase) -> _CasePlan:
     if probe is not None:
         assert_lines.append(probe)
 
-    # --- cleanup construction -------------------------------------------
-    role_drops = [
-        stmt
-        for role in _role_names(a, p)
-        for stmt in (
-            f"DROP OWNED BY {role} CASCADE;",
-            f"DROP ROLE IF EXISTS {role};",
-        )
-    ]
-    transform_drop = (
-        [f"DROP TRANSFORM IF EXISTS FOR {type_name} "
-         f"LANGUAGE {lang_name} CASCADE;"]
-        if not _is_type_missing(a) and not _is_language_missing(a)
-        else []
+    # --- cleanup construction (idempotent bookends via cleanup_bookend) ---
+    # IF EXISTS makes every drop idempotent and non-erroring even when the
+    # referenced type/language/schema do not exist (PG18.4 emits a NOTICE, not
+    # an ERROR, under ON_ERROR_STOP=1), so the former conditionals on
+    # type/language missing are redundant.  The complex TRANSFORM drop uses
+    # shape D (TransformDropSpec); standard FUNCTION/TYPE drops stay in specs.
+    roles = _role_names(a, p)
+    drop_specs = (
+        DropSpec("FUNCTION", from_fn, args="(internal)"),
+        DropSpec("FUNCTION", to_fn, args="(internal)"),
+        DropSpec("TYPE", type_name),
     )
-    function_drops = (
-        [
-            f"DROP FUNCTION IF EXISTS {from_fn}(internal) CASCADE;",
-            f"DROP FUNCTION IF EXISTS {to_fn}(internal) CASCADE;",
-        ]
-        if transform_created
-        else []
-    )
-    type_drop = (
-        [f"DROP TYPE IF EXISTS {type_name} CASCADE;"]
-        if not _is_type_missing(a)
-        else []
-    )
-    schema_drop = [f"DROP SCHEMA IF EXISTS {schema} CASCADE;"]
+    complex_specs = (TransformDropSpec(type_name, lang_name),)
 
-    # Pre-cleanup: safe IF EXISTS CASCADE, before fixtures.
-    pre_cleanup: list[str] = []
-    pre_cleanup.extend(transform_drop)
-    pre_cleanup.extend(function_drops)
-    pre_cleanup.extend(type_drop)
-    pre_cleanup.extend(schema_drop)
-    pre_cleanup.append("RESET ROLE;")
-    pre_cleanup.extend(role_drops)
-    if not pre_cleanup:
-        pre_cleanup.append("SELECT 1 AS residual_check_no_objects;")
-
-    # Cleanup: role resets, then transform/function/type/schema drops.
-    cleanup: list[str] = []
-    if effective:
-        cleanup.append("RESET ROLE;")
-    cleanup.extend(transform_drop)
-    cleanup.extend(function_drops)
-    cleanup.extend(type_drop)
-    cleanup.extend(schema_drop)
-    cleanup.extend(role_drops)
-    if not cleanup:
-        cleanup.append("SELECT 1 AS residual_check_no_objects;")
+    pre_cleanup_bk = build_pre_cleanup(
+        specs=drop_specs,
+        complex_specs=complex_specs,
+        schemas=(schema,),
+        roles=roles,
+    )
+    cleanup_bk = build_cleanup(
+        specs=drop_specs,
+        complex_specs=complex_specs,
+        schemas=(schema,),
+        roles=roles,
+        drop_owned=bool(roles),
+        reset_role=bool(effective),
+    )
+    pre_cleanup = list(pre_cleanup_bk.statements)
+    cleanup = list(cleanup_bk.statements)
 
     on_error_off = case.outcome == "expected_failure"
     return _CasePlan(
