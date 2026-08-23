@@ -20,6 +20,11 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 
+from .cleanup_bookend import (
+    OnDropSpec,
+    build_cleanup,
+    build_pre_cleanup,
+)
 from .create_policy_factor_extension import (
     CreatePolicyFactorExtensionCase,
     _present_failure_pair,
@@ -344,38 +349,6 @@ def _resolve_case(
     policy_name = _policy_name(a, p)
     is_dup = _is_duplicate(a)
 
-    # --- pre-cleanup (step 1) ---
-    # Combined DROP TABLE of all created tables as a single ;-segment so the
-    # shared bookend gate (which only inspects statements[0]) sees every
-    # created table; phantom drops (nosuch/src) follow as separate segments.
-    pre_cleanup: list[str] = []
-    _created_tables = [f"{p}t"]
-    if needs_2nd:
-        _created_tables.append(f"{p}t2")
-    pre_cleanup.append(
-        f"DROP TABLE IF EXISTS {', '.join(_created_tables)} CASCADE;"
-    )
-    pre_cleanup.append(f"DROP TABLE IF EXISTS {p}nosuch CASCADE;")
-    pre_cleanup.append(f"DROP TABLE IF EXISTS {p}src CASCADE;")
-    pre_cleanup.append(f"DROP POLICY IF EXISTS {policy_name} ON {p}t;")
-    if needs_2nd:
-        pre_cleanup.append(
-            f"DROP POLICY IF EXISTS {policy_name} ON {p}t2;"
-        )
-    pre_cleanup.append("RESET ROLE;")
-    if effective:
-        pre_cleanup.append(f"DROP OWNED BY {p}actor CASCADE;")
-        pre_cleanup.append(f"DROP ROLE IF EXISTS {p}actor;")
-    if needs_roles:
-        pre_cleanup.append(f"DROP OWNED BY {p}role CASCADE;")
-        pre_cleanup.append(f"DROP ROLE IF EXISTS {p}role;")
-        if a.get("role_target") == "multiple_roles":
-            pre_cleanup.append(
-                f"DROP OWNED BY {p}role2 CASCADE;"
-            )
-            pre_cleanup.append(f"DROP ROLE IF EXISTS {p}role2;")
-    pre_cleanup.append(f"DROP ROLE IF EXISTS {p}norole;")
-
     # --- setup (step 2) ---
     # Fixture table
     setup.append(f"CREATE TABLE {p}t (id int, data text);")
@@ -431,46 +404,54 @@ def _resolve_case(
     if probe is not None:
         assert_lines.append(probe)
 
-    # --- cleanup (step 5) ---
-    cleanup_mode = a.get("cleanup_mode", "drop_policy")
-    cleanup: list[str] = []
+    # --- cleanup construction (idempotent bookends via cleanup_bookend) ---
+    # The POLICY drop is shape A (ON <table>) -> complex_specs routed to
+    # build_cleanup ONLY.  In pre_cleanup the table drops first via DROP TABLE
+    # CASCADE (removing the policy), so a later DROP POLICY ON <gone-table>
+    # would error even with IF EXISTS; thus pre_cleanup carries no complex drop.
+    # DROP POLICY IF EXISTS over a nonexistent policy is NOTICE-only, so the
+    # drop is unconditional (container {p}t is always created in setup); the
+    # {p}t2 policy drop stays conditional on needs_2nd (structural: {p}t2 may
+    # not be created, and DROP POLICY ON a missing relation errors regardless).
+    created_tables = [f"{p}t"]
+    if needs_2nd:
+        created_tables.append(f"{p}t2")
+    pre_tables = tuple(created_tables + [f"{p}nosuch", f"{p}src"])
+    cleanup_tables = tuple(reversed(created_tables))
+
+    complex_specs: list[OnDropSpec] = [
+        OnDropSpec("POLICY", policy_name, f"{p}t"),
+    ]
+    if needs_2nd:
+        complex_specs.append(OnDropSpec("POLICY", policy_name, f"{p}t2"))
+
+    # Real roles may own objects -> DROP OWNED BY in cleanup only (never in
+    # pre_cleanup, where the role may not exist on a fresh database).  {p}norole
+    # is a phantom (never created) -> DROP ROLE IF EXISTS only, pre_cleanup only
+    # (cleanup omits it, matching the original render).
+    real_roles: list[str] = []
     if effective:
-        cleanup.append("RESET ROLE;")
-    if cleanup_mode != "drop_table":
-        cleanup.append(
-            f"DROP POLICY IF EXISTS {policy_name} ON {p}t;"
-        )
-        if needs_2nd:
-            cleanup.append(
-                f"DROP POLICY IF EXISTS {policy_name} ON {p}t2;"
-            )
-    if cleanup_mode == "disable_rls_and_drop_policy":
-        cleanup.append(
-            f"ALTER TABLE {p}t DISABLE ROW LEVEL SECURITY;"
-        )
-        if needs_2nd:
-            cleanup.append(
-                f"ALTER TABLE {p}t2 DISABLE ROW LEVEL SECURITY;"
-            )
-    if effective:
-        cleanup.append(f"DROP OWNED BY {p}actor CASCADE;")
-        cleanup.append(f"DROP ROLE IF EXISTS {p}actor;")
+        real_roles.append(f"{p}actor")
     if needs_roles:
-        cleanup.append(f"DROP OWNED BY {p}role CASCADE;")
-        cleanup.append(f"DROP ROLE IF EXISTS {p}role;")
+        real_roles.append(f"{p}role")
         if a.get("role_target") == "multiple_roles":
-            cleanup.append(
-                f"DROP OWNED BY {p}role2 CASCADE;"
-            )
-            cleanup.append(f"DROP ROLE IF EXISTS {p}role2;")
-    # Always last: DROP TABLE — combined into a single ;-segment in reverse
-    # creation order so the shared bookend gate (which only inspects
-    # statements[-1]) sees ALL created tables and they drop reverse-first.
-    _drop_tables = [f"{p}t2"] if needs_2nd else []
-    _drop_tables.append(f"{p}t")
-    cleanup.append(
-        f"DROP TABLE IF EXISTS {', '.join(_drop_tables)} CASCADE;"
+            real_roles.append(f"{p}role2")
+    pre_roles = tuple(real_roles + [f"{p}norole"])
+    cleanup_roles = tuple(real_roles)
+
+    pre_cleanup_bk = build_pre_cleanup(
+        tables=pre_tables,
+        roles=pre_roles,
     )
+    cleanup_bk = build_cleanup(
+        tables=cleanup_tables,
+        complex_specs=tuple(complex_specs),
+        roles=cleanup_roles,
+        drop_owned=bool(cleanup_roles),
+        reset_role=effective,
+    )
+    pre_cleanup = list(pre_cleanup_bk.statements)
+    cleanup = list(cleanup_bk.statements)
 
     on_error_off = case.outcome == "expected_failure"
     return _CasePlan(
