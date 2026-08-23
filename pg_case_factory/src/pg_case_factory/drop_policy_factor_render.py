@@ -25,6 +25,11 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 
+from .cleanup_bookend import (
+    OnDropSpec,
+    build_cleanup,
+    build_pre_cleanup,
+)
 from .drop_policy_factor_extension import (
     DropPolicyFactorExtensionCase,
 )
@@ -432,45 +437,37 @@ def _resolve_case(case: DropPolicyFactorCase) -> _CasePlan:
     )
     assert_lines.append(_probe_select(case, a, p))
 
-    # --- cleanup construction -------------------------------------------
-    pol_drop = f"DROP POLICY IF EXISTS {pol_ref} ON {table_fix};"
-    pol2_drop = (
-        f"DROP POLICY IF EXISTS {_secondary_policy_name(p)} ON {table_fix};"
-    )
-    table_drop = f"DROP TABLE IF EXISTS {table_fix} CASCADE;"
-    roles = _role_names(case, p, effective)
-    role_drops = [
-        statement
-        for role in roles
-        for statement in (
-            f"DROP OWNED BY {role};",
-            f"DROP ROLE IF EXISTS {role};",
+    # --- cleanup construction (idempotent bookends via cleanup_bookend) ---
+    # The POLICY drops are shape A (ON <table>) and go through complex_specs.
+    # They are routed to build_cleanup only: in pre_cleanup the table is
+    # dropped first (CASCADE removes the policies), so a later DROP POLICY ON
+    # <table> would error on the missing relation.  IF EXISTS on the policy
+    # does not suppress a missing-table error, so policies stay out of
+    # pre_cleanup.  The table_created gate is the structural-absence
+    # exception (Q3): when the container table is never created, DROP POLICY
+    # ON <missing-relation> errors regardless of IF EXISTS.
+    complex_specs: tuple[OnDropSpec, ...] = ()
+    if table_created:
+        complex_specs = (
+            OnDropSpec("POLICY", pol_ref, table_fix),
+            OnDropSpec("POLICY", _secondary_policy_name(p), table_fix),
         )
-    ]
+    roles = _role_names(case, p, effective)
+    tables = (table_fix,) if table_created else ()
 
-    # Pre-cleanup: DROP TABLE first (bookend gate), then policies, then roles.
-    pre_cleanup: list[str] = []
-    if table_created:
-        pre_cleanup.append(table_drop)
-        pre_cleanup.append(pol_drop)
-        pre_cleanup.append(pol2_drop)
-    pre_cleanup.extend(role_drops)
-    if not pre_cleanup:
-        pre_cleanup.append("SELECT 1 AS residual_check_no_objects;")
-
-    # Cleanup: RESET ROLE, then policy drops, then role drops, then DROP
-    # TABLE last (bookend gate).
-    cleanup: list[str] = []
-    if effective:
-        cleanup.append("RESET ROLE;")
-    if table_created:
-        cleanup.append(pol_drop)
-        cleanup.append(pol2_drop)
-    cleanup.extend(role_drops)
-    if table_created:
-        cleanup.append(table_drop)
-    if not cleanup:
-        cleanup.append("SELECT 1 AS residual_check_no_objects;")
+    pre_cleanup_bk = build_pre_cleanup(
+        tables=tables,
+        roles=tuple(roles),
+    )
+    cleanup_bk = build_cleanup(
+        tables=tables,
+        complex_specs=complex_specs,
+        roles=tuple(roles),
+        drop_owned=bool(roles),
+        reset_role=effective,
+    )
+    pre_cleanup = list(pre_cleanup_bk.statements)
+    cleanup = list(cleanup_bk.statements)
 
     on_error_off = case.outcome == "expected_failure"
     return _CasePlan(
