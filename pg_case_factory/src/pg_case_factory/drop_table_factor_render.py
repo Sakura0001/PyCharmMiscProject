@@ -20,6 +20,12 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 
+from .cleanup_bookend import (
+    DropSpec,
+    OnDropSpec,
+    build_cleanup,
+    build_pre_cleanup,
+)
 from .drop_table_factor_extension import (
     DropTableFactorExtensionCase,
 )
@@ -476,86 +482,47 @@ def _resolve_case(case: DropTableFactorCase) -> _CasePlan:
     )
     assert_lines.append(_probe_select(case, a, p))
 
-    # --- cleanup construction -------------------------------------------
-    dep_view_drop = (
-        [f"DROP VIEW IF EXISTS {p}depv CASCADE;"] if dep_kind == "view" else []
-    )
-    dep_fk_drop = (
-        [f"DROP TABLE IF EXISTS {p}fkt CASCADE;"] if dep_kind == "fk" else []
-    )
-    dep_trigger_drop = (
-        [
-            f"DROP TRIGGER IF EXISTS {p}trg ON {create_ref};",
-            f"DROP FUNCTION IF EXISTS {p}trgfn();",
-        ]
-        if dep_kind == "trigger"
-        else []
-    )
-    dep_index_drop = (
-        [f"DROP INDEX IF EXISTS {p}idx;"] if dep_kind == "index" else []
-    )
-    dep_policy_drop = (
-        [f"DROP POLICY IF EXISTS {p}pol ON {create_ref};"]
-        if dep_kind == "policy"
-        else []
-    )
-    dep_rule_drop = (
-        [f"DROP RULE IF EXISTS {p}rl ON {create_ref};"]
-        if dep_kind == "rule"
-        else []
-    )
-    dep_multi_drop = (
-        [f"DROP TABLE IF EXISTS {p}mt2 CASCADE;"] if is_multi else []
-    )
-
-    created = _created_table_refs(case, a, p)
-    if created:
-        all_tables_str = ", ".join(created)
-        table_drop_stmt = f"DROP TABLE IF EXISTS {all_tables_str} CASCADE;"
-    else:
-        table_drop_stmt = ""
+    # --- cleanup construction (idempotent bookends via cleanup_bookend) ---
+    # Standard drops (VIEW/FUNCTION/INDEX) go through specs= in both
+    # bookends; the shape-A ON-table drops (TRIGGER/POLICY/RULE) go through
+    # complex_specs= routed to build_cleanup ONLY.  In pre-cleanup the table
+    # anchor (DROP TABLE CASCADE) removes these dependents, so a later
+    # DROP <KIND> ON <already-gone-table> would error even with IF EXISTS;
+    # IF EXISTS suppresses a missing-object NOTICE but not a missing-relation
+    # ERROR.  FK/multi tables fold into the tables= anchor (already in
+    # _created_table_refs), so no separate specs are needed for them.
+    cleanup_specs: list[DropSpec] = []
+    complex_specs: list[OnDropSpec] = []
+    if dep_kind == "view":
+        cleanup_specs.append(DropSpec("VIEW", f"{p}depv"))
+    elif dep_kind == "trigger":
+        cleanup_specs.append(DropSpec("FUNCTION", f"{p}trgfn", args="()"))
+        complex_specs.append(OnDropSpec("TRIGGER", f"{p}trg", create_ref))
+    elif dep_kind == "index":
+        cleanup_specs.append(DropSpec("INDEX", f"{p}idx"))
+    elif dep_kind == "policy":
+        complex_specs.append(OnDropSpec("POLICY", f"{p}pol", create_ref))
+    elif dep_kind == "rule":
+        complex_specs.append(OnDropSpec("RULE", f"{p}rl", create_ref))
 
     roles = _role_names(case, p, effective)
-    role_drops = [
-        statement
-        for role in roles
-        for statement in (
-            f"DROP OWNED BY {role};",
-            f"DROP ROLE IF EXISTS {role};",
-        )
-    ]
+    tables = tuple(_created_table_refs(case, a, p))
 
-    # Pre-cleanup: DROP TABLE first (bookend gate), then deps/roles.
-    pre_cleanup: list[str] = []
-    if table_drop_stmt:
-        pre_cleanup.append(table_drop_stmt)
-    pre_cleanup.extend(dep_view_drop)
-    pre_cleanup.extend(dep_fk_drop)
-    pre_cleanup.extend(dep_trigger_drop)
-    pre_cleanup.extend(dep_index_drop)
-    pre_cleanup.extend(dep_policy_drop)
-    pre_cleanup.extend(dep_rule_drop)
-    pre_cleanup.extend(dep_multi_drop)
-    pre_cleanup.extend(role_drops)
-    if not pre_cleanup:
-        pre_cleanup.append("SELECT 1 AS residual_check_no_objects;")
-
-    # Cleanup: RESET ROLE, deps/roles, then DROP TABLE last (bookend gate).
-    cleanup: list[str] = []
-    if effective:
-        cleanup.append("RESET ROLE;")
-    cleanup.extend(dep_view_drop)
-    cleanup.extend(dep_fk_drop)
-    cleanup.extend(dep_trigger_drop)
-    cleanup.extend(dep_index_drop)
-    cleanup.extend(dep_policy_drop)
-    cleanup.extend(dep_rule_drop)
-    cleanup.extend(dep_multi_drop)
-    cleanup.extend(role_drops)
-    if table_drop_stmt:
-        cleanup.append(table_drop_stmt)
-    if not cleanup:
-        cleanup.append("SELECT 1 AS residual_check_no_objects;")
+    pre_cleanup_bk = build_pre_cleanup(
+        tables=tables,
+        specs=tuple(cleanup_specs),
+        roles=tuple(roles),
+    )
+    cleanup_bk = build_cleanup(
+        tables=tables,
+        specs=tuple(cleanup_specs),
+        complex_specs=tuple(complex_specs),
+        roles=tuple(roles),
+        drop_owned=bool(roles),
+        reset_role=bool(effective),
+    )
+    pre_cleanup = list(pre_cleanup_bk.statements)
+    cleanup = list(cleanup_bk.statements)
 
     on_error_off = case.outcome == "expected_failure"
     return _CasePlan(
