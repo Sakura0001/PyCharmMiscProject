@@ -16,13 +16,23 @@ from pg_case_factory.cleanup_bookend import (
     CLEANUP_END,
     PRE_CLEANUP_BEGIN,
     PRE_CLEANUP_END,
+    CastDropSpec,
     CleanupBookend,
     DropSpec,
+    OnDropSpec,
+    TransformDropSpec,
+    UserMappingDropSpec,
+    UsingDropSpec,
     build_cleanup,
     build_pre_cleanup,
     guarded_drop_owned_by,
     guarded_drop_role,
     idempotent_drop,
+    idempotent_drop_cast,
+    idempotent_drop_on,
+    idempotent_drop_transform,
+    idempotent_drop_using,
+    idempotent_drop_user_mapping,
 )
 
 
@@ -116,6 +126,7 @@ class TestStandardSyntaxKinds(unittest.TestCase):
         "FOREIGN DATA WRAPPER",
         "FOREIGN TABLE",
         "PUBLICATION",
+        "ROUTINE",
         "SERVER",
         "STATISTICS",
         "SUBSCRIPTION",
@@ -315,6 +326,227 @@ class TestImmutability(unittest.TestCase):
         bookend = build_pre_cleanup(tables=("t",))
         self.assertIsInstance(bookend.statements, tuple)
         self.assertIsInstance(bookend.drop_kinds, tuple)
+
+
+class TestComplexKinds(unittest.TestCase):
+    """Complex DROP clause shapes (A-E) that ``idempotent_drop`` cannot express.
+
+    These kinds need an ``ON <table>``, ``USING <method>``, ``(src AS tgt)``,
+    ``FOR <type> LANGUAGE <lang>``, or ``FOR <user> SERVER <server>`` clause and
+    so get dedicated frozen specs + builders that mirror ``idempotent_drop``'s
+    safe-by-construction style. ``ROUTINE`` is plain standard syntax and is
+    covered by ``TestStandardSyntaxKinds`` (just an allowlist add).
+    """
+
+    # --- Shape A: ON <table> (TRIGGER / RULE / POLICY) ---
+    def test_trigger_on_table_cascade(self) -> None:
+        self.assertEqual(
+            idempotent_drop_on(OnDropSpec("TRIGGER", "trg", "tbl")),
+            "DROP TRIGGER IF EXISTS trg ON tbl CASCADE;",
+        )
+
+    def test_rule_on_view_no_cascade(self) -> None:
+        self.assertEqual(
+            idempotent_drop_on(OnDropSpec("RULE", "rl", "v", cascade=False)),
+            "DROP RULE IF EXISTS rl ON v;",
+        )
+
+    def test_policy_on_table_cascade(self) -> None:
+        self.assertEqual(
+            idempotent_drop_on(OnDropSpec("POLICY", "p", "t")),
+            "DROP POLICY IF EXISTS p ON t CASCADE;",
+        )
+
+    # --- Shape B: USING <method> (OPERATOR CLASS / OPERATOR FAMILY) ---
+    def test_operator_class_using_btree_cascade(self) -> None:
+        self.assertEqual(
+            idempotent_drop_using(UsingDropSpec("OPERATOR CLASS", "opc", "btree")),
+            "DROP OPERATOR CLASS IF EXISTS opc USING btree CASCADE;",
+        )
+
+    def test_operator_family_using_gin_no_cascade(self) -> None:
+        self.assertEqual(
+            idempotent_drop_using(
+                UsingDropSpec("OPERATOR FAMILY", "opf", "gin", cascade=False)
+            ),
+            "DROP OPERATOR FAMILY IF EXISTS opf USING gin;",
+        )
+
+    # --- Shape C: CAST (no name; (src AS tgt)) ---
+    def test_cast_src_to_tgt_cascade(self) -> None:
+        self.assertEqual(
+            idempotent_drop_cast(CastDropSpec("int4", "text")),
+            "DROP CAST IF EXISTS (int4 AS text) CASCADE;",
+        )
+
+    # --- Shape D: TRANSFORM (no name; FOR <type> LANGUAGE <lang>) ---
+    def test_transform_for_type_language_cascade(self) -> None:
+        self.assertEqual(
+            idempotent_drop_transform(TransformDropSpec("mytype", "plpgsql")),
+            "DROP TRANSFORM IF EXISTS FOR mytype LANGUAGE plpgsql CASCADE;",
+        )
+
+    # --- Shape E: USER MAPPING (no name; FOR <user> SERVER <server>) ---
+    # NOTE: DROP USER MAPPING has no CASCADE/RESTRICT clause in PG18 (it owns no
+    # dependent objects), so UserMappingDropSpec carries no cascade field and the
+    # builder never appends a suffix.
+    def test_user_mapping_actor_server(self) -> None:
+        self.assertEqual(
+            idempotent_drop_user_mapping(UserMappingDropSpec("actor", "srv")),
+            "DROP USER MAPPING IF EXISTS FOR actor SERVER srv;",
+        )
+
+    def test_user_mapping_public_server(self) -> None:
+        # PUBLIC is a valid (special) user for shape E.
+        self.assertEqual(
+            idempotent_drop_user_mapping(UserMappingDropSpec("PUBLIC", "srv")),
+            "DROP USER MAPPING IF EXISTS FOR PUBLIC SERVER srv;",
+        )
+
+    def test_user_mapping_never_emits_cascade_or_restrict(self) -> None:
+        # Regression: the builder must never append CASCADE/RESTRICT regardless of
+        # how the spec is built — DROP USER MAPPING has no such clause in PG18.
+        out = idempotent_drop_user_mapping(UserMappingDropSpec("actor", "srv"))
+        self.assertNotIn("CASCADE", out)
+        self.assertNotIn("RESTRICT", out)
+
+    # --- Rejection: empty fields ---
+    def test_empty_on_rejected(self) -> None:
+        with self.assertRaises(ValueError):
+            idempotent_drop_on(OnDropSpec("TRIGGER", "trg", ""))
+
+    def test_empty_using_rejected(self) -> None:
+        with self.assertRaises(ValueError):
+            idempotent_drop_using(UsingDropSpec("OPERATOR CLASS", "opc", ""))
+
+    def test_empty_cast_src_tgt_rejected(self) -> None:
+        with self.assertRaises(ValueError):
+            idempotent_drop_cast(CastDropSpec("", "text"))
+        with self.assertRaises(ValueError):
+            idempotent_drop_cast(CastDropSpec("int4", ""))
+
+    def test_empty_transform_type_lang_rejected(self) -> None:
+        with self.assertRaises(ValueError):
+            idempotent_drop_transform(TransformDropSpec("", "plpgsql"))
+        with self.assertRaises(ValueError):
+            idempotent_drop_transform(TransformDropSpec("mytype", ""))
+
+    def test_empty_user_mapping_user_server_rejected(self) -> None:
+        with self.assertRaises(ValueError):
+            idempotent_drop_user_mapping(UserMappingDropSpec("", "srv"))
+        with self.assertRaises(ValueError):
+            idempotent_drop_user_mapping(UserMappingDropSpec("actor", ""))
+
+    # --- Rejection: non-allowlist kind ---
+    def test_on_drop_non_allowlist_kind_rejected(self) -> None:
+        # TABLE is a standard kind but not an ON-clause kind -> rejected by the
+        # ON builder (it must go through idempotent_drop, not idempotent_drop_on).
+        with self.assertRaises(ValueError):
+            idempotent_drop_on(OnDropSpec("TABLE", "t", "tbl"))
+
+    def test_using_drop_non_allowlist_kind_rejected(self) -> None:
+        with self.assertRaises(ValueError):
+            idempotent_drop_using(UsingDropSpec("SERVER", "s", "btree"))
+
+    # --- Rejection: injection / malformed identifiers ---
+    def test_on_table_injection_rejected(self) -> None:
+        with self.assertRaises(ValueError):
+            idempotent_drop_on(OnDropSpec("TRIGGER", "trg", "tbl; DROP x"))
+
+    def test_using_method_injection_rejected(self) -> None:
+        with self.assertRaises(ValueError):
+            idempotent_drop_using(UsingDropSpec("OPERATOR CLASS", "opc", "btree; DROP x"))
+
+    def test_user_mapping_server_injection_rejected(self) -> None:
+        with self.assertRaises(ValueError):
+            idempotent_drop_user_mapping(UserMappingDropSpec("actor", "srv; DROP x"))
+
+    # --- Frozen dataclasses ---
+    def test_on_drop_spec_frozen(self) -> None:
+        spec = OnDropSpec("TRIGGER", "trg", "tbl")
+        with self.assertRaises(FrozenInstanceError):
+            spec.kind = "RULE"  # type: ignore[misc]
+
+    def test_using_drop_spec_frozen(self) -> None:
+        spec = UsingDropSpec("OPERATOR CLASS", "opc", "btree")
+        with self.assertRaises(FrozenInstanceError):
+            spec.using = "hash"  # type: ignore[misc]
+
+    def test_cast_drop_spec_frozen(self) -> None:
+        spec = CastDropSpec("int4", "text")
+        with self.assertRaises(FrozenInstanceError):
+            spec.src = "int8"  # type: ignore[misc]
+
+    def test_transform_drop_spec_frozen(self) -> None:
+        spec = TransformDropSpec("mytype", "plpgsql")
+        with self.assertRaises(FrozenInstanceError):
+            spec.lang = "sql"  # type: ignore[misc]
+
+    def test_user_mapping_drop_spec_frozen(self) -> None:
+        spec = UserMappingDropSpec("actor", "srv")
+        with self.assertRaises(FrozenInstanceError):
+            spec.server = "s2"  # type: ignore[misc]
+
+    # --- complex_specs plumbing ---
+    def test_complex_specs_plumbing_pre_cleanup(self) -> None:
+        bookend = build_pre_cleanup(complex_specs=(OnDropSpec("TRIGGER", "trg", "tbl"),))
+        self.assertIn("DROP TRIGGER IF EXISTS trg ON tbl CASCADE;", bookend.statements)
+        self.assertIn("TRIGGER", bookend.drop_kinds)
+
+    def test_complex_specs_plumbing_cleanup(self) -> None:
+        bookend = build_cleanup(complex_specs=(OnDropSpec("POLICY", "p", "t"),))
+        self.assertIn("DROP POLICY IF EXISTS p ON t CASCADE;", bookend.statements)
+        self.assertIn("POLICY", bookend.drop_kinds)
+
+    def test_complex_specs_after_specs_before_schemas_pre_cleanup(self) -> None:
+        bookend = build_pre_cleanup(
+            specs=(DropSpec("SEQUENCE", "s"),),
+            complex_specs=(OnDropSpec("TRIGGER", "trg", "tbl"),),
+            schemas=("sch",),
+        )
+        stmts = bookend.statements
+        seq_i = stmts.index("DROP SEQUENCE IF EXISTS s CASCADE;")
+        trg_i = stmts.index("DROP TRIGGER IF EXISTS trg ON tbl CASCADE;")
+        sch_i = stmts.index("DROP SCHEMA IF EXISTS sch CASCADE;")
+        self.assertLess(seq_i, trg_i)
+        self.assertLess(trg_i, sch_i)
+
+    def test_complex_specs_after_specs_before_schemas_cleanup(self) -> None:
+        bookend = build_cleanup(
+            specs=(DropSpec("SEQUENCE", "s"),),
+            complex_specs=(OnDropSpec("TRIGGER", "trg", "tbl"),),
+            schemas=("sch",),
+        )
+        stmts = bookend.statements
+        seq_i = stmts.index("DROP SEQUENCE IF EXISTS s CASCADE;")
+        trg_i = stmts.index("DROP TRIGGER IF EXISTS trg ON tbl CASCADE;")
+        sch_i = stmts.index("DROP SCHEMA IF EXISTS sch CASCADE;")
+        self.assertLess(seq_i, trg_i)
+        self.assertLess(trg_i, sch_i)
+
+    def test_complex_specs_multiple_shapes_dispatched(self) -> None:
+        bookend = build_pre_cleanup(
+            complex_specs=(
+                OnDropSpec("TRIGGER", "trg", "tbl"),
+                UsingDropSpec("OPERATOR CLASS", "opc", "btree"),
+                CastDropSpec("int4", "text"),
+                TransformDropSpec("mytype", "plpgsql"),
+                UserMappingDropSpec("actor", "srv"),
+            )
+        )
+        self.assertIn("DROP TRIGGER IF EXISTS trg ON tbl CASCADE;", bookend.statements)
+        self.assertIn("DROP OPERATOR CLASS IF EXISTS opc USING btree CASCADE;", bookend.statements)
+        self.assertIn("DROP CAST IF EXISTS (int4 AS text) CASCADE;", bookend.statements)
+        self.assertIn(
+            "DROP TRANSFORM IF EXISTS FOR mytype LANGUAGE plpgsql CASCADE;", bookend.statements
+        )
+        self.assertIn(
+            "DROP USER MAPPING IF EXISTS FOR actor SERVER srv;", bookend.statements
+        )
+        self.assertEqual(
+            bookend.drop_kinds,
+            ("TRIGGER", "OPERATOR CLASS", "CAST", "TRANSFORM", "USER MAPPING"),
+        )
 
 
 if __name__ == "__main__":
