@@ -17,6 +17,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 
+from .cleanup_bookend import UsingDropSpec, build_cleanup, build_pre_cleanup
 from .drop_operator_class_factor_extension import (
     DropOperatorClassFactorExtensionCase,
 )
@@ -337,41 +338,30 @@ def _resolve_case(case: DropOperatorClassFactorCase) -> _CasePlan:
     )
     assert_lines.append(_probe_select(case, a, p))
 
-    # --- cleanup construction -------------------------------------------
-    opclass_drop = (
-        f"DROP OPERATOR CLASS IF EXISTS {opclass_ref} USING {method} CASCADE;"
-    )
-    dep_drops = (
-        [f"DROP TABLE IF EXISTS {p}t CASCADE;"] if needs_dep else []
-    )
+    # --- cleanup construction (idempotent bookends via cleanup_bookend) -
+    # The complex DROP OPERATOR CLASS ... USING <method> goes through
+    # complex_specs= (shape B); the dependent TABLE and ROLE drops stay
+    # on the standard specs=/tables=/roles= paths. IF EXISTS makes every
+    # drop idempotent across run-01/run-02; build_pre_cleanup never emits
+    # DROP OWNED BY (the role may not exist on a fresh database).
+    opclass_spec = UsingDropSpec("OPERATOR CLASS", opclass_ref, method)
+    dep_tables = (f"{p}t",) if needs_dep else ()
     roles = _role_names(case, p, effective)
-    role_drops = [
-        statement
-        for role in roles
-        for statement in (
-            f"DROP OWNED BY {role};",
-            f"DROP ROLE IF EXISTS {role};",
-        )
-    ]
 
-    # Pre-cleanup: DROP TABLE first (bookend gate), then opclass, then roles.
-    pre_cleanup: list[str] = []
-    pre_cleanup.extend(dep_drops)
-    pre_cleanup.append(opclass_drop)
-    pre_cleanup.extend(role_drops)
-    if not pre_cleanup:
-        pre_cleanup.append("SELECT 1 AS residual_check_no_objects;")
-
-    # Cleanup: RESET ROLE, then opclass/role drops, then DROP
-    # TABLE last (bookend gate).
-    cleanup: list[str] = []
-    if effective:
-        cleanup.append("RESET ROLE;")
-    cleanup.append(opclass_drop)
-    cleanup.extend(role_drops)
-    cleanup.extend(dep_drops)
-    if not cleanup:
-        cleanup.append("SELECT 1 AS residual_check_no_objects;")
+    pre_cleanup_bk = build_pre_cleanup(
+        tables=dep_tables,
+        complex_specs=(opclass_spec,),
+        roles=tuple(roles),
+    )
+    cleanup_bk = build_cleanup(
+        tables=dep_tables,
+        complex_specs=(opclass_spec,),
+        roles=tuple(roles),
+        drop_owned=bool(roles),
+        reset_role=effective,
+    )
+    pre_cleanup = list(pre_cleanup_bk.statements)
+    cleanup = list(cleanup_bk.statements)
 
     on_error_off = case.outcome == "expected_failure"
     return _CasePlan(
