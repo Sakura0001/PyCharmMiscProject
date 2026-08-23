@@ -24,6 +24,12 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 
+from .cleanup_bookend import (
+    CastDropSpec,
+    DropSpec,
+    build_cleanup,
+    build_pre_cleanup,
+)
 from .drop_cast_factor_extension import (
     DropCastFactorExtensionCase,
     _present_failure_pair,
@@ -425,55 +431,44 @@ def _resolve_case(case: DropCastFactorCase) -> _CasePlan:
     if needs_rev:
         assert_lines.append(_reverse_probe_select(case, a, p))
 
-    # --- cleanup construction -------------------------------------------
-    casts_to_drop: list[tuple[str, str]] = [(src_plain, tgt_plain)]
+    # --- cleanup construction (idempotent bookends via cleanup_bookend) ---
+    # The cast drop is shape C: ``DROP CAST IF EXISTS (src AS tgt) [CASCADE]``
+    # has no object name, so it must go through complex_specs= (CastDropSpec),
+    # not the standard specs= path (which only accepts DropSpec).  Functions
+    # and types are standard kinds.  The helper emits specs before
+    # complex_specs, so CASCADE on the type drop clears the lingering cast
+    # dependency when the target failed to drop it.
+    cast_specs: list[CastDropSpec] = [CastDropSpec(src_plain, tgt_plain)]
     if needs_rev:
-        casts_to_drop.append((tgt_plain, src_plain))
+        cast_specs.append(CastDropSpec(tgt_plain, src_plain))
 
-    cast_drops = [
-        f"DROP CAST IF EXISTS ({s} AS {t});" for s, t in casts_to_drop
-    ]
-    func_drops: list[str] = [f"DROP FUNCTION IF EXISTS {p}castfn;"]
+    func_specs: list[DropSpec] = [DropSpec("FUNCTION", f"{p}castfn")]
     if needs_rev:
-        func_drops.append(f"DROP FUNCTION IF EXISTS {p}revcastfn;")
+        func_specs.append(DropSpec("FUNCTION", f"{p}revcastfn"))
 
-    type_drops: list[str] = []
+    type_specs: list[DropSpec] = []
     if _needs_custom_source(a):
-        type_drops.append(f"DROP TYPE IF EXISTS {p}sourcetype;")
+        type_specs.append(DropSpec("TYPE", f"{p}sourcetype"))
     if _needs_custom_target(a):
-        type_drops.append(f"DROP TYPE IF EXISTS {p}targettype;")
+        type_specs.append(DropSpec("TYPE", f"{p}targettype"))
 
+    standard_specs = tuple(func_specs + type_specs)
     roles = _role_names(case, p, effective)
-    role_drops = [
-        statement
-        for role in roles
-        for statement in (
-            f"DROP OWNED BY {role} CASCADE;",
-            f"DROP ROLE IF EXISTS {role};",
-        )
-    ]
 
-    # Pre-cleanup: casts, functions, types, roles (all IF EXISTS / safe).
-    pre_cleanup: list[str] = []
-    pre_cleanup.extend(cast_drops)
-    pre_cleanup.extend(func_drops)
-    pre_cleanup.extend(type_drops)
-    pre_cleanup.extend(f"DROP ROLE IF EXISTS {role};" for role in roles)
-    if not pre_cleanup:
-        pre_cleanup.append("SELECT 1 AS residual_check_no_objects;")
-
-    # Cleanup: RESET ROLE, then casts, functions, types, roles.  The cast
-    # drop always uses IF EXISTS so it succeeds even when the target drop
-    # already removed the cast.
-    cleanup: list[str] = []
-    if effective:
-        cleanup.append("RESET ROLE;")
-    cleanup.extend(cast_drops)
-    cleanup.extend(func_drops)
-    cleanup.extend(type_drops)
-    cleanup.extend(role_drops)
-    if not cleanup:
-        cleanup.append("SELECT 1 AS residual_check_no_objects;")
+    pre_cleanup_bk = build_pre_cleanup(
+        specs=standard_specs,
+        complex_specs=tuple(cast_specs),
+        roles=tuple(roles),
+    )
+    cleanup_bk = build_cleanup(
+        specs=standard_specs,
+        complex_specs=tuple(cast_specs),
+        roles=tuple(roles),
+        drop_owned=bool(roles),
+        reset_role=effective,
+    )
+    pre_cleanup = list(pre_cleanup_bk.statements)
+    cleanup = list(cleanup_bk.statements)
 
     on_error_off = case.outcome == "expected_failure"
     return _CasePlan(
