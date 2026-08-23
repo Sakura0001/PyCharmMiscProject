@@ -20,6 +20,12 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 
+from .cleanup_bookend import (
+    DropSpec,
+    OnDropSpec,
+    build_cleanup,
+    build_pre_cleanup,
+)
 from .drop_trigger_factor_extension import (
     DropTriggerFactorExtensionCase,
 )
@@ -413,56 +419,37 @@ def _resolve_case(case: DropTriggerFactorCase) -> _CasePlan:
     )
     assert_lines.append(_probe_select(case, a, p))
 
-    # --- cleanup construction -------------------------------------------
-    trigger_drop = (
-        [f"DROP TRIGGER IF EXISTS {trigger_ref} ON {base_table};"]
-        if host_kind != "none"
-        else []
-    )
-    function_drop = (
-        [f"DROP FUNCTION IF EXISTS {p}fn() CASCADE;"]
-        if host_kind != "none"
-        else []
-    )
-    dep_drop = (
-        [f"DROP VIEW IF EXISTS {p}depv CASCADE;"] if needs_dep else []
-    )
-    table_drop = (
-        [f"DROP TABLE IF EXISTS {base_table} CASCADE;"]
-        if host_kind != "none"
-        else []
-    )
+    # --- cleanup construction (idempotent bookends via cleanup_bookend) ---
+    # The TRIGGER drop is shape A (ON <table>) and goes through complex_specs.
+    # It is routed to build_cleanup only: in pre_cleanup the table is dropped
+    # first (CASCADE removes the trigger), so a later DROP TRIGGER ON <table>
+    # would error on the missing relation.  IF EXISTS on the trigger does not
+    # suppress a missing-table error, so the trigger stays out of pre_cleanup.
+    cleanup_specs: list[DropSpec] = []
+    complex_specs: tuple[OnDropSpec, ...] = ()
+    if host_kind != "none":
+        cleanup_specs.append(DropSpec("FUNCTION", f"{p}fn", args="()"))
+        complex_specs = (OnDropSpec("TRIGGER", trigger_ref, base_table),)
+    if needs_dep:
+        cleanup_specs.append(DropSpec("VIEW", f"{p}depv"))
     roles = _role_names(case, p, effective)
-    role_drops = [
-        statement
-        for role in roles
-        for statement in (
-            f"DROP OWNED BY {role};",
-            f"DROP ROLE IF EXISTS {role};",
-        )
-    ]
+    tables = (base_table,) if host_kind != "none" else ()
 
-    # Pre-cleanup: DROP TABLE first (bookend gate), then function/dep/role.
-    pre_cleanup: list[str] = []
-    pre_cleanup.extend(table_drop)
-    pre_cleanup.extend(function_drop)
-    pre_cleanup.extend(dep_drop)
-    pre_cleanup.extend(role_drops)
-    if not pre_cleanup:
-        pre_cleanup.append("SELECT 1 AS residual_check_no_objects;")
-
-    # Cleanup: RESET ROLE, then trigger/function/dep/role drops, then DROP
-    # TABLE last (bookend gate).
-    cleanup: list[str] = []
-    if effective:
-        cleanup.append("RESET ROLE;")
-    cleanup.extend(trigger_drop)
-    cleanup.extend(function_drop)
-    cleanup.extend(dep_drop)
-    cleanup.extend(role_drops)
-    cleanup.extend(table_drop)
-    if not cleanup:
-        cleanup.append("SELECT 1 AS residual_check_no_objects;")
+    pre_cleanup_bk = build_pre_cleanup(
+        tables=tables,
+        specs=tuple(cleanup_specs),
+        roles=tuple(roles),
+    )
+    cleanup_bk = build_cleanup(
+        tables=tables,
+        specs=tuple(cleanup_specs),
+        complex_specs=complex_specs,
+        roles=tuple(roles),
+        drop_owned=bool(roles),
+        reset_role=effective,
+    )
+    pre_cleanup = list(pre_cleanup_bk.statements)
+    cleanup = list(cleanup_bk.statements)
 
     on_error_off = case.outcome == "expected_failure"
     return _CasePlan(
