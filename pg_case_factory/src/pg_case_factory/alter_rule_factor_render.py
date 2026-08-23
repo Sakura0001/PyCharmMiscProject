@@ -23,6 +23,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 import re
+from typing import Sequence
 
 from .alter_rule_factor_extension import (
     AlterRuleFactorExtensionCase,
@@ -32,6 +33,13 @@ from .alter_rule_factor_loop import (
     AlterRuleFactorCase,
     AlterRuleFactorLoopPlan,
     _EXPECTED_BEHAVIOR_VALUES,
+)
+from .cleanup_bookend import (
+    CleanupBookend,
+    DropSpec,
+    OnDropSpec,
+    build_cleanup,
+    build_pre_cleanup,
 )
 
 
@@ -52,6 +60,35 @@ _VERSION = "1.0"
 _FE = "PG18-STATEMENT-FACTOR-LOOP"
 
 _BRANCH_RENAME = "branch_rename"
+
+# The placeholder the shared bookend emits when a region would otherwise be
+# empty; mirrored from cleanup_bookend._RESIDUAL_SELECT so splicing a real
+# statement lets us drop the placeholder without importing a private name.
+_RESIDUAL_SELECT = "SELECT 1 AS residual_check_no_objects;"
+
+
+def _splice_bookend(
+    bookend: CleanupBookend,
+    lead: Sequence[str] = (),
+    tail: Sequence[str] = (),
+) -> tuple[str, ...]:
+    """Splice non-DROP lead/tail statements into a cleanup bookend.
+
+    ``lead`` (e.g. an ``ALTER RULE ... RENAME TO`` that reverts the target's
+    rename) is inserted right after ``RESET ROLE`` (or just after the begin
+    marker); ``tail`` (e.g. a ``DROP VIEW`` that must follow the rule drops
+    and the role teardown) before the end marker.  A lone residual ``SELECT``
+    is dropped because the splice makes the region non-empty.  A no-op when
+    both are empty (the helper's output is returned untouched).
+    """
+    if not lead and not tail:
+        return bookend.statements
+    stmts = [s for s in bookend.statements if s != _RESIDUAL_SELECT]
+    # stmts[0] is CLEANUP_BEGIN, stmts[-1] is CLEANUP_END (helper contract).
+    inner = stmts[1:-1]
+    lead_at = 1 if inner and inner[0] == "RESET ROLE;" else 0
+    new_inner = inner[:lead_at] + list(lead) + inner[lead_at:] + list(tail)
+    return (stmts[0], *new_inner, stmts[-1])
 
 
 def _synthetic_case(
@@ -145,12 +182,6 @@ def _table_missing(a: dict[str, str]) -> bool:
 
 def _rule_missing(a: dict[str, str]) -> bool:
     return a.get("rule_name_shape") == "nonexistent_name"
-
-
-def _creates_table(a: dict[str, str]) -> bool:
-    """Whether the fixture creates a TABLE (triggering the bookend gate)."""
-
-    return _table_type(a) == "table" and not _table_missing(a)
 
 
 def _host_name(
@@ -324,7 +355,6 @@ def _resolve_case(case: AlterRuleFactorCase) -> _CasePlan:
     is_view = _is_view(a)
     table_missing = _table_missing(a)
     rule_missing = _rule_missing(a)
-    creates_table = _creates_table(a)
 
     setup: list[str] = []
     locus = "target.rule_rename"
@@ -411,67 +441,69 @@ def _resolve_case(case: AlterRuleFactorCase) -> _CasePlan:
     if probe is not None:
         assert_lines.append(probe)
 
-    # --- cleanup construction ------------------------------------------
+    # --- cleanup construction (idempotent bookends via cleanup_bookend) ---
+    # The RULE drop is shape A (ON <relation>) and goes through complex_specs.
+    # It is routed to build_cleanup ONLY: in pre-cleanup the host relation
+    # drops first (CASCADE removes the rule), so a later DROP RULE ON an
+    # already-gone relation errors even with IF EXISTS (Q2).
     drop_mode = a.get("cleanup_mode", "revert_rename")
-    role_drops = [
-        statement
-        for role in roles
-        for statement in (
-            f"DROP OWNED BY {role} CASCADE;",
-            f"DROP ROLE IF EXISTS {role};",
-        )
-    ]
 
-    # cleanup-specific drops (before the host drop)
-    specific_drops: list[str] = []
-    if drop_mode == "revert_rename" and case.outcome == "success":
-        if not _is_return_behavior(a):
-            specific_drops.append(
-                f"ALTER RULE {new} ON {host} RENAME TO {rule};"
-            )
-    elif drop_mode == "drop_rule":
+    # revert_rename renames the rule back; this is a non-DROP cleanup action
+    # the helper cannot express, so it is spliced in as a lead statement
+    # right after RESET ROLE.
+    lead: list[str] = []
+    if (
+        drop_mode == "revert_rename"
+        and case.outcome == "success"
+        and not _is_return_behavior(a)
+    ):
+        lead.append(f"ALTER RULE {new} ON {host} RENAME TO {rule};")
+
+    # shape-A DROP RULE statements (drop_rule mode only).  The original
+    # conditions are preserved verbatim: the ``new`` drop is success-gated
+    # because the invalid_name factor yields an identifier OnDropSpec cannot
+    # validate; the ``rule`` drop stays gated on the container existing
+    # (table_missing is structural absence — DROP RULE ON a missing relation
+    # errors even with IF EXISTS, so that condition is kept per Q3).
+    complex_drops: list[OnDropSpec] = []
+    if drop_mode == "drop_rule":
         if case.outcome == "success":
-            specific_drops.append(
-                f"DROP RULE IF EXISTS {new} ON {host};"
-            )
+            complex_drops.append(OnDropSpec("RULE", new, host))
         if not rule_missing and not table_missing:
-            specific_drops.append(
-                f"DROP RULE IF EXISTS {rule} ON {host};"
-            )
+            complex_drops.append(OnDropSpec("RULE", rule, host))
             if a.get("new_name_shape") == "duplicate_name_same_table":
-                specific_drops.append(
-                    f"DROP RULE IF EXISTS {new} ON {host};"
-                )
+                complex_drops.append(OnDropSpec("RULE", new, host))
 
-    # host drop — table bookends use the audit-normalizable fixture name so
-    # ``audit_complete_table_script`` can parse the DROP TABLE identifiers;
-    # views keep the shape-appropriate name (the bookend gate skips views).
-    if is_view or (drop_mode in ("drop_view", "drop_table") and is_view):
-        host_drop = f"DROP VIEW IF EXISTS {host} CASCADE;"
+    # Host relation teardown.  Tables go through ``tables=`` (DROP TABLE is
+    # the bookend anchor: first in pre-cleanup, last in cleanup).  Views
+    # cannot use ``tables=`` (the helper emits DROP TABLE) and the helper's
+    # ``specs`` slot precedes ``complex_specs`` — which would drop the view
+    # before the rules — so the view drop is spliced in last (tail).
+    if is_view:
+        pre_tables: tuple[str, ...] = ()
+        pre_specs: tuple[DropSpec, ...] = (DropSpec("VIEW", host),)
+        cln_tables: tuple[str, ...] = ()
+        tail = [f"DROP VIEW IF EXISTS {host} CASCADE;"]
     else:
-        host_drop = f"DROP TABLE IF EXISTS {fixture_name} CASCADE;"
+        pre_tables = (fixture_name,)
+        pre_specs = ()
+        cln_tables = (fixture_name,)
+        tail = []
 
-    # pre-cleanup: host drop first (for bookend), then role drops
-    pre_cleanup: list[str] = []
-    if creates_table:
-        pre_cleanup.append(host_drop)
-    elif not table_missing:
-        pre_cleanup.append(host_drop)
-    else:
-        pre_cleanup.append(host_drop)
-    pre_cleanup.extend(role_drops)
-    if not pre_cleanup:
-        pre_cleanup.append("SELECT 1 AS residual_check_no_objects;")
-
-    # cleanup: specific drops, role drops, then host drop last (for bookend)
-    cleanup: list[str] = []
-    if effective:
-        cleanup.append("RESET ROLE;")
-    cleanup.extend(specific_drops)
-    cleanup.extend(role_drops)
-    cleanup.append(host_drop)
-    if not cleanup:
-        cleanup.append("SELECT 1 AS residual_check_no_objects;")
+    pre_cleanup_bk = build_pre_cleanup(
+        tables=pre_tables,
+        specs=pre_specs,
+        roles=roles,
+    )
+    cleanup_bk = build_cleanup(
+        tables=cln_tables,
+        complex_specs=tuple(complex_drops),
+        roles=roles,
+        drop_owned=bool(roles),
+        reset_role=bool(effective),
+    )
+    pre_cleanup = list(pre_cleanup_bk.statements)
+    cleanup = list(_splice_bookend(cleanup_bk, lead, tail))
 
     on_error_off = case.outcome == "expected_failure"
     return _CasePlan(
