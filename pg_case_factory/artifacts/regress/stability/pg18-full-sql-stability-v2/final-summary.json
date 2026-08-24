@@ -1,0 +1,1740 @@
+{
+  "case_count": 855913,
+  "classifications": {
+    "compatibility_pass": 5158,
+    "not_strictly_judgeable": 1080,
+    "observed_mismatch": 250,
+    "oracle_failure": 147642,
+    "strict_pass": 385322,
+    "two_run_mismatch": 4650,
+    "unexpected_psql_error": 311811
+  },
+  "determinism": {
+    "raw_transcript_match_count": 837755,
+    "raw_transcript_mismatch_count": 18158,
+    "structured_mismatch_count": 11856,
+    "transcript_mismatch_count": 15346
+  },
+  "evidence_classifications": {
+    "compatibility-contract": {
+      "compatibility_pass": 5158,
+      "oracle_failure": 336,
+      "two_run_mismatch": 2735,
+      "unexpected_psql_error": 334
+    },
+    "observational-legacy": {
+      "not_strictly_judgeable": 1080,
+      "observed_mismatch": 250,
+      "oracle_failure": 86,
+      "unexpected_psql_error": 13302
+    },
+    "strict-contract": {
+      "oracle_failure": 147220,
+      "strict_pass": 385322,
+      "two_run_mismatch": 1915,
+      "unexpected_psql_error": 298175
+    }
+  },
+  "evidence_levels": {
+    "compatibility-contract": 8563,
+    "observational-legacy": 14718,
+    "strict-contract": 832632
+  },
+  "execution_count": 1711826,
+  "execution_health": {
+    "exit_codes": {
+      "0": 1088427,
+      "3": 623399
+    },
+    "nonzero_exit_case_count": 311844,
+    "run_classifications": {
+      "compatibility_pass": 15789,
+      "not_strictly_judgeable": 2160,
+      "observed_mismatch": 500,
+      "oracle_failure": 295209,
+      "strict_pass": 774749,
+      "unexpected_psql_error": 623419
+    },
+    "server_crash_or_disconnect_examples": [],
+    "server_crash_or_disconnect_execution_count": 0,
+    "timed_out_case_count": 0,
+    "timed_out_execution_count": 0,
+    "worker_generations": {
+      "worker-1-generation-1": 213979,
+      "worker-2-generation-1": 213978,
+      "worker-3-generation-1": 213978,
+      "worker-4-generation-1": 213978
+    }
+  },
+  "expected_outcome_classifications": {
+    "None": {
+      "not_strictly_judgeable": 86,
+      "oracle_failure": 86
+    },
+    "expected_failure": {
+      "compatibility_pass": 1167,
+      "observed_mismatch": 250,
+      "oracle_failure": 139232,
+      "strict_pass": 166495,
+      "two_run_mismatch": 944,
+      "unexpected_psql_error": 182350
+    },
+    "success": {
+      "compatibility_pass": 3991,
+      "not_strictly_judgeable": 994,
+      "oracle_failure": 8324,
+      "strict_pass": 218827,
+      "two_run_mismatch": 3706,
+      "unexpected_psql_error": 129461
+    }
+  },
+  "failure_examples": {
+    "observed_mismatch": [
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "CUR00083",
+        "error_sqlstates": [],
+        "expected_sqlstate": null,
+        "ordinal": 245019,
+        "sql_path": "artifacts/regress/cursor-factor-full-v1/sql/CUR00083.sql",
+        "statement_key": "close"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "CUR00095",
+        "error_sqlstates": [],
+        "expected_sqlstate": null,
+        "ordinal": 245031,
+        "sql_path": "artifacts/regress/cursor-factor-full-v1/sql/CUR00095.sql",
+        "statement_key": "close"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "CUR00107",
+        "error_sqlstates": [],
+        "expected_sqlstate": null,
+        "ordinal": 245043,
+        "sql_path": "artifacts/regress/cursor-factor-full-v1/sql/CUR00107.sql",
+        "statement_key": "close"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "DCL03662",
+        "error_sqlstates": [],
+        "expected_sqlstate": null,
+        "ordinal": 644484,
+        "sql_path": "artifacts/regress/dcl-factor-full-v1/sql/DCL03662.sql",
+        "statement_key": "grant"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "DCL03665",
+        "error_sqlstates": [],
+        "expected_sqlstate": null,
+        "ordinal": 644487,
+        "sql_path": "artifacts/regress/dcl-factor-full-v1/sql/DCL03665.sql",
+        "statement_key": "grant"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "DCL03673",
+        "error_sqlstates": [],
+        "expected_sqlstate": null,
+        "ordinal": 644495,
+        "sql_path": "artifacts/regress/dcl-factor-full-v1/sql/DCL03673.sql",
+        "statement_key": "grant"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "DCL03674",
+        "error_sqlstates": [],
+        "expected_sqlstate": null,
+        "ordinal": 644496,
+        "sql_path": "artifacts/regress/dcl-factor-full-v1/sql/DCL03674.sql",
+        "statement_key": "grant"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "DCL03685",
+        "error_sqlstates": [],
+        "expected_sqlstate": null,
+        "ordinal": 644507,
+        "sql_path": "artifacts/regress/dcl-factor-full-v1/sql/DCL03685.sql",
+        "statement_key": "grant"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "DCL03686",
+        "error_sqlstates": [],
+        "expected_sqlstate": null,
+        "ordinal": 644508,
+        "sql_path": "artifacts/regress/dcl-factor-full-v1/sql/DCL03686.sql",
+        "statement_key": "grant"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "DCL03689",
+        "error_sqlstates": [],
+        "expected_sqlstate": null,
+        "ordinal": 644511,
+        "sql_path": "artifacts/regress/dcl-factor-full-v1/sql/DCL03689.sql",
+        "statement_key": "grant"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "DCL03697",
+        "error_sqlstates": [],
+        "expected_sqlstate": null,
+        "ordinal": 644519,
+        "sql_path": "artifacts/regress/dcl-factor-full-v1/sql/DCL03697.sql",
+        "statement_key": "grant"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "DCL03698",
+        "error_sqlstates": [],
+        "expected_sqlstate": null,
+        "ordinal": 644520,
+        "sql_path": "artifacts/regress/dcl-factor-full-v1/sql/DCL03698.sql",
+        "statement_key": "grant"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "DCL03701",
+        "error_sqlstates": [],
+        "expected_sqlstate": null,
+        "ordinal": 644523,
+        "sql_path": "artifacts/regress/dcl-factor-full-v1/sql/DCL03701.sql",
+        "statement_key": "grant"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "DCL03709",
+        "error_sqlstates": [],
+        "expected_sqlstate": null,
+        "ordinal": 644531,
+        "sql_path": "artifacts/regress/dcl-factor-full-v1/sql/DCL03709.sql",
+        "statement_key": "grant"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "DCL03710",
+        "error_sqlstates": [],
+        "expected_sqlstate": null,
+        "ordinal": 644532,
+        "sql_path": "artifacts/regress/dcl-factor-full-v1/sql/DCL03710.sql",
+        "statement_key": "grant"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "DCL03712",
+        "error_sqlstates": [],
+        "expected_sqlstate": null,
+        "ordinal": 644534,
+        "sql_path": "artifacts/regress/dcl-factor-full-v1/sql/DCL03712.sql",
+        "statement_key": "grant"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "DCL03713",
+        "error_sqlstates": [],
+        "expected_sqlstate": null,
+        "ordinal": 644535,
+        "sql_path": "artifacts/regress/dcl-factor-full-v1/sql/DCL03713.sql",
+        "statement_key": "grant"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "DCL03722",
+        "error_sqlstates": [],
+        "expected_sqlstate": null,
+        "ordinal": 644544,
+        "sql_path": "artifacts/regress/dcl-factor-full-v1/sql/DCL03722.sql",
+        "statement_key": "grant"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "DCL03725",
+        "error_sqlstates": [],
+        "expected_sqlstate": null,
+        "ordinal": 644547,
+        "sql_path": "artifacts/regress/dcl-factor-full-v1/sql/DCL03725.sql",
+        "statement_key": "grant"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "DCL03733",
+        "error_sqlstates": [],
+        "expected_sqlstate": null,
+        "ordinal": 644555,
+        "sql_path": "artifacts/regress/dcl-factor-full-v1/sql/DCL03733.sql",
+        "statement_key": "grant"
+      }
+    ],
+    "oracle_failure": [
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ABORT00059",
+        "error_sqlstates": [
+          "55000",
+          "42704"
+        ],
+        "expected_sqlstate": null,
+        "ordinal": 59,
+        "sql_path": "artifacts/regress/by-factor/tcl/transaction/abort/ABORT00059.sql",
+        "statement_key": "abort"
+      },
+      {
+        "actual_target_sqlstate": "25P01",
+        "case_id": "ABORT00060",
+        "error_sqlstates": [
+          "55000",
+          "25P01",
+          "42704"
+        ],
+        "expected_sqlstate": null,
+        "ordinal": 60,
+        "sql_path": "artifacts/regress/by-factor/tcl/transaction/abort/ABORT00060.sql",
+        "statement_key": "abort"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ABORT00061",
+        "error_sqlstates": [
+          "55000",
+          "42704"
+        ],
+        "expected_sqlstate": null,
+        "ordinal": 61,
+        "sql_path": "artifacts/regress/by-factor/tcl/transaction/abort/ABORT00061.sql",
+        "statement_key": "abort"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERCONVERSION00001",
+        "error_sqlstates": [],
+        "expected_sqlstate": "00000",
+        "ordinal": 1019,
+        "sql_path": "artifacts/regress/by-factor/ddl/conversion/alter_conversion/ALTERCONVERSION00001.sql",
+        "statement_key": "alter_conversion"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERCONVERSION00002",
+        "error_sqlstates": [],
+        "expected_sqlstate": "00000",
+        "ordinal": 1020,
+        "sql_path": "artifacts/regress/by-factor/ddl/conversion/alter_conversion/ALTERCONVERSION00002.sql",
+        "statement_key": "alter_conversion"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERCONVERSION00003",
+        "error_sqlstates": [],
+        "expected_sqlstate": "00000",
+        "ordinal": 1021,
+        "sql_path": "artifacts/regress/by-factor/ddl/conversion/alter_conversion/ALTERCONVERSION00003.sql",
+        "statement_key": "alter_conversion"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERCONVERSION00004",
+        "error_sqlstates": [],
+        "expected_sqlstate": "00000",
+        "ordinal": 1022,
+        "sql_path": "artifacts/regress/by-factor/ddl/conversion/alter_conversion/ALTERCONVERSION00004.sql",
+        "statement_key": "alter_conversion"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERCONVERSION00005",
+        "error_sqlstates": [],
+        "expected_sqlstate": "00000",
+        "ordinal": 1023,
+        "sql_path": "artifacts/regress/by-factor/ddl/conversion/alter_conversion/ALTERCONVERSION00005.sql",
+        "statement_key": "alter_conversion"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERCONVERSION00006",
+        "error_sqlstates": [],
+        "expected_sqlstate": "00000",
+        "ordinal": 1024,
+        "sql_path": "artifacts/regress/by-factor/ddl/conversion/alter_conversion/ALTERCONVERSION00006.sql",
+        "statement_key": "alter_conversion"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERCONVERSION00007",
+        "error_sqlstates": [],
+        "expected_sqlstate": "00000",
+        "ordinal": 1025,
+        "sql_path": "artifacts/regress/by-factor/ddl/conversion/alter_conversion/ALTERCONVERSION00007.sql",
+        "statement_key": "alter_conversion"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERCONVERSION00008",
+        "error_sqlstates": [],
+        "expected_sqlstate": "00000",
+        "ordinal": 1026,
+        "sql_path": "artifacts/regress/by-factor/ddl/conversion/alter_conversion/ALTERCONVERSION00008.sql",
+        "statement_key": "alter_conversion"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERCONVERSION00009",
+        "error_sqlstates": [],
+        "expected_sqlstate": "00000",
+        "ordinal": 1027,
+        "sql_path": "artifacts/regress/by-factor/ddl/conversion/alter_conversion/ALTERCONVERSION00009.sql",
+        "statement_key": "alter_conversion"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERCONVERSION00010",
+        "error_sqlstates": [],
+        "expected_sqlstate": "00000",
+        "ordinal": 1028,
+        "sql_path": "artifacts/regress/by-factor/ddl/conversion/alter_conversion/ALTERCONVERSION00010.sql",
+        "statement_key": "alter_conversion"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERCONVERSION00011",
+        "error_sqlstates": [],
+        "expected_sqlstate": "00000",
+        "ordinal": 1029,
+        "sql_path": "artifacts/regress/by-factor/ddl/conversion/alter_conversion/ALTERCONVERSION00011.sql",
+        "statement_key": "alter_conversion"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERCONVERSION00012",
+        "error_sqlstates": [],
+        "expected_sqlstate": "00000",
+        "ordinal": 1030,
+        "sql_path": "artifacts/regress/by-factor/ddl/conversion/alter_conversion/ALTERCONVERSION00012.sql",
+        "statement_key": "alter_conversion"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERCONVERSION00013",
+        "error_sqlstates": [],
+        "expected_sqlstate": "00000",
+        "ordinal": 1031,
+        "sql_path": "artifacts/regress/by-factor/ddl/conversion/alter_conversion/ALTERCONVERSION00013.sql",
+        "statement_key": "alter_conversion"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERCONVERSION00014",
+        "error_sqlstates": [],
+        "expected_sqlstate": "00000",
+        "ordinal": 1032,
+        "sql_path": "artifacts/regress/by-factor/ddl/conversion/alter_conversion/ALTERCONVERSION00014.sql",
+        "statement_key": "alter_conversion"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERCONVERSION00015",
+        "error_sqlstates": [],
+        "expected_sqlstate": "00000",
+        "ordinal": 1033,
+        "sql_path": "artifacts/regress/by-factor/ddl/conversion/alter_conversion/ALTERCONVERSION00015.sql",
+        "statement_key": "alter_conversion"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERCONVERSION00016",
+        "error_sqlstates": [],
+        "expected_sqlstate": "00000",
+        "ordinal": 1034,
+        "sql_path": "artifacts/regress/by-factor/ddl/conversion/alter_conversion/ALTERCONVERSION00016.sql",
+        "statement_key": "alter_conversion"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERCONVERSION00017",
+        "error_sqlstates": [],
+        "expected_sqlstate": "00000",
+        "ordinal": 1035,
+        "sql_path": "artifacts/regress/by-factor/ddl/conversion/alter_conversion/ALTERCONVERSION00017.sql",
+        "statement_key": "alter_conversion"
+      }
+    ],
+    "two_run_mismatch": [
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERDATABASE00001",
+        "error_sqlstates": [],
+        "expected_sqlstate": "00000",
+        "ordinal": 1235,
+        "sql_path": "artifacts/regress/by-factor/ddl/database/alter_database/ALTERDATABASE00001.sql",
+        "statement_key": "alter_database"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERDATABASE00002",
+        "error_sqlstates": [],
+        "expected_sqlstate": "00000",
+        "ordinal": 1236,
+        "sql_path": "artifacts/regress/by-factor/ddl/database/alter_database/ALTERDATABASE00002.sql",
+        "statement_key": "alter_database"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERDATABASE00003",
+        "error_sqlstates": [],
+        "expected_sqlstate": "00000",
+        "ordinal": 1237,
+        "sql_path": "artifacts/regress/by-factor/ddl/database/alter_database/ALTERDATABASE00003.sql",
+        "statement_key": "alter_database"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERDATABASE00004",
+        "error_sqlstates": [],
+        "expected_sqlstate": "00000",
+        "ordinal": 1238,
+        "sql_path": "artifacts/regress/by-factor/ddl/database/alter_database/ALTERDATABASE00004.sql",
+        "statement_key": "alter_database"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERDATABASE00005",
+        "error_sqlstates": [],
+        "expected_sqlstate": "00000",
+        "ordinal": 1239,
+        "sql_path": "artifacts/regress/by-factor/ddl/database/alter_database/ALTERDATABASE00005.sql",
+        "statement_key": "alter_database"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERDATABASE00006",
+        "error_sqlstates": [],
+        "expected_sqlstate": "00000",
+        "ordinal": 1240,
+        "sql_path": "artifacts/regress/by-factor/ddl/database/alter_database/ALTERDATABASE00006.sql",
+        "statement_key": "alter_database"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERDATABASE00007",
+        "error_sqlstates": [],
+        "expected_sqlstate": "00000",
+        "ordinal": 1241,
+        "sql_path": "artifacts/regress/by-factor/ddl/database/alter_database/ALTERDATABASE00007.sql",
+        "statement_key": "alter_database"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERDATABASE00008",
+        "error_sqlstates": [],
+        "expected_sqlstate": "00000",
+        "ordinal": 1242,
+        "sql_path": "artifacts/regress/by-factor/ddl/database/alter_database/ALTERDATABASE00008.sql",
+        "statement_key": "alter_database"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERDATABASE00009",
+        "error_sqlstates": [],
+        "expected_sqlstate": "00000",
+        "ordinal": 1243,
+        "sql_path": "artifacts/regress/by-factor/ddl/database/alter_database/ALTERDATABASE00009.sql",
+        "statement_key": "alter_database"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERDATABASE00010",
+        "error_sqlstates": [],
+        "expected_sqlstate": "00000",
+        "ordinal": 1244,
+        "sql_path": "artifacts/regress/by-factor/ddl/database/alter_database/ALTERDATABASE00010.sql",
+        "statement_key": "alter_database"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERDATABASE00011",
+        "error_sqlstates": [],
+        "expected_sqlstate": "00000",
+        "ordinal": 1245,
+        "sql_path": "artifacts/regress/by-factor/ddl/database/alter_database/ALTERDATABASE00011.sql",
+        "statement_key": "alter_database"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERDATABASE00012",
+        "error_sqlstates": [],
+        "expected_sqlstate": "00000",
+        "ordinal": 1246,
+        "sql_path": "artifacts/regress/by-factor/ddl/database/alter_database/ALTERDATABASE00012.sql",
+        "statement_key": "alter_database"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERDATABASE00013",
+        "error_sqlstates": [],
+        "expected_sqlstate": "00000",
+        "ordinal": 1247,
+        "sql_path": "artifacts/regress/by-factor/ddl/database/alter_database/ALTERDATABASE00013.sql",
+        "statement_key": "alter_database"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERDATABASE00014",
+        "error_sqlstates": [],
+        "expected_sqlstate": "00000",
+        "ordinal": 1248,
+        "sql_path": "artifacts/regress/by-factor/ddl/database/alter_database/ALTERDATABASE00014.sql",
+        "statement_key": "alter_database"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERDATABASE00015",
+        "error_sqlstates": [],
+        "expected_sqlstate": "00000",
+        "ordinal": 1249,
+        "sql_path": "artifacts/regress/by-factor/ddl/database/alter_database/ALTERDATABASE00015.sql",
+        "statement_key": "alter_database"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERDATABASE00016",
+        "error_sqlstates": [],
+        "expected_sqlstate": "00000",
+        "ordinal": 1250,
+        "sql_path": "artifacts/regress/by-factor/ddl/database/alter_database/ALTERDATABASE00016.sql",
+        "statement_key": "alter_database"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERDATABASE00021",
+        "error_sqlstates": [],
+        "expected_sqlstate": "00000",
+        "ordinal": 1255,
+        "sql_path": "artifacts/regress/by-factor/ddl/database/alter_database/ALTERDATABASE00021.sql",
+        "statement_key": "alter_database"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERDATABASE00022",
+        "error_sqlstates": [],
+        "expected_sqlstate": "00000",
+        "ordinal": 1256,
+        "sql_path": "artifacts/regress/by-factor/ddl/database/alter_database/ALTERDATABASE00022.sql",
+        "statement_key": "alter_database"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERDATABASE00023",
+        "error_sqlstates": [],
+        "expected_sqlstate": "00000",
+        "ordinal": 1257,
+        "sql_path": "artifacts/regress/by-factor/ddl/database/alter_database/ALTERDATABASE00023.sql",
+        "statement_key": "alter_database"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERDATABASE00024",
+        "error_sqlstates": [],
+        "expected_sqlstate": "00000",
+        "ordinal": 1258,
+        "sql_path": "artifacts/regress/by-factor/ddl/database/alter_database/ALTERDATABASE00024.sql",
+        "statement_key": "alter_database"
+      }
+    ],
+    "unexpected_psql_error": [
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ABORT00002",
+        "error_sqlstates": [
+          "22012"
+        ],
+        "expected_sqlstate": null,
+        "ordinal": 2,
+        "sql_path": "artifacts/regress/by-factor/tcl/transaction/abort/ABORT00002.sql",
+        "statement_key": "abort"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ABORT00006",
+        "error_sqlstates": [
+          "22012"
+        ],
+        "expected_sqlstate": null,
+        "ordinal": 6,
+        "sql_path": "artifacts/regress/by-factor/tcl/transaction/abort/ABORT00006.sql",
+        "statement_key": "abort"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ABORT00010",
+        "error_sqlstates": [
+          "22012"
+        ],
+        "expected_sqlstate": null,
+        "ordinal": 10,
+        "sql_path": "artifacts/regress/by-factor/tcl/transaction/abort/ABORT00010.sql",
+        "statement_key": "abort"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ABORT00014",
+        "error_sqlstates": [
+          "22012"
+        ],
+        "expected_sqlstate": null,
+        "ordinal": 14,
+        "sql_path": "artifacts/regress/by-factor/tcl/transaction/abort/ABORT00014.sql",
+        "statement_key": "abort"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ABORT00018",
+        "error_sqlstates": [
+          "22012"
+        ],
+        "expected_sqlstate": null,
+        "ordinal": 18,
+        "sql_path": "artifacts/regress/by-factor/tcl/transaction/abort/ABORT00018.sql",
+        "statement_key": "abort"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ABORT00022",
+        "error_sqlstates": [
+          "22012"
+        ],
+        "expected_sqlstate": null,
+        "ordinal": 22,
+        "sql_path": "artifacts/regress/by-factor/tcl/transaction/abort/ABORT00022.sql",
+        "statement_key": "abort"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ABORT00026",
+        "error_sqlstates": [
+          "22012"
+        ],
+        "expected_sqlstate": null,
+        "ordinal": 26,
+        "sql_path": "artifacts/regress/by-factor/tcl/transaction/abort/ABORT00026.sql",
+        "statement_key": "abort"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ABORT00030",
+        "error_sqlstates": [
+          "22012"
+        ],
+        "expected_sqlstate": null,
+        "ordinal": 30,
+        "sql_path": "artifacts/regress/by-factor/tcl/transaction/abort/ABORT00030.sql",
+        "statement_key": "abort"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ABORT00034",
+        "error_sqlstates": [
+          "22012"
+        ],
+        "expected_sqlstate": null,
+        "ordinal": 34,
+        "sql_path": "artifacts/regress/by-factor/tcl/transaction/abort/ABORT00034.sql",
+        "statement_key": "abort"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERCOLLATION00158",
+        "error_sqlstates": [
+          "0A000"
+        ],
+        "expected_sqlstate": "00000",
+        "ordinal": 1002,
+        "sql_path": "artifacts/regress/by-factor/ddl/collation/alter_collation/ALTERCOLLATION00158.sql",
+        "statement_key": "alter_collation"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERCONVERSION00213",
+        "error_sqlstates": [
+          "42501",
+          "2BP01"
+        ],
+        "expected_sqlstate": "42501",
+        "ordinal": 1231,
+        "sql_path": "artifacts/regress/by-factor/ddl/conversion/alter_conversion/ALTERCONVERSION00213.sql",
+        "statement_key": "alter_conversion"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERDATABASE00853",
+        "error_sqlstates": [
+          "42601"
+        ],
+        "expected_sqlstate": "00000",
+        "ordinal": 2087,
+        "sql_path": "artifacts/regress/by-factor/ddl/database/alter_database/ALTERDATABASE00853.sql",
+        "statement_key": "alter_database"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERDATABASE00854",
+        "error_sqlstates": [
+          "42601"
+        ],
+        "expected_sqlstate": "25001",
+        "ordinal": 2088,
+        "sql_path": "artifacts/regress/by-factor/ddl/database/alter_database/ALTERDATABASE00854.sql",
+        "statement_key": "alter_database"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERDATABASE00855",
+        "error_sqlstates": [
+          "42601"
+        ],
+        "expected_sqlstate": "55006",
+        "ordinal": 2089,
+        "sql_path": "artifacts/regress/by-factor/ddl/database/alter_database/ALTERDATABASE00855.sql",
+        "statement_key": "alter_database"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERDATABASE00856",
+        "error_sqlstates": [
+          "42601"
+        ],
+        "expected_sqlstate": "25001",
+        "ordinal": 2090,
+        "sql_path": "artifacts/regress/by-factor/ddl/database/alter_database/ALTERDATABASE00856.sql",
+        "statement_key": "alter_database"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERDATABASE00857",
+        "error_sqlstates": [
+          "42601"
+        ],
+        "expected_sqlstate": "00000",
+        "ordinal": 2091,
+        "sql_path": "artifacts/regress/by-factor/ddl/database/alter_database/ALTERDATABASE00857.sql",
+        "statement_key": "alter_database"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERDATABASE00858",
+        "error_sqlstates": [
+          "42601"
+        ],
+        "expected_sqlstate": "25001",
+        "ordinal": 2092,
+        "sql_path": "artifacts/regress/by-factor/ddl/database/alter_database/ALTERDATABASE00858.sql",
+        "statement_key": "alter_database"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERDATABASE00859",
+        "error_sqlstates": [
+          "42601"
+        ],
+        "expected_sqlstate": "55006",
+        "ordinal": 2093,
+        "sql_path": "artifacts/regress/by-factor/ddl/database/alter_database/ALTERDATABASE00859.sql",
+        "statement_key": "alter_database"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERDATABASE00860",
+        "error_sqlstates": [
+          "42601"
+        ],
+        "expected_sqlstate": "25001",
+        "ordinal": 2094,
+        "sql_path": "artifacts/regress/by-factor/ddl/database/alter_database/ALTERDATABASE00860.sql",
+        "statement_key": "alter_database"
+      },
+      {
+        "actual_target_sqlstate": null,
+        "case_id": "ALTERDATABASE00869",
+        "error_sqlstates": [
+          "42601"
+        ],
+        "expected_sqlstate": "00000",
+        "ordinal": 2103,
+        "sql_path": "artifacts/regress/by-factor/ddl/database/alter_database/ALTERDATABASE00869.sql",
+        "statement_key": "alter_database"
+      }
+    ]
+  },
+  "integrity": {
+    "case_metadata_mismatch_count": 0,
+    "checkpoint_batch_count": 1712,
+    "checkpoint_completed_batches": 1712,
+    "checkpoint_completed_cases": 855913,
+    "checkpoint_completed_executions": 1711826,
+    "checkpoint_total_cases": 855913,
+    "complete": true,
+    "duplicate_ordinal_count": 0,
+    "execution_count": 1711826,
+    "manifest_case_count": 855913,
+    "manifest_sha256": "60ea761fdcc12238d6adbb53b1aad19ea603e9914dfd27b155ae13c3322756e0",
+    "manifest_sha_matches_run_metadata": true,
+    "missing_ordinal_count": 0,
+    "missing_ordinal_examples": [],
+    "paired_case_count": 855913,
+    "result_batch_file_count": 1712,
+    "result_case_count": 855913,
+    "result_schema_mismatch_count": 0,
+    "server_version_num": 180004,
+    "sql_sha_mismatch_count": 0,
+    "unknown_ordinal_count": 0
+  },
+  "not_passed_count": 464353,
+  "passed_count": 391560,
+  "schema_version": 1,
+  "server_version_num": 180004,
+  "statements": {
+    "abort": {
+      "compatibility_pass": 49,
+      "oracle_failure": 3,
+      "unexpected_psql_error": 9
+    },
+    "alter_aggregate": {
+      "compatibility_pass": 783
+    },
+    "alter_collation": {
+      "compatibility_pass": 173,
+      "unexpected_psql_error": 1
+    },
+    "alter_conversion": {
+      "compatibility_pass": 6,
+      "oracle_failure": 209,
+      "unexpected_psql_error": 1
+    },
+    "alter_database": {
+      "compatibility_pass": 58,
+      "oracle_failure": 44,
+      "two_run_mismatch": 1242,
+      "unexpected_psql_error": 76
+    },
+    "alter_default_privileges": {
+      "compatibility_pass": 4042,
+      "oracle_failure": 24,
+      "two_run_mismatch": 2,
+      "unexpected_psql_error": 203
+    },
+    "alter_domain": {
+      "compatibility_pass": 11,
+      "oracle_failure": 4,
+      "two_run_mismatch": 858,
+      "unexpected_psql_error": 35
+    },
+    "alter_event_trigger": {
+      "compatibility_pass": 7,
+      "oracle_failure": 6,
+      "two_run_mismatch": 146
+    },
+    "alter_extension": {
+      "compatibility_pass": 26,
+      "oracle_failure": 46,
+      "two_run_mismatch": 336,
+      "unexpected_psql_error": 8
+    },
+    "alter_foreign_data_wrapper": {
+      "compatibility_pass": 3,
+      "two_run_mismatch": 151,
+      "unexpected_psql_error": 1
+    },
+    "alter_foreign_table": {
+      "strict_pass": 1805
+    },
+    "alter_function": {
+      "strict_pass": 13263
+    },
+    "alter_group": {
+      "strict_pass": 3947
+    },
+    "alter_index": {
+      "strict_pass": 6873
+    },
+    "alter_language": {
+      "strict_pass": 642
+    },
+    "alter_large_object": {
+      "strict_pass": 235
+    },
+    "alter_materialized_view": {
+      "strict_pass": 8485
+    },
+    "alter_operator": {
+      "strict_pass": 2355
+    },
+    "alter_operator_class": {
+      "strict_pass": 9123
+    },
+    "alter_operator_family": {
+      "strict_pass": 4523
+    },
+    "alter_policy": {
+      "strict_pass": 13104
+    },
+    "alter_procedure": {
+      "strict_pass": 13198
+    },
+    "alter_publication": {
+      "strict_pass": 20016
+    },
+    "alter_role": {
+      "oracle_failure": 127,
+      "strict_pass": 1453,
+      "two_run_mismatch": 4,
+      "unexpected_psql_error": 159
+    },
+    "alter_routine": {
+      "oracle_failure": 5,
+      "strict_pass": 5114,
+      "unexpected_psql_error": 436
+    },
+    "alter_rule": {
+      "oracle_failure": 216,
+      "strict_pass": 617,
+      "unexpected_psql_error": 1309
+    },
+    "alter_schema": {
+      "oracle_failure": 114,
+      "strict_pass": 1118,
+      "unexpected_psql_error": 3037
+    },
+    "alter_sequence": {
+      "oracle_failure": 2193,
+      "strict_pass": 15028,
+      "unexpected_psql_error": 11370
+    },
+    "alter_server": {
+      "oracle_failure": 108,
+      "strict_pass": 817,
+      "unexpected_psql_error": 1414
+    },
+    "alter_statistics": {
+      "strict_pass": 76,
+      "unexpected_psql_error": 1384
+    },
+    "alter_subscription": {
+      "strict_pass": 67,
+      "unexpected_psql_error": 1052
+    },
+    "alter_system": {
+      "oracle_failure": 1107,
+      "strict_pass": 3945,
+      "unexpected_psql_error": 1243
+    },
+    "alter_table": {
+      "oracle_failure": 1541,
+      "strict_pass": 1277,
+      "unexpected_psql_error": 1729
+    },
+    "alter_tablespace": {
+      "strict_pass": 288,
+      "unexpected_psql_error": 6384
+    },
+    "alter_text_search_configuration": {
+      "oracle_failure": 274,
+      "strict_pass": 2889,
+      "unexpected_psql_error": 1816
+    },
+    "alter_text_search_dictionary": {
+      "oracle_failure": 61,
+      "strict_pass": 595,
+      "unexpected_psql_error": 728
+    },
+    "alter_text_search_parser": {
+      "oracle_failure": 17,
+      "strict_pass": 196,
+      "unexpected_psql_error": 38
+    },
+    "alter_text_search_template": {
+      "oracle_failure": 5,
+      "strict_pass": 116,
+      "unexpected_psql_error": 62
+    },
+    "alter_trigger": {
+      "oracle_failure": 2,
+      "strict_pass": 2534,
+      "unexpected_psql_error": 531
+    },
+    "alter_type": {
+      "oracle_failure": 1827,
+      "strict_pass": 1114,
+      "unexpected_psql_error": 7581
+    },
+    "alter_user": {
+      "oracle_failure": 220,
+      "strict_pass": 1741,
+      "unexpected_psql_error": 1570
+    },
+    "alter_user_mapping": {
+      "strict_pass": 1588,
+      "unexpected_psql_error": 4515
+    },
+    "alter_view": {
+      "oracle_failure": 1229,
+      "strict_pass": 2871,
+      "unexpected_psql_error": 4221
+    },
+    "analyze": {
+      "oracle_failure": 2163,
+      "strict_pass": 1627,
+      "unexpected_psql_error": 3362
+    },
+    "begin": {
+      "oracle_failure": 606,
+      "strict_pass": 348,
+      "unexpected_psql_error": 650
+    },
+    "call": {
+      "oracle_failure": 8594,
+      "strict_pass": 3928,
+      "unexpected_psql_error": 5191
+    },
+    "checkpoint": {
+      "strict_pass": 4651,
+      "two_run_mismatch": 1537,
+      "unexpected_psql_error": 3074
+    },
+    "close": {
+      "not_strictly_judgeable": 84,
+      "observed_mismatch": 3,
+      "unexpected_psql_error": 126
+    },
+    "cluster": {
+      "oracle_failure": 421,
+      "strict_pass": 3343,
+      "unexpected_psql_error": 1155
+    },
+    "comment": {
+      "oracle_failure": 1162,
+      "strict_pass": 1476,
+      "unexpected_psql_error": 11024
+    },
+    "commit": {
+      "oracle_failure": 604,
+      "strict_pass": 877,
+      "unexpected_psql_error": 363
+    },
+    "commit_prepared": {
+      "strict_pass": 3604,
+      "unexpected_psql_error": 8680
+    },
+    "copy": {
+      "oracle_failure": 954,
+      "strict_pass": 1842,
+      "unexpected_psql_error": 2823
+    },
+    "create_access_method": {
+      "strict_pass": 146,
+      "unexpected_psql_error": 893
+    },
+    "create_aggregate": {
+      "oracle_failure": 22,
+      "strict_pass": 97,
+      "unexpected_psql_error": 18670
+    },
+    "create_cast": {
+      "oracle_failure": 3096,
+      "strict_pass": 4868,
+      "unexpected_psql_error": 11251
+    },
+    "create_collation": {
+      "oracle_failure": 94,
+      "strict_pass": 504,
+      "unexpected_psql_error": 537
+    },
+    "create_conversion": {
+      "oracle_failure": 101,
+      "unexpected_psql_error": 901
+    },
+    "create_database": {
+      "oracle_failure": 4583,
+      "strict_pass": 4949,
+      "unexpected_psql_error": 6736
+    },
+    "create_domain": {
+      "oracle_failure": 6,
+      "strict_pass": 2967,
+      "unexpected_psql_error": 4
+    },
+    "create_event_trigger": {
+      "oracle_failure": 1949,
+      "strict_pass": 1995,
+      "unexpected_psql_error": 2598
+    },
+    "create_extension": {
+      "oracle_failure": 880,
+      "unexpected_psql_error": 3503
+    },
+    "create_foreign_data_wrapper": {
+      "oracle_failure": 335,
+      "strict_pass": 229,
+      "unexpected_psql_error": 2086
+    },
+    "create_foreign_table": {
+      "oracle_failure": 575,
+      "strict_pass": 591,
+      "unexpected_psql_error": 1390
+    },
+    "create_function": {
+      "oracle_failure": 7,
+      "strict_pass": 2023,
+      "unexpected_psql_error": 7691
+    },
+    "create_group": {
+      "unexpected_psql_error": 426
+    },
+    "create_index": {
+      "oracle_failure": 6,
+      "strict_pass": 939,
+      "unexpected_psql_error": 1064
+    },
+    "create_language": {
+      "oracle_failure": 773,
+      "unexpected_psql_error": 1767
+    },
+    "create_materialized_view": {
+      "oracle_failure": 1683,
+      "strict_pass": 10938,
+      "unexpected_psql_error": 291
+    },
+    "create_operator": {
+      "oracle_failure": 466,
+      "strict_pass": 421,
+      "unexpected_psql_error": 393
+    },
+    "create_operator_class": {
+      "unexpected_psql_error": 5622
+    },
+    "create_operator_family": {
+      "unexpected_psql_error": 1219
+    },
+    "create_policy": {
+      "oracle_failure": 36,
+      "strict_pass": 721,
+      "unexpected_psql_error": 260
+    },
+    "create_procedure": {
+      "oracle_failure": 5,
+      "strict_pass": 1,
+      "unexpected_psql_error": 4406
+    },
+    "create_publication": {
+      "oracle_failure": 448,
+      "strict_pass": 2677,
+      "unexpected_psql_error": 1177
+    },
+    "create_role": {
+      "unexpected_psql_error": 2262
+    },
+    "create_rule": {
+      "oracle_failure": 8,
+      "strict_pass": 5459,
+      "unexpected_psql_error": 2201
+    },
+    "create_schema": {
+      "oracle_failure": 222,
+      "strict_pass": 396,
+      "unexpected_psql_error": 9974
+    },
+    "create_sequence": {
+      "oracle_failure": 2094,
+      "strict_pass": 2450,
+      "unexpected_psql_error": 2439
+    },
+    "create_server": {
+      "oracle_failure": 960,
+      "strict_pass": 998,
+      "unexpected_psql_error": 2885
+    },
+    "create_statistics": {
+      "oracle_failure": 7,
+      "strict_pass": 33,
+      "unexpected_psql_error": 2600
+    },
+    "create_subscription": {
+      "oracle_failure": 5,
+      "strict_pass": 3,
+      "unexpected_psql_error": 1103
+    },
+    "create_table": {
+      "oracle_failure": 273,
+      "strict_pass": 4760,
+      "unexpected_psql_error": 915
+    },
+    "create_table_as": {
+      "oracle_failure": 622,
+      "strict_pass": 3202,
+      "unexpected_psql_error": 237
+    },
+    "create_tablespace": {
+      "oracle_failure": 1024,
+      "strict_pass": 1301,
+      "unexpected_psql_error": 2242
+    },
+    "create_text_search_configuration": {
+      "oracle_failure": 373,
+      "strict_pass": 928,
+      "unexpected_psql_error": 1
+    },
+    "create_text_search_dictionary": {
+      "oracle_failure": 2311,
+      "strict_pass": 1569,
+      "unexpected_psql_error": 773
+    },
+    "create_text_search_parser": {
+      "oracle_failure": 198,
+      "unexpected_psql_error": 816
+    },
+    "create_text_search_template": {
+      "strict_pass": 198,
+      "unexpected_psql_error": 816
+    },
+    "create_transform": {
+      "oracle_failure": 9,
+      "strict_pass": 397,
+      "unexpected_psql_error": 871
+    },
+    "create_trigger": {
+      "oracle_failure": 1467,
+      "strict_pass": 1508,
+      "unexpected_psql_error": 3596
+    },
+    "create_type": {
+      "oracle_failure": 445,
+      "strict_pass": 2419,
+      "unexpected_psql_error": 607
+    },
+    "create_user": {
+      "unexpected_psql_error": 1674
+    },
+    "create_user_mapping": {
+      "oracle_failure": 676,
+      "strict_pass": 932,
+      "unexpected_psql_error": 358
+    },
+    "create_view": {
+      "oracle_failure": 119,
+      "strict_pass": 4074,
+      "unexpected_psql_error": 1350
+    },
+    "deallocate": {
+      "oracle_failure": 3224,
+      "strict_pass": 3148,
+      "unexpected_psql_error": 1326
+    },
+    "declare": {
+      "not_strictly_judgeable": 81,
+      "unexpected_psql_error": 132
+    },
+    "delete": {
+      "oracle_failure": 6147,
+      "strict_pass": 9262,
+      "unexpected_psql_error": 2305
+    },
+    "discard": {
+      "strict_pass": 4266
+    },
+    "do": {
+      "oracle_failure": 5124,
+      "strict_pass": 5662
+    },
+    "drop_access_method": {
+      "strict_pass": 2,
+      "unexpected_psql_error": 365
+    },
+    "drop_aggregate": {
+      "oracle_failure": 54,
+      "strict_pass": 320,
+      "unexpected_psql_error": 2
+    },
+    "drop_cast": {
+      "strict_pass": 140
+    },
+    "drop_collation": {
+      "strict_pass": 366
+    },
+    "drop_conversion": {
+      "oracle_failure": 72,
+      "strict_pass": 235,
+      "unexpected_psql_error": 217
+    },
+    "drop_database": {
+      "oracle_failure": 290,
+      "strict_pass": 186,
+      "unexpected_psql_error": 6
+    },
+    "drop_domain": {
+      "strict_pass": 407,
+      "unexpected_psql_error": 22
+    },
+    "drop_event_trigger": {
+      "oracle_failure": 108,
+      "strict_pass": 322,
+      "unexpected_psql_error": 112
+    },
+    "drop_extension": {
+      "oracle_failure": 18,
+      "strict_pass": 110,
+      "unexpected_psql_error": 268
+    },
+    "drop_foreign_data_wrapper": {
+      "oracle_failure": 54,
+      "strict_pass": 509,
+      "unexpected_psql_error": 139
+    },
+    "drop_foreign_table": {
+      "oracle_failure": 24,
+      "strict_pass": 147,
+      "unexpected_psql_error": 341
+    },
+    "drop_function": {
+      "oracle_failure": 152,
+      "strict_pass": 605,
+      "unexpected_psql_error": 632
+    },
+    "drop_group": {
+      "strict_pass": 73,
+      "unexpected_psql_error": 124
+    },
+    "drop_index": {
+      "oracle_failure": 60,
+      "strict_pass": 240,
+      "unexpected_psql_error": 107
+    },
+    "drop_language": {
+      "oracle_failure": 24,
+      "strict_pass": 98,
+      "unexpected_psql_error": 417
+    },
+    "drop_materialized_view": {
+      "oracle_failure": 74,
+      "strict_pass": 387,
+      "unexpected_psql_error": 416
+    },
+    "drop_operator": {
+      "unexpected_psql_error": 1963
+    },
+    "drop_operator_class": {
+      "strict_pass": 74,
+      "unexpected_psql_error": 860
+    },
+    "drop_operator_family": {
+      "strict_pass": 181,
+      "unexpected_psql_error": 2048
+    },
+    "drop_owned": {
+      "oracle_failure": 162,
+      "strict_pass": 272,
+      "unexpected_psql_error": 4218
+    },
+    "drop_policy": {
+      "oracle_failure": 216,
+      "strict_pass": 586,
+      "unexpected_psql_error": 1082
+    },
+    "drop_procedure": {
+      "oracle_failure": 822,
+      "strict_pass": 753,
+      "unexpected_psql_error": 364
+    },
+    "drop_publication": {
+      "strict_pass": 1019,
+      "unexpected_psql_error": 1293
+    },
+    "drop_role": {
+      "oracle_failure": 512,
+      "strict_pass": 178,
+      "unexpected_psql_error": 7113
+    },
+    "drop_routine": {
+      "oracle_failure": 94,
+      "strict_pass": 97,
+      "unexpected_psql_error": 4162
+    },
+    "drop_rule": {
+      "oracle_failure": 2790,
+      "strict_pass": 3592,
+      "unexpected_psql_error": 2884
+    },
+    "drop_schema": {
+      "oracle_failure": 40,
+      "strict_pass": 425,
+      "unexpected_psql_error": 646
+    },
+    "drop_sequence": {
+      "oracle_failure": 98,
+      "strict_pass": 2826,
+      "unexpected_psql_error": 1490
+    },
+    "drop_server": {
+      "oracle_failure": 1,
+      "strict_pass": 2288,
+      "unexpected_psql_error": 678
+    },
+    "drop_statistics": {
+      "strict_pass": 866,
+      "unexpected_psql_error": 1749
+    },
+    "drop_subscription": {
+      "oracle_failure": 64,
+      "strict_pass": 237,
+      "unexpected_psql_error": 887
+    },
+    "drop_table": {
+      "oracle_failure": 1011,
+      "strict_pass": 4941,
+      "unexpected_psql_error": 1430
+    },
+    "drop_tablespace": {
+      "oracle_failure": 3024,
+      "strict_pass": 651,
+      "unexpected_psql_error": 4920
+    },
+    "drop_text_search_configuration": {
+      "oracle_failure": 195,
+      "strict_pass": 1280,
+      "unexpected_psql_error": 411
+    },
+    "drop_text_search_dictionary": {
+      "oracle_failure": 1,
+      "strict_pass": 1474,
+      "unexpected_psql_error": 411
+    },
+    "drop_text_search_parser": {
+      "strict_pass": 537,
+      "unexpected_psql_error": 483
+    },
+    "drop_text_search_template": {
+      "strict_pass": 796,
+      "unexpected_psql_error": 2768
+    },
+    "drop_transform": {
+      "oracle_failure": 560,
+      "strict_pass": 466,
+      "unexpected_psql_error": 294
+    },
+    "drop_trigger": {
+      "oracle_failure": 2104,
+      "strict_pass": 1134,
+      "unexpected_psql_error": 1118
+    },
+    "drop_type": {
+      "strict_pass": 2636,
+      "unexpected_psql_error": 1682
+    },
+    "drop_user": {
+      "oracle_failure": 399,
+      "strict_pass": 1026,
+      "unexpected_psql_error": 180
+    },
+    "drop_user_mapping": {
+      "strict_pass": 1,
+      "unexpected_psql_error": 1080
+    },
+    "drop_view": {
+      "oracle_failure": 328,
+      "strict_pass": 2012,
+      "unexpected_psql_error": 1624
+    },
+    "end": {
+      "oracle_failure": 604,
+      "strict_pass": 877,
+      "unexpected_psql_error": 363
+    },
+    "execute": {
+      "oracle_failure": 5438,
+      "strict_pass": 718,
+      "unexpected_psql_error": 1542
+    },
+    "explain": {
+      "oracle_failure": 1011,
+      "strict_pass": 2213,
+      "two_run_mismatch": 374,
+      "unexpected_psql_error": 3074
+    },
+    "fetch": {
+      "not_strictly_judgeable": 81,
+      "unexpected_psql_error": 132
+    },
+    "grant": {
+      "not_strictly_judgeable": 393,
+      "observed_mismatch": 103,
+      "unexpected_psql_error": 6437
+    },
+    "import_foreign_schema": {
+      "oracle_failure": 144,
+      "strict_pass": 193,
+      "unexpected_psql_error": 296
+    },
+    "insert": {
+      "oracle_failure": 3458,
+      "strict_pass": 11951,
+      "unexpected_psql_error": 2305
+    },
+    "listen": {
+      "oracle_failure": 385,
+      "strict_pass": 3544,
+      "unexpected_psql_error": 337
+    },
+    "load": {
+      "oracle_failure": 3077,
+      "strict_pass": 3111,
+      "unexpected_psql_error": 1538
+    },
+    "lock": {
+      "oracle_failure": 1626,
+      "unexpected_psql_error": 688
+    },
+    "merge": {
+      "oracle_failure": 6147,
+      "strict_pass": 9261,
+      "unexpected_psql_error": 2308
+    },
+    "move": {
+      "not_strictly_judgeable": 81,
+      "unexpected_psql_error": 132
+    },
+    "notify": {
+      "oracle_failure": 2173,
+      "strict_pass": 1756,
+      "unexpected_psql_error": 337
+    },
+    "prepare": {
+      "oracle_failure": 3181,
+      "strict_pass": 3198,
+      "unexpected_psql_error": 1319
+    },
+    "prepare_transaction": {
+      "oracle_failure": 6485,
+      "strict_pass": 1441,
+      "unexpected_psql_error": 4358
+    },
+    "reassign_owned": {
+      "oracle_failure": 810,
+      "strict_pass": 633,
+      "unexpected_psql_error": 2638
+    },
+    "refresh_materialized_view": {
+      "oracle_failure": 432,
+      "strict_pass": 389,
+      "unexpected_psql_error": 873
+    },
+    "reindex": {
+      "oracle_failure": 1518,
+      "strict_pass": 530,
+      "unexpected_psql_error": 1527
+    },
+    "release_savepoint": {
+      "oracle_failure": 240,
+      "strict_pass": 244,
+      "unexpected_psql_error": 1360
+    },
+    "reset": {
+      "oracle_failure": 579,
+      "strict_pass": 3687
+    },
+    "revoke": {
+      "not_strictly_judgeable": 360,
+      "observed_mismatch": 144,
+      "oracle_failure": 86,
+      "unexpected_psql_error": 6343
+    },
+    "rollback": {
+      "oracle_failure": 604,
+      "strict_pass": 877,
+      "unexpected_psql_error": 363
+    },
+    "rollback_prepared": {
+      "strict_pass": 3604,
+      "unexpected_psql_error": 8680
+    },
+    "rollback_to_savepoint": {
+      "oracle_failure": 240,
+      "strict_pass": 244,
+      "unexpected_psql_error": 1360
+    },
+    "savepoint": {
+      "oracle_failure": 363,
+      "strict_pass": 395,
+      "unexpected_psql_error": 1086
+    },
+    "security_label": {
+      "oracle_failure": 53,
+      "unexpected_psql_error": 129
+    },
+    "select": {
+      "oracle_failure": 6147,
+      "strict_pass": 9263,
+      "unexpected_psql_error": 2305
+    },
+    "select_into": {
+      "oracle_failure": 5,
+      "strict_pass": 696,
+      "unexpected_psql_error": 166
+    },
+    "set": {
+      "oracle_failure": 579,
+      "strict_pass": 4457
+    },
+    "set_constraints": {
+      "oracle_failure": 2439,
+      "strict_pass": 1827
+    },
+    "set_role": {
+      "oracle_failure": 771,
+      "strict_pass": 4904
+    },
+    "set_session_authorization": {
+      "oracle_failure": 579,
+      "strict_pass": 3687
+    },
+    "set_transaction": {
+      "unexpected_psql_error": 2004
+    },
+    "show": {
+      "oracle_failure": 579,
+      "strict_pass": 3686,
+      "unexpected_psql_error": 771
+    },
+    "start_transaction": {
+      "oracle_failure": 245,
+      "strict_pass": 757,
+      "unexpected_psql_error": 362
+    },
+    "truncate": {
+      "oracle_failure": 1,
+      "strict_pass": 4656,
+      "unexpected_psql_error": 1156
+    },
+    "unlisten": {
+      "oracle_failure": 385,
+      "strict_pass": 3544,
+      "unexpected_psql_error": 337
+    },
+    "update": {
+      "oracle_failure": 6147,
+      "strict_pass": 9262,
+      "unexpected_psql_error": 2305
+    },
+    "vacuum": {
+      "oracle_failure": 437,
+      "strict_pass": 833,
+      "unexpected_psql_error": 145
+    },
+    "values": {
+      "oracle_failure": 13064,
+      "strict_pass": 4649
+    }
+  },
+  "total_duration_ms": 32185066
+}

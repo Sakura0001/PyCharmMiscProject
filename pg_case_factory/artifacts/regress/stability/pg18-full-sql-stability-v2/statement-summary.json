@@ -1,0 +1,3043 @@
+{
+  "schema_version": 1,
+  "server_version_num": 180004,
+  "statement_count": 183,
+  "statements": {
+    "abort": {
+      "case_count": 61,
+      "classifications": {
+        "compatibility_pass": 49,
+        "oracle_failure": 3,
+        "unexpected_psql_error": 9
+      },
+      "evidence_levels": {
+        "compatibility-contract": 61
+      },
+      "expected_outcomes": {
+        "expected_failure": 9,
+        "success": 52
+      },
+      "not_passed_count": 12,
+      "passed_count": 49
+    },
+    "alter_aggregate": {
+      "case_count": 783,
+      "classifications": {
+        "compatibility_pass": 783
+      },
+      "evidence_levels": {
+        "compatibility-contract": 783
+      },
+      "expected_outcomes": {
+        "expected_failure": 423,
+        "success": 360
+      },
+      "not_passed_count": 0,
+      "passed_count": 783
+    },
+    "alter_collation": {
+      "case_count": 174,
+      "classifications": {
+        "compatibility_pass": 173,
+        "unexpected_psql_error": 1
+      },
+      "evidence_levels": {
+        "compatibility-contract": 174
+      },
+      "expected_outcomes": {
+        "expected_failure": 65,
+        "success": 109
+      },
+      "not_passed_count": 1,
+      "passed_count": 173
+    },
+    "alter_conversion": {
+      "case_count": 216,
+      "classifications": {
+        "compatibility_pass": 6,
+        "oracle_failure": 209,
+        "unexpected_psql_error": 1
+      },
+      "evidence_levels": {
+        "compatibility-contract": 216
+      },
+      "expected_outcomes": {
+        "expected_failure": 79,
+        "success": 137
+      },
+      "not_passed_count": 210,
+      "passed_count": 6
+    },
+    "alter_database": {
+      "case_count": 1420,
+      "classifications": {
+        "compatibility_pass": 58,
+        "oracle_failure": 44,
+        "two_run_mismatch": 1242,
+        "unexpected_psql_error": 76
+      },
+      "evidence_levels": {
+        "compatibility-contract": 1420
+      },
+      "expected_outcomes": {
+        "expected_failure": 814,
+        "success": 606
+      },
+      "not_passed_count": 1362,
+      "passed_count": 58
+    },
+    "alter_default_privileges": {
+      "case_count": 4271,
+      "classifications": {
+        "compatibility_pass": 4042,
+        "oracle_failure": 24,
+        "two_run_mismatch": 2,
+        "unexpected_psql_error": 203
+      },
+      "evidence_levels": {
+        "compatibility-contract": 4271
+      },
+      "expected_outcomes": {
+        "expected_failure": 561,
+        "success": 3710
+      },
+      "not_passed_count": 229,
+      "passed_count": 4042
+    },
+    "alter_domain": {
+      "case_count": 908,
+      "classifications": {
+        "compatibility_pass": 11,
+        "oracle_failure": 4,
+        "two_run_mismatch": 858,
+        "unexpected_psql_error": 35
+      },
+      "evidence_levels": {
+        "compatibility-contract": 908
+      },
+      "expected_outcomes": {
+        "expected_failure": 84,
+        "success": 824
+      },
+      "not_passed_count": 897,
+      "passed_count": 11
+    },
+    "alter_event_trigger": {
+      "case_count": 159,
+      "classifications": {
+        "compatibility_pass": 7,
+        "oracle_failure": 6,
+        "two_run_mismatch": 146
+      },
+      "evidence_levels": {
+        "compatibility-contract": 159
+      },
+      "expected_outcomes": {
+        "expected_failure": 35,
+        "success": 124
+      },
+      "not_passed_count": 152,
+      "passed_count": 7
+    },
+    "alter_extension": {
+      "case_count": 416,
+      "classifications": {
+        "compatibility_pass": 26,
+        "oracle_failure": 46,
+        "two_run_mismatch": 336,
+        "unexpected_psql_error": 8
+      },
+      "evidence_levels": {
+        "compatibility-contract": 416
+      },
+      "expected_outcomes": {
+        "expected_failure": 154,
+        "success": 262
+      },
+      "not_passed_count": 390,
+      "passed_count": 26
+    },
+    "alter_foreign_data_wrapper": {
+      "case_count": 155,
+      "classifications": {
+        "compatibility_pass": 3,
+        "two_run_mismatch": 151,
+        "unexpected_psql_error": 1
+      },
+      "evidence_levels": {
+        "compatibility-contract": 155
+      },
+      "expected_outcomes": {
+        "expected_failure": 37,
+        "success": 118
+      },
+      "not_passed_count": 152,
+      "passed_count": 3
+    },
+    "alter_foreign_table": {
+      "case_count": 1805,
+      "classifications": {
+        "strict_pass": 1805
+      },
+      "evidence_levels": {
+        "strict-contract": 1805
+      },
+      "expected_outcomes": {
+        "expected_failure": 301,
+        "success": 1504
+      },
+      "not_passed_count": 0,
+      "passed_count": 1805
+    },
+    "alter_function": {
+      "case_count": 13263,
+      "classifications": {
+        "strict_pass": 13263
+      },
+      "evidence_levels": {
+        "strict-contract": 13263
+      },
+      "expected_outcomes": {
+        "expected_failure": 10501,
+        "success": 2762
+      },
+      "not_passed_count": 0,
+      "passed_count": 13263
+    },
+    "alter_group": {
+      "case_count": 3947,
+      "classifications": {
+        "strict_pass": 3947
+      },
+      "evidence_levels": {
+        "strict-contract": 3947
+      },
+      "expected_outcomes": {
+        "expected_failure": 3037,
+        "success": 910
+      },
+      "not_passed_count": 0,
+      "passed_count": 3947
+    },
+    "alter_index": {
+      "case_count": 6873,
+      "classifications": {
+        "strict_pass": 6873
+      },
+      "evidence_levels": {
+        "strict-contract": 6873
+      },
+      "expected_outcomes": {
+        "expected_failure": 14,
+        "success": 6859
+      },
+      "not_passed_count": 0,
+      "passed_count": 6873
+    },
+    "alter_language": {
+      "case_count": 642,
+      "classifications": {
+        "strict_pass": 642
+      },
+      "evidence_levels": {
+        "strict-contract": 642
+      },
+      "expected_outcomes": {
+        "expected_failure": 443,
+        "success": 199
+      },
+      "not_passed_count": 0,
+      "passed_count": 642
+    },
+    "alter_large_object": {
+      "case_count": 235,
+      "classifications": {
+        "strict_pass": 235
+      },
+      "evidence_levels": {
+        "strict-contract": 235
+      },
+      "expected_outcomes": {
+        "expected_failure": 152,
+        "success": 83
+      },
+      "not_passed_count": 0,
+      "passed_count": 235
+    },
+    "alter_materialized_view": {
+      "case_count": 8485,
+      "classifications": {
+        "strict_pass": 8485
+      },
+      "evidence_levels": {
+        "strict-contract": 8485
+      },
+      "expected_outcomes": {
+        "expected_failure": 4510,
+        "success": 3975
+      },
+      "not_passed_count": 0,
+      "passed_count": 8485
+    },
+    "alter_operator": {
+      "case_count": 2355,
+      "classifications": {
+        "strict_pass": 2355
+      },
+      "evidence_levels": {
+        "strict-contract": 2355
+      },
+      "expected_outcomes": {
+        "expected_failure": 1548,
+        "success": 807
+      },
+      "not_passed_count": 0,
+      "passed_count": 2355
+    },
+    "alter_operator_class": {
+      "case_count": 9123,
+      "classifications": {
+        "strict_pass": 9123
+      },
+      "evidence_levels": {
+        "strict-contract": 9123
+      },
+      "expected_outcomes": {
+        "expected_failure": 6059,
+        "success": 3064
+      },
+      "not_passed_count": 0,
+      "passed_count": 9123
+    },
+    "alter_operator_family": {
+      "case_count": 4523,
+      "classifications": {
+        "strict_pass": 4523
+      },
+      "evidence_levels": {
+        "strict-contract": 4523
+      },
+      "expected_outcomes": {
+        "expected_failure": 3420,
+        "success": 1103
+      },
+      "not_passed_count": 0,
+      "passed_count": 4523
+    },
+    "alter_policy": {
+      "case_count": 13104,
+      "classifications": {
+        "strict_pass": 13104
+      },
+      "evidence_levels": {
+        "strict-contract": 13104
+      },
+      "expected_outcomes": {
+        "expected_failure": 7432,
+        "success": 5672
+      },
+      "not_passed_count": 0,
+      "passed_count": 13104
+    },
+    "alter_procedure": {
+      "case_count": 13198,
+      "classifications": {
+        "strict_pass": 13198
+      },
+      "evidence_levels": {
+        "strict-contract": 13198
+      },
+      "expected_outcomes": {
+        "expected_failure": 10608,
+        "success": 2590
+      },
+      "not_passed_count": 0,
+      "passed_count": 13198
+    },
+    "alter_publication": {
+      "case_count": 20016,
+      "classifications": {
+        "strict_pass": 20016
+      },
+      "evidence_levels": {
+        "strict-contract": 20016
+      },
+      "expected_outcomes": {
+        "expected_failure": 16215,
+        "success": 3801
+      },
+      "not_passed_count": 0,
+      "passed_count": 20016
+    },
+    "alter_role": {
+      "case_count": 1743,
+      "classifications": {
+        "oracle_failure": 127,
+        "strict_pass": 1453,
+        "two_run_mismatch": 4,
+        "unexpected_psql_error": 159
+      },
+      "evidence_levels": {
+        "strict-contract": 1743
+      },
+      "expected_outcomes": {
+        "expected_failure": 1112,
+        "success": 631
+      },
+      "not_passed_count": 290,
+      "passed_count": 1453
+    },
+    "alter_routine": {
+      "case_count": 5555,
+      "classifications": {
+        "oracle_failure": 5,
+        "strict_pass": 5114,
+        "unexpected_psql_error": 436
+      },
+      "evidence_levels": {
+        "strict-contract": 5555
+      },
+      "expected_outcomes": {
+        "expected_failure": 3900,
+        "success": 1655
+      },
+      "not_passed_count": 441,
+      "passed_count": 5114
+    },
+    "alter_rule": {
+      "case_count": 2142,
+      "classifications": {
+        "oracle_failure": 216,
+        "strict_pass": 617,
+        "unexpected_psql_error": 1309
+      },
+      "evidence_levels": {
+        "strict-contract": 2142
+      },
+      "expected_outcomes": {
+        "expected_failure": 1436,
+        "success": 706
+      },
+      "not_passed_count": 1525,
+      "passed_count": 617
+    },
+    "alter_schema": {
+      "case_count": 4269,
+      "classifications": {
+        "oracle_failure": 114,
+        "strict_pass": 1118,
+        "unexpected_psql_error": 3037
+      },
+      "evidence_levels": {
+        "strict-contract": 4269
+      },
+      "expected_outcomes": {
+        "expected_failure": 3150,
+        "success": 1119
+      },
+      "not_passed_count": 3151,
+      "passed_count": 1118
+    },
+    "alter_sequence": {
+      "case_count": 28591,
+      "classifications": {
+        "oracle_failure": 2193,
+        "strict_pass": 15028,
+        "unexpected_psql_error": 11370
+      },
+      "evidence_levels": {
+        "strict-contract": 28591
+      },
+      "expected_outcomes": {
+        "expected_failure": 11534,
+        "success": 17057
+      },
+      "not_passed_count": 13563,
+      "passed_count": 15028
+    },
+    "alter_server": {
+      "case_count": 2339,
+      "classifications": {
+        "oracle_failure": 108,
+        "strict_pass": 817,
+        "unexpected_psql_error": 1414
+      },
+      "evidence_levels": {
+        "strict-contract": 2339
+      },
+      "expected_outcomes": {
+        "expected_failure": 1544,
+        "success": 795
+      },
+      "not_passed_count": 1522,
+      "passed_count": 817
+    },
+    "alter_statistics": {
+      "case_count": 1460,
+      "classifications": {
+        "strict_pass": 76,
+        "unexpected_psql_error": 1384
+      },
+      "evidence_levels": {
+        "strict-contract": 1460
+      },
+      "expected_outcomes": {
+        "expected_failure": 773,
+        "success": 687
+      },
+      "not_passed_count": 1384,
+      "passed_count": 76
+    },
+    "alter_subscription": {
+      "case_count": 1119,
+      "classifications": {
+        "strict_pass": 67,
+        "unexpected_psql_error": 1052
+      },
+      "evidence_levels": {
+        "strict-contract": 1119
+      },
+      "expected_outcomes": {
+        "expected_failure": 656,
+        "success": 463
+      },
+      "not_passed_count": 1052,
+      "passed_count": 67
+    },
+    "alter_system": {
+      "case_count": 6295,
+      "classifications": {
+        "oracle_failure": 1107,
+        "strict_pass": 3945,
+        "unexpected_psql_error": 1243
+      },
+      "evidence_levels": {
+        "strict-contract": 6295
+      },
+      "expected_outcomes": {
+        "expected_failure": 3733,
+        "success": 2562
+      },
+      "not_passed_count": 2350,
+      "passed_count": 3945
+    },
+    "alter_table": {
+      "case_count": 4547,
+      "classifications": {
+        "oracle_failure": 1541,
+        "strict_pass": 1277,
+        "unexpected_psql_error": 1729
+      },
+      "evidence_levels": {
+        "strict-contract": 4547
+      },
+      "expected_outcomes": {
+        "expected_failure": 2809,
+        "success": 1738
+      },
+      "not_passed_count": 3270,
+      "passed_count": 1277
+    },
+    "alter_tablespace": {
+      "case_count": 6672,
+      "classifications": {
+        "strict_pass": 288,
+        "unexpected_psql_error": 6384
+      },
+      "evidence_levels": {
+        "strict-contract": 6672
+      },
+      "expected_outcomes": {
+        "expected_failure": 4820,
+        "success": 1852
+      },
+      "not_passed_count": 6384,
+      "passed_count": 288
+    },
+    "alter_text_search_configuration": {
+      "case_count": 4979,
+      "classifications": {
+        "oracle_failure": 274,
+        "strict_pass": 2889,
+        "unexpected_psql_error": 1816
+      },
+      "evidence_levels": {
+        "strict-contract": 4979
+      },
+      "expected_outcomes": {
+        "expected_failure": 3651,
+        "success": 1328
+      },
+      "not_passed_count": 2090,
+      "passed_count": 2889
+    },
+    "alter_text_search_dictionary": {
+      "case_count": 1384,
+      "classifications": {
+        "oracle_failure": 61,
+        "strict_pass": 595,
+        "unexpected_psql_error": 728
+      },
+      "evidence_levels": {
+        "strict-contract": 1384
+      },
+      "expected_outcomes": {
+        "expected_failure": 736,
+        "success": 648
+      },
+      "not_passed_count": 789,
+      "passed_count": 595
+    },
+    "alter_text_search_parser": {
+      "case_count": 251,
+      "classifications": {
+        "oracle_failure": 17,
+        "strict_pass": 196,
+        "unexpected_psql_error": 38
+      },
+      "evidence_levels": {
+        "strict-contract": 251
+      },
+      "expected_outcomes": {
+        "expected_failure": 191,
+        "success": 60
+      },
+      "not_passed_count": 55,
+      "passed_count": 196
+    },
+    "alter_text_search_template": {
+      "case_count": 183,
+      "classifications": {
+        "oracle_failure": 5,
+        "strict_pass": 116,
+        "unexpected_psql_error": 62
+      },
+      "evidence_levels": {
+        "strict-contract": 183
+      },
+      "expected_outcomes": {
+        "expected_failure": 111,
+        "success": 72
+      },
+      "not_passed_count": 67,
+      "passed_count": 116
+    },
+    "alter_trigger": {
+      "case_count": 3067,
+      "classifications": {
+        "oracle_failure": 2,
+        "strict_pass": 2534,
+        "unexpected_psql_error": 531
+      },
+      "evidence_levels": {
+        "strict-contract": 3067
+      },
+      "expected_outcomes": {
+        "expected_failure": 1980,
+        "success": 1087
+      },
+      "not_passed_count": 533,
+      "passed_count": 2534
+    },
+    "alter_type": {
+      "case_count": 10522,
+      "classifications": {
+        "oracle_failure": 1827,
+        "strict_pass": 1114,
+        "unexpected_psql_error": 7581
+      },
+      "evidence_levels": {
+        "strict-contract": 10522
+      },
+      "expected_outcomes": {
+        "expected_failure": 6771,
+        "success": 3751
+      },
+      "not_passed_count": 9408,
+      "passed_count": 1114
+    },
+    "alter_user": {
+      "case_count": 3531,
+      "classifications": {
+        "oracle_failure": 220,
+        "strict_pass": 1741,
+        "unexpected_psql_error": 1570
+      },
+      "evidence_levels": {
+        "strict-contract": 3531
+      },
+      "expected_outcomes": {
+        "expected_failure": 1959,
+        "success": 1572
+      },
+      "not_passed_count": 1790,
+      "passed_count": 1741
+    },
+    "alter_user_mapping": {
+      "case_count": 6103,
+      "classifications": {
+        "strict_pass": 1588,
+        "unexpected_psql_error": 4515
+      },
+      "evidence_levels": {
+        "strict-contract": 6103
+      },
+      "expected_outcomes": {
+        "expected_failure": 4334,
+        "success": 1769
+      },
+      "not_passed_count": 4515,
+      "passed_count": 1588
+    },
+    "alter_view": {
+      "case_count": 8321,
+      "classifications": {
+        "oracle_failure": 1229,
+        "strict_pass": 2871,
+        "unexpected_psql_error": 4221
+      },
+      "evidence_levels": {
+        "strict-contract": 8321
+      },
+      "expected_outcomes": {
+        "expected_failure": 2923,
+        "success": 5398
+      },
+      "not_passed_count": 5450,
+      "passed_count": 2871
+    },
+    "analyze": {
+      "case_count": 7152,
+      "classifications": {
+        "oracle_failure": 2163,
+        "strict_pass": 1627,
+        "unexpected_psql_error": 3362
+      },
+      "evidence_levels": {
+        "strict-contract": 7152
+      },
+      "expected_outcomes": {
+        "expected_failure": 4805,
+        "success": 2347
+      },
+      "not_passed_count": 5525,
+      "passed_count": 1627
+    },
+    "begin": {
+      "case_count": 1604,
+      "classifications": {
+        "oracle_failure": 606,
+        "strict_pass": 348,
+        "unexpected_psql_error": 650
+      },
+      "evidence_levels": {
+        "strict-contract": 1604
+      },
+      "expected_outcomes": {
+        "expected_failure": 1087,
+        "success": 517
+      },
+      "not_passed_count": 1256,
+      "passed_count": 348
+    },
+    "call": {
+      "case_count": 17713,
+      "classifications": {
+        "oracle_failure": 8594,
+        "strict_pass": 3928,
+        "unexpected_psql_error": 5191
+      },
+      "evidence_levels": {
+        "strict-contract": 17713
+      },
+      "expected_outcomes": {
+        "expected_failure": 13064,
+        "success": 4649
+      },
+      "not_passed_count": 13785,
+      "passed_count": 3928
+    },
+    "checkpoint": {
+      "case_count": 9262,
+      "classifications": {
+        "strict_pass": 4651,
+        "two_run_mismatch": 1537,
+        "unexpected_psql_error": 3074
+      },
+      "evidence_levels": {
+        "strict-contract": 9262
+      },
+      "expected_outcomes": {
+        "expected_failure": 3074,
+        "success": 6188
+      },
+      "not_passed_count": 4611,
+      "passed_count": 4651
+    },
+    "close": {
+      "case_count": 213,
+      "classifications": {
+        "not_strictly_judgeable": 84,
+        "observed_mismatch": 3,
+        "unexpected_psql_error": 126
+      },
+      "evidence_levels": {
+        "observational-legacy": 213
+      },
+      "expected_outcomes": {
+        "expected_failure": 128,
+        "success": 85
+      },
+      "not_passed_count": 129,
+      "passed_count": 84
+    },
+    "cluster": {
+      "case_count": 4919,
+      "classifications": {
+        "oracle_failure": 421,
+        "strict_pass": 3343,
+        "unexpected_psql_error": 1155
+      },
+      "evidence_levels": {
+        "strict-contract": 4919
+      },
+      "expected_outcomes": {
+        "expected_failure": 3855,
+        "success": 1064
+      },
+      "not_passed_count": 1576,
+      "passed_count": 3343
+    },
+    "comment": {
+      "case_count": 13662,
+      "classifications": {
+        "oracle_failure": 1162,
+        "strict_pass": 1476,
+        "unexpected_psql_error": 11024
+      },
+      "evidence_levels": {
+        "strict-contract": 13662
+      },
+      "expected_outcomes": {
+        "expected_failure": 7757,
+        "success": 5905
+      },
+      "not_passed_count": 12186,
+      "passed_count": 1476
+    },
+    "commit": {
+      "case_count": 1844,
+      "classifications": {
+        "oracle_failure": 604,
+        "strict_pass": 877,
+        "unexpected_psql_error": 363
+      },
+      "evidence_levels": {
+        "strict-contract": 1844
+      },
+      "expected_outcomes": {
+        "expected_failure": 726,
+        "success": 1118
+      },
+      "not_passed_count": 967,
+      "passed_count": 877
+    },
+    "commit_prepared": {
+      "case_count": 12284,
+      "classifications": {
+        "strict_pass": 3604,
+        "unexpected_psql_error": 8680
+      },
+      "evidence_levels": {
+        "strict-contract": 12284
+      },
+      "expected_outcomes": {
+        "expected_failure": 7926,
+        "success": 4358
+      },
+      "not_passed_count": 8680,
+      "passed_count": 3604
+    },
+    "copy": {
+      "case_count": 5619,
+      "classifications": {
+        "oracle_failure": 954,
+        "strict_pass": 1842,
+        "unexpected_psql_error": 2823
+      },
+      "evidence_levels": {
+        "strict-contract": 5619
+      },
+      "expected_outcomes": {
+        "expected_failure": 4426,
+        "success": 1193
+      },
+      "not_passed_count": 3777,
+      "passed_count": 1842
+    },
+    "create_access_method": {
+      "case_count": 1039,
+      "classifications": {
+        "strict_pass": 146,
+        "unexpected_psql_error": 893
+      },
+      "evidence_levels": {
+        "strict-contract": 1039
+      },
+      "expected_outcomes": {
+        "expected_failure": 876,
+        "success": 163
+      },
+      "not_passed_count": 893,
+      "passed_count": 146
+    },
+    "create_aggregate": {
+      "case_count": 18789,
+      "classifications": {
+        "oracle_failure": 22,
+        "strict_pass": 97,
+        "unexpected_psql_error": 18670
+      },
+      "evidence_levels": {
+        "strict-contract": 18789
+      },
+      "expected_outcomes": {
+        "expected_failure": 11716,
+        "success": 7073
+      },
+      "not_passed_count": 18692,
+      "passed_count": 97
+    },
+    "create_cast": {
+      "case_count": 19215,
+      "classifications": {
+        "oracle_failure": 3096,
+        "strict_pass": 4868,
+        "unexpected_psql_error": 11251
+      },
+      "evidence_levels": {
+        "strict-contract": 19215
+      },
+      "expected_outcomes": {
+        "expected_failure": 10957,
+        "success": 8258
+      },
+      "not_passed_count": 14347,
+      "passed_count": 4868
+    },
+    "create_collation": {
+      "case_count": 1135,
+      "classifications": {
+        "oracle_failure": 94,
+        "strict_pass": 504,
+        "unexpected_psql_error": 537
+      },
+      "evidence_levels": {
+        "strict-contract": 1135
+      },
+      "expected_outcomes": {
+        "expected_failure": 555,
+        "success": 580
+      },
+      "not_passed_count": 631,
+      "passed_count": 504
+    },
+    "create_conversion": {
+      "case_count": 1002,
+      "classifications": {
+        "oracle_failure": 101,
+        "unexpected_psql_error": 901
+      },
+      "evidence_levels": {
+        "strict-contract": 1002
+      },
+      "expected_outcomes": {
+        "expected_failure": 766,
+        "success": 236
+      },
+      "not_passed_count": 1002,
+      "passed_count": 0
+    },
+    "create_database": {
+      "case_count": 16268,
+      "classifications": {
+        "oracle_failure": 4583,
+        "strict_pass": 4949,
+        "unexpected_psql_error": 6736
+      },
+      "evidence_levels": {
+        "strict-contract": 16268
+      },
+      "expected_outcomes": {
+        "expected_failure": 9740,
+        "success": 6528
+      },
+      "not_passed_count": 11319,
+      "passed_count": 4949
+    },
+    "create_domain": {
+      "case_count": 2977,
+      "classifications": {
+        "oracle_failure": 6,
+        "strict_pass": 2967,
+        "unexpected_psql_error": 4
+      },
+      "evidence_levels": {
+        "strict-contract": 2977
+      },
+      "expected_outcomes": {
+        "expected_failure": 24,
+        "success": 2953
+      },
+      "not_passed_count": 10,
+      "passed_count": 2967
+    },
+    "create_event_trigger": {
+      "case_count": 6542,
+      "classifications": {
+        "oracle_failure": 1949,
+        "strict_pass": 1995,
+        "unexpected_psql_error": 2598
+      },
+      "evidence_levels": {
+        "strict-contract": 6542
+      },
+      "expected_outcomes": {
+        "expected_failure": 5417,
+        "success": 1125
+      },
+      "not_passed_count": 4547,
+      "passed_count": 1995
+    },
+    "create_extension": {
+      "case_count": 4383,
+      "classifications": {
+        "oracle_failure": 880,
+        "unexpected_psql_error": 3503
+      },
+      "evidence_levels": {
+        "strict-contract": 4383
+      },
+      "expected_outcomes": {
+        "expected_failure": 2611,
+        "success": 1772
+      },
+      "not_passed_count": 4383,
+      "passed_count": 0
+    },
+    "create_foreign_data_wrapper": {
+      "case_count": 2650,
+      "classifications": {
+        "oracle_failure": 335,
+        "strict_pass": 229,
+        "unexpected_psql_error": 2086
+      },
+      "evidence_levels": {
+        "strict-contract": 2650
+      },
+      "expected_outcomes": {
+        "expected_failure": 1745,
+        "success": 905
+      },
+      "not_passed_count": 2421,
+      "passed_count": 229
+    },
+    "create_foreign_table": {
+      "case_count": 2556,
+      "classifications": {
+        "oracle_failure": 575,
+        "strict_pass": 591,
+        "unexpected_psql_error": 1390
+      },
+      "evidence_levels": {
+        "strict-contract": 2556
+      },
+      "expected_outcomes": {
+        "expected_failure": 2074,
+        "success": 482
+      },
+      "not_passed_count": 1965,
+      "passed_count": 591
+    },
+    "create_function": {
+      "case_count": 9721,
+      "classifications": {
+        "oracle_failure": 7,
+        "strict_pass": 2023,
+        "unexpected_psql_error": 7691
+      },
+      "evidence_levels": {
+        "strict-contract": 9721
+      },
+      "expected_outcomes": {
+        "expected_failure": 12,
+        "success": 9709
+      },
+      "not_passed_count": 7698,
+      "passed_count": 2023
+    },
+    "create_group": {
+      "case_count": 426,
+      "classifications": {
+        "unexpected_psql_error": 426
+      },
+      "evidence_levels": {
+        "strict-contract": 426
+      },
+      "expected_outcomes": {
+        "expected_failure": 225,
+        "success": 201
+      },
+      "not_passed_count": 426,
+      "passed_count": 0
+    },
+    "create_index": {
+      "case_count": 2009,
+      "classifications": {
+        "oracle_failure": 6,
+        "strict_pass": 939,
+        "unexpected_psql_error": 1064
+      },
+      "evidence_levels": {
+        "strict-contract": 2009
+      },
+      "expected_outcomes": {
+        "expected_failure": 8,
+        "success": 2001
+      },
+      "not_passed_count": 1070,
+      "passed_count": 939
+    },
+    "create_language": {
+      "case_count": 2540,
+      "classifications": {
+        "oracle_failure": 773,
+        "unexpected_psql_error": 1767
+      },
+      "evidence_levels": {
+        "strict-contract": 2540
+      },
+      "expected_outcomes": {
+        "expected_failure": 1743,
+        "success": 797
+      },
+      "not_passed_count": 2540,
+      "passed_count": 0
+    },
+    "create_materialized_view": {
+      "case_count": 12912,
+      "classifications": {
+        "oracle_failure": 1683,
+        "strict_pass": 10938,
+        "unexpected_psql_error": 291
+      },
+      "evidence_levels": {
+        "strict-contract": 12912
+      },
+      "expected_outcomes": {
+        "expected_failure": 583,
+        "success": 12329
+      },
+      "not_passed_count": 1974,
+      "passed_count": 10938
+    },
+    "create_operator": {
+      "case_count": 1280,
+      "classifications": {
+        "oracle_failure": 466,
+        "strict_pass": 421,
+        "unexpected_psql_error": 393
+      },
+      "evidence_levels": {
+        "strict-contract": 1280
+      },
+      "expected_outcomes": {
+        "expected_failure": 935,
+        "success": 345
+      },
+      "not_passed_count": 859,
+      "passed_count": 421
+    },
+    "create_operator_class": {
+      "case_count": 5622,
+      "classifications": {
+        "unexpected_psql_error": 5622
+      },
+      "evidence_levels": {
+        "strict-contract": 5622
+      },
+      "expected_outcomes": {
+        "expected_failure": 4237,
+        "success": 1385
+      },
+      "not_passed_count": 5622,
+      "passed_count": 0
+    },
+    "create_operator_family": {
+      "case_count": 1219,
+      "classifications": {
+        "unexpected_psql_error": 1219
+      },
+      "evidence_levels": {
+        "strict-contract": 1219
+      },
+      "expected_outcomes": {
+        "expected_failure": 979,
+        "success": 240
+      },
+      "not_passed_count": 1219,
+      "passed_count": 0
+    },
+    "create_policy": {
+      "case_count": 1017,
+      "classifications": {
+        "oracle_failure": 36,
+        "strict_pass": 721,
+        "unexpected_psql_error": 260
+      },
+      "evidence_levels": {
+        "strict-contract": 1017
+      },
+      "expected_outcomes": {
+        "expected_failure": 594,
+        "success": 423
+      },
+      "not_passed_count": 296,
+      "passed_count": 721
+    },
+    "create_procedure": {
+      "case_count": 4412,
+      "classifications": {
+        "oracle_failure": 5,
+        "strict_pass": 1,
+        "unexpected_psql_error": 4406
+      },
+      "evidence_levels": {
+        "strict-contract": 4412
+      },
+      "expected_outcomes": {
+        "expected_failure": 9,
+        "success": 4403
+      },
+      "not_passed_count": 4411,
+      "passed_count": 1
+    },
+    "create_publication": {
+      "case_count": 4302,
+      "classifications": {
+        "oracle_failure": 448,
+        "strict_pass": 2677,
+        "unexpected_psql_error": 1177
+      },
+      "evidence_levels": {
+        "strict-contract": 4302
+      },
+      "expected_outcomes": {
+        "expected_failure": 3015,
+        "success": 1287
+      },
+      "not_passed_count": 1625,
+      "passed_count": 2677
+    },
+    "create_role": {
+      "case_count": 2262,
+      "classifications": {
+        "unexpected_psql_error": 2262
+      },
+      "evidence_levels": {
+        "strict-contract": 2262
+      },
+      "expected_outcomes": {
+        "expected_failure": 1319,
+        "success": 943
+      },
+      "not_passed_count": 2262,
+      "passed_count": 0
+    },
+    "create_rule": {
+      "case_count": 7668,
+      "classifications": {
+        "oracle_failure": 8,
+        "strict_pass": 5459,
+        "unexpected_psql_error": 2201
+      },
+      "evidence_levels": {
+        "strict-contract": 7668
+      },
+      "expected_outcomes": {
+        "expected_failure": 15,
+        "success": 7653
+      },
+      "not_passed_count": 2209,
+      "passed_count": 5459
+    },
+    "create_schema": {
+      "case_count": 10592,
+      "classifications": {
+        "oracle_failure": 222,
+        "strict_pass": 396,
+        "unexpected_psql_error": 9974
+      },
+      "evidence_levels": {
+        "strict-contract": 10592
+      },
+      "expected_outcomes": {
+        "expected_failure": 7628,
+        "success": 2964
+      },
+      "not_passed_count": 10196,
+      "passed_count": 396
+    },
+    "create_sequence": {
+      "case_count": 6983,
+      "classifications": {
+        "oracle_failure": 2094,
+        "strict_pass": 2450,
+        "unexpected_psql_error": 2439
+      },
+      "evidence_levels": {
+        "strict-contract": 6983
+      },
+      "expected_outcomes": {
+        "expected_failure": 4305,
+        "success": 2678
+      },
+      "not_passed_count": 4533,
+      "passed_count": 2450
+    },
+    "create_server": {
+      "case_count": 4843,
+      "classifications": {
+        "oracle_failure": 960,
+        "strict_pass": 998,
+        "unexpected_psql_error": 2885
+      },
+      "evidence_levels": {
+        "strict-contract": 4843
+      },
+      "expected_outcomes": {
+        "expected_failure": 3371,
+        "success": 1472
+      },
+      "not_passed_count": 3845,
+      "passed_count": 998
+    },
+    "create_statistics": {
+      "case_count": 2640,
+      "classifications": {
+        "oracle_failure": 7,
+        "strict_pass": 33,
+        "unexpected_psql_error": 2600
+      },
+      "evidence_levels": {
+        "strict-contract": 2640
+      },
+      "expected_outcomes": {
+        "expected_failure": 241,
+        "success": 2399
+      },
+      "not_passed_count": 2607,
+      "passed_count": 33
+    },
+    "create_subscription": {
+      "case_count": 1111,
+      "classifications": {
+        "oracle_failure": 5,
+        "strict_pass": 3,
+        "unexpected_psql_error": 1103
+      },
+      "evidence_levels": {
+        "strict-contract": 1111
+      },
+      "expected_outcomes": {
+        "expected_failure": 725,
+        "success": 386
+      },
+      "not_passed_count": 1108,
+      "passed_count": 3
+    },
+    "create_table": {
+      "case_count": 5948,
+      "classifications": {
+        "oracle_failure": 273,
+        "strict_pass": 4760,
+        "unexpected_psql_error": 915
+      },
+      "evidence_levels": {
+        "strict-contract": 5948
+      },
+      "expected_outcomes": {
+        "expected_failure": 290,
+        "success": 5658
+      },
+      "not_passed_count": 1188,
+      "passed_count": 4760
+    },
+    "create_table_as": {
+      "case_count": 4061,
+      "classifications": {
+        "oracle_failure": 622,
+        "strict_pass": 3202,
+        "unexpected_psql_error": 237
+      },
+      "evidence_levels": {
+        "strict-contract": 4061
+      },
+      "expected_outcomes": {
+        "expected_failure": 803,
+        "success": 3258
+      },
+      "not_passed_count": 859,
+      "passed_count": 3202
+    },
+    "create_tablespace": {
+      "case_count": 4567,
+      "classifications": {
+        "oracle_failure": 1024,
+        "strict_pass": 1301,
+        "unexpected_psql_error": 2242
+      },
+      "evidence_levels": {
+        "strict-contract": 4567
+      },
+      "expected_outcomes": {
+        "expected_failure": 4165,
+        "success": 402
+      },
+      "not_passed_count": 3266,
+      "passed_count": 1301
+    },
+    "create_text_search_configuration": {
+      "case_count": 1302,
+      "classifications": {
+        "oracle_failure": 373,
+        "strict_pass": 928,
+        "unexpected_psql_error": 1
+      },
+      "evidence_levels": {
+        "strict-contract": 1302
+      },
+      "expected_outcomes": {
+        "expected_failure": 1073,
+        "success": 229
+      },
+      "not_passed_count": 374,
+      "passed_count": 928
+    },
+    "create_text_search_dictionary": {
+      "case_count": 4653,
+      "classifications": {
+        "oracle_failure": 2311,
+        "strict_pass": 1569,
+        "unexpected_psql_error": 773
+      },
+      "evidence_levels": {
+        "strict-contract": 4653
+      },
+      "expected_outcomes": {
+        "expected_failure": 3470,
+        "success": 1183
+      },
+      "not_passed_count": 3084,
+      "passed_count": 1569
+    },
+    "create_text_search_parser": {
+      "case_count": 1014,
+      "classifications": {
+        "oracle_failure": 198,
+        "unexpected_psql_error": 816
+      },
+      "evidence_levels": {
+        "strict-contract": 1014
+      },
+      "expected_outcomes": {
+        "expected_failure": 770,
+        "success": 244
+      },
+      "not_passed_count": 1014,
+      "passed_count": 0
+    },
+    "create_text_search_template": {
+      "case_count": 1014,
+      "classifications": {
+        "strict_pass": 198,
+        "unexpected_psql_error": 816
+      },
+      "evidence_levels": {
+        "strict-contract": 1014
+      },
+      "expected_outcomes": {
+        "expected_failure": 770,
+        "success": 244
+      },
+      "not_passed_count": 816,
+      "passed_count": 198
+    },
+    "create_transform": {
+      "case_count": 1277,
+      "classifications": {
+        "oracle_failure": 9,
+        "strict_pass": 397,
+        "unexpected_psql_error": 871
+      },
+      "evidence_levels": {
+        "strict-contract": 1277
+      },
+      "expected_outcomes": {
+        "expected_failure": 447,
+        "success": 830
+      },
+      "not_passed_count": 880,
+      "passed_count": 397
+    },
+    "create_trigger": {
+      "case_count": 6571,
+      "classifications": {
+        "oracle_failure": 1467,
+        "strict_pass": 1508,
+        "unexpected_psql_error": 3596
+      },
+      "evidence_levels": {
+        "strict-contract": 6571
+      },
+      "expected_outcomes": {
+        "expected_failure": 1642,
+        "success": 4929
+      },
+      "not_passed_count": 5063,
+      "passed_count": 1508
+    },
+    "create_type": {
+      "case_count": 3471,
+      "classifications": {
+        "oracle_failure": 445,
+        "strict_pass": 2419,
+        "unexpected_psql_error": 607
+      },
+      "evidence_levels": {
+        "strict-contract": 3471
+      },
+      "expected_outcomes": {
+        "expected_failure": 762,
+        "success": 2709
+      },
+      "not_passed_count": 1052,
+      "passed_count": 2419
+    },
+    "create_user": {
+      "case_count": 1674,
+      "classifications": {
+        "unexpected_psql_error": 1674
+      },
+      "evidence_levels": {
+        "strict-contract": 1674
+      },
+      "expected_outcomes": {
+        "expected_failure": 983,
+        "success": 691
+      },
+      "not_passed_count": 1674,
+      "passed_count": 0
+    },
+    "create_user_mapping": {
+      "case_count": 1966,
+      "classifications": {
+        "oracle_failure": 676,
+        "strict_pass": 932,
+        "unexpected_psql_error": 358
+      },
+      "evidence_levels": {
+        "strict-contract": 1966
+      },
+      "expected_outcomes": {
+        "expected_failure": 1476,
+        "success": 490
+      },
+      "not_passed_count": 1034,
+      "passed_count": 932
+    },
+    "create_view": {
+      "case_count": 5543,
+      "classifications": {
+        "oracle_failure": 119,
+        "strict_pass": 4074,
+        "unexpected_psql_error": 1350
+      },
+      "evidence_levels": {
+        "strict-contract": 5543
+      },
+      "expected_outcomes": {
+        "expected_failure": 2761,
+        "success": 2782
+      },
+      "not_passed_count": 1469,
+      "passed_count": 4074
+    },
+    "deallocate": {
+      "case_count": 7698,
+      "classifications": {
+        "oracle_failure": 3224,
+        "strict_pass": 3148,
+        "unexpected_psql_error": 1326
+      },
+      "evidence_levels": {
+        "strict-contract": 7698
+      },
+      "expected_outcomes": {
+        "expected_failure": 5401,
+        "success": 2297
+      },
+      "not_passed_count": 4550,
+      "passed_count": 3148
+    },
+    "declare": {
+      "case_count": 213,
+      "classifications": {
+        "not_strictly_judgeable": 81,
+        "unexpected_psql_error": 132
+      },
+      "evidence_levels": {
+        "observational-legacy": 213
+      },
+      "expected_outcomes": {
+        "expected_failure": 129,
+        "success": 84
+      },
+      "not_passed_count": 132,
+      "passed_count": 81
+    },
+    "delete": {
+      "case_count": 17714,
+      "classifications": {
+        "oracle_failure": 6147,
+        "strict_pass": 9262,
+        "unexpected_psql_error": 2305
+      },
+      "evidence_levels": {
+        "strict-contract": 17714
+      },
+      "expected_outcomes": {
+        "expected_failure": 13064,
+        "success": 4650
+      },
+      "not_passed_count": 8452,
+      "passed_count": 9262
+    },
+    "discard": {
+      "case_count": 4266,
+      "classifications": {
+        "strict_pass": 4266
+      },
+      "evidence_levels": {
+        "strict-contract": 4266
+      },
+      "expected_outcomes": {
+        "expected_failure": 579,
+        "success": 3687
+      },
+      "not_passed_count": 0,
+      "passed_count": 4266
+    },
+    "do": {
+      "case_count": 10786,
+      "classifications": {
+        "oracle_failure": 5124,
+        "strict_pass": 5662
+      },
+      "evidence_levels": {
+        "strict-contract": 10786
+      },
+      "expected_outcomes": {
+        "expected_failure": 5629,
+        "success": 5157
+      },
+      "not_passed_count": 5124,
+      "passed_count": 5662
+    },
+    "drop_access_method": {
+      "case_count": 367,
+      "classifications": {
+        "strict_pass": 2,
+        "unexpected_psql_error": 365
+      },
+      "evidence_levels": {
+        "strict-contract": 367
+      },
+      "expected_outcomes": {
+        "expected_failure": 217,
+        "success": 150
+      },
+      "not_passed_count": 365,
+      "passed_count": 2
+    },
+    "drop_aggregate": {
+      "case_count": 376,
+      "classifications": {
+        "oracle_failure": 54,
+        "strict_pass": 320,
+        "unexpected_psql_error": 2
+      },
+      "evidence_levels": {
+        "strict-contract": 376
+      },
+      "expected_outcomes": {
+        "expected_failure": 226,
+        "success": 150
+      },
+      "not_passed_count": 56,
+      "passed_count": 320
+    },
+    "drop_cast": {
+      "case_count": 140,
+      "classifications": {
+        "strict_pass": 140
+      },
+      "evidence_levels": {
+        "strict-contract": 140
+      },
+      "expected_outcomes": {
+        "expected_failure": 54,
+        "success": 86
+      },
+      "not_passed_count": 0,
+      "passed_count": 140
+    },
+    "drop_collation": {
+      "case_count": 366,
+      "classifications": {
+        "strict_pass": 366
+      },
+      "evidence_levels": {
+        "strict-contract": 366
+      },
+      "expected_outcomes": {
+        "expected_failure": 224,
+        "success": 142
+      },
+      "not_passed_count": 0,
+      "passed_count": 366
+    },
+    "drop_conversion": {
+      "case_count": 524,
+      "classifications": {
+        "oracle_failure": 72,
+        "strict_pass": 235,
+        "unexpected_psql_error": 217
+      },
+      "evidence_levels": {
+        "strict-contract": 524
+      },
+      "expected_outcomes": {
+        "expected_failure": 259,
+        "success": 265
+      },
+      "not_passed_count": 289,
+      "passed_count": 235
+    },
+    "drop_database": {
+      "case_count": 482,
+      "classifications": {
+        "oracle_failure": 290,
+        "strict_pass": 186,
+        "unexpected_psql_error": 6
+      },
+      "evidence_levels": {
+        "strict-contract": 482
+      },
+      "expected_outcomes": {
+        "expected_failure": 388,
+        "success": 94
+      },
+      "not_passed_count": 296,
+      "passed_count": 186
+    },
+    "drop_domain": {
+      "case_count": 429,
+      "classifications": {
+        "strict_pass": 407,
+        "unexpected_psql_error": 22
+      },
+      "evidence_levels": {
+        "strict-contract": 429
+      },
+      "expected_outcomes": {
+        "expected_failure": 244,
+        "success": 185
+      },
+      "not_passed_count": 22,
+      "passed_count": 407
+    },
+    "drop_event_trigger": {
+      "case_count": 542,
+      "classifications": {
+        "oracle_failure": 108,
+        "strict_pass": 322,
+        "unexpected_psql_error": 112
+      },
+      "evidence_levels": {
+        "strict-contract": 542
+      },
+      "expected_outcomes": {
+        "expected_failure": 291,
+        "success": 251
+      },
+      "not_passed_count": 220,
+      "passed_count": 322
+    },
+    "drop_extension": {
+      "case_count": 396,
+      "classifications": {
+        "oracle_failure": 18,
+        "strict_pass": 110,
+        "unexpected_psql_error": 268
+      },
+      "evidence_levels": {
+        "strict-contract": 396
+      },
+      "expected_outcomes": {
+        "expected_failure": 193,
+        "success": 203
+      },
+      "not_passed_count": 286,
+      "passed_count": 110
+    },
+    "drop_foreign_data_wrapper": {
+      "case_count": 702,
+      "classifications": {
+        "oracle_failure": 54,
+        "strict_pass": 509,
+        "unexpected_psql_error": 139
+      },
+      "evidence_levels": {
+        "strict-contract": 702
+      },
+      "expected_outcomes": {
+        "expected_failure": 390,
+        "success": 312
+      },
+      "not_passed_count": 193,
+      "passed_count": 509
+    },
+    "drop_foreign_table": {
+      "case_count": 512,
+      "classifications": {
+        "oracle_failure": 24,
+        "strict_pass": 147,
+        "unexpected_psql_error": 341
+      },
+      "evidence_levels": {
+        "strict-contract": 512
+      },
+      "expected_outcomes": {
+        "expected_failure": 256,
+        "success": 256
+      },
+      "not_passed_count": 365,
+      "passed_count": 147
+    },
+    "drop_function": {
+      "case_count": 1389,
+      "classifications": {
+        "oracle_failure": 152,
+        "strict_pass": 605,
+        "unexpected_psql_error": 632
+      },
+      "evidence_levels": {
+        "strict-contract": 1389
+      },
+      "expected_outcomes": {
+        "expected_failure": 876,
+        "success": 513
+      },
+      "not_passed_count": 784,
+      "passed_count": 605
+    },
+    "drop_group": {
+      "case_count": 197,
+      "classifications": {
+        "strict_pass": 73,
+        "unexpected_psql_error": 124
+      },
+      "evidence_levels": {
+        "strict-contract": 197
+      },
+      "expected_outcomes": {
+        "expected_failure": 108,
+        "success": 89
+      },
+      "not_passed_count": 124,
+      "passed_count": 73
+    },
+    "drop_index": {
+      "case_count": 407,
+      "classifications": {
+        "oracle_failure": 60,
+        "strict_pass": 240,
+        "unexpected_psql_error": 107
+      },
+      "evidence_levels": {
+        "strict-contract": 407
+      },
+      "expected_outcomes": {
+        "expected_failure": 202,
+        "success": 205
+      },
+      "not_passed_count": 167,
+      "passed_count": 240
+    },
+    "drop_language": {
+      "case_count": 539,
+      "classifications": {
+        "oracle_failure": 24,
+        "strict_pass": 98,
+        "unexpected_psql_error": 417
+      },
+      "evidence_levels": {
+        "strict-contract": 539
+      },
+      "expected_outcomes": {
+        "expected_failure": 317,
+        "success": 222
+      },
+      "not_passed_count": 441,
+      "passed_count": 98
+    },
+    "drop_materialized_view": {
+      "case_count": 877,
+      "classifications": {
+        "oracle_failure": 74,
+        "strict_pass": 387,
+        "unexpected_psql_error": 416
+      },
+      "evidence_levels": {
+        "strict-contract": 877
+      },
+      "expected_outcomes": {
+        "expected_failure": 583,
+        "success": 294
+      },
+      "not_passed_count": 490,
+      "passed_count": 387
+    },
+    "drop_operator": {
+      "case_count": 1963,
+      "classifications": {
+        "unexpected_psql_error": 1963
+      },
+      "evidence_levels": {
+        "strict-contract": 1963
+      },
+      "expected_outcomes": {
+        "expected_failure": 1399,
+        "success": 564
+      },
+      "not_passed_count": 1963,
+      "passed_count": 0
+    },
+    "drop_operator_class": {
+      "case_count": 934,
+      "classifications": {
+        "strict_pass": 74,
+        "unexpected_psql_error": 860
+      },
+      "evidence_levels": {
+        "strict-contract": 934
+      },
+      "expected_outcomes": {
+        "expected_failure": 556,
+        "success": 378
+      },
+      "not_passed_count": 860,
+      "passed_count": 74
+    },
+    "drop_operator_family": {
+      "case_count": 2229,
+      "classifications": {
+        "strict_pass": 181,
+        "unexpected_psql_error": 2048
+      },
+      "evidence_levels": {
+        "strict-contract": 2229
+      },
+      "expected_outcomes": {
+        "expected_failure": 1614,
+        "success": 615
+      },
+      "not_passed_count": 2048,
+      "passed_count": 181
+    },
+    "drop_owned": {
+      "case_count": 4652,
+      "classifications": {
+        "oracle_failure": 162,
+        "strict_pass": 272,
+        "unexpected_psql_error": 4218
+      },
+      "evidence_levels": {
+        "strict-contract": 4652
+      },
+      "expected_outcomes": {
+        "expected_failure": 2595,
+        "success": 2057
+      },
+      "not_passed_count": 4380,
+      "passed_count": 272
+    },
+    "drop_policy": {
+      "case_count": 1884,
+      "classifications": {
+        "oracle_failure": 216,
+        "strict_pass": 586,
+        "unexpected_psql_error": 1082
+      },
+      "evidence_levels": {
+        "strict-contract": 1884
+      },
+      "expected_outcomes": {
+        "expected_failure": 1196,
+        "success": 688
+      },
+      "not_passed_count": 1298,
+      "passed_count": 586
+    },
+    "drop_procedure": {
+      "case_count": 1939,
+      "classifications": {
+        "oracle_failure": 822,
+        "strict_pass": 753,
+        "unexpected_psql_error": 364
+      },
+      "evidence_levels": {
+        "strict-contract": 1939
+      },
+      "expected_outcomes": {
+        "expected_failure": 1187,
+        "success": 752
+      },
+      "not_passed_count": 1186,
+      "passed_count": 753
+    },
+    "drop_publication": {
+      "case_count": 2312,
+      "classifications": {
+        "strict_pass": 1019,
+        "unexpected_psql_error": 1293
+      },
+      "evidence_levels": {
+        "strict-contract": 2312
+      },
+      "expected_outcomes": {
+        "expected_failure": 1315,
+        "success": 997
+      },
+      "not_passed_count": 1293,
+      "passed_count": 1019
+    },
+    "drop_role": {
+      "case_count": 7803,
+      "classifications": {
+        "oracle_failure": 512,
+        "strict_pass": 178,
+        "unexpected_psql_error": 7113
+      },
+      "evidence_levels": {
+        "strict-contract": 7803
+      },
+      "expected_outcomes": {
+        "expected_failure": 6851,
+        "success": 952
+      },
+      "not_passed_count": 7625,
+      "passed_count": 178
+    },
+    "drop_routine": {
+      "case_count": 4353,
+      "classifications": {
+        "oracle_failure": 94,
+        "strict_pass": 97,
+        "unexpected_psql_error": 4162
+      },
+      "evidence_levels": {
+        "strict-contract": 4353
+      },
+      "expected_outcomes": {
+        "expected_failure": 2204,
+        "success": 2149
+      },
+      "not_passed_count": 4256,
+      "passed_count": 97
+    },
+    "drop_rule": {
+      "case_count": 9266,
+      "classifications": {
+        "oracle_failure": 2790,
+        "strict_pass": 3592,
+        "unexpected_psql_error": 2884
+      },
+      "evidence_levels": {
+        "strict-contract": 9266
+      },
+      "expected_outcomes": {
+        "expected_failure": 6539,
+        "success": 2727
+      },
+      "not_passed_count": 5674,
+      "passed_count": 3592
+    },
+    "drop_schema": {
+      "case_count": 1111,
+      "classifications": {
+        "oracle_failure": 40,
+        "strict_pass": 425,
+        "unexpected_psql_error": 646
+      },
+      "evidence_levels": {
+        "strict-contract": 1111
+      },
+      "expected_outcomes": {
+        "expected_failure": 664,
+        "success": 447
+      },
+      "not_passed_count": 686,
+      "passed_count": 425
+    },
+    "drop_sequence": {
+      "case_count": 4414,
+      "classifications": {
+        "oracle_failure": 98,
+        "strict_pass": 2826,
+        "unexpected_psql_error": 1490
+      },
+      "evidence_levels": {
+        "strict-contract": 4414
+      },
+      "expected_outcomes": {
+        "expected_failure": 2807,
+        "success": 1607
+      },
+      "not_passed_count": 1588,
+      "passed_count": 2826
+    },
+    "drop_server": {
+      "case_count": 2967,
+      "classifications": {
+        "oracle_failure": 1,
+        "strict_pass": 2288,
+        "unexpected_psql_error": 678
+      },
+      "evidence_levels": {
+        "strict-contract": 2967
+      },
+      "expected_outcomes": {
+        "expected_failure": 1685,
+        "success": 1282
+      },
+      "not_passed_count": 679,
+      "passed_count": 2288
+    },
+    "drop_statistics": {
+      "case_count": 2615,
+      "classifications": {
+        "strict_pass": 866,
+        "unexpected_psql_error": 1749
+      },
+      "evidence_levels": {
+        "strict-contract": 2615
+      },
+      "expected_outcomes": {
+        "expected_failure": 1676,
+        "success": 939
+      },
+      "not_passed_count": 1749,
+      "passed_count": 866
+    },
+    "drop_subscription": {
+      "case_count": 1188,
+      "classifications": {
+        "oracle_failure": 64,
+        "strict_pass": 237,
+        "unexpected_psql_error": 887
+      },
+      "evidence_levels": {
+        "strict-contract": 1188
+      },
+      "expected_outcomes": {
+        "expected_failure": 852,
+        "success": 336
+      },
+      "not_passed_count": 951,
+      "passed_count": 237
+    },
+    "drop_table": {
+      "case_count": 7382,
+      "classifications": {
+        "oracle_failure": 1011,
+        "strict_pass": 4941,
+        "unexpected_psql_error": 1430
+      },
+      "evidence_levels": {
+        "strict-contract": 7382
+      },
+      "expected_outcomes": {
+        "expected_failure": 3058,
+        "success": 4324
+      },
+      "not_passed_count": 2441,
+      "passed_count": 4941
+    },
+    "drop_tablespace": {
+      "case_count": 8595,
+      "classifications": {
+        "oracle_failure": 3024,
+        "strict_pass": 651,
+        "unexpected_psql_error": 4920
+      },
+      "evidence_levels": {
+        "strict-contract": 8595
+      },
+      "expected_outcomes": {
+        "expected_failure": 7560,
+        "success": 1035
+      },
+      "not_passed_count": 7944,
+      "passed_count": 651
+    },
+    "drop_text_search_configuration": {
+      "case_count": 1886,
+      "classifications": {
+        "oracle_failure": 195,
+        "strict_pass": 1280,
+        "unexpected_psql_error": 411
+      },
+      "evidence_levels": {
+        "strict-contract": 1886
+      },
+      "expected_outcomes": {
+        "expected_failure": 1042,
+        "success": 844
+      },
+      "not_passed_count": 606,
+      "passed_count": 1280
+    },
+    "drop_text_search_dictionary": {
+      "case_count": 1886,
+      "classifications": {
+        "oracle_failure": 1,
+        "strict_pass": 1474,
+        "unexpected_psql_error": 411
+      },
+      "evidence_levels": {
+        "strict-contract": 1886
+      },
+      "expected_outcomes": {
+        "expected_failure": 1042,
+        "success": 844
+      },
+      "not_passed_count": 412,
+      "passed_count": 1474
+    },
+    "drop_text_search_parser": {
+      "case_count": 1020,
+      "classifications": {
+        "strict_pass": 537,
+        "unexpected_psql_error": 483
+      },
+      "evidence_levels": {
+        "strict-contract": 1020
+      },
+      "expected_outcomes": {
+        "expected_failure": 658,
+        "success": 362
+      },
+      "not_passed_count": 483,
+      "passed_count": 537
+    },
+    "drop_text_search_template": {
+      "case_count": 3564,
+      "classifications": {
+        "strict_pass": 796,
+        "unexpected_psql_error": 2768
+      },
+      "evidence_levels": {
+        "strict-contract": 3564
+      },
+      "expected_outcomes": {
+        "expected_failure": 2818,
+        "success": 746
+      },
+      "not_passed_count": 2768,
+      "passed_count": 796
+    },
+    "drop_transform": {
+      "case_count": 1320,
+      "classifications": {
+        "oracle_failure": 560,
+        "strict_pass": 466,
+        "unexpected_psql_error": 294
+      },
+      "evidence_levels": {
+        "strict-contract": 1320
+      },
+      "expected_outcomes": {
+        "expected_failure": 1145,
+        "success": 175
+      },
+      "not_passed_count": 854,
+      "passed_count": 466
+    },
+    "drop_trigger": {
+      "case_count": 4356,
+      "classifications": {
+        "oracle_failure": 2104,
+        "strict_pass": 1134,
+        "unexpected_psql_error": 1118
+      },
+      "evidence_levels": {
+        "strict-contract": 4356
+      },
+      "expected_outcomes": {
+        "expected_failure": 3032,
+        "success": 1324
+      },
+      "not_passed_count": 3222,
+      "passed_count": 1134
+    },
+    "drop_type": {
+      "case_count": 4318,
+      "classifications": {
+        "strict_pass": 2636,
+        "unexpected_psql_error": 1682
+      },
+      "evidence_levels": {
+        "strict-contract": 4318
+      },
+      "expected_outcomes": {
+        "expected_failure": 2650,
+        "success": 1668
+      },
+      "not_passed_count": 1682,
+      "passed_count": 2636
+    },
+    "drop_user": {
+      "case_count": 1605,
+      "classifications": {
+        "oracle_failure": 399,
+        "strict_pass": 1026,
+        "unexpected_psql_error": 180
+      },
+      "evidence_levels": {
+        "strict-contract": 1605
+      },
+      "expected_outcomes": {
+        "expected_failure": 1182,
+        "success": 423
+      },
+      "not_passed_count": 579,
+      "passed_count": 1026
+    },
+    "drop_user_mapping": {
+      "case_count": 1081,
+      "classifications": {
+        "strict_pass": 1,
+        "unexpected_psql_error": 1080
+      },
+      "evidence_levels": {
+        "strict-contract": 1081
+      },
+      "expected_outcomes": {
+        "expected_failure": 776,
+        "success": 305
+      },
+      "not_passed_count": 1080,
+      "passed_count": 1
+    },
+    "drop_view": {
+      "case_count": 3964,
+      "classifications": {
+        "oracle_failure": 328,
+        "strict_pass": 2012,
+        "unexpected_psql_error": 1624
+      },
+      "evidence_levels": {
+        "strict-contract": 3964
+      },
+      "expected_outcomes": {
+        "expected_failure": 1665,
+        "success": 2299
+      },
+      "not_passed_count": 1952,
+      "passed_count": 2012
+    },
+    "end": {
+      "case_count": 1844,
+      "classifications": {
+        "oracle_failure": 604,
+        "strict_pass": 877,
+        "unexpected_psql_error": 363
+      },
+      "evidence_levels": {
+        "strict-contract": 1844
+      },
+      "expected_outcomes": {
+        "expected_failure": 726,
+        "success": 1118
+      },
+      "not_passed_count": 967,
+      "passed_count": 877
+    },
+    "execute": {
+      "case_count": 7698,
+      "classifications": {
+        "oracle_failure": 5438,
+        "strict_pass": 718,
+        "unexpected_psql_error": 1542
+      },
+      "evidence_levels": {
+        "strict-contract": 7698
+      },
+      "expected_outcomes": {
+        "expected_failure": 5401,
+        "success": 2297
+      },
+      "not_passed_count": 6980,
+      "passed_count": 718
+    },
+    "explain": {
+      "case_count": 6672,
+      "classifications": {
+        "oracle_failure": 1011,
+        "strict_pass": 2213,
+        "two_run_mismatch": 374,
+        "unexpected_psql_error": 3074
+      },
+      "evidence_levels": {
+        "strict-contract": 6672
+      },
+      "expected_outcomes": {
+        "expected_failure": 4326,
+        "success": 2346
+      },
+      "not_passed_count": 4459,
+      "passed_count": 2213
+    },
+    "fetch": {
+      "case_count": 213,
+      "classifications": {
+        "not_strictly_judgeable": 81,
+        "unexpected_psql_error": 132
+      },
+      "evidence_levels": {
+        "observational-legacy": 213
+      },
+      "expected_outcomes": {
+        "expected_failure": 129,
+        "success": 84
+      },
+      "not_passed_count": 132,
+      "passed_count": 81
+    },
+    "grant": {
+      "case_count": 6933,
+      "classifications": {
+        "not_strictly_judgeable": 393,
+        "observed_mismatch": 103,
+        "unexpected_psql_error": 6437
+      },
+      "evidence_levels": {
+        "observational-legacy": 6933
+      },
+      "expected_outcomes": {
+        "None": 86,
+        "expected_failure": 6308,
+        "success": 539
+      },
+      "not_passed_count": 6540,
+      "passed_count": 393
+    },
+    "import_foreign_schema": {
+      "case_count": 633,
+      "classifications": {
+        "oracle_failure": 144,
+        "strict_pass": 193,
+        "unexpected_psql_error": 296
+      },
+      "evidence_levels": {
+        "strict-contract": 633
+      },
+      "expected_outcomes": {
+        "expected_failure": 385,
+        "success": 248
+      },
+      "not_passed_count": 440,
+      "passed_count": 193
+    },
+    "insert": {
+      "case_count": 17714,
+      "classifications": {
+        "oracle_failure": 3458,
+        "strict_pass": 11951,
+        "unexpected_psql_error": 2305
+      },
+      "evidence_levels": {
+        "strict-contract": 17714
+      },
+      "expected_outcomes": {
+        "expected_failure": 13064,
+        "success": 4650
+      },
+      "not_passed_count": 5763,
+      "passed_count": 11951
+    },
+    "listen": {
+      "case_count": 4266,
+      "classifications": {
+        "oracle_failure": 385,
+        "strict_pass": 3544,
+        "unexpected_psql_error": 337
+      },
+      "evidence_levels": {
+        "strict-contract": 4266
+      },
+      "expected_outcomes": {
+        "expected_failure": 386,
+        "success": 3880
+      },
+      "not_passed_count": 722,
+      "passed_count": 3544
+    },
+    "load": {
+      "case_count": 7726,
+      "classifications": {
+        "oracle_failure": 3077,
+        "strict_pass": 3111,
+        "unexpected_psql_error": 1538
+      },
+      "evidence_levels": {
+        "strict-contract": 7726
+      },
+      "expected_outcomes": {
+        "expected_failure": 4615,
+        "success": 3111
+      },
+      "not_passed_count": 4615,
+      "passed_count": 3111
+    },
+    "lock": {
+      "case_count": 2314,
+      "classifications": {
+        "oracle_failure": 1626,
+        "unexpected_psql_error": 688
+      },
+      "evidence_levels": {
+        "strict-contract": 2314
+      },
+      "expected_outcomes": {
+        "expected_failure": 1626,
+        "success": 688
+      },
+      "not_passed_count": 2314,
+      "passed_count": 0
+    },
+    "merge": {
+      "case_count": 17716,
+      "classifications": {
+        "oracle_failure": 6147,
+        "strict_pass": 9261,
+        "unexpected_psql_error": 2308
+      },
+      "evidence_levels": {
+        "strict-contract": 17716
+      },
+      "expected_outcomes": {
+        "expected_failure": 13064,
+        "success": 4652
+      },
+      "not_passed_count": 8455,
+      "passed_count": 9261
+    },
+    "move": {
+      "case_count": 213,
+      "classifications": {
+        "not_strictly_judgeable": 81,
+        "unexpected_psql_error": 132
+      },
+      "evidence_levels": {
+        "observational-legacy": 213
+      },
+      "expected_outcomes": {
+        "expected_failure": 129,
+        "success": 84
+      },
+      "not_passed_count": 132,
+      "passed_count": 81
+    },
+    "notify": {
+      "case_count": 4266,
+      "classifications": {
+        "oracle_failure": 2173,
+        "strict_pass": 1756,
+        "unexpected_psql_error": 337
+      },
+      "evidence_levels": {
+        "strict-contract": 4266
+      },
+      "expected_outcomes": {
+        "expected_failure": 386,
+        "success": 3880
+      },
+      "not_passed_count": 2510,
+      "passed_count": 1756
+    },
+    "prepare": {
+      "case_count": 7698,
+      "classifications": {
+        "oracle_failure": 3181,
+        "strict_pass": 3198,
+        "unexpected_psql_error": 1319
+      },
+      "evidence_levels": {
+        "strict-contract": 7698
+      },
+      "expected_outcomes": {
+        "expected_failure": 5401,
+        "success": 2297
+      },
+      "not_passed_count": 4500,
+      "passed_count": 3198
+    },
+    "prepare_transaction": {
+      "case_count": 12284,
+      "classifications": {
+        "oracle_failure": 6485,
+        "strict_pass": 1441,
+        "unexpected_psql_error": 4358
+      },
+      "evidence_levels": {
+        "strict-contract": 12284
+      },
+      "expected_outcomes": {
+        "expected_failure": 7926,
+        "success": 4358
+      },
+      "not_passed_count": 10843,
+      "passed_count": 1441
+    },
+    "reassign_owned": {
+      "case_count": 4081,
+      "classifications": {
+        "oracle_failure": 810,
+        "strict_pass": 633,
+        "unexpected_psql_error": 2638
+      },
+      "evidence_levels": {
+        "strict-contract": 4081
+      },
+      "expected_outcomes": {
+        "expected_failure": 2308,
+        "success": 1773
+      },
+      "not_passed_count": 3448,
+      "passed_count": 633
+    },
+    "refresh_materialized_view": {
+      "case_count": 1694,
+      "classifications": {
+        "oracle_failure": 432,
+        "strict_pass": 389,
+        "unexpected_psql_error": 873
+      },
+      "evidence_levels": {
+        "strict-contract": 1694
+      },
+      "expected_outcomes": {
+        "expected_failure": 1019,
+        "success": 675
+      },
+      "not_passed_count": 1305,
+      "passed_count": 389
+    },
+    "reindex": {
+      "case_count": 3575,
+      "classifications": {
+        "oracle_failure": 1518,
+        "strict_pass": 530,
+        "unexpected_psql_error": 1527
+      },
+      "evidence_levels": {
+        "strict-contract": 3575
+      },
+      "expected_outcomes": {
+        "expected_failure": 1856,
+        "success": 1719
+      },
+      "not_passed_count": 3045,
+      "passed_count": 530
+    },
+    "release_savepoint": {
+      "case_count": 1844,
+      "classifications": {
+        "oracle_failure": 240,
+        "strict_pass": 244,
+        "unexpected_psql_error": 1360
+      },
+      "evidence_levels": {
+        "strict-contract": 1844
+      },
+      "expected_outcomes": {
+        "expected_failure": 726,
+        "success": 1118
+      },
+      "not_passed_count": 1600,
+      "passed_count": 244
+    },
+    "reset": {
+      "case_count": 4266,
+      "classifications": {
+        "oracle_failure": 579,
+        "strict_pass": 3687
+      },
+      "evidence_levels": {
+        "strict-contract": 4266
+      },
+      "expected_outcomes": {
+        "expected_failure": 579,
+        "success": 3687
+      },
+      "not_passed_count": 579,
+      "passed_count": 3687
+    },
+    "revoke": {
+      "case_count": 6933,
+      "classifications": {
+        "not_strictly_judgeable": 360,
+        "observed_mismatch": 144,
+        "oracle_failure": 86,
+        "unexpected_psql_error": 6343
+      },
+      "evidence_levels": {
+        "observational-legacy": 6933
+      },
+      "expected_outcomes": {
+        "None": 86,
+        "expected_failure": 6308,
+        "success": 539
+      },
+      "not_passed_count": 6573,
+      "passed_count": 360
+    },
+    "rollback": {
+      "case_count": 1844,
+      "classifications": {
+        "oracle_failure": 604,
+        "strict_pass": 877,
+        "unexpected_psql_error": 363
+      },
+      "evidence_levels": {
+        "strict-contract": 1844
+      },
+      "expected_outcomes": {
+        "expected_failure": 726,
+        "success": 1118
+      },
+      "not_passed_count": 967,
+      "passed_count": 877
+    },
+    "rollback_prepared": {
+      "case_count": 12284,
+      "classifications": {
+        "strict_pass": 3604,
+        "unexpected_psql_error": 8680
+      },
+      "evidence_levels": {
+        "strict-contract": 12284
+      },
+      "expected_outcomes": {
+        "expected_failure": 7926,
+        "success": 4358
+      },
+      "not_passed_count": 8680,
+      "passed_count": 3604
+    },
+    "rollback_to_savepoint": {
+      "case_count": 1844,
+      "classifications": {
+        "oracle_failure": 240,
+        "strict_pass": 244,
+        "unexpected_psql_error": 1360
+      },
+      "evidence_levels": {
+        "strict-contract": 1844
+      },
+      "expected_outcomes": {
+        "expected_failure": 726,
+        "success": 1118
+      },
+      "not_passed_count": 1600,
+      "passed_count": 244
+    },
+    "savepoint": {
+      "case_count": 1844,
+      "classifications": {
+        "oracle_failure": 363,
+        "strict_pass": 395,
+        "unexpected_psql_error": 1086
+      },
+      "evidence_levels": {
+        "strict-contract": 1844
+      },
+      "expected_outcomes": {
+        "expected_failure": 726,
+        "success": 1118
+      },
+      "not_passed_count": 1449,
+      "passed_count": 395
+    },
+    "security_label": {
+      "case_count": 182,
+      "classifications": {
+        "oracle_failure": 53,
+        "unexpected_psql_error": 129
+      },
+      "evidence_levels": {
+        "strict-contract": 182
+      },
+      "expected_outcomes": {
+        "expected_failure": 61,
+        "success": 121
+      },
+      "not_passed_count": 182,
+      "passed_count": 0
+    },
+    "select": {
+      "case_count": 17715,
+      "classifications": {
+        "oracle_failure": 6147,
+        "strict_pass": 9263,
+        "unexpected_psql_error": 2305
+      },
+      "evidence_levels": {
+        "strict-contract": 17715
+      },
+      "expected_outcomes": {
+        "expected_failure": 13064,
+        "success": 4651
+      },
+      "not_passed_count": 8452,
+      "passed_count": 9263
+    },
+    "select_into": {
+      "case_count": 867,
+      "classifications": {
+        "oracle_failure": 5,
+        "strict_pass": 696,
+        "unexpected_psql_error": 166
+      },
+      "evidence_levels": {
+        "strict-contract": 867
+      },
+      "expected_outcomes": {
+        "expected_failure": 10,
+        "success": 857
+      },
+      "not_passed_count": 171,
+      "passed_count": 696
+    },
+    "set": {
+      "case_count": 5036,
+      "classifications": {
+        "oracle_failure": 579,
+        "strict_pass": 4457
+      },
+      "evidence_levels": {
+        "strict-contract": 5036
+      },
+      "expected_outcomes": {
+        "expected_failure": 579,
+        "success": 4457
+      },
+      "not_passed_count": 579,
+      "passed_count": 4457
+    },
+    "set_constraints": {
+      "case_count": 4266,
+      "classifications": {
+        "oracle_failure": 2439,
+        "strict_pass": 1827
+      },
+      "evidence_levels": {
+        "strict-contract": 4266
+      },
+      "expected_outcomes": {
+        "expected_failure": 579,
+        "success": 3687
+      },
+      "not_passed_count": 2439,
+      "passed_count": 1827
+    },
+    "set_role": {
+      "case_count": 5675,
+      "classifications": {
+        "oracle_failure": 771,
+        "strict_pass": 4904
+      },
+      "evidence_levels": {
+        "strict-contract": 5675
+      },
+      "expected_outcomes": {
+        "expected_failure": 771,
+        "success": 4904
+      },
+      "not_passed_count": 771,
+      "passed_count": 4904
+    },
+    "set_session_authorization": {
+      "case_count": 4266,
+      "classifications": {
+        "oracle_failure": 579,
+        "strict_pass": 3687
+      },
+      "evidence_levels": {
+        "strict-contract": 4266
+      },
+      "expected_outcomes": {
+        "expected_failure": 579,
+        "success": 3687
+      },
+      "not_passed_count": 579,
+      "passed_count": 3687
+    },
+    "set_transaction": {
+      "case_count": 2004,
+      "classifications": {
+        "unexpected_psql_error": 2004
+      },
+      "evidence_levels": {
+        "strict-contract": 2004
+      },
+      "expected_outcomes": {
+        "expected_failure": 1,
+        "success": 2003
+      },
+      "not_passed_count": 2004,
+      "passed_count": 0
+    },
+    "show": {
+      "case_count": 5036,
+      "classifications": {
+        "oracle_failure": 579,
+        "strict_pass": 3686,
+        "unexpected_psql_error": 771
+      },
+      "evidence_levels": {
+        "strict-contract": 5036
+      },
+      "expected_outcomes": {
+        "expected_failure": 579,
+        "success": 4457
+      },
+      "not_passed_count": 1350,
+      "passed_count": 3686
+    },
+    "start_transaction": {
+      "case_count": 1364,
+      "classifications": {
+        "oracle_failure": 245,
+        "strict_pass": 757,
+        "unexpected_psql_error": 362
+      },
+      "evidence_levels": {
+        "strict-contract": 1364
+      },
+      "expected_outcomes": {
+        "expected_failure": 967,
+        "success": 397
+      },
+      "not_passed_count": 607,
+      "passed_count": 757
+    },
+    "truncate": {
+      "case_count": 5813,
+      "classifications": {
+        "oracle_failure": 1,
+        "strict_pass": 4656,
+        "unexpected_psql_error": 1156
+      },
+      "evidence_levels": {
+        "strict-contract": 5813
+      },
+      "expected_outcomes": {
+        "expected_failure": 2312,
+        "success": 3501
+      },
+      "not_passed_count": 1157,
+      "passed_count": 4656
+    },
+    "unlisten": {
+      "case_count": 4266,
+      "classifications": {
+        "oracle_failure": 385,
+        "strict_pass": 3544,
+        "unexpected_psql_error": 337
+      },
+      "evidence_levels": {
+        "strict-contract": 4266
+      },
+      "expected_outcomes": {
+        "expected_failure": 386,
+        "success": 3880
+      },
+      "not_passed_count": 722,
+      "passed_count": 3544
+    },
+    "update": {
+      "case_count": 17714,
+      "classifications": {
+        "oracle_failure": 6147,
+        "strict_pass": 9262,
+        "unexpected_psql_error": 2305
+      },
+      "evidence_levels": {
+        "strict-contract": 17714
+      },
+      "expected_outcomes": {
+        "expected_failure": 13064,
+        "success": 4650
+      },
+      "not_passed_count": 8452,
+      "passed_count": 9262
+    },
+    "vacuum": {
+      "case_count": 1415,
+      "classifications": {
+        "oracle_failure": 437,
+        "strict_pass": 833,
+        "unexpected_psql_error": 145
+      },
+      "evidence_levels": {
+        "strict-contract": 1415
+      },
+      "expected_outcomes": {
+        "expected_failure": 943,
+        "success": 472
+      },
+      "not_passed_count": 582,
+      "passed_count": 833
+    },
+    "values": {
+      "case_count": 17713,
+      "classifications": {
+        "oracle_failure": 13064,
+        "strict_pass": 4649
+      },
+      "evidence_levels": {
+        "strict-contract": 17713
+      },
+      "expected_outcomes": {
+        "expected_failure": 13064,
+        "success": 4649
+      },
+      "not_passed_count": 13064,
+      "passed_count": 4649
+    }
+  }
+}

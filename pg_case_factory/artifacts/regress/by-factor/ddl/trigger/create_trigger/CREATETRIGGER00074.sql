@@ -1,0 +1,39 @@
+-- --------------------------------------------------------
+-- 版权所有(C)  2021-2030 华为技术有限公司
+--
+-- --
+-- author       : codex
+-- create at    : 2026-08-20
+-- version      : 1.0
+-- description  : CREATE TRIGGER trigger_event=INSERT_OR_UPDATE_OR_DELETE
+-- FE           : PG18-STATEMENT-FACTOR-LOOP
+-- ++
+-- --------------------------------------------------------
+-- case_id: CREATETRIGGER00074
+-- source_md: skills/pg-sql-generation/references/statements/ddl/trigger/create_trigger.md
+-- factor_md: skills/pg-sql-generation/references/combinations/ddl/trigger/create_trigger.yaml
+-- primary_obligation_id: CTRG-SFV|sfv-e3e9bb938b551bc94498ab3c|before_trigger
+-- expected_outcome: success
+-- expected_sqlstate: 00000
+-- 1. 清理本编号对象，保证脚本可重复执行。
+DROP TABLE IF EXISTS createtrigger_00074_tbl CASCADE;
+\set ON_ERROR_STOP on
+DROP FUNCTION IF EXISTS createtrigger_00074_fn() CASCADE;
+RESET ROLE;
+-- 2. 创建完整本地规则和因子专用夹具。
+CREATE TABLE createtrigger_00074_tbl (id integer, createtrigger_00074_col_a integer);
+CREATE FUNCTION createtrigger_00074_fn() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RETURN NEW; END; $$;
+-- 3. 执行唯一获得覆盖信用的 CREATE TRIGGER。
+-- primary-target-begin
+CREATE TRIGGER createtrigger_00074_trig BEFORE INSERT OR UPDATE OR DELETE ON createtrigger_00074_tbl FOR EACH ROW EXECUTE FUNCTION createtrigger_00074_fn();
+-- primary-target-end
+\set target_sqlstate :SQLSTATE
+\echo PGCF_TARGET_SQLSTATE=:target_sqlstate
+-- 4. 验证 SQLSTATE、目录状态和数据行为。
+SELECT :'target_sqlstate' = '00000' AS target_sqlstate_matches_expected;
+SELECT count(*) > 0 AS trigger_state FROM pg_catalog.pg_trigger WHERE tgname = 'createtrigger_00074_trig' ORDER BY count(*);
+-- 5. 清理全部本编号对象。
+RESET ROLE;
+DROP TRIGGER IF EXISTS createtrigger_00074_trig ON createtrigger_00074_tbl;
+DROP FUNCTION IF EXISTS createtrigger_00074_fn() CASCADE;
+DROP TABLE IF EXISTS createtrigger_00074_tbl CASCADE;

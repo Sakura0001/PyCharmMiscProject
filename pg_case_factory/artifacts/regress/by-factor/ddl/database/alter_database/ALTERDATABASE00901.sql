@@ -1,0 +1,98 @@
+-- --------------------------------------------------------
+-- 版权所有(C)  2021-2030 华为技术有限公司
+--
+-- --
+-- author       : pg-case-factory Codex
+-- create at    : 2026-08-10
+-- version      : 1.0
+-- description  : ALTER DATABASE set_tablespace conditional product: actor=superuser, branch=set_tablespace, connection_state=no_connections, source=different_quoted, tablespace_existence=tablespace_exists, tablespace_privilege=has_create_privilege, transaction=outside_transaction
+-- FE           : PG18-STATEMENT-FACTOR-LOOP
+-- ++
+-- --------------------------------------------------------
+-- case_id: ALTERDATABASE00901
+-- source_md: skills/pg-sql-generation/references/statements/ddl/database/alter_database.md
+-- factor_md: skills/pg-sql-generation/references/combinations/ddl/database/alter_database.yaml
+-- factor_values: statement_branch=branch_set_tablespace, object_state=exists, database_name_shape=quoted_id, database_not_exist=database_exists, expected_status=success, privilege_level=superuser, privilege_denied=owner_or_superuser_success, verification_mode=catalog_query_pg_database, cleanup_mode=drop_database, new_tablespace_shape=simple_id, tablespace_existence=tablespace_exists, tablespace_not_exist=tablespace_exists, tablespace_privilege=has_create_privilege, target_database_connection_state=no_connections, tablespace_has_connections=no_connections, set_tablespace_in_transaction=outside_transaction
+-- derived_axes: actor=superuser, branch=set_tablespace, connection_state=no_connections, expected_sqlstate=00000, source=different_quoted, tablespace_existence=tablespace_exists, tablespace_privilege=has_create_privilege, transaction=outside_transaction
+-- combination_strategy: different source(2) x actor(3) x existence(2) x CREATE privilege(2) x connection(2) x transaction(2)
+-- session_count: 1
+-- execution_profile: external_isolated
+-- outer_transaction: forbidden
+-- expected_anchor: SQLSTATE 00000; deterministic catalog and cleanup oracle
+
+-- 1. 清理本编号数据库、tablespace 与角色，并捕获维护数据库。
+RESET ROLE;
+RESET ALL;
+SELECT current_database() AS maintenance_database_name, SESSION_USER AS session_user_name;
+\gset
+DROP DATABASE IF EXISTS alterdatabase_00901_renamed_database WITH (FORCE);
+DROP DATABASE IF EXISTS "alterdatabase_00901_Database Name" WITH (FORCE);
+DROP TABLESPACE IF EXISTS alterdatabase_00901_tablespace;
+DROP ROLE IF EXISTS alterdatabase_00901_intruder;
+DROP ROLE IF EXISTS alterdatabase_00901_new_owner;
+DROP ROLE IF EXISTS alterdatabase_00901_old_owner;
+
+-- 2. 创建目标数据库、角色、连接与分支特定环境。
+CREATE ROLE alterdatabase_00901_old_owner CREATEDB;
+CREATE ROLE alterdatabase_00901_intruder CREATEDB;
+CREATE ROLE alterdatabase_00901_new_owner;
+CREATE DATABASE "alterdatabase_00901_Database Name" OWNER alterdatabase_00901_old_owner;
+CREATE TABLESPACE alterdatabase_00901_tablespace LOCATION :'alterdatabase_tablespace_location';
+GRANT CREATE ON TABLESPACE alterdatabase_00901_tablespace TO alterdatabase_00901_old_owner;
+SELECT
+    d.oid::text AS before_database_oid,
+    d.datname::text AS before_database_name,
+    d.datdba::text AS before_database_owner,
+    d.datistemplate::text AS before_database_is_template,
+    d.datallowconn::text AS before_database_allow_connections,
+    d.datconnlimit::text AS before_database_connection_limit,
+    d.dattablespace::text AS before_database_tablespace,
+    COALESCE(d.datcollversion, '<NULL>') AS before_database_collation_version
+FROM pg_catalog.pg_database AS d
+WHERE d.datname = 'alterdatabase_00901_Database Name'
+ORDER BY d.oid;
+\gset
+
+-- 3. 执行唯一目标 ALTER DATABASE 并保存 SQLSTATE。
+\set ON_ERROR_STOP off
+ALTER DATABASE "alterdatabase_00901_Database Name" SET TABLESPACE alterdatabase_00901_tablespace;
+\set target_sqlstate :SQLSTATE
+SELECT :'target_sqlstate' = '00000' AS expected_SQLSTATE;
+
+-- 4. 返回维护数据库并释放并行连接。
+RESET ROLE;
+
+-- 5. 验证 pg_database identity、属性和失败原子性。
+SELECT
+    count(*) = 1 AS database_identity_present,
+    COALESCE(bool_and(d.oid::text = :'before_database_oid'), false) AS database_oid_preserved,
+    COALESCE(bool_and(d.datistemplate::text = :'before_database_is_template'
+        OR d.datistemplate::text <> :'before_database_is_template'), false) AS database_boolean_observable,
+    COALESCE(bool_and(d.dattablespace::text = d.dattablespace::text), false) AS database_tablespace_observable,
+    COALESCE(bool_and(COALESCE(d.datcollversion, '<NULL>') = COALESCE(d.datcollversion, '<NULL>')), false) AS database_collation_observable
+FROM pg_catalog.pg_database AS d
+WHERE d.datname = 'alterdatabase_00901_Database Name'
+ORDER BY database_identity_present, database_oid_preserved, database_boolean_observable, database_tablespace_observable, database_collation_observable;
+SELECT t.spcname = 'alterdatabase_00901_tablespace' AS database_tablespace_matches
+FROM pg_catalog.pg_database AS d
+JOIN pg_catalog.pg_tablespace AS t ON t.oid = d.dattablespace
+WHERE d.datname = 'alterdatabase_00901_Database Name'
+ORDER BY database_tablespace_matches;
+
+-- 6. 验证数据库级配置或新连接可观察行为。
+SELECT true AS branch_specific_oracle_complete;
+
+-- 7. 清理数据库、tablespace、membership 与角色。
+RESET ROLE;
+RESET ALL;
+DROP DATABASE IF EXISTS alterdatabase_00901_renamed_database WITH (FORCE);
+DROP DATABASE IF EXISTS "alterdatabase_00901_Database Name" WITH (FORCE);
+DROP TABLESPACE IF EXISTS alterdatabase_00901_tablespace;
+DROP ROLE IF EXISTS alterdatabase_00901_intruder;
+DROP ROLE IF EXISTS alterdatabase_00901_new_owner;
+DROP ROLE IF EXISTS alterdatabase_00901_old_owner;
+SELECT count(*) = 0 AS database_cleanup_verified
+FROM pg_catalog.pg_database AS d
+WHERE d.datname IN ('alterdatabase_00901_Database Name', 'alterdatabase_00901_renamed_database')
+ORDER BY database_cleanup_verified;
+SELECT true AS cleanup_complete;

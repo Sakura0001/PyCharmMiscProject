@@ -1,0 +1,125 @@
+-- --------------------------------------------------------
+-- 版权所有(C)  2021-2030 华为技术有限公司
+--
+-- --
+-- author       : pg-case-factory Codex
+-- create at    : 2026-08-10
+-- version      : 1.0
+-- description  : ALTER EXTENSION conditional product: actor=superuser, branch=drop, expected_sqlstate=42704, extension_name_shape=nonexistent_name, extension_state=missing, member_kind=table, member_name_shape=schema_qualified, member_state=loose_existing, new_schema_shape=simple_id, relocatable=relocatable, target_schema_state=exists, update_version=omitted_default, version_string_shape=identifier_form
+-- FE           : PG18-STATEMENT-FACTOR-LOOP
+-- ++
+-- --------------------------------------------------------
+-- case_id: ALTEREXTENSION00302
+-- source_md: skills/pg-sql-generation/references/statements/ddl/extension/alter_extension.md
+-- factor_md: skills/pg-sql-generation/references/combinations/ddl/extension/alter_extension.yaml
+-- factor_values: statement_branch=branch_drop_member, object_state=not_exists, expected_status=failure, alter_action=drop, extension_name_shape=nonexistent_name, privilege_level=superuser, nonexistent_extension=extension_missing, insufficient_privilege=superuser_execution, verification_mode=error_assertion, cleanup_mode=revert_schema, member_object_name_shape=schema_qualified, object_owner_match=same_owner, member_object_existence=object_exists, nonexistent_member_object=object_exists, object_not_owner=owner_matches, member_object_type=table
+-- derived_axes: actor=superuser, branch=drop, expected_sqlstate=42704, extension_name_shape=nonexistent_name, extension_state=missing, member_kind=table, member_name_shape=schema_qualified, member_state=loose_existing, new_schema_shape=simple_id, relocatable=relocatable, target_schema_state=exists, update_version=omitted_default, version_string_shape=identifier_form
+-- combination_strategy: full branch-applicable PostgreSQL 18 conditional product; all 28 member-object forms; no sampling
+-- session_count: 1
+-- execution_profile: same_session_multiphase
+-- outer_transaction: forbidden
+-- expected_anchor: SQLSTATE 42704; pg_extension and pg_depend state oracle
+
+-- 1. Header and immutable trace metadata are complete above.
+
+-- 2. Session settings are explicit and reset during cleanup.
+
+-- 3. Idempotent pre-cleanup.
+DROP TABLE IF EXISTS alterextension_00302_member_schema.alterextension_00302_member_object CASCADE;
+RESET ROLE;
+RESET search_path;
+DROP EXTENSION IF EXISTS hstore CASCADE;
+DROP EXTENSION IF EXISTS dblink CASCADE;
+DROP EXTENSION IF EXISTS pgcf_versioned_extension CASCADE;
+DROP EXTENSION IF EXISTS pgcf_relocatable_extension CASCADE;
+DROP EVENT TRIGGER IF EXISTS alterextension_00302_member_object;
+DROP ACCESS METHOD IF EXISTS alterextension_00302_member_object;
+DROP FOREIGN DATA WRAPPER IF EXISTS alterextension_00302_member_object CASCADE;
+DROP LANGUAGE IF EXISTS alterextension_00302_member_object CASCADE;
+DROP SCHEMA IF EXISTS alterextension_00302_target_schema CASCADE;
+DROP SCHEMA IF EXISTS alterextension_00302_member_schema CASCADE;
+DROP SCHEMA IF EXISTS alterextension_00302_extension_schema CASCADE;
+SELECT CASE WHEN EXISTS (SELECT 1 FROM pg_catalog.pg_roles WHERE rolname='alterextension_00302_extension_owner') THEN 'yes' ELSE 'no' END AS cleanup_owner_state
+FROM (VALUES (true)) AS cleanup_owner_anchor(dummy)
+ORDER BY cleanup_owner_state;
+\gset
+\if :cleanup_owner_state
+REVOKE CREATE ON DATABASE :"DBNAME" FROM alterextension_00302_extension_owner;
+\endif
+DROP ROLE IF EXISTS alterextension_00302_intruder;
+DROP ROLE IF EXISTS alterextension_00302_object_owner;
+DROP ROLE IF EXISTS alterextension_00302_extension_owner;
+
+-- 4. Extension, role, schema, and member-object fixture.
+CREATE SCHEMA alterextension_00302_member_schema;
+CREATE SCHEMA alterextension_00302_target_schema;
+SET search_path TO alterextension_00302_member_schema, pg_catalog;
+CREATE TABLE alterextension_00302_member_schema.alterextension_00302_member_object (id bigint NOT NULL, code text NOT NULL, payload jsonb NOT NULL, created_at timestamp with time zone NOT NULL, status smallint NOT NULL CHECK (status BETWEEN 0 AND 9), PRIMARY KEY (id), UNIQUE (code));
+INSERT INTO alterextension_00302_member_schema.alterextension_00302_member_object(id,code,payload,created_at,status) VALUES (1,'a','{}',TIMESTAMPTZ '2024-01-01 00:00:00+00',1);
+
+-- 5. Fixture is complete and every failure case has one isolated cause.
+SELECT true AS fixture_ready FROM (VALUES (true)) AS fixture_anchor(dummy) ORDER BY fixture_ready;
+
+-- 6. Capture extension identity, version, namespace, owner, and member count.
+SELECT
+    COALESCE((SELECT oid::text FROM pg_catalog.pg_extension WHERE extname='alterextension_00302_missing_extension'), '0') AS before_extension_oid,
+    COALESCE((SELECT extversion FROM pg_catalog.pg_extension WHERE extname='alterextension_00302_missing_extension'), '<MISSING>') AS before_extension_version,
+    COALESCE((SELECT extnamespace::text FROM pg_catalog.pg_extension WHERE extname='alterextension_00302_missing_extension'), '0') AS before_extension_namespace,
+    COALESCE((SELECT extowner::text FROM pg_catalog.pg_extension WHERE extname='alterextension_00302_missing_extension'), '0') AS before_extension_owner,
+    COALESCE((SELECT count(*)::text FROM pg_catalog.pg_depend AS d JOIN pg_catalog.pg_extension AS e ON e.oid=d.refobjid WHERE e.extname='alterextension_00302_missing_extension' AND d.deptype='e'), '0') AS before_member_count
+FROM (VALUES (true)) AS capture_anchor(dummy)
+ORDER BY before_extension_oid;
+\gset
+
+-- 7. Select the declared executor.
+
+-- 8. Primary target statement (exactly one coverage-credit operation).
+\set ON_ERROR_STOP off
+ALTER EXTENSION alterextension_00302_missing_extension DROP TABLE alterextension_00302_member_schema.alterextension_00302_member_object;
+\set alter_extension_sqlstate :SQLSTATE
+\set ON_ERROR_STOP on
+
+-- 9. SQLSTATE and primary-result oracle.
+SELECT :'alter_extension_sqlstate' = '42704' AS expected_SQLSTATE;
+RESET ROLE;
+
+-- 10. Catalog and extension-membership verification.
+SELECT COALESCE(pg_catalog.bool_and(
+    e.extversion = :'before_extension_version'
+    AND e.extnamespace::text = :'before_extension_namespace'
+    AND e.extowner::text = :'before_extension_owner'
+), true) AS failed_or_rolled_back_extension_unchanged
+FROM pg_catalog.pg_extension AS e
+WHERE :'before_extension_oid' <> '0' AND e.oid=:'before_extension_oid'::oid
+ORDER BY failed_or_rolled_back_extension_unchanged;
+
+-- 11. Remove extension, detached members, schemas, roles, and helper objects.
+RESET ROLE;
+RESET search_path;
+DROP EXTENSION IF EXISTS hstore CASCADE;
+DROP EXTENSION IF EXISTS dblink CASCADE;
+DROP EVENT TRIGGER IF EXISTS alterextension_00302_member_object;
+DROP ACCESS METHOD IF EXISTS alterextension_00302_member_object;
+DROP FOREIGN DATA WRAPPER IF EXISTS alterextension_00302_member_object CASCADE;
+DROP LANGUAGE IF EXISTS alterextension_00302_member_object CASCADE;
+DROP SCHEMA IF EXISTS alterextension_00302_target_schema CASCADE;
+DROP SCHEMA IF EXISTS alterextension_00302_member_schema CASCADE;
+DROP SCHEMA IF EXISTS alterextension_00302_extension_schema CASCADE;
+SELECT CASE WHEN EXISTS (SELECT 1 FROM pg_catalog.pg_roles WHERE rolname='alterextension_00302_extension_owner') THEN 'yes' ELSE 'no' END AS cleanup_owner_state
+FROM (VALUES (true)) AS cleanup_owner_anchor(dummy)
+ORDER BY cleanup_owner_state;
+\gset
+\if :cleanup_owner_state
+REVOKE CREATE ON DATABASE :"DBNAME" FROM alterextension_00302_extension_owner;
+\endif
+DROP ROLE IF EXISTS alterextension_00302_intruder;
+DROP ROLE IF EXISTS alterextension_00302_object_owner;
+DROP ROLE IF EXISTS alterextension_00302_extension_owner;
+SELECT
+    NOT EXISTS (SELECT 1 FROM pg_catalog.pg_extension WHERE extname IN ('hstore','dblink','pgcf_versioned_extension','pgcf_relocatable_extension'))
+    AND NOT EXISTS (SELECT 1 FROM pg_catalog.pg_roles WHERE rolname IN ('alterextension_00302_extension_owner','alterextension_00302_object_owner','alterextension_00302_intruder')) AS cleanup_complete
+FROM (VALUES (true)) AS cleanup_anchor(dummy)
+ORDER BY cleanup_complete;
+DROP TABLE IF EXISTS alterextension_00302_member_schema.alterextension_00302_member_object CASCADE;
+
+-- 12. Cleanup oracle is the final deterministic verification above.

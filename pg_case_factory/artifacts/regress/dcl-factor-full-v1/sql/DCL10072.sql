@@ -1,0 +1,46 @@
+-- --------------------------------------------------------
+-- 版权所有(C)  2021-2030 华为技术有限公司
+--
+-- --
+-- author       : pg-case-factory Codex
+-- create at    : 2026-08-06
+-- version      : 1.0
+-- description  : Verify PostgreSQL 18.4 REVOKE branch branch_8 (routine) with scope=column_privilege
+-- FE           : PG18-CURSOR-DCL
+-- ++
+-- --------------------------------------------------------
+-- factor statement_branch=branch_8
+-- factor expected_status=failure
+-- factor privilege_scope=column_privilege
+-- factor grantee_shape=public
+-- factor grant_option_shape=grant_option
+-- factor grantor_shape=implicit_owner
+-- factor object_name_shape=missing_object
+-- factor role_name_shape=missing_role
+-- factor dependency_state=missing_dependency
+-- factor privilege_context=owner
+-- factor invalid_combination=object_type_mismatch
+-- factor ownership_boundary=member_role
+-- factor verification_mode=effect_query
+-- factor cleanup_mode=reset_state
+DROP ROLE IF EXISTS dcl_10072_grantor;
+DROP ROLE IF EXISTS dcl_10072_member;
+CREATE ROLE dcl_10072_grantor;
+CREATE ROLE dcl_10072_member;
+DROP FUNCTION IF EXISTS dcl_10072_function(integer);
+CREATE FUNCTION dcl_10072_function(value integer) RETURNS integer LANGUAGE SQL IMMUTABLE RETURN value;
+GRANT EXECUTE ON FUNCTION dcl_10072_missing_object(integer) TO PUBLIC;
+GRANT EXECUTE ON FUNCTION dcl_10072_missing_object(integer) TO dcl_10072_grantor WITH GRANT OPTION;
+GRANT dcl_10072_grantor TO dcl_10072_member WITH SET TRUE;
+SET ROLE dcl_10072_member;
+SET ROLE dcl_10072_grantor;
+REVOKE GRANT OPTION FOR EXECUTE ON FUNCTION dcl_10072_missing_object(integer) FROM PUBLIC RESTRICT;
+RESET ROLE;
+SELECT true AS privilege_effect_observed;
+RESET ROLE;
+RESET ALL;
+DROP FUNCTION IF EXISTS dcl_10072_function(integer);
+DROP OWNED BY dcl_10072_member;
+DROP OWNED BY dcl_10072_grantor;
+DROP ROLE IF EXISTS dcl_10072_member;
+DROP ROLE IF EXISTS dcl_10072_grantor;

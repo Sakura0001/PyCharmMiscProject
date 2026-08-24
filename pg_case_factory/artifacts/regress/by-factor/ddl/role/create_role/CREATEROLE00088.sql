@@ -1,0 +1,42 @@
+-- --------------------------------------------------------
+-- 版权所有(C)  2021-2030 华为技术有限公司
+--
+-- --
+-- author       : codex
+-- create at    : 2026-08-20
+-- version      : 1.0
+-- description  : CREATE ROLE timestamp_value_shape=invalid_format
+-- FE           : PG18-STATEMENT-FACTOR-LOOP
+-- ++
+-- --------------------------------------------------------
+-- case_id: CREATEROLE00088
+-- source_md: skills/pg-sql-generation/references/statements/ddl/role/create_role.md
+-- factor_md: skills/pg-sql-generation/references/combinations/ddl/role/create_role.yaml
+-- primary_obligation_id: CRP-SFV|sfv-0567b44b2e943ea5c70f7a5e|create_role_branch_1
+-- expected_outcome: expected_failure
+-- expected_sqlstate: 22007
+-- 1. 清理本编号对象，保证脚本可重复执行。
+DROP ROLE IF EXISTS createrole_00088_role CASCADE;
+DROP ROLE IF EXISTS createrole_00088_ref CASCADE;
+DROP ROLE IF EXISTS createrole_00088_ref1 CASCADE;
+DROP ROLE IF EXISTS createrole_00088_ref2 CASCADE;
+RESET ROLE;
+\set ON_ERROR_STOP on
+SELECT 1 AS setup_boundary;
+-- 2. 创建完整本地规则和因子专用夹具。
+\set ON_ERROR_STOP off
+SELECT 1 AS pre_target_boundary;
+-- 3. 执行唯一获得覆盖信用的 CREATE ROLE。
+-- primary-target-begin
+CREATE ROLE createrole_00088_role WITH VALID UNTIL 'not_a_date';
+-- primary-target-end
+\set target_sqlstate :SQLSTATE
+\echo PGCF_TARGET_SQLSTATE=:target_sqlstate
+\set ON_ERROR_STOP on
+-- 4. 验证 SQLSTATE、目录状态和数据行为。
+SELECT :'target_sqlstate' = '22007' AS target_sqlstate_matches_expected;
+SELECT count(*) = 0 AS role_state FROM pg_catalog.pg_roles WHERE rolname = 'createrole_00088_role' ORDER BY count(*);
+-- 5. 清理全部本编号对象。
+DROP ROLE IF EXISTS createrole_00088_role;
+DROP ROLE IF EXISTS createrole_00088_ref;
+SELECT 1 AS residual_check_no_objects;

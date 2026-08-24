@@ -1,0 +1,45 @@
+-- --------------------------------------------------------
+-- 版权所有(C)  2021-2030 华为技术有限公司
+--
+-- --
+-- author       : codex
+-- create at    : 2026-08-20
+-- version      : 1.0
+-- description  : CLUSTER privilege_level=insufficient_privilege
+-- FE           : PG18-STATEMENT-FACTOR-LOOP
+-- ++
+-- --------------------------------------------------------
+-- case_id: CLUSTER02053
+-- source_md: skills/pg-sql-generation/references/statements/ddl/table/cluster.md
+-- factor_md: skills/pg-sql-generation/references/combinations/ddl/table/cluster.yaml
+-- primary_obligation_id: CLUSTER-EXT|02053|pg_stat_progress_cluster|none
+-- expected_outcome: expected_failure
+-- expected_sqlstate: 42501
+-- 1. 清理本编号对象，保证脚本可重复执行。
+DROP TABLE IF EXISTS cluster_02053_sch.cluster_02053_t CASCADE;
+DROP SCHEMA IF EXISTS cluster_02053_sch CASCADE;
+DROP ROLE IF EXISTS cluster_02053_actor;
+\set ON_ERROR_STOP on
+-- 2. 创建完整本地表和因子专用夹具。
+CREATE SCHEMA cluster_02053_sch;
+CREATE ROLE cluster_02053_actor LOGIN NOSUPERUSER;
+CREATE TABLE cluster_02053_sch.cluster_02053_t (id integer);
+CREATE INDEX cluster_02053_i ON cluster_02053_sch.cluster_02053_t (id);
+SET ROLE cluster_02053_actor;
+\set ON_ERROR_STOP off
+-- 3. 执行唯一获得覆盖信用的 CLUSTER。
+-- primary-target-begin
+CLUSTER VERBOSE cluster_02053_sch.cluster_02053_t USING cluster_02053_i;
+-- primary-target-end
+\set target_sqlstate :SQLSTATE
+\echo PGCF_TARGET_SQLSTATE=:target_sqlstate
+\set ON_ERROR_STOP on
+-- 4. 验证 SQLSTATE、目录状态和数据行为。
+SELECT :'target_sqlstate' = '42501' AS target_sqlstate_matches_expected;
+SELECT count(*) AS progress_rows FROM pg_catalog.pg_stat_progress_cluster ORDER BY count(*);
+-- 5. 清理全部本编号对象。
+RESET ROLE;
+DROP SCHEMA IF EXISTS cluster_02053_sch CASCADE;
+DROP OWNED BY cluster_02053_actor;
+DROP ROLE IF EXISTS cluster_02053_actor;
+DROP TABLE IF EXISTS cluster_02053_sch.cluster_02053_t CASCADE;
