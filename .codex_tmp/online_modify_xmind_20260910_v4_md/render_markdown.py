@@ -165,6 +165,7 @@ def render_global_scope(workbook: list[dict[str, Any]]) -> str:
         "- 阿里环境作为主机功能对照；我方主机、备机分别对独立预期核验。",
         "- “全部覆盖”表示全局因子目录中所有兼容且适用的取值，"
         "不做无意义的全笛卡尔积；不适用/例外/专属子运行须显式说明。",
+        "- 每个场景是一组有 Run ID 的子运行，不是一条 SQL 或一次执行。",
         "",
         *_raw_block("源范围声明", source_note),
         "",
@@ -333,6 +334,9 @@ def render_scene(
         "",
         "#### 子运行组合",
         "",
+        f"- Run ID：`{scene['scene_id']}-Rnn`（首个为 "
+        f"`{scene['scene_id']}-R01`，nn 从 01 起按独立子运行递增；"
+        "每次执行唯一绑定一个 Run ID）。",
         "- 原第 4 节（必跑变体，无损保留）：",
         _render_topic_tree([sections[3]]),
         "",
@@ -340,6 +344,27 @@ def render_scene(
         "",
         "- 原第 2 节（执行顺序，无损保留）：",
         _render_topic_tree([sections[1]]),
+    ]
+    if scene["scene_id"] == "SC48":
+        lines.append(
+            "- 本场景执行闭环：只维护清单/契约交接，不执行 DDL、不计 PASS；"
+            "完成范围、负责人、依赖、证据入口和后续版本交接后归档。"
+        )
+    else:
+        lines.extend([
+            "- 统一执行闭环（每个 Run ID 独立完成）：",
+            "  1. 源态/环境核验：冻结版本、配置、源结构、源数据和依赖基线。",
+            "  2. 夹具与独立 Oracle：建立合法源夹具及不依赖被测实现的精确期望。",
+            "  3. 有界负载/事务：登记并发、次数、持续时间、资源、超时和停止条件。",
+            "  4. 按原步骤执行 DDL：保存原始 SQL、请求及实际算法和锁级别。",
+            "  5. 真实阶段证据：需要命中 DDL 阶段时以正式证据确认，否则 BLOCKED。",
+            "  6. 并发/故障动作：仅在已确认窗口执行场景规定动作并记录事务账本。",
+            "  7. 终态核验：逐项比对结构、数据、索引、约束、锁队列和任务状态。",
+            "  8. 适用副本追平：先确认复制位点，再按独立 Oracle 核验各副本。",
+            "  9. 观测与验收：逐条保存证据并按本场景判定条件给出 PASS/FAIL/BLOCKED。",
+            "  10. 停止、恢复、清理、归档：释放事务与资源，恢复可用态并归档 Run ID 证据。",
+        ])
+    lines.extend([
         "",
         "#### 观测点",
         "",
@@ -356,7 +381,7 @@ def render_scene(
         "",
         f"- 场景原始 topic ID：`{md_text(scene['topic_id'])}`",
         f"- 场景原始标题：{md_text(scene['title'])}",
-    ]
+    ])
     lines.extend(_raw_block("场景原始 notes", scene["notes"]))
     supplemental_links = "、".join(
         f"[{dimension['dimension_id']} {md_text(dimension['title'])}]"
@@ -379,6 +404,41 @@ def render_scene(
     if not scene["references"]:
         lines.append("  - （无）")
     return "\n".join(lines)
+
+
+def _render_scene_families(
+    workbook: list[dict[str, Any]],
+    scenes: list[dict[str, Any]],
+    dimensions: list[dict[str, Any]],
+    policies: dict[str, dict[str, Any]],
+) -> list[str]:
+    by_topic_id = {scene["topic_id"]: scene for scene in scenes}
+    rendered: list[str] = []
+    rendered_scene_ids: list[str] = []
+    family_counts: list[int] = []
+    for family in _children(workbook[1]["rootTopic"]):
+        family_scenes = [
+            by_topic_id[topic["id"]]
+            for topic in _children(family)
+            if topic.get("id") in by_topic_id
+        ]
+        if not family_scenes:
+            continue
+        family_counts.append(len(family_scenes))
+        rendered.append(f"### 场景族：{md_text(family.get('title', ''))}")
+        for scene in family_scenes:
+            rendered_scene_ids.append(scene["scene_id"])
+            rendered.append(render_scene(
+                scene,
+                policies[scene["scene_id"]],
+                dimensions,
+            ))
+    expected_scene_ids = [scene["scene_id"] for scene in scenes]
+    if family_counts != [10, 8, 6, 6, 7, 7, 3, 1]:
+        raise ValueError(f"unexpected source scene family counts: {family_counts}")
+    if rendered_scene_ids != expected_scene_ids:
+        raise ValueError("source scene families do not preserve SC01–SC48 source order")
+    return rendered
 
 
 def render_source_appendix(workbook: list[dict[str, Any]]) -> str:
@@ -433,6 +493,7 @@ def render_document(
 
     dimensions = _dimension_records(workbook)
     scenes = find_scenes(workbook)
+    scene_families = _render_scene_families(workbook, scenes, dimensions, policies)
     parts = [
         "\n".join([
             "# RDS MySQL 8.0.45 测试计划 V4 · 场景化完整覆盖版",
@@ -443,7 +504,7 @@ def render_document(
         render_global_scope(workbook),
         render_factor_catalog(workbook),
         "## 48 综合场景",
-        *[render_scene(scene, policies[scene["scene_id"]], dimensions) for scene in scenes],
+        *scene_families,
         render_source_appendix(workbook),
     ]
     stats = source_stats(workbook)
@@ -455,6 +516,15 @@ def render_document(
         f"- {stats['scenes']} 个场景。",
         f"- {stats['topics']} 个 topic，且每个 topic anchor 唯一。",
         f"- {len(scenes) * 8} 个场景小节；每场景恰好 8 节、9 类覆盖因子。",
+        "- 497 个维度直接节点。",
+        "- 18 个子分类容器。",
+        "- 36 个嵌套实际值。",
+        "- 515 个可执行值（排除子分类容器）。",
+        "- 302 个检查点。",
+        "- 1602 个用例。",
+        "- 155 个语法。",
+        "- 35 个公共因子。",
+        "- 16 个契约。",
         "- 所有 xmind 内部链接均转换为本文 topic anchor，同时显示原始 href。",
     ]))
     return "\n\n".join(part.strip("\n") for part in parts) + "\n"
@@ -463,6 +533,8 @@ def render_document(
 def main() -> None:
     workbook = load_xmind(SOURCE_XMIND)
     OUTPUT_MARKDOWN.write_text(render_document(workbook), encoding="utf-8")
+    stats = source_stats(workbook)
+    print(f"{stats['sheets']} sheets/{stats['scenes']} scenes")
 
 
 if __name__ == "__main__":

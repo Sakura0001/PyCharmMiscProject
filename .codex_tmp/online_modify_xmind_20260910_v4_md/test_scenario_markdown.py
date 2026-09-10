@@ -32,6 +32,7 @@ try:
         _raw_block,
         _render_topic_tree,
         _walk_with_depth,
+        main as render_main,
         md_anchor,
         md_text,
         render_document,
@@ -47,7 +48,7 @@ except ModuleNotFoundError as exc:
         raise
     RENDER_OUTPUT_MARKDOWN = RENDER_SOURCE_XMIND = None
     _raw_block = _render_topic_tree = _walk_with_depth = None
-    md_anchor = md_text = render_document = render_factor_catalog = None
+    md_anchor = md_text = render_document = render_factor_catalog = render_main = None
     render_factor_table = render_global_scope = render_observations = None
     render_scene = render_source_appendix = None
 
@@ -658,6 +659,73 @@ class MarkdownRendererTests(unittest.TestCase):
                 "不适用/例外/专属子运行须显式说明",
         ):
             self.assertIn(term, scope)
+        self.assertIn(
+            "每个场景是一组有 Run ID 的子运行，不是一条 SQL 或一次执行",
+            scope,
+        )
+
+    def test_source_scene_families_wrap_scenes_with_exact_counts_and_order(self):
+        expected = (
+            ("01 从核心业务扩容讲起（10组）", 10),
+            ("02 叠加索引与生成列（8组）", 8),
+            ("03 叠加外键与分区（6组）", 6),
+            ("04 叠加同句动作和少见语法（6组）", 6),
+            ("05 叠加并发、事务和唯一键冲突（7组）", 7),
+            ("06 叠加主备、故障和恢复（7组）", 7),
+            ("07 验证性能并形成结论（3组）", 3),
+            ("08 保留后续范围（1组）", 1),
+        )
+        headings = list(re.finditer(r"(?m)^### 场景族：(.+)$", self.document))
+        self.assertEqual([title for title, _ in expected], [
+            heading.group(1) for heading in headings
+        ])
+        appendix_start = self.document.index("## 完整 3-Sheet 来源附录")
+        source_scene_order = []
+        for index, (heading, (title, expected_count)) in enumerate(
+                zip(headings, expected)):
+            end = headings[index + 1].start() if index + 1 < len(headings) \
+                else appendix_start
+            family_block = self.document[heading.start():end]
+            scene_ids = re.findall(r"(?m)^### (SC\d{2}) .+ \[P[012]\]$", family_block)
+            self.assertEqual(expected_count, len(scene_ids), title)
+            source_scene_order.extend(scene_ids)
+        self.assertEqual(
+            [f"SC{number:02d}" for number in range(1, 49)],
+            source_scene_order,
+        )
+
+    def test_each_scene_has_a_run_id_rule_and_an_applicable_execution_closure(self):
+        closure_terms = (
+            "源态/环境核验",
+            "夹具与独立 Oracle",
+            "有界负载/事务",
+            "按原步骤执行 DDL",
+            "真实阶段证据",
+            "否则 BLOCKED",
+            "并发/故障动作",
+            "终态核验",
+            "适用副本追平",
+            "观测与验收",
+            "停止、恢复、清理、归档",
+        )
+        for number in range(1, 49):
+            scene_id = f"SC{number:02d}"
+            block = self._scene_block(scene_id)
+            combinations = block.split("#### 子运行组合", 1)[1].split(
+                "#### 执行步骤", 1
+            )[0]
+            self.assertIn(f"Run ID：`{scene_id}-Rnn`", combinations, scene_id)
+            self.assertIn(f"首个为 `{scene_id}-R01`", combinations, scene_id)
+            execution = block.split("#### 执行步骤", 1)[1].split(
+                "#### 观测点", 1
+            )[0]
+            if scene_id == "SC48":
+                for term in ("只维护清单/契约交接", "不执行 DDL", "不计 PASS"):
+                    self.assertIn(term, execution, (scene_id, term))
+                self.assertNotIn("按原步骤执行 DDL", execution)
+            else:
+                for term in closure_terms:
+                    self.assertIn(term, execution, (scene_id, term))
 
     def test_sc01_preserves_all_seven_source_sections_note_id_and_references(self):
         source = self.scenes[0]
@@ -888,6 +956,31 @@ class MarkdownRendererTests(unittest.TestCase):
         for term in ("3 张 Sheet", "96 个维度", "48 个场景", "7317 个 topic",
                      "384 个场景小节"):
             self.assertIn(term, self.document)
+
+    def test_integrity_summary_contains_all_source_inventory_counts(self):
+        summary = self.document.split("## 完整性摘要", 1)[1]
+        for exact_line in (
+            "- 497 个维度直接节点。",
+            "- 18 个子分类容器。",
+            "- 36 个嵌套实际值。",
+            "- 515 个可执行值（排除子分类容器）。",
+            "- 302 个检查点。",
+            "- 1602 个用例。",
+            "- 155 个语法。",
+            "- 35 个公共因子。",
+            "- 16 个契约。",
+        ):
+            self.assertIn(exact_line, summary)
+
+    def test_render_main_prints_exact_sheet_and_scene_counts_on_success(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "rendered.md"
+            with patch("render_markdown.SOURCE_XMIND", SOURCE_XMIND), \
+                    patch("render_markdown.OUTPUT_MARKDOWN", output), \
+                    patch("builtins.print") as printer:
+                render_main()
+            self.assertTrue(output.is_file())
+            printer.assert_called_once_with("3 sheets/48 scenes")
 
 
 class MarkdownVerifierApiTests(unittest.TestCase):
@@ -1364,6 +1457,72 @@ class ScenarioPolicyTests(unittest.TestCase):
                 "非严格模式", "IGNORE", "失败语句", "显式 ROLLBACK",
                 "此前成功语句", "BLOCKED"):
             self.assertIn(term, text, ("SC17", term))
+
+    def test_sc19_and_sc20_split_fk_actions_and_close_lock_contracts(self):
+        for scene_id in ("SC19", "SC20"):
+            policy = SCENARIO_POLICIES[scene_id]
+            prerequisites = "；".join(policy["prerequisites"])
+            scopes = "；".join(
+                value
+                for scope in policy["factor_scopes"].values()
+                for value in scope.values()
+            )
+            observations = "；".join(
+                value
+                for point in policy["observation_points"]
+                for value in point.values()
+            )
+            acceptance = "；".join(policy["acceptance_additions"])
+            for field_name, text in (
+                    ("prerequisites", prerequisites),
+                    ("factor scopes", scopes),
+                    ("observations", observations),
+                    ("acceptance", acceptance)):
+                for term in ("RESTRICT/NO ACTION", "CASCADE/SET NULL", "独立夹具"):
+                    self.assertIn(term, text, (scene_id, field_name, term))
+
+            self.assertRegex(prerequisites, r"SET NULL[^；]*nullable")
+            for text in (scopes, observations, acceptance):
+                for term in ("冻结契约", "锁级别", "BLOCKED", "LOCK=NONE", "准确拒绝"):
+                    self.assertIn(term, text, (scene_id, term))
+            for term in (
+                    "原请求", "errno/SQLSTATE", "实际算法/锁", "前后定义",
+                    "不能改锁重报正向"):
+                self.assertIn(term, observations, (scene_id, term))
+
+    def test_sc35_has_two_independent_runs_with_disjoint_ddl_outcomes(self):
+        policy = SCENARIO_POLICIES["SC35"]
+        goal = policy["goal"]
+        prerequisites = "；".join(policy["prerequisites"])
+        scopes = "；".join(
+            value
+            for scope in policy["factor_scopes"].values()
+            for value in scope.values()
+        )
+        observations = "；".join(
+            value
+            for point in policy["observation_points"]
+            for value in point.values()
+        )
+        acceptance = "；".join(policy["acceptance_additions"])
+
+        for text in (goal, prerequisites, scopes, observations, acceptance):
+            self.assertIn("子运行 A", text)
+            self.assertIn("子运行 B", text)
+        for term in (
+                "已访问目标表/持 MDL", "DDL", "新业务", "三段队列",
+                "正式取消", "队列恢复"):
+            self.assertIn(term, prerequisites, ("A", term))
+        for term in (
+                "旧 read view", "未访问目标表", "真实重建 DDL 成功",
+                "首次 SELECT", "1412/HY000", "显式 ROLLBACK", "新事务重读"):
+            self.assertIn(term, prerequisites, ("B", term))
+        self.assertIn("子运行 B 不得取消 DDL", prerequisites)
+        self.assertIn("取消/三段队列只约束子运行 A", scopes)
+        self.assertIn("子运行 B 不得取消 DDL", scopes)
+        self.assertIn("1412/HY000", observations)
+        self.assertIn("新事务重读数据正确", observations)
+        self.assertIn("子运行 B 不得取消 DDL", acceptance)
 
     def test_all_scenarios_have_complete_policies(self):
         expected = {f"SC{i:02d}" for i in range(1, 49)}
