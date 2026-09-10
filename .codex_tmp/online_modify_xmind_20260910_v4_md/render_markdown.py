@@ -54,12 +54,21 @@ def md_anchor(value: Any) -> str:
     return slug
 
 
-def _raw_block(label: str, content: str) -> list[str]:
+def _raw_block(label: str, content: str, indent: str = "") -> list[str]:
     if not content:
-        return [f"**{label}：**（无）"]
-    longest = max((len(run) for run in re.findall(r"`+", content)), default=0)
+        return [f"{indent}**{label}：**（无）"]
+    longest = max(
+        (len(match.group(0)) for match in re.finditer(r"`+", content)),
+        default=0,
+    )
     fence = "`" * max(3, longest + 1)
-    return [f"**{label}：**", "", f"{fence}text", content, fence]
+    return [
+        f"{indent}**{label}：**",
+        indent,
+        f"{indent}{fence}text",
+        *(f"{indent}{line}" for line in content.split("\n")),
+        f"{indent}{fence}",
+    ]
 
 
 def _href_markdown(href: str) -> str:
@@ -81,9 +90,12 @@ def _children(topic: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def _walk_with_depth(topic: dict[str, Any], depth: int = 0) -> Iterator[tuple[dict[str, Any], int]]:
-    yield topic, depth
-    for child in _children(topic):
-        yield from _walk_with_depth(child, depth + 1)
+    stack = [(topic, depth)]
+    while stack:
+        current, current_depth = stack.pop()
+        yield current, current_depth
+        for child in reversed(_children(current)):
+            stack.append((child, current_depth + 1))
 
 
 def _dimension_records(workbook: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -167,21 +179,32 @@ def render_global_scope(workbook: list[dict[str, Any]]) -> str:
     return "\n".join(lines)
 
 
-def _render_catalog_value(value: dict[str, Any], position: int) -> list[str]:
+def _is_subcategory(value: dict[str, Any]) -> bool:
+    note = topic_note(value)
+    return "本维度：" in note and "子分类：" in note
+
+
+def _render_catalog_value(
+    value: dict[str, Any],
+    position: str | int,
+    *,
+    label: str = "直接取值",
+    indent: str = "",
+) -> list[str]:
     lines = [
-        f"- 直接取值 {position}：{md_text(value.get('title', ''))}",
-        f"  - 原始 ID：`{md_text(value.get('id', ''))}`",
+        f"{indent}- {label} {position}：{md_text(value.get('title', ''))}",
+        f"{indent}  - 原始 ID：`{md_text(value.get('id', ''))}`",
     ]
-    lines.extend(_raw_block("取值 notes", topic_note(value)))
+    lines.extend(_raw_block("取值 notes", topic_note(value), indent=f"{indent}    "))
     if value.get("href"):
-        lines.append(f"- 原始 href：{_href_markdown(value['href'])}")
+        lines.append(f"{indent}  - 原始 href：{_href_markdown(value['href'])}")
     else:
-        lines.append("- 原始 href：（无）")
+        lines.append(f"{indent}  - 原始 href：（无）")
     return lines
 
 
 def render_factor_catalog(workbook: list[dict[str, Any]]) -> str:
-    """Render the 96 source dimensions and their direct values."""
+    """Render all executable values and structural subcategories for 96 dimensions."""
 
     lines = [
         "## 96 维度目录",
@@ -206,7 +229,19 @@ def render_factor_catalog(workbook: list[dict[str, Any]]) -> str:
             lines.append("- 原始 href：（无）")
         lines.append(f"- 直接取值数：{len(dimension['values'])}")
         for position, value in enumerate(dimension["values"], start=1):
-            lines.extend(_render_catalog_value(value, position))
+            if _is_subcategory(value):
+                lines.extend(_render_catalog_value(value, position, label="子分类"))
+                for actual_position, actual_value in enumerate(
+                    _children(value), start=1
+                ):
+                    lines.extend(_render_catalog_value(
+                        actual_value,
+                        f"{position}.{actual_position}",
+                        label="实际取值",
+                        indent="  ",
+                    ))
+            else:
+                lines.extend(_render_catalog_value(value, position))
     return "\n".join(lines)
 
 
@@ -219,7 +254,11 @@ def _render_topic_tree(topics: Iterable[dict[str, Any]]) -> str:
             lines.append(f"{indent}  - 原始 ID：`{md_text(topic.get('id', ''))}`")
             note = topic_note(topic)
             if note:
-                lines.extend(_raw_block(f"topic {topic.get('id', '')} notes", note))
+                lines.extend(_raw_block(
+                    f"topic {topic.get('id', '')} notes",
+                    note,
+                    indent=f"{indent}    ",
+                ))
             else:
                 lines.append(f"{indent}  - notes：（无）")
             if topic.get("href"):

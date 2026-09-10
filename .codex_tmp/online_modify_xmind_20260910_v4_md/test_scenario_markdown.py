@@ -29,6 +29,9 @@ try:
     from render_markdown import (
         OUTPUT_MARKDOWN as RENDER_OUTPUT_MARKDOWN,
         SOURCE_XMIND as RENDER_SOURCE_XMIND,
+        _raw_block,
+        _render_topic_tree,
+        _walk_with_depth,
         md_anchor,
         md_text,
         render_document,
@@ -43,6 +46,7 @@ except ModuleNotFoundError as exc:
     if exc.name != "render_markdown":
         raise
     RENDER_OUTPUT_MARKDOWN = RENDER_SOURCE_XMIND = None
+    _raw_block = _render_topic_tree = _walk_with_depth = None
     md_anchor = md_text = render_document = render_factor_catalog = None
     render_factor_table = render_global_scope = render_observations = None
     render_scene = render_source_appendix = None
@@ -488,6 +492,60 @@ class RendererApiTests(unittest.TestCase):
         self.assertTrue(all(callable(function) for function in functions),
                         "render_markdown API is not implemented")
 
+    def test_raw_block_and_topic_tree_indent_every_commonmark_line(self):
+        self.assertEqual([
+            "    **notes：**",
+            "    ",
+            "    ````text",
+            "    first",
+            "    ```",
+            "    last",
+            "    ````",
+        ], _raw_block("notes", "first\n```\nlast", indent="    "))
+
+        topic = {
+            "id": "root",
+            "title": "Root",
+            "notes": {"plain": {"content": "root line 1\nroot line 2"}},
+            "children": {"attached": [{
+                "id": "child",
+                "title": "Child",
+                "notes": {"plain": {"content": "child note"}},
+            }]},
+        }
+        self.assertEqual("\n".join([
+            "- 标题：Root",
+            "  - 原始 ID：`root`",
+            "    **topic root notes：**",
+            "    ",
+            "    ```text",
+            "    root line 1",
+            "    root line 2",
+            "    ```",
+            "  - 原始 href：（无）",
+            "  - 标题：Child",
+            "    - 原始 ID：`child`",
+            "      **topic child notes：**",
+            "      ",
+            "      ```text",
+            "      child note",
+            "      ```",
+            "    - 原始 href：（无）",
+        ]), _render_topic_tree([topic]))
+
+    def test_walk_with_depth_is_iterative_and_preserves_deep_dfs_order(self):
+        root = {"id": "topic-0000", "title": "0"}
+        current = root
+        for number in range(1, 1501):
+            child = {"id": f"topic-{number:04d}", "title": str(number)}
+            current["children"] = {"attached": [child]}
+            current = child
+
+        visited = list(_walk_with_depth(root))
+        self.assertEqual(1501, len(visited))
+        self.assertEqual(("topic-0000", 0), (visited[0][0]["id"], visited[0][1]))
+        self.assertEqual(("topic-1500", 1500), (visited[-1][0]["id"], visited[-1][1]))
+
 
 @unittest.skipIf(render_document is None, "render_markdown API is not implemented")
 class MarkdownRendererTests(unittest.TestCase):
@@ -602,7 +660,8 @@ class MarkdownRendererTests(unittest.TestCase):
                 self.assertIn(md_text(topic["title"]), block)
                 note = topic_note(topic)
                 if note:
-                    self.assertIn(note, block)
+                    for note_line in note.splitlines():
+                        self.assertIn(note_line, block)
                 if topic.get("href"):
                     self.assertIn(topic["href"], block)
         for reference in source["references"]:
@@ -624,9 +683,96 @@ class MarkdownRendererTests(unittest.TestCase):
         self.assertIn(topic_note(dimension), catalog)
         for value in dimension["children"]["attached"]:
             self.assertIn(md_text(value["title"]), catalog)
-            self.assertIn(topic_note(value), catalog)
+            for note_line in topic_note(value).splitlines():
+                self.assertIn(note_line, catalog)
             if value.get("href"):
                 self.assertIn(value["href"], catalog)
+
+    def test_factor_catalog_distinguishes_18_subcategories_and_36_actual_values(self):
+        dimensions = {}
+        for topic in walk_topic(self.workbook[0]["rootTopic"]):
+            match = re.search(
+                r"(?m)^维度编号：\s*([A-I]\d{2})\s*$", topic_note(topic)
+            )
+            if match:
+                dimensions[match.group(1)] = topic
+        self.assertEqual(96, len(dimensions))
+
+        expected_nested_counts = {
+            "C08": 9,
+            "C09": 7,
+            "C13": 7,
+            "C14": 8,
+            "C19": 5,
+        }
+        containers = []
+        nested_values = []
+        executable_values = []
+        for dimension_id, dimension in dimensions.items():
+            dimension_nested = []
+            direct_values = dimension.get("children", {}).get("attached", [])
+            for direct_position, value in enumerate(direct_values, start=1):
+                note = topic_note(value)
+                if "本维度：" in note and "子分类：" in note:
+                    containers.append((dimension_id, direct_position, value))
+                    actual_values = value.get("children", {}).get("attached", [])
+                    for actual_position, actual_value in enumerate(actual_values, start=1):
+                        record = (
+                            dimension_id,
+                            direct_position,
+                            actual_position,
+                            actual_value,
+                        )
+                        nested_values.append(record)
+                        dimension_nested.append(record)
+                        executable_values.append(actual_value)
+                else:
+                    executable_values.append(value)
+            if dimension_id in expected_nested_counts:
+                self.assertEqual(
+                    expected_nested_counts[dimension_id],
+                    len(dimension_nested),
+                    dimension_id,
+                )
+            else:
+                self.assertEqual([], dimension_nested, dimension_id)
+
+        self.assertEqual(18, len(containers))
+        self.assertEqual(36, len(nested_values))
+        self.assertEqual(515, len(executable_values))
+
+        catalog = render_factor_catalog(self.workbook)
+        self.assertEqual(
+            18,
+            len(re.findall(r"(?m)^- 子分类 \d+：", catalog)),
+        )
+        self.assertEqual(
+            36,
+            len(re.findall(r"(?m)^  - 实际取值 \d+\.\d+：", catalog)),
+        )
+        self.assertEqual(
+            515,
+            len(re.findall(r"(?m)^\s*- (?:直接取值|实际取值) ", catalog)),
+        )
+
+        for dimension_id, position, container in containers:
+            self.assertIn(
+                f"- 子分类 {position}：{md_text(container['title'])}", catalog
+            )
+            self.assertIn(
+                f"  - 原始 ID：`{md_text(container['id'])}`", catalog
+            )
+            for note_line in topic_note(container).splitlines():
+                self.assertIn(f"    {note_line}", catalog)
+        for dimension_id, parent_position, position, value in nested_values:
+            self.assertIn(
+                f"  - 实际取值 {parent_position}.{position}："
+                f"{md_text(value['title'])}",
+                catalog,
+            )
+            self.assertIn(f"    - 原始 ID：`{md_text(value['id'])}`", catalog)
+            for note_line in topic_note(value).splitlines():
+                self.assertIn(f"      {note_line}", catalog)
 
     def test_supplemental_dimensions_are_linked_by_id_and_name(self):
         expected = {
@@ -645,11 +791,38 @@ class MarkdownRendererTests(unittest.TestCase):
         }, SUPPLEMENTAL_DIMENSIONS_BY_SCENE)
         for identifier, dimensions in expected.items():
             block = self._scene_block(identifier)
+            coverage = block.split("#### 覆盖因子", maxsplit=1)[1].split(
+                "#### 子运行组合", maxsplit=1
+            )[0]
             traceability = block.split("#### 来源与追溯", maxsplit=1)[1]
             for dimension_id, title in dimensions:
                 link = f"[{dimension_id} {title}](#dimension-{dimension_id.lower()})"
-                self.assertIn(link, block)
+                self.assertIn(link, coverage)
                 self.assertIn(link, traceability)
+
+    def test_scene_coverage_dimension_union_is_exactly_the_96_catalog_dimensions(self):
+        catalog_ids = set(re.findall(
+            r'<a id="dimension-([a-i]\d{2})"></a>',
+            render_factor_catalog(self.workbook),
+        ))
+        self.assertEqual(96, len(catalog_ids))
+
+        linked_ids = set()
+        for scene_number in range(1, 49):
+            block = self._scene_block(f"SC{scene_number:02d}")
+            coverage = block.split("#### 覆盖因子", maxsplit=1)[1].split(
+                "#### 子运行组合", maxsplit=1
+            )[0]
+            links = re.findall(
+                r"\[([A-I]\d{2}) [^\]]+\]\(#dimension-([a-i]\d{2})\)",
+                coverage,
+            )
+            self.assertTrue(links, f"SC{scene_number:02d}")
+            for label_id, target_id in links:
+                self.assertEqual(label_id.lower(), target_id)
+                self.assertIn(target_id, catalog_ids)
+                linked_ids.add(target_id)
+        self.assertEqual(catalog_ids, linked_ids)
 
     def test_source_appendix_has_every_topic_anchor_once_and_all_sheet_roots(self):
         anchors = re.findall(r'<a id="topic-([^"]+)"></a>', self.document)
