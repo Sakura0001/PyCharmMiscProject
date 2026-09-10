@@ -56,6 +56,14 @@ try:
 except (ImportError, ModuleNotFoundError):
     SUPPLEMENTAL_DIMENSIONS_BY_SCENE = None
 
+try:
+    from verify_markdown import EXPECTED_SOURCE_SHA256, verify
+except ModuleNotFoundError as exc:
+    if exc.name != "verify_markdown":
+        raise
+    EXPECTED_SOURCE_SHA256 = None
+    verify = None
+
 
 SOURCE_XMIND = Path(
     "/Users/yuyu/PyCharmMiscProject/outputs/online_modify_xmind_20260910_v3/"
@@ -879,6 +887,144 @@ class MarkdownRendererTests(unittest.TestCase):
         for term in ("3 张 Sheet", "96 个维度", "48 个场景", "7317 个 topic",
                      "384 个场景小节"):
             self.assertIn(term, self.document)
+
+
+class MarkdownVerifierApiTests(unittest.TestCase):
+    def test_verifier_public_api_is_available(self):
+        self.assertTrue(callable(verify), "verify_markdown API is not implemented")
+        self.assertEqual(
+            "8e2b1b212c52eb8c9456b83cba66dfcb8a9e2e85430addb376b270e6e4ced978",
+            EXPECTED_SOURCE_SHA256,
+        )
+
+
+@unittest.skipIf(verify is None, "verify_markdown API is not implemented")
+class MarkdownVerifierTests(unittest.TestCase):
+    REPORT_KEYS = {
+        "source_sha256",
+        "source_unchanged",
+        "sheet_count",
+        "topic_count",
+        "scenario_count",
+        "scenario_priorities",
+        "dimension_count",
+        "original_check_count",
+        "original_case_count",
+        "syntax_count",
+        "common_factor_count",
+        "contract_count",
+        "missing_required_sections",
+        "missing_source_ids",
+        "unmapped_dimension_ids",
+        "duplicate_scene_ids",
+        "broken_internal_links",
+        "placeholder_hits",
+        "errors",
+    }
+
+    @classmethod
+    def setUpClass(cls):
+        cls.workbook = load_xmind(SOURCE_XMIND)
+        cls.document = render_document(cls.workbook)
+        cls.report = verify(SOURCE_XMIND, cls.document)
+
+    def _assert_rejected(self, markdown_text):
+        report = verify(SOURCE_XMIND, markdown_text)
+        self.assertEqual(self.REPORT_KEYS, set(report))
+        self.assertTrue(report["errors"], report)
+        return report
+
+    def test_complete_render_is_accepted_with_exact_independent_source_counts(self):
+        self.assertEqual(self.REPORT_KEYS, set(self.report))
+        self.assertEqual(EXPECTED_SOURCE_SHA256, self.report["source_sha256"])
+        self.assertTrue(self.report["source_unchanged"])
+        self.assertEqual(3, self.report["sheet_count"])
+        self.assertEqual(7317, self.report["topic_count"])
+        self.assertEqual(48, self.report["scenario_count"])
+        self.assertEqual(
+            {"P0": 44, "P1": 3, "P2": 1},
+            self.report["scenario_priorities"],
+        )
+        self.assertEqual(96, self.report["dimension_count"])
+        self.assertEqual(302, self.report["original_check_count"])
+        self.assertEqual(1602, self.report["original_case_count"])
+        self.assertEqual(155, self.report["syntax_count"])
+        self.assertEqual(35, self.report["common_factor_count"])
+        self.assertEqual(16, self.report["contract_count"])
+        for key in (
+                "missing_required_sections", "missing_source_ids",
+                "unmapped_dimension_ids", "duplicate_scene_ids",
+                "broken_internal_links", "placeholder_hits", "errors"):
+            self.assertEqual([], self.report[key], key)
+
+    def test_missing_scene_section_is_rejected(self):
+        mutated = self.document.replace("#### 观测点", "#### 观测点已删除", 1)
+        report = self._assert_rejected(mutated)
+        self.assertIn("SC01:观测点", report["missing_required_sections"])
+
+    def test_missing_source_topic_anchor_is_rejected(self):
+        topic_id = self.workbook[0]["rootTopic"]["id"]
+        anchor = f'<a id="topic-{topic_id}"></a>'
+        self.assertEqual(1, self.document.count(anchor))
+        report = self._assert_rejected(self.document.replace(anchor, "", 1))
+        self.assertIn(topic_id, report["missing_source_ids"])
+
+    def test_empty_observation_evidence_is_rejected(self):
+        mutated, changes = re.subn(
+            r"(?m)^(- \*\*[^*]+\*\*：证据：)[^；]+(；判定：[^\n]+)$",
+            r"\1\2",
+            self.document,
+            count=1,
+        )
+        self.assertEqual(1, changes)
+        report = self._assert_rejected(mutated)
+        self.assertTrue(any("SC01" in error and "观测" in error
+                            for error in report["errors"]), report["errors"])
+
+    def test_explicit_placeholder_is_rejected_without_false_positive_for_source_term(self):
+        self.assertIn("待补变化", self.document)
+        self.assertEqual([], self.report["placeholder_hits"])
+        report = self._assert_rejected(self.document + "\nTODO：待填写 {{value}}\n")
+        self.assertIn("TODO", report["placeholder_hits"])
+        self.assertIn("待填写", report["placeholder_hits"])
+        self.assertIn("{{value}}", report["placeholder_hits"])
+
+    def test_duplicate_scene_heading_is_rejected(self):
+        heading = re.search(r"(?m)^### SC01 .+ \[P0\]$", self.document).group(0)
+        mutated = self.document.replace(heading, f"{heading}\n{heading}", 1)
+        report = self._assert_rejected(mutated)
+        self.assertIn("SC01", report["duplicate_scene_ids"])
+
+    def test_removed_b02_scene_mapping_is_rejected(self):
+        link = "[B02 存储引擎](#dimension-b02)"
+        self.assertGreaterEqual(self.document.count(link), 2)
+        mutated = self.document.replace(link, "B02 存储引擎", 1)
+        report = self._assert_rejected(mutated)
+        self.assertIn("B02", report["unmapped_dimension_ids"])
+
+    def test_broken_internal_link_is_rejected(self):
+        report = self._assert_rejected(
+            self.document + "\n[故意断链](#missing-verifier-target)\n"
+        )
+        self.assertIn("missing-verifier-target", report["broken_internal_links"])
+
+    def test_valid_zip_with_changed_hash_is_rejected_after_full_validation(self):
+        with tempfile.TemporaryDirectory() as directory:
+            mutated_source = Path(directory) / "changed-but-valid.xmind"
+            with zipfile.ZipFile(SOURCE_XMIND) as source_archive, \
+                    zipfile.ZipFile(mutated_source, "w") as target_archive:
+                for entry in source_archive.infolist():
+                    target_archive.writestr(entry, source_archive.read(entry.filename))
+                target_archive.writestr("verification-marker.txt", "hash mutation")
+
+            report = verify(mutated_source, self.document)
+
+        self.assertEqual(self.REPORT_KEYS, set(report))
+        self.assertNotEqual(EXPECTED_SOURCE_SHA256, report["source_sha256"])
+        self.assertFalse(report["source_unchanged"])
+        self.assertEqual(7317, report["topic_count"])
+        self.assertTrue(any("SHA-256" in error for error in report["errors"]),
+                        report["errors"])
 
 
 class ScenarioPolicyTests(unittest.TestCase):
