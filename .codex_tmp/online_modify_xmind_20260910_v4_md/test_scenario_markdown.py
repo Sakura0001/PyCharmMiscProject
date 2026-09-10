@@ -243,6 +243,87 @@ class XMindModelTests(unittest.TestCase):
         self.assertEqual("SC01", scene_id({"title": scenes[0]["title"]}))
         self.assertIsNone(scene_id({"title": "not a scenario"}))
 
+    def test_scene_id_requires_one_complete_trailing_header(self):
+        self.assertEqual(
+            "SC01",
+            scene_id({"title": "参考 [SC02] Real scene [SC01 · P0]"}),
+        )
+        for title in (
+                "参考 [SC01]",
+                "Scene [SC01 · P0] trailing text",
+                "Scene [SC01 · P3]",
+                "Scene [SC01 · P0",
+                "Scene SC01 · P0]",
+        ):
+            with self.subTest(title=title):
+                self.assertIsNone(scene_id({"title": title}))
+
+    def test_find_scenes_does_not_confuse_swapped_prefixed_references(self):
+        workbook = self._synthetic_workbook(range(1, 49))
+        topics = workbook[0]["rootTopic"]["children"]["attached"]
+        topics[0]["title"] = f"前置参考 [SC02] {topics[0]['title']}"
+        topics[1]["title"] = f"前置参考 [SC01] {topics[1]['title']}"
+        self.assertEqual(
+            [f"SC{number:02d}" for number in range(1, 49)],
+            [scene["scene_id"] for scene in find_scenes(workbook)],
+        )
+
+    def test_find_scenes_ignores_a_plain_scene_reference_leaf(self):
+        workbook = self._synthetic_workbook(range(1, 49))
+        workbook[0]["rootTopic"]["children"]["attached"].append({
+            "class": "topic",
+            "id": "plain-reference",
+            "title": "参考 [SC01]",
+        })
+        self.assertEqual(
+            [f"SC{number:02d}" for number in range(1, 49)],
+            [scene["scene_id"] for scene in find_scenes(workbook)],
+        )
+
+    def test_walk_topic_requires_well_formed_attached_children(self):
+        empty_topics = [
+            {"id": "no-children", "title": "No children"},
+            {"id": "no-attached", "title": "No attached", "children": {}},
+        ]
+        for topic in empty_topics:
+            with self.subTest(topic=topic["id"]):
+                self.assertEqual([topic], list(walk_topic(topic)))
+
+        malformed = [
+            (
+                {"id": "bad-children", "title": "Bad children", "children": []},
+                r"bad-children.*Bad children.*children.*dict",
+            ),
+            (
+                {
+                    "id": "bad-attached",
+                    "title": "Bad attached",
+                    "children": {"attached": {}},
+                },
+                r"bad-attached.*Bad attached.*attached.*list",
+            ),
+            (
+                {
+                    "id": "bad-child-item",
+                    "title": "Bad child item",
+                    "children": {"attached": [None]},
+                },
+                r"bad-child-item.*Bad child item.*attached.*dict",
+            ),
+        ]
+        for topic, message in malformed:
+            with self.subTest(topic=topic["id"]):
+                with self.assertRaisesRegex(ValueError, message):
+                    list(walk_topic(topic))
+
+    def test_find_scenes_preserves_non_numeric_source_order(self):
+        source_order = [2, 1, *range(3, 49)]
+        scenes = find_scenes(self._synthetic_workbook(source_order))
+        self.assertEqual(
+            [f"SC{number:02d}" for number in source_order],
+            [scene["scene_id"] for scene in scenes],
+        )
+
     def test_scene_notes_and_references_preserve_source_content_and_order(self):
         scene = find_scenes(self.workbook)[0]
         self.assertIn("优先级：P0", scene["notes"])
@@ -273,6 +354,62 @@ class XMindModelTests(unittest.TestCase):
             if topic.get("href")
         ]
         self.assertEqual(expected_references, scene["references"])
+
+    def test_nested_references_keep_source_order_and_duplicate_entries(self):
+        workbook = self._synthetic_workbook(range(1, 49))
+        topic = workbook[0]["rootTopic"]["children"]["attached"][0]
+        topic["href"] = "xmind:#scene"
+        first_section, second_section = topic["children"]["attached"][:2]
+        first_section.update({
+            "id": "duplicate-topic",
+            "title": "Repeated reference",
+            "href": "xmind:#same-target",
+            "children": {"attached": [
+                {
+                    "id": "branch",
+                    "title": "Branch without reference",
+                    "children": {"attached": [{
+                        "id": "nested-topic",
+                        "title": "Nested reference",
+                        "href": "xmind:#nested-target",
+                    }]},
+                },
+                {
+                    "id": "duplicate-topic",
+                    "title": "Repeated reference",
+                    "href": "xmind:#same-target",
+                },
+            ]},
+        })
+        second_section["href"] = "xmind:#second-section"
+
+        self.assertEqual([
+            {
+                "topic_id": "topic-SC01-0",
+                "title": "Synthetic scene [SC01 · P0]",
+                "href": "xmind:#scene",
+            },
+            {
+                "topic_id": "duplicate-topic",
+                "title": "Repeated reference",
+                "href": "xmind:#same-target",
+            },
+            {
+                "topic_id": "nested-topic",
+                "title": "Nested reference",
+                "href": "xmind:#nested-target",
+            },
+            {
+                "topic_id": "duplicate-topic",
+                "title": "Repeated reference",
+                "href": "xmind:#same-target",
+            },
+            {
+                "topic_id": "topic-SC01-0-section-2",
+                "title": "2 section",
+                "href": "xmind:#second-section",
+            },
+        ], find_scenes(workbook)[0]["references"])
 
     def test_source_stats_match_the_known_v3_counts(self):
         self.assertEqual({

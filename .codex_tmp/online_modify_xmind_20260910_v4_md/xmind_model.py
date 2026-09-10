@@ -10,8 +10,7 @@ from typing import Any, Iterator
 import zipfile
 
 
-_SCENE_ID_PATTERN = re.compile(r"\[(SC\d{2})\b")
-_SCENE_HEADER_PATTERN = re.compile(r"\[(SC\d{2})\s*·\s*(P[012])\]")
+_SCENE_HEADER_PATTERN = re.compile(r"\[(SC\d{2})\s*·\s*(P[012])\]\s*$")
 _EXPECTED_SCENE_IDS = tuple(f"SC{number:02d}" for number in range(1, 49))
 
 
@@ -48,12 +47,23 @@ def load_xmind(path: str | Path) -> list[dict[str, Any]]:
 
 
 def _attached_children(topic: dict[str, Any]) -> list[dict[str, Any]]:
-    children = topic.get("children")
+    context = f"topic id={topic.get('id')!r} title={topic.get('title')!r}"
+    if "children" not in topic:
+        return []
+    children = topic["children"]
     if not isinstance(children, dict):
+        raise ValueError(f"invalid {context}: children must be a dict")
+    if "attached" not in children:
         return []
-    attached = children.get("attached")
+    attached = children["attached"]
     if not isinstance(attached, list):
-        return []
+        raise ValueError(f"invalid {context}: attached must be a list")
+    for position, child in enumerate(attached):
+        if not isinstance(child, dict):
+            raise ValueError(
+                f"invalid {context}: attached child at index {position} "
+                "must be a dict"
+            )
     return attached
 
 
@@ -83,12 +93,12 @@ def topic_note(topic: dict[str, Any]) -> str:
 
 
 def scene_id(topic: dict[str, Any]) -> str | None:
-    """Extract an ``SCnn`` identifier from a scenario topic title."""
+    """Extract an ID only from a complete trailing scenario header."""
 
     title = topic.get("title")
     if not isinstance(title, str):
         return None
-    match = _SCENE_ID_PATTERN.search(title)
+    match = _SCENE_HEADER_PATTERN.search(title)
     return match.group(1) if match else None
 
 
@@ -102,17 +112,15 @@ def find_scenes(workbook: list[dict[str, Any]]) -> list[dict[str, Any]]:
         if not isinstance(root, dict):
             raise ValueError("invalid XMind workbook: sheet missing rootTopic")
         for topic in walk_topic(root):
-            identifier = scene_id(topic)
-            if identifier is None:
+            title = topic.get("title")
+            header = _SCENE_HEADER_PATTERN.search(title) if isinstance(title, str) else None
+            if header is None:
                 continue
+            identifier, priority = header.groups()
             if identifier in seen:
                 raise ValueError(f"duplicate scene ID: {identifier}")
             seen.add(identifier)
 
-            title = topic.get("title", "")
-            header = _SCENE_HEADER_PATTERN.search(title)
-            if header is None:
-                raise ValueError(f"scene {identifier} is missing a P0/P1/P2 priority")
             sections = _attached_children(topic)
             if len(sections) != 7:
                 raise ValueError(
@@ -130,7 +138,7 @@ def find_scenes(workbook: list[dict[str, Any]]) -> list[dict[str, Any]]:
             ]
             scenes.append({
                 "scene_id": identifier,
-                "priority": header.group(2),
+                "priority": priority,
                 "title": title,
                 "topic_id": topic.get("id"),
                 "notes": topic_note(topic),
