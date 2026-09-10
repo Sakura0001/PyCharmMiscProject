@@ -5,8 +5,10 @@ from __future__ import annotations
 from collections import Counter
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
+import tempfile
 from typing import Any, Iterator
 import zipfile
 
@@ -557,6 +559,7 @@ def verify(source_path: str | Path, markdown_text: str) -> dict[str, Any]:
     source = Path(source_path)
     topics: list[dict[str, Any]] = []
     dimensions: list[str] = []
+    workbook: list[dict[str, Any]] | None = None
 
     try:
         source_bytes = source.read_bytes()
@@ -582,7 +585,50 @@ def verify(source_path: str | Path, markdown_text: str) -> dict[str, Any]:
     except Exception as exc:  # Preserve the complete schema for malformed Markdown.
         _append_unique(report["errors"], f"Markdown 校验失败：{exc}")
 
+    # This final equality gate is intentionally in addition to, not instead of,
+    # the detailed diagnostics above.  It protects every rendered byte (policy
+    # tables, source text, ordering, fences, comments, catalog and summary)
+    # without duplicating the renderer as another fragile parser.
+    if workbook is not None:
+        try:
+            from render_markdown import render_document
+
+            canonical_markdown = render_document(workbook)
+            if (not isinstance(markdown_text, str)
+                    or markdown_text.encode("utf-8")
+                    != canonical_markdown.encode("utf-8")):
+                _append_unique(
+                    report["errors"],
+                    "Markdown 与来源和场景策略的规范确定性渲染不一致",
+                )
+        except Exception as exc:
+            _append_unique(report["errors"], f"规范 Markdown 渲染校验失败：{exc}")
+
     return report
+
+
+def _write_json_atomic(output_path: Path, report: dict[str, Any]) -> None:
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    payload = json.dumps(report, ensure_ascii=False, indent=2) + "\n"
+    temporary_path: Path | None = None
+    try:
+        with tempfile.NamedTemporaryFile(
+                mode="w",
+                encoding="utf-8",
+                dir=output_path.parent,
+                prefix=f"{output_path.name}.",
+                suffix=".tmp",
+                delete=False,
+        ) as handle:
+            temporary_path = Path(handle.name)
+            handle.write(payload)
+            handle.flush()
+            os.fsync(handle.fileno())
+        temporary_path.replace(output_path)
+    except Exception:
+        if temporary_path is not None:
+            temporary_path.unlink(missing_ok=True)
+        raise
 
 
 def main() -> None:
@@ -599,10 +645,7 @@ def main() -> None:
     report = verify(SOURCE_XMIND, markdown_text)
     if read_error:
         _append_unique(report["errors"], read_error)
-    output_path.write_text(
-        json.dumps(report, ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
-    )
+    _write_json_atomic(output_path, report)
     if report["errors"]:
         print(
             f"FAIL: {len(report['errors'])} 个问题；"

@@ -57,11 +57,12 @@ except (ImportError, ModuleNotFoundError):
     SUPPLEMENTAL_DIMENSIONS_BY_SCENE = None
 
 try:
-    from verify_markdown import EXPECTED_SOURCE_SHA256, verify
+    from verify_markdown import EXPECTED_SOURCE_SHA256, main as verify_main, verify
 except ModuleNotFoundError as exc:
     if exc.name != "verify_markdown":
         raise
     EXPECTED_SOURCE_SHA256 = None
+    verify_main = None
     verify = None
 
 
@@ -900,6 +901,7 @@ class MarkdownVerifierApiTests(unittest.TestCase):
 
 @unittest.skipIf(verify is None, "verify_markdown API is not implemented")
 class MarkdownVerifierTests(unittest.TestCase):
+    CANONICAL_ERROR = "Markdown 与来源和场景策略的规范确定性渲染不一致"
     REPORT_KEYS = {
         "source_sha256",
         "source_unchanged",
@@ -933,6 +935,17 @@ class MarkdownVerifierTests(unittest.TestCase):
         self.assertEqual(self.REPORT_KEYS, set(report))
         self.assertTrue(report["errors"], report)
         return report
+
+    def _assert_canonical_rejected(self, markdown_text):
+        report = self._assert_rejected(markdown_text)
+        self.assertIn(self.CANONICAL_ERROR, report["errors"])
+        return report
+
+    @staticmethod
+    def _scene_bounds(document, identifier, next_identifier):
+        start = document.index(f"### {identifier} ")
+        end = document.index(f"### {next_identifier} ", start)
+        return start, end
 
     def test_complete_render_is_accepted_with_exact_independent_source_counts(self):
         self.assertEqual(self.REPORT_KEYS, set(self.report))
@@ -1031,6 +1044,133 @@ class MarkdownVerifierTests(unittest.TestCase):
         self.assertTrue(any("A99" in error and "源 96 维度" in error
                             for error in report["errors"]), report["errors"])
 
+    def test_deleted_sc01_factor_row_is_canonically_rejected(self):
+        start, end = self._scene_bounds(self.document, "SC01", "SC02")
+        scene = self.document[start:end]
+        changed_scene, changes = re.subn(
+            r"(?m)^\| 环境与功能范围 \|.*\n",
+            "",
+            scene,
+            count=1,
+        )
+        self.assertEqual(1, changes)
+        self._assert_canonical_rejected(
+            self.document[:start] + changed_scene + self.document[end:]
+        )
+
+    def test_changed_sc01_factor_category_is_canonically_rejected(self):
+        start, end = self._scene_bounds(self.document, "SC01", "SC02")
+        scene = self.document[start:end]
+        changed_scene = scene.replace(
+            "| 环境与功能范围 |", "| 被篡改的因子类别 |", 1
+        )
+        self.assertNotEqual(scene, changed_scene)
+        self._assert_canonical_rejected(
+            self.document[:start] + changed_scene + self.document[end:]
+        )
+
+    def test_removed_topic_source_fields_with_anchor_retained_is_canonically_rejected(self):
+        topic_id = self.workbook[0]["rootTopic"]["id"]
+        anchor = f'<a id="topic-{topic_id}"></a>'
+        start = self.document.index(anchor)
+        end = self.document.index('<a id="topic-', start + len(anchor))
+        original = self.document[start:end]
+        id_line = next(
+            line for line in original.splitlines() if "原始 ID：" in line
+        )
+        replacement = f"{anchor}\n- Topic 来源字段已删除\n{id_line}\n\n"
+        mutated = self.document[:start] + replacement + self.document[end:]
+        self.assertEqual(1, mutated.count(anchor))
+        self._assert_canonical_rejected(mutated)
+
+    def test_changed_sc01_title_is_canonically_rejected(self):
+        mutated, changes = re.subn(
+            r"(?m)^### SC01 .+ \[P0\]$",
+            "### SC01 被篡改但格式合法的标题 [P0]",
+            self.document,
+            count=1,
+        )
+        self.assertEqual(1, changes)
+        self._assert_canonical_rejected(mutated)
+
+    def test_swapped_sc01_sc02_blocks_are_canonically_rejected(self):
+        sc01_start, sc02_start = self._scene_bounds(self.document, "SC01", "SC02")
+        _, sc03_start = self._scene_bounds(self.document, "SC02", "SC03")
+        sc01 = self.document[sc01_start:sc02_start]
+        sc02 = self.document[sc02_start:sc03_start]
+        mutated = (
+            self.document[:sc01_start] + sc02 + sc01 + self.document[sc03_start:]
+        )
+        self._assert_canonical_rejected(mutated)
+
+    def test_broken_observation_bold_markup_is_canonically_rejected(self):
+        start, end = self._scene_bounds(self.document, "SC01", "SC02")
+        scene = self.document[start:end]
+        changed_scene, changes = re.subn(
+            r"(?m)^- \*\*([^*]+)\*\*：证据：",
+            r"- \1：证据：",
+            scene,
+            count=1,
+        )
+        self.assertEqual(1, changes)
+        self._assert_canonical_rejected(
+            self.document[:start] + changed_scene + self.document[end:]
+        )
+
+    def test_five_duplicate_observations_are_canonically_rejected(self):
+        start, end = self._scene_bounds(self.document, "SC01", "SC02")
+        scene = self.document[start:end]
+        observation_start = scene.index("#### 观测点")
+        acceptance_start = scene.index("#### 预期结果与验收", observation_start)
+        observation = scene[observation_start:acceptance_start]
+        first_bullet = re.search(r"(?m)^- \*\*.+$", observation).group(0)
+        replacement = "#### 观测点\n\n" + "\n".join([first_bullet] * 5) + "\n\n"
+        changed_scene = (
+            scene[:observation_start] + replacement + scene[acceptance_start:]
+        )
+        self._assert_canonical_rejected(
+            self.document[:start] + changed_scene + self.document[end:]
+        )
+
+    def test_tampered_closing_fence_is_canonically_rejected(self):
+        marker = "\n```\n\n## 全局前置条件"
+        self.assertIn(marker, self.document)
+        mutated = self.document.replace(
+            marker, "\n~~~~\n\n## 全局前置条件", 1
+        )
+        self._assert_canonical_rejected(mutated)
+
+    def test_unclosed_trailing_fence_is_canonically_rejected(self):
+        self._assert_canonical_rejected(self.document + "```text\n")
+
+    def test_html_comment_wrapped_sc01_is_canonically_rejected(self):
+        start, end = self._scene_bounds(self.document, "SC01", "SC02")
+        mutated = (
+            self.document[:start]
+            + "<!--\n"
+            + self.document[start:end]
+            + "-->\n"
+            + self.document[end:]
+        )
+        self._assert_canonical_rejected(mutated)
+
+    def test_changed_integrity_summary_is_canonically_rejected(self):
+        marker = "- 7317 个 topic，且每个 topic anchor 唯一。"
+        self.assertEqual(1, self.document.count(marker))
+        self._assert_canonical_rejected(
+            self.document.replace(marker, marker.replace("7317", "7318"), 1)
+        )
+
+    def test_deleted_nested_actual_factor_value_is_canonically_rejected(self):
+        mutated, changes = re.subn(
+            r"(?m)^  - 实际取值 \d+\.\d+：.*\n",
+            "",
+            self.document,
+            count=1,
+        )
+        self.assertEqual(1, changes)
+        self._assert_canonical_rejected(mutated)
+
     def test_broken_internal_link_is_rejected(self):
         report = self._assert_rejected(
             self.document + "\n[故意断链](#missing-verifier-target)\n"
@@ -1052,8 +1192,49 @@ class MarkdownVerifierTests(unittest.TestCase):
         self.assertNotEqual(EXPECTED_SOURCE_SHA256, report["source_sha256"])
         self.assertFalse(report["source_unchanged"])
         self.assertEqual(7317, report["topic_count"])
-        self.assertTrue(any("SHA-256" in error for error in report["errors"]),
-                        report["errors"])
+        self.assertEqual(1, len(report["errors"]), report["errors"])
+        self.assertIn("SHA-256", report["errors"][0])
+        for key in (
+                "missing_required_sections", "missing_source_ids",
+                "unmapped_dimension_ids", "duplicate_scene_ids",
+                "broken_internal_links", "placeholder_hits"):
+            self.assertEqual([], report[key], key)
+
+    def test_main_success_atomically_writes_verification_json(self):
+        self.assertTrue(callable(verify_main))
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            markdown_path = root / "plan.md"
+            markdown_path.write_text(self.document, encoding="utf-8")
+            verification_path = root / "verification.json"
+            with patch("render_markdown.SOURCE_XMIND", SOURCE_XMIND), \
+                    patch("render_markdown.OUTPUT_MARKDOWN", markdown_path), \
+                    patch("verify_markdown.__file__", str(root / "verify_markdown.py")), \
+                    patch.object(Path, "write_text", side_effect=AssertionError(
+                        "verification.json must not be written directly")), \
+                    patch("builtins.print"):
+                verify_main()
+            report = json.loads(verification_path.read_text(encoding="utf-8"))
+            self.assertEqual([], report["errors"])
+            self.assertEqual([], list(root.glob("verification.json.*.tmp")))
+
+    def test_main_missing_markdown_writes_report_and_exits_one(self):
+        self.assertTrue(callable(verify_main))
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            missing_markdown = root / "missing.md"
+            verification_path = root / "verification.json"
+            with patch("render_markdown.SOURCE_XMIND", SOURCE_XMIND), \
+                    patch("render_markdown.OUTPUT_MARKDOWN", missing_markdown), \
+                    patch("verify_markdown.__file__", str(root / "verify_markdown.py")), \
+                    patch("builtins.print"):
+                with self.assertRaises(SystemExit) as raised:
+                    verify_main()
+            self.assertEqual(1, raised.exception.code)
+            report = json.loads(verification_path.read_text(encoding="utf-8"))
+            self.assertTrue(report["errors"])
+            self.assertTrue(any("无法读取 Markdown" in error
+                                for error in report["errors"]), report["errors"])
 
 
 class ScenarioPolicyTests(unittest.TestCase):
