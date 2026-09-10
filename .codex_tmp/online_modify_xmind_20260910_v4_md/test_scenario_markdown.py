@@ -25,6 +25,30 @@ except ModuleNotFoundError as exc:
         raise
     find_scenes = load_xmind = scene_id = source_stats = topic_note = walk_topic = None
 
+try:
+    from render_markdown import (
+        OUTPUT_MARKDOWN as RENDER_OUTPUT_MARKDOWN,
+        SCENE_DIMENSION_SUPPLEMENTS,
+        SOURCE_XMIND as RENDER_SOURCE_XMIND,
+        md_anchor,
+        md_text,
+        render_document,
+        render_factor_catalog,
+        render_factor_table,
+        render_global_scope,
+        render_observations,
+        render_scene,
+        render_source_appendix,
+    )
+except ModuleNotFoundError as exc:
+    if exc.name != "render_markdown":
+        raise
+    RENDER_OUTPUT_MARKDOWN = RENDER_SOURCE_XMIND = None
+    SCENE_DIMENSION_SUPPLEMENTS = None
+    md_anchor = md_text = render_document = render_factor_catalog = None
+    render_factor_table = render_global_scope = render_observations = None
+    render_scene = render_source_appendix = None
+
 
 SOURCE_XMIND = Path(
     "/Users/yuyu/PyCharmMiscProject/outputs/online_modify_xmind_20260910_v3/"
@@ -443,6 +467,227 @@ class XMindModelTests(unittest.TestCase):
         workbook = self._synthetic_workbook(range(1, 48))
         with self.assertRaisesRegex(ValueError, "missing scene IDs: SC48"):
             find_scenes(workbook)
+
+
+class RendererApiTests(unittest.TestCase):
+    def test_renderer_public_api_is_available(self):
+        functions = (
+            md_text,
+            md_anchor,
+            render_factor_table,
+            render_observations,
+            render_global_scope,
+            render_factor_catalog,
+            render_scene,
+            render_source_appendix,
+            render_document,
+        )
+        self.assertTrue(all(callable(function) for function in functions),
+                        "render_markdown API is not implemented")
+
+
+@unittest.skipIf(render_document is None, "render_markdown API is not implemented")
+class MarkdownRendererTests(unittest.TestCase):
+    SCENE_SECTION_HEADINGS = (
+        "场景目标",
+        "前置条件",
+        "覆盖因子",
+        "子运行组合",
+        "执行步骤",
+        "观测点",
+        "预期结果与验收",
+        "来源与追溯",
+    )
+
+    @classmethod
+    def setUpClass(cls):
+        cls.workbook = load_xmind(SOURCE_XMIND)
+        cls.scenes = find_scenes(cls.workbook)
+        cls.document = render_document(cls.workbook)
+
+    @classmethod
+    def _scene_block(cls, identifier):
+        match = re.search(rf"(?m)^### {identifier} .+ \[P[012]\]$", cls.document)
+        if match is None:
+            raise AssertionError(f"missing scene heading: {identifier}")
+        next_scene = re.search(r"(?m)^### SC\d{2} .+ \[P[012]\]$",
+                               cls.document[match.end():])
+        end = (match.end() + next_scene.start()) if next_scene else cls.document.index(
+            "## 完整 3-Sheet 来源附录", match.end())
+        return cls.document[match.start():end]
+
+    def test_markdown_helpers_are_deterministic_and_safe_for_tables(self):
+        self.assertEqual("a\\|b<br>c", md_text("a|b\nc"))
+        self.assertEqual("dimension-b01", md_anchor(" Dimension B01 "))
+
+    def test_cli_paths_are_the_requested_absolute_paths(self):
+        self.assertEqual(SOURCE_XMIND, RENDER_SOURCE_XMIND)
+        self.assertEqual(
+            SOURCE_XMIND.with_name(
+                "RDS_MySQL_8.0.45_测试计划_V4_场景化完整覆盖版.md"
+            ),
+            RENDER_OUTPUT_MARKDOWN,
+        )
+
+    def test_document_sections_scenes_and_factor_rows_have_exact_counts(self):
+        expected_sections = (
+            "# RDS MySQL 8.0.45 测试计划 V4 · 场景化完整覆盖版",
+            "## 范围",
+            "## 全局前置条件",
+            "## 96 维度目录",
+            "## 48 综合场景",
+            "## 完整 3-Sheet 来源附录",
+            "## 完整性摘要",
+        )
+        positions = [self.document.index(heading) for heading in expected_sections]
+        self.assertEqual(sorted(positions), positions)
+
+        headings = re.findall(
+            r"(?m)^### (SC\d{2}) (.+) \[(P[012])\]$", self.document
+        )
+        self.assertEqual([f"SC{number:02d}" for number in range(1, 49)],
+                         [identifier for identifier, _, _ in headings])
+        self.assertEqual(384, len(re.findall(r"(?m)^#### ", self.document)))
+        for identifier, _, _ in headings:
+            block = self._scene_block(identifier)
+            self.assertEqual(
+                list(self.SCENE_SECTION_HEADINGS),
+                re.findall(r"(?m)^#### (.+)$", block),
+                identifier,
+            )
+            for category in FACTOR_CATEGORIES:
+                self.assertEqual(1, block.count(f"| {md_text(category)} |"),
+                                 (identifier, category))
+
+    def test_factor_and_observation_tables_are_explicit(self):
+        policy = SCENARIO_POLICIES["SC01"]
+        factors = render_factor_table(policy)
+        self.assertIn("| 因子类别 | 覆盖要求 | 取值范围 | 组合策略 |", factors)
+        self.assertEqual(9, sum(
+            factors.count(f"| {md_text(category)} |")
+            for category in FACTOR_CATEGORIES
+        ))
+        observations = render_observations(policy)
+        self.assertIn("| 观测对象 | 显式证据 | 判定条件 |", observations)
+        for point in policy["observation_points"]:
+            self.assertIn(md_text(point["object"]), observations)
+            self.assertIn(md_text(point["evidence"]), observations)
+            self.assertIn(md_text(point["decision"]), observations)
+
+    def test_sc01_preserves_all_seven_source_sections_note_id_and_references(self):
+        source = self.scenes[0]
+        block = self._scene_block("SC01")
+        self.assertIn(source["topic_id"], block)
+        self.assertIn(source["notes"], block)
+        for section in source["sections"]:
+            for topic in walk_topic(section):
+                self.assertIn(md_text(topic["title"]), block)
+                note = topic_note(topic)
+                if note:
+                    self.assertIn(note, block)
+                if topic.get("href"):
+                    self.assertIn(topic["href"], block)
+        for reference in source["references"]:
+            self.assertIn(reference["topic_id"], block)
+            self.assertIn(reference["href"], block)
+
+    def test_factor_catalog_has_96_unique_dimensions_and_direct_values(self):
+        anchors = re.findall(
+            r'<a id="dimension-([a-z]\d{2})"></a>', self.document
+        )
+        self.assertEqual(96, len(anchors))
+        self.assertEqual(96, len(set(anchors)))
+        catalog = render_factor_catalog(self.workbook)
+        dimension = next(
+            topic for topic in walk_topic(self.workbook[0]["rootTopic"])
+            if "维度编号：B02" in topic_note(topic)
+        )
+        self.assertIn(md_text(dimension["title"]), catalog)
+        self.assertIn(topic_note(dimension), catalog)
+        for value in dimension["children"]["attached"]:
+            self.assertIn(md_text(value["title"]), catalog)
+            self.assertIn(topic_note(value), catalog)
+            if value.get("href"):
+                self.assertIn(value["href"], catalog)
+
+    def test_supplemental_dimensions_are_linked_by_id_and_name(self):
+        expected = {
+            "SC01": (("B02", "存储引擎"),),
+            "SC25": (("B08", "列数量"),),
+            "SC46": (("B09", "表历史"),),
+            "SC31": (("B10", "数据页状态"),),
+            "SC13": (("D07", "索引数量"), ("D22", "索引之间的覆盖关系")),
+        }
+        self.assertEqual({
+            "SC01": ("B02",),
+            "SC25": ("B08",),
+            "SC46": ("B09",),
+            "SC31": ("B10",),
+            "SC13": ("D07", "D22"),
+        }, SCENE_DIMENSION_SUPPLEMENTS)
+        for identifier, dimensions in expected.items():
+            block = self._scene_block(identifier)
+            for dimension_id, title in dimensions:
+                self.assertIn(
+                    f"[{dimension_id} {title}](#dimension-{dimension_id.lower()})",
+                    block,
+                )
+
+    def test_source_appendix_has_every_topic_anchor_once_and_all_sheet_roots(self):
+        anchors = re.findall(r'<a id="topic-([^"]+)"></a>', self.document)
+        self.assertEqual(7317, len(anchors))
+        self.assertEqual(7317, len(set(anchors)))
+        appendix = render_source_appendix(self.workbook)
+        self.assertEqual(3, len(re.findall(r"(?m)^### Sheet \d+: ", appendix)))
+        for sheet in self.workbook:
+            self.assertIn(md_text(sheet["title"]), appendix)
+            self.assertIn(md_text(sheet["rootTopic"]["title"]), appendix)
+            self.assertIn(sheet["rootTopic"]["id"], appendix)
+            note = topic_note(sheet["rootTopic"])
+            if note:
+                self.assertIn(note, appendix)
+
+    def test_source_appendix_preserves_nested_fields_and_converts_internal_links(self):
+        workbook = [{
+            "id": "sheet-one",
+            "title": "Sheet | one",
+            "rootTopic": {
+                "id": "root-one",
+                "title": "Root\nTitle",
+                "notes": {"plain": {"content": "root note\nline two"}},
+                "href": "xmind:#child-one",
+                "children": {"attached": [{
+                    "id": "child-one",
+                    "title": "Child | title",
+                    "notes": {"plain": {"content": "child note"}},
+                    "href": "https://example.invalid/reference",
+                }]},
+            },
+        }]
+        appendix = render_source_appendix(workbook)
+        self.assertIn('<a id="topic-root-one"></a>', appendix)
+        self.assertIn('<a id="topic-child-one"></a>', appendix)
+        self.assertIn("Root<br>Title", appendix)
+        self.assertIn("root note\nline two", appendix)
+        self.assertIn("[xmind:#child-one](#topic-child-one)", appendix)
+        self.assertIn("Child \\| title", appendix)
+        self.assertIn("child note", appendix)
+        self.assertIn("https://example.invalid/reference", appendix)
+
+    def test_every_internal_link_has_a_rendered_target(self):
+        anchors = set(re.findall(r'<a id="([^"]+)"></a>', self.document))
+        links = re.findall(r"\]\(#([^)]+)\)", self.document)
+        self.assertTrue(links)
+        self.assertEqual(set(), set(links) - anchors)
+
+    def test_render_is_deterministic_and_has_exactly_one_trailing_newline(self):
+        second = render_document(self.workbook)
+        self.assertEqual(self.document, second)
+        self.assertTrue(self.document.endswith("\n"))
+        self.assertFalse(self.document.endswith("\n\n"))
+        for term in ("3 张 Sheet", "96 个维度", "48 个场景", "7317 个 topic",
+                     "384 个场景小节"):
+            self.assertIn(term, self.document)
 
 
 class ScenarioPolicyTests(unittest.TestCase):
