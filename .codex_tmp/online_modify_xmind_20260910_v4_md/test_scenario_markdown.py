@@ -230,7 +230,8 @@ class XMindModelTests(unittest.TestCase):
         })
         for scene in scenes:
             self.assertEqual({
-                "scene_id", "priority", "title", "topic_id", "sections",
+                "scene_id", "priority", "title", "topic_id", "notes",
+                "references", "sections",
             }, set(scene))
             self.assertEqual(7, len(scene["sections"]), scene["scene_id"])
             self.assertEqual(
@@ -241,6 +242,37 @@ class XMindModelTests(unittest.TestCase):
             )
         self.assertEqual("SC01", scene_id({"title": scenes[0]["title"]}))
         self.assertIsNone(scene_id({"title": "not a scenario"}))
+
+    def test_scene_notes_and_references_preserve_source_content_and_order(self):
+        scene = find_scenes(self.workbook)[0]
+        self.assertIn("优先级：P0", scene["notes"])
+        self.assertTrue(scene["references"])
+        self.assertEqual({
+            "topic_id": "07bf687c05bf562b924d529ddde87b88",
+            "title": "表类型",
+            "href": "xmind:#b05ef04946a05825ad640665d6fe4eb6",
+        }, scene["references"][0])
+        self.assertTrue(all(
+            set(reference) == {"topic_id", "title", "href"}
+            for reference in scene["references"]
+        ))
+
+        source_topic = next(
+            topic
+            for sheet in self.workbook
+            for topic in walk_topic(sheet["rootTopic"])
+            if topic["id"] == scene["topic_id"]
+        )
+        expected_references = [
+            {
+                "topic_id": topic["id"],
+                "title": topic["title"],
+                "href": topic["href"],
+            }
+            for topic in walk_topic(source_topic)
+            if topic.get("href")
+        ]
+        self.assertEqual(expected_references, scene["references"])
 
     def test_source_stats_match_the_known_v3_counts(self):
         self.assertEqual({

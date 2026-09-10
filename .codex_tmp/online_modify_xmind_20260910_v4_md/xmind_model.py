@@ -119,11 +119,22 @@ def find_scenes(workbook: list[dict[str, Any]]) -> list[dict[str, Any]]:
                     f"scene {identifier} must contain 7 source sections; "
                     f"found {len(sections)}"
                 )
+            references = [
+                {
+                    "topic_id": linked_topic["id"],
+                    "title": linked_topic["title"],
+                    "href": linked_topic["href"],
+                }
+                for linked_topic in walk_topic(topic)
+                if linked_topic.get("href")
+            ]
             scenes.append({
                 "scene_id": identifier,
                 "priority": header.group(2),
                 "title": title,
                 "topic_id": topic.get("id"),
+                "notes": topic_note(topic),
+                "references": references,
                 "sections": sections,
             })
 
