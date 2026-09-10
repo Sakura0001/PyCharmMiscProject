@@ -23,6 +23,14 @@ def _lines(value):
     return [line.strip() for line in value.strip().splitlines() if line.strip()]
 
 
+def _triplet(row, kind):
+    parts = [part.strip() for part in row.split(" | ")]
+    if len(parts) != 3 or not all(parts):
+        raise ValueError(
+            f"{kind} row must contain exactly three non-empty fields: {row!r}")
+    return parts
+
+
 def _policy(goal, risk, prerequisites, scopes, observations, acceptance):
     scope_rows = _lines(scopes)
     if len(scope_rows) != len(FACTOR_CATEGORIES):
@@ -32,11 +40,15 @@ def _policy(goal, risk, prerequisites, scopes, observations, acceptance):
         "risk": risk,
         "prerequisites": _lines(prerequisites),
         "factor_scopes": {
-            category: dict(zip(("requirement", "range", "strategy"), row.split(" | ")))
+            category: dict(zip(
+                ("requirement", "range", "strategy"),
+                _triplet(row, "factor scope")))
             for category, row in zip(FACTOR_CATEGORIES, scope_rows)
         },
         "observation_points": [
-            dict(zip(("object", "evidence", "decision"), row.split(" | ")))
+            dict(zip(
+                ("object", "evidence", "decision"),
+                _triplet(row, "observation")))
             for row in _lines(observations)
         ],
         "acceptance_additions": _lines(acceptance),
@@ -507,28 +519,31 @@ SCENARIO_POLICIES = {
         两组基列均 INT→BIGINT，仅生成结果 INT/BIGINT 不同，源表达式和业务数据相同。
         VIRTUAL/STORED 及链式依赖源结构真实成立，每个结果列及索引有独立求值期望。
         准备使窄结果溢出但宽结果可表示的精确新值，旧值和 NULL 也保留。
-        INSERT 显式列出可写基列，直接赋生成列独立负向；写事务和副本追平有超时。
+        窄结果拒绝主运行固定 STRICT_TRANS_TABLES 与 STRICT_ALL_TABLES 各一组，使用普通非 IGNORE INSERT/UPDATE；非严格模式或 IGNORE 仅作独立控制，警告、转换与提交契约未冻结则 BLOCKED。
+        显式事务保留此前成功语句账本，再执行溢出失败语句；失败语句不得部分写，整事务回滚仅通过测试随后显式 ROLLBACK 验证。
+        INSERT 显式列出可写基列，直接赋生成列独立负向；各写事务和副本追平有超时。
         成对生成列组限定并发、持续时间及资源；溢出后按事务终态停止探针，恢复可用连接并清理依赖链夹具。
         """,
         """
-        指定覆盖 | 固定 ON 与既有 SQL mode | 溢出错误按实际模式和契约判断
+        指定覆盖 | 固定 ON；窄结果拒绝主运行覆盖 STRICT_TRANS_TABLES 与 STRICT_ALL_TABLES，控制组覆盖非严格模式和 IGNORE | 普通非 IGNORE 主运行按拒绝契约判定；控制组契约未冻结则 BLOCKED
         全部覆盖 | 全局兼容生成依赖表型、格式、历史 | 不合法生成链归源准备负向
         全部覆盖 | 基列安全扩宽、窄/宽生成结果、VIRTUAL/STORED 和旁列 | 按每层声明类型独立计算
         专属子运行 | 生成列全部兼容索引与 CHECK 依赖；函数/MVI/全文/空间另专属 | 每层访问路径和约束都检查
         全部覆盖 | 旧边界、窄溢出宽合法、NULL、重复结果及分布 | 成对输入同值，不共用错误预期
         指定覆盖 | 基列 INPLACE 扩宽与非法生成列直接赋值 | 生成列自身类型变更不混入本组
-        边界覆盖 | 新值 INSERT/UPDATE 的提交或整事务回滚 | 账本分开记录两种结果类型组
+        边界覆盖 | 新值 INSERT/UPDATE；溢出只要求失败语句无部分写，整事务回滚另由测试显式 ROLLBACK | 分别保存此前成功语句、失败语句和显式回滚后三段账本
         指定覆盖 | 我方主备精确表达式结果 | 每端对照独立生成期望
         全部覆盖 | 依赖类型、求值、回滚原子性、索引及副本 | 窄结果正确拒绝可通过业务约束验证
         """,
         """
         基列定义 | 前后 SHOW CREATE 和实际算法 | 基列扩宽且生成类型保持通过；擅改结果类型失败
-        窄结果拒绝 | 新值溢出错误、事务前后完整行 | 正确拒绝且无部分写通过；静默截断失败
+        窄结果严格拒绝 | STRICT_TRANS_TABLES/STRICT_ALL_TABLES、普通非 IGNORE 回执与失败语句前后完整行 | 失败语句无部分写通过；非严格模式或 IGNORE 契约未冻结则 BLOCKED；静默截断失败
+        事务边界 | 此前成功语句、溢出失败语句、显式 ROLLBACK 后三段账本 | 单句失败不冒充整事务回滚；显式回滚后无已回滚变更才通过
         宽结果成功 | 同输入的 BIGINT 精确求值和提交回执 | 可表示值精确提交通过；错误拒绝失败
         依赖链维护 | 每层生成值、CHECK 与全部相关索引访问 | 逐层符合声明语义通过；只末层相同不足通过
         写规则和副本 | 直接赋值负向、主备各端行与元数据 | 合法规则和每端期望一致通过；追平超时 BLOCKED
         """,
-        "基列扩宽结果和后续业务可表示性分开记；窄结果溢出不是自动判功能 BUG。"),
+        "基列扩宽结果和后续业务可表示性分开记；严格模式普通非 IGNORE 的窄结果必须拒绝且仅回滚失败语句，整事务回滚只按显式 ROLLBACK 证据判断；窄结果溢出不是自动判功能 BUG。"),
     "SC18": _policy(
         "验证函数索引表达式依赖在扩类型、改表达式、改基列名三种独立动作后的更新或准确拒绝。",
         "隐藏生成列与文本对象依赖更新规则不同，统一假设自动改名会留下悬空引用和错误计算。",

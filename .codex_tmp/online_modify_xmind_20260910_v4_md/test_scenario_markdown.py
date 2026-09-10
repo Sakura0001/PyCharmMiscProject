@@ -5,7 +5,7 @@ import re
 import unittest
 from unittest.mock import patch
 
-from scenario_policies import FACTOR_CATEGORIES, SCENARIO_POLICIES
+from scenario_policies import FACTOR_CATEGORIES, SCENARIO_POLICIES, _policy
 
 
 # Independently authored from the SC01–SC48 source mechanisms. Do not derive
@@ -209,6 +209,40 @@ class ScenarioPolicyTests(unittest.TestCase):
         # Keep every other SC01 field intact, including its correct mechanism words.
         self._assert_mutation_rejected(
             policies, "test_all_scenarios_have_complete_policies")
+
+    def test_policy_rejects_malformed_factor_scope_triplets(self):
+        valid_rows = ["全部覆盖 | 有效范围 | 独立子运行策略"] * len(FACTOR_CATEGORIES)
+        observations = "观测对象 | 可复核的原始证据记录 | 满足明确条件才通过，否则失败"
+        for malformed in (
+                "全部覆盖 | 有效范围",
+                "全部覆盖 | 有效范围 | 独立子运行策略 | 多余字段",
+                "全部覆盖 |  | 独立子运行策略"):
+            with self.subTest(malformed=malformed):
+                rows = list(valid_rows)
+                rows[0] = malformed
+                with self.assertRaisesRegex(ValueError, "factor scope"):
+                    _policy("目标", "风险", "前置条件", "\n".join(rows),
+                            observations, "验收条件")
+
+    def test_policy_rejects_malformed_observation_triplets(self):
+        scopes = "\n".join(
+            ["全部覆盖 | 有效范围 | 独立子运行策略"] * len(FACTOR_CATEGORIES))
+        for malformed in (
+                "观测对象 | 可复核的原始证据记录",
+                "观测对象 | 可复核的原始证据记录 | 明确判定条件 | 多余字段",
+                "观测对象 |  | 明确判定条件"):
+            with self.subTest(malformed=malformed):
+                with self.assertRaisesRegex(ValueError, "observation"):
+                    _policy("目标", "风险", "前置条件", scopes,
+                            malformed, "验收条件")
+
+    def test_sc17_locks_sql_mode_and_statement_transaction_semantics(self):
+        text = repr(SCENARIO_POLICIES["SC17"])
+        for term in (
+                "STRICT_TRANS_TABLES", "STRICT_ALL_TABLES", "普通非 IGNORE",
+                "非严格模式", "IGNORE", "失败语句", "显式 ROLLBACK",
+                "此前成功语句", "BLOCKED"):
+            self.assertIn(term, text, ("SC17", term))
 
     def test_all_scenarios_have_complete_policies(self):
         expected = {f"SC{i:02d}" for i in range(1, 49)}
