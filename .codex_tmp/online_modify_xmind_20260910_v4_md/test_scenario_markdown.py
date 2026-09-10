@@ -1480,6 +1480,23 @@ class ScenarioPolicyTests(unittest.TestCase):
                     ("acceptance", acceptance)):
                 for term in ("RESTRICT/NO ACTION", "CASCADE/SET NULL", "独立夹具"):
                     self.assertIn(term, text, (scene_id, field_name, term))
+                self.assertIn(
+                    "CASCADE/SET NULL 独立夹具上的显式 LOCK=NONE",
+                    text,
+                    (scene_id, field_name, "cascade lock binding"),
+                )
+                self.assertIn(
+                    "RESTRICT/NO ACTION 的 LOCK=NONE 资格按冻结产品契约独立判断",
+                    text,
+                    (scene_id, field_name, "restrict lock qualification"),
+                )
+                for clause in re.split(r"[；。]", text):
+                    if "LOCK=NONE" in clause:
+                        self.assertTrue(
+                            "CASCADE/SET NULL" in clause
+                            or "RESTRICT/NO ACTION" in clause,
+                            (scene_id, field_name, "unbound LOCK=NONE", clause),
+                        )
 
             self.assertRegex(prerequisites, r"SET NULL[^；]*nullable")
             for text in (scopes, observations, acceptance):

@@ -580,7 +580,8 @@ SCENARIO_POLICIES = {
         正式冻结父先过渡的类型/符号兼容规则，以及级联组正向明确支持的锁级别；冻结契约缺失则 CASCADE/SET NULL 正向 BLOCKED。
         RESTRICT/NO ACTION 独立夹具与 CASCADE/SET NULL 独立夹具分别建表；SET NULL 子 FK 列必须 nullable，不复用动作组源表。
         父 PK/非主唯一键和子显式/隐式 FK 索引的每组源关系已真实建成并无孤儿，父侧提交后立即验证再执行子侧。
-        显式 LOCK=NONE 使用单独克隆做准确拒绝负向；保留原请求且不能改锁重报正向。
+        CASCADE/SET NULL 独立夹具上的显式 LOCK=NONE 使用单独克隆做准确拒绝负向；保留原请求且不能改锁重报正向。
+        RESTRICT/NO ACTION 的 LOCK=NONE 资格按冻结产品契约独立判断，不能套用级联组必拒绝结论。
         并发引用的线程数、持续时间、资源和超时有限；停止后恢复父子可用关系并清理专属表。
         """,
         """
@@ -589,7 +590,7 @@ SCENARIO_POLICIES = {
         全部覆盖 | 适用整数扩宽、复合 FK 首中末和旁列；SET NULL 子 FK 列必须 nullable | 每侧按完整目标定义核验
         全部覆盖 | 兼容父 PK/UK、子显式/隐式索引及四种引用动作 | 两类独立夹具的全部关系逐条检查
         全部覆盖 | 合法引用、NULL、孤儿负向、旧新边界与分布 | RESTRICT/NO ACTION 与 CASCADE/SET NULL 分别建账本
-        指定覆盖 | 父先子后独立 INPLACE；显式 LOCK=NONE 单独准确拒绝 | 记录原请求、errno/SQLSTATE、实际算法/锁和前后定义；不能改锁重报正向
+        指定覆盖 | 父先子后独立 INPLACE；CASCADE/SET NULL 独立夹具上的显式 LOCK=NONE 单独准确拒绝；RESTRICT/NO ACTION 的 LOCK=NONE 资格按冻结产品契约独立判断 | 记录原请求、errno/SQLSTATE、实际算法/锁和前后定义；不能改锁重报正向
         边界覆盖 | 两次 DDL 间父子增删改；级联正向仅用冻结契约支持的锁级别 | 未冻结即 BLOCKED，负向拒绝不替代正向
         指定覆盖 | 我方主备及正式第二侧恢复流程 | 每个提交位点单独追平验证
         全部覆盖 | 中间兼容、无孤儿、级联、索引依赖和失败原子性 | 最终一致不能替代中间态正确
@@ -597,7 +598,8 @@ SCENARIO_POLICIES = {
         """
         动作组隔离 | RESTRICT/NO ACTION 独立夹具与 CASCADE/SET NULL 独立夹具的 Run ID 和源表 | 两组均独立完成才通过；混用夹具失败
         级联正向锁契约 | CASCADE/SET NULL 独立夹具、冻结契约和实际锁级别 | 仅明确支持的锁级别成功才通过；未知则 BLOCKED
-        LOCK=NONE 负向 | 原请求、errno/SQLSTATE、实际算法/锁和前后定义 | LOCK=NONE 准确拒绝且旧态完整才通过；不能改锁重报正向
+        CASCADE/SET NULL 独立夹具上的显式 LOCK=NONE 负向 | 原请求、errno/SQLSTATE、实际算法/锁和前后定义 | CASCADE/SET NULL 独立夹具上的显式 LOCK=NONE 准确拒绝且旧态完整才通过；不能改锁重报正向
+        RESTRICT/NO ACTION 的 LOCK=NONE 资格按冻结产品契约独立判断 | 对应原请求、产品契约、errno/SQLSTATE、实际算法/锁及前后定义 | RESTRICT/NO ACTION 的 LOCK=NONE 资格按冻结产品契约独立判断；契约未知则 BLOCKED，不能无条件判拒绝
         父侧提交态 | 父子类型/符号和正式过渡规则 | 每次可见态兼容通过；规则缺失 BLOCKED
         引用约束 | 合法/孤儿探针及全关系反连接查询 | 无孤儿且负向拒绝通过；漏约束失败
         第二侧失败 | 子侧 errno/阶段与两表前后定义 | 子侧原子失败且父侧已提交保持通过；半更新失败
@@ -607,7 +609,8 @@ SCENARIO_POLICIES = {
         """
         RESTRICT/NO ACTION 独立夹具与 CASCADE/SET NULL 独立夹具分别验收，SET NULL 子 FK 列必须 nullable。
         级联正向只接受冻结契约明确支持的锁级别；未知为 BLOCKED。
-        显式 LOCK=NONE 必须准确拒绝并保留原请求及前后定义；不能改锁重报正向。
+        CASCADE/SET NULL 独立夹具上的显式 LOCK=NONE 必须准确拒绝并保留原请求及前后定义；不能改锁重报正向。
+        RESTRICT/NO ACTION 的 LOCK=NONE 资格按冻结产品契约独立判断；不能无条件判拒绝，契约未知则 BLOCKED。
         """),
     "SC20": _policy(
         "验证子先扩宽在自引用、三层链、多子扇出和双父表关系中的过渡及级联完整性。",
@@ -616,7 +619,8 @@ SCENARIO_POLICIES = {
         正式冻结子先父后的类型兼容、失败恢复及级联正向明确支持的锁级别；冻结契约未知时 CASCADE/SET NULL 正向 BLOCKED。
         自引用、三层链、16 子表扇出和双父表源图均实际创建，逐边验证初始关系。
         RESTRICT/NO ACTION 独立夹具与 CASCADE/SET NULL 独立夹具分别准备复合 FK 首中末及显式/隐式支撑索引；SET NULL 子 FK 列必须 nullable。
-        显式 LOCK=NONE 使用单独克隆做准确拒绝负向；保留原请求且不能改锁重报正向。
+        CASCADE/SET NULL 独立夹具上的显式 LOCK=NONE 使用单独克隆做准确拒绝负向；保留原请求且不能改锁重报正向。
+        RESTRICT/NO ACTION 的 LOCK=NONE 资格按冻结产品契约独立判断，不能套用级联组必拒绝结论。
         级联并发、持续时间、资源、锁超时与停止阈值已限定；恢复顺序与全图清理顺序已登记。
         """,
         """
@@ -625,7 +629,7 @@ SCENARIO_POLICIES = {
         全部覆盖 | 适用整数安全边、复合成员位置、可空子列与旁列；SET NULL 子 FK 列必须 nullable | 每侧类型与符号逐步核验
         全部覆盖 | 全部兼容父键、子索引、四种引用动作及扇出/链/双父依赖 | 两类独立夹具均不抽掉受影响关系表
         全部覆盖 | 根 NULL、多个子引用、边界整数、孤儿负向和倾斜 | RESTRICT/NO ACTION 与 CASCADE/SET NULL 分别建立期望
-        指定覆盖 | 子先父后独立 INPLACE；显式 LOCK=NONE 单独准确拒绝 | 记录原请求、errno/SQLSTATE、实际算法/锁和前后定义；不能改锁重报正向
+        指定覆盖 | 子先父后独立 INPLACE；CASCADE/SET NULL 独立夹具上的显式 LOCK=NONE 单独准确拒绝；RESTRICT/NO ACTION 的 LOCK=NONE 资格按冻结产品契约独立判断 | 记录原请求、errno/SQLSTATE、实际算法/锁和前后定义；不能改锁重报正向
         边界覆盖 | 中间态关系动作；级联正向仅用冻结契约支持的锁级别 | 未冻结即 BLOCKED，负向拒绝不替代正向
         指定覆盖 | 我方所有副本和关系恢复入口 | 追平后全图对照账本
         全部覆盖 | 每边约束、中间态、路由关系、级联和原子性 | 单表正确不替代全图正确
@@ -633,7 +637,8 @@ SCENARIO_POLICIES = {
         """
         动作组隔离 | RESTRICT/NO ACTION 独立夹具与 CASCADE/SET NULL 独立夹具的 Run ID 和源图 | 两组均独立完成才通过；混用夹具失败
         级联正向锁契约 | CASCADE/SET NULL 独立夹具、冻结契约和实际锁级别 | 仅明确支持的锁级别成功才通过；未知则 BLOCKED
-        LOCK=NONE 负向 | 原请求、errno/SQLSTATE、实际算法/锁和前后定义 | LOCK=NONE 准确拒绝且旧态完整才通过；不能改锁重报正向
+        CASCADE/SET NULL 独立夹具上的显式 LOCK=NONE 负向 | 原请求、errno/SQLSTATE、实际算法/锁和前后定义 | CASCADE/SET NULL 独立夹具上的显式 LOCK=NONE 准确拒绝且旧态完整才通过；不能改锁重报正向
+        RESTRICT/NO ACTION 的 LOCK=NONE 资格按冻结产品契约独立判断 | 对应原请求、产品契约、errno/SQLSTATE、实际算法/锁及前后定义 | RESTRICT/NO ACTION 的 LOCK=NONE 资格按冻结产品契约独立判断；契约未知则 BLOCKED，不能无条件判拒绝
         子先中间态 | 逐步父子定义和正式兼容表 | 每步兼容或准确原子拒绝通过；规则缺失 BLOCKED
         全图引用 | 每条 FK 反连接和合法/孤儿写探针 | 全图无孤儿通过；遗漏节点不足通过
         级联传播 | RESTRICT/NO ACTION、CASCADE/SET NULL 的删除/更新账本与全图结果 | 所有受影响行按规则改变通过；漏级联失败
@@ -643,7 +648,8 @@ SCENARIO_POLICIES = {
         """
         RESTRICT/NO ACTION 独立夹具与 CASCADE/SET NULL 独立夹具分别验收，SET NULL 子 FK 列必须 nullable。
         级联正向只接受冻结契约明确支持的锁级别；未知为 BLOCKED。
-        显式 LOCK=NONE 必须准确拒绝并保留原请求及前后定义；不能改锁重报正向。
+        CASCADE/SET NULL 独立夹具上的显式 LOCK=NONE 必须准确拒绝并保留原请求及前后定义；不能改锁重报正向。
+        RESTRICT/NO ACTION 的 LOCK=NONE 资格按冻结产品契约独立判断；不能无条件判拒绝，契约未知则 BLOCKED。
         """),
     "SC21": _policy(
         "证明 BINARY 外键父侧/子侧单独扩长准确拒绝，并将 VARBINARY 的不同兼容契约分开判断。",
