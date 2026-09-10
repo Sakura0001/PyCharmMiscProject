@@ -1,11 +1,35 @@
 """Contract tests for explicit, reviewable scenario coverage policies."""
 
 from copy import deepcopy
+import json
+from pathlib import Path
 import re
+import tempfile
 import unittest
 from unittest.mock import patch
+import zipfile
 
 from scenario_policies import FACTOR_CATEGORIES, SCENARIO_POLICIES, _policy
+
+try:
+    from xmind_model import (
+        find_scenes,
+        load_xmind,
+        scene_id,
+        source_stats,
+        topic_note,
+        walk_topic,
+    )
+except ModuleNotFoundError as exc:
+    if exc.name != "xmind_model":
+        raise
+    find_scenes = load_xmind = scene_id = source_stats = topic_note = walk_topic = None
+
+
+SOURCE_XMIND = Path(
+    "/Users/yuyu/PyCharmMiscProject/outputs/online_modify_xmind_20260910_v3/"
+    "RDS_MySQL_8.0.45_测试计划反串讲_V3_逐项通俗说明版.xmind"
+)
 
 
 # Independently authored from the SC01–SC48 source mechanisms. Do not derive
@@ -114,6 +138,142 @@ OBSERVATION_KEYWORDS_BY_SCENE = {
     "SC47": ("阿里支持我方不支持", "增强", "缺陷复现包", "错误日志"),
     "SC48": ("INSTANT", "范围外", "不计当前 PASS", "执行清单"),
 }
+
+
+class XMindModelApiTests(unittest.TestCase):
+    def test_xmind_model_api_is_available(self):
+        functions = (
+            load_xmind,
+            walk_topic,
+            topic_note,
+            scene_id,
+            find_scenes,
+            source_stats,
+        )
+        self.assertTrue(all(callable(function) for function in functions),
+                        "xmind_model parser API is not implemented")
+
+
+@unittest.skipIf(load_xmind is None, "xmind_model parser API is not implemented")
+class XMindModelTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.workbook = load_xmind(SOURCE_XMIND)
+
+    @staticmethod
+    def _synthetic_workbook(numbers):
+        scenes = []
+        for position, number in enumerate(numbers):
+            scene = f"SC{number:02d}"
+            scenes.append({
+                "class": "topic",
+                "id": f"topic-{scene}-{position}",
+                "title": f"Synthetic scene [{scene} · P0]",
+                "children": {"attached": [
+                    {
+                        "class": "topic",
+                        "id": f"topic-{scene}-{position}-section-{section}",
+                        "title": f"{section} section",
+                    }
+                    for section in range(1, 8)
+                ]},
+            })
+        return [{
+            "class": "sheet",
+            "id": "synthetic-sheet",
+            "title": "Synthetic scenes",
+            "rootTopic": {
+                "class": "topic",
+                "id": "synthetic-root",
+                "title": "Synthetic root",
+                "children": {"attached": scenes},
+            },
+        }]
+
+    def test_load_preserves_source_workbook_and_topic_order(self):
+        with zipfile.ZipFile(SOURCE_XMIND) as archive:
+            source_content = json.loads(archive.read("content.json"))
+        self.assertEqual(source_content, self.workbook)
+        self.assertEqual([
+            "01 测试点（逐项通俗说明）",
+            "02 综合场景（由简到繁）",
+            "03 附录（原用例与检查点）",
+        ], [sheet["title"] for sheet in self.workbook])
+        self.assertEqual([
+            "RDS MySQL 8.0.45\n测试点 · 逐项通俗说明版",
+            "RDS MySQL 8.0.45\n综合场景 · 48 组",
+            "追溯附录\n1602 用例 · 302 检查点 · 155 语法",
+        ], [sheet["rootTopic"]["title"] for sheet in self.workbook])
+
+    def test_walk_topic_and_topic_note_cover_the_source_model(self):
+        topics = [
+            topic
+            for sheet in self.workbook
+            for topic in walk_topic(sheet["rootTopic"])
+        ]
+        self.assertEqual(7317, len(topics))
+        self.assertEqual(7317, len({topic["id"] for topic in topics}))
+        self.assertIn("本轮仅 INPLACE 在线修改列类型",
+                      topic_note(self.workbook[0]["rootTopic"]))
+        linked = next(topic for topic in topics if topic.get("href"))
+        self.assertEqual("xmind:#c67b1b61153f536b865032242f82032a",
+                         linked["href"])
+        self.assertEqual("", topic_note({"id": "no-note", "title": "No note"}))
+
+    def test_find_scenes_returns_source_order_priority_and_original_sections(self):
+        scenes = find_scenes(self.workbook)
+        self.assertEqual([f"SC{number:02d}" for number in range(1, 49)],
+                         [scene["scene_id"] for scene in scenes])
+        self.assertEqual({"P0": 44, "P1": 3, "P2": 1}, {
+            priority: sum(scene["priority"] == priority for scene in scenes)
+            for priority in ("P0", "P1", "P2")
+        })
+        for scene in scenes:
+            self.assertEqual({
+                "scene_id", "priority", "title", "topic_id", "sections",
+            }, set(scene))
+            self.assertEqual(7, len(scene["sections"]), scene["scene_id"])
+            self.assertEqual(
+                [str(section) for section in range(1, 8)],
+                [topic["title"].split(maxsplit=1)[0]
+                 for topic in scene["sections"]],
+                scene["scene_id"],
+            )
+        self.assertEqual("SC01", scene_id({"title": scenes[0]["title"]}))
+        self.assertIsNone(scene_id({"title": "not a scenario"}))
+
+    def test_source_stats_match_the_known_v3_counts(self):
+        self.assertEqual({
+            "sheets": 3,
+            "topics": 7317,
+            "scenes": 48,
+            "priorities": {"P0": 44, "P1": 3, "P2": 1},
+        }, source_stats(self.workbook))
+
+    def test_load_rejects_a_corrupt_zip_with_a_clear_value_error(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "corrupt.xmind"
+            path.write_bytes(b"this is not a ZIP archive")
+            with self.assertRaisesRegex(ValueError, "invalid XMind ZIP"):
+                load_xmind(path)
+
+    def test_load_rejects_an_archive_without_content_json(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "missing-content.xmind"
+            with zipfile.ZipFile(path, "w") as archive:
+                archive.writestr("metadata.json", "{}")
+            with self.assertRaisesRegex(ValueError, "missing content.json"):
+                load_xmind(path)
+
+    def test_find_scenes_rejects_duplicate_scene_ids(self):
+        workbook = self._synthetic_workbook([*range(1, 49), 1])
+        with self.assertRaisesRegex(ValueError, "duplicate scene ID: SC01"):
+            find_scenes(workbook)
+
+    def test_find_scenes_rejects_missing_scene_ids(self):
+        workbook = self._synthetic_workbook(range(1, 48))
+        with self.assertRaisesRegex(ValueError, "missing scene IDs: SC48"):
+            find_scenes(workbook)
 
 
 class ScenarioPolicyTests(unittest.TestCase):
