@@ -1,0 +1,25 @@
+{
+  "source_sha256": "8e2b1b212c52eb8c9456b83cba66dfcb8a9e2e85430addb376b270e6e4ced978",
+  "source_unchanged": true,
+  "sheet_count": 3,
+  "topic_count": 7317,
+  "scenario_count": 48,
+  "scenario_priorities": {
+    "P0": 44,
+    "P1": 3,
+    "P2": 1
+  },
+  "dimension_count": 96,
+  "original_check_count": 302,
+  "original_case_count": 1602,
+  "syntax_count": 155,
+  "common_factor_count": 35,
+  "contract_count": 16,
+  "missing_required_sections": [],
+  "missing_source_ids": [],
+  "unmapped_dimension_ids": [],
+  "duplicate_scene_ids": [],
+  "broken_internal_links": [],
+  "placeholder_hits": [],
+  "errors": []
+}
