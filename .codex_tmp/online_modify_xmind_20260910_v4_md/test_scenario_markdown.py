@@ -969,6 +969,22 @@ class MarkdownVerifierTests(unittest.TestCase):
         report = self._assert_rejected(self.document.replace(anchor, "", 1))
         self.assertIn(topic_id, report["missing_source_ids"])
 
+    def test_extra_topic_anchor_is_rejected(self):
+        report = self._assert_rejected(
+            self.document + '\n<a id="topic-not-from-source"></a>\n'
+        )
+        self.assertTrue(any("额外 topic anchor" in error
+                            and "topic-not-from-source" in error
+                            for error in report["errors"]), report["errors"])
+
+    def test_extra_dimension_anchor_is_rejected(self):
+        report = self._assert_rejected(
+            self.document + '\n<a id="dimension-a99"></a>\n'
+        )
+        self.assertTrue(any("额外 dimension anchor" in error
+                            and "dimension-a99" in error
+                            for error in report["errors"]), report["errors"])
+
     def test_empty_observation_evidence_is_rejected(self):
         mutated, changes = re.subn(
             r"(?m)^(- \*\*[^*]+\*\*：证据：)[^；]+(；判定：[^\n]+)$",
@@ -1001,6 +1017,19 @@ class MarkdownVerifierTests(unittest.TestCase):
         mutated = self.document.replace(link, "B02 存储引擎", 1)
         report = self._assert_rejected(mutated)
         self.assertIn("B02", report["unmapped_dimension_ids"])
+
+    def test_unknown_a99_scene_mapping_with_matching_anchor_is_rejected(self):
+        scene_start = self.document.index("### SC01 ")
+        insertion = self.document.index("#### 子运行组合", scene_start)
+        mutated = (
+            self.document[:insertion]
+            + "- 伪造维度：[A99 非来源维度](#dimension-a99)\n"
+            + '<a id="dimension-a99"></a>\n\n'
+            + self.document[insertion:]
+        )
+        report = self._assert_rejected(mutated)
+        self.assertTrue(any("A99" in error and "源 96 维度" in error
+                            for error in report["errors"]), report["errors"])
 
     def test_broken_internal_link_is_rejected(self):
         report = self._assert_rejected(

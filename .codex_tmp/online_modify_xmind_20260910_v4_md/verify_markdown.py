@@ -45,7 +45,7 @@ _OBSERVATION = re.compile(
     r"^- \*\*(?P<object>.+?)\*\*：证据：(?P<evidence>.*?)；判定：(?P<decision>.*)$"
 )
 _DIMENSION_LINK = re.compile(
-    r"\[([A-I]\d{2})\s+[^\]\n]+\]\(#dimension-([a-i]\d{2})\)"
+    r"\[([^\]\n]+)\]\(#dimension-([^)]+)\)"
 )
 _INTERNAL_LINK = re.compile(r"\]\(#([^)]+)\)")
 _ANCHOR = re.compile(r'<a id="([^"]+)"></a>')
@@ -333,6 +333,9 @@ def _verify_markdown(
             _append_unique(report["errors"], f"Markdown anchor 重复 {count} 次：{anchor}")
 
     if topics:
+        expected_topic_anchors = {
+            f"topic-{_slug(str(topic.get('id', '')))}" for topic in topics
+        }
         for topic in topics:
             topic_id = str(topic.get("id", ""))
             expected_anchor = f"topic-{_slug(topic_id)}"
@@ -343,8 +346,18 @@ def _verify_markdown(
                     f"源 topic {topic_id} 的 anchor 应恰好出现一次，实际 "
                     f"{anchor_counts[expected_anchor]} 次",
                 )
+        extra_topic_anchors = sorted(
+            anchor
+            for anchor in anchor_counts
+            if anchor.startswith("topic-") and anchor not in expected_topic_anchors
+        )
+        for anchor in extra_topic_anchors:
+            _append_unique(report["errors"], f"发现额外 topic anchor：{anchor}")
 
     unique_dimensions = list(dict.fromkeys(dimensions))
+    expected_dimension_anchors = {
+        f"dimension-{identifier.lower()}" for identifier in unique_dimensions
+    }
     for identifier in unique_dimensions:
         anchor = f"dimension-{identifier.lower()}"
         if anchor_counts[anchor] != 1:
@@ -353,6 +366,14 @@ def _verify_markdown(
                 f"维度 {identifier} 的 anchor 应恰好出现一次，实际 "
                 f"{anchor_counts[anchor]} 次",
             )
+    extra_dimension_anchors = sorted(
+        anchor
+        for anchor in anchor_counts
+        if anchor.startswith("dimension-")
+        and anchor not in expected_dimension_anchors
+    )
+    for anchor in extra_dimension_anchors:
+        _append_unique(report["errors"], f"发现额外 dimension anchor：{anchor}")
 
     headings, blocks = _scene_blocks(lines)
     markdown_scene_counts = Counter(identifier for _, identifier, _ in headings)
@@ -378,7 +399,9 @@ def _verify_markdown(
         if isinstance(topic.get("title"), str)
         if (match := _SOURCE_SCENE.search(topic["title"]))
     }
+    source_dimension_ids = set(unique_dimensions)
     linked_dimensions: set[str] = set()
+    coverage_dimension_ids: set[str] = set()
     for identifier in expected_scene_ids:
         occurrences = blocks.get(identifier, [])
         if not occurrences:
@@ -460,13 +483,32 @@ def _verify_markdown(
 
             coverage_lines = _section_content(block, "覆盖因子")
             if coverage_lines is not None:
-                for label, target in _DIMENSION_LINK.findall("\n".join(coverage_lines)):
+                for link_label, target in _DIMENSION_LINK.findall(
+                        "\n".join(coverage_lines)):
+                    label_match = re.match(r"^([A-Z]\d+)\s+", link_label)
+                    target_identifier = target.upper()
+                    coverage_dimension_ids.add(target_identifier)
+                    if label_match is None:
+                        _append_unique(
+                            report["errors"],
+                            f"{identifier} 覆盖维度链接标签缺少维度编号：{link_label}",
+                        )
+                        continue
+                    label = label_match.group(1)
+                    coverage_dimension_ids.add(label)
+                    if (label not in source_dimension_ids
+                            or target_identifier not in source_dimension_ids):
+                        _append_unique(
+                            report["errors"],
+                            f"{identifier} 覆盖维度 {label}/dimension-{target} "
+                            "不属于源 96 维度",
+                        )
                     if label.lower() != target:
                         _append_unique(
                             report["errors"],
                             f"{identifier} 维度链接标签 {label} 与目标 {target} 不一致",
                         )
-                    else:
+                    elif label in source_dimension_ids:
                         linked_dimensions.add(label)
 
     for item in report["missing_required_sections"]:
@@ -482,6 +524,15 @@ def _verify_markdown(
             report["errors"],
             "场景覆盖因子未挂载维度："
             + ", ".join(report["unmapped_dimension_ids"]),
+        )
+    extra_linked_dimensions = sorted(
+        coverage_dimension_ids - source_dimension_ids
+    )
+    if extra_linked_dimensions:
+        _append_unique(
+            report["errors"],
+            "场景覆盖因子出现源集合以外维度："
+            + ", ".join(extra_linked_dimensions),
         )
 
     report["broken_internal_links"] = list(dict.fromkeys(
