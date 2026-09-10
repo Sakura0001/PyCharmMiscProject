@@ -1541,6 +1541,45 @@ class ScenarioPolicyTests(unittest.TestCase):
         self.assertIn("新事务重读数据正确", observations)
         self.assertIn("子运行 B 不得取消 DDL", acceptance)
 
+    def test_sc35_old_read_view_main_run_requires_existing_rr_snapshot(self):
+        policy = SCENARIO_POLICIES["SC35"]
+        prerequisites = "；".join(policy["prerequisites"])
+        environment = "；".join(policy["factor_scopes"][FACTOR_CATEGORIES[0]].values())
+        acceptance = "；".join(policy["acceptance_additions"])
+        for section, text in (("prerequisites", prerequisites),
+                              ("environment", environment), ("acceptance", acceptance)):
+            with self.subTest(section=section):
+                self.assertIn("子运行 B 仅限既有 RR", text)
+                self.assertIn("REPEATABLE READ", text)
+                self.assertNotIn("子运行 B 使用既有 RC/RR", text)
+        for term in ("DDL 前", "START TRANSACTION WITH CONSISTENT SNAPSHOT",
+                     "未访问目标表", "真实重建 DDL 成功", "首次 SELECT",
+                     "1412/HY000", "显式 ROLLBACK", "新事务重读数据正确"):
+            with self.subTest(prerequisite=term):
+                self.assertIn(term, prerequisites)
+        observations = {point["object"]: point for point in policy["observation_points"]}
+        snapshot = observations.get("子运行 B RR 快照前置", {})
+        for term in ("REPEATABLE READ", "DDL 前", "快照", "未访问目标表"):
+            with self.subTest(snapshot_evidence=term):
+                self.assertIn(term, snapshot.get("evidence", ""))
+        self.assertIn("BLOCKED", snapshot.get("decision", ""))
+        self.assertIn("RR", observations["子运行 B 首次读取"]["decision"])
+
+    def test_sc35_rc_is_an_independent_control_without_rr_error_oracle(self):
+        policy = SCENARIO_POLICIES["SC35"]
+        texts = {
+            "prerequisites": "；".join(policy["prerequisites"]),
+            "environment": "；".join(policy["factor_scopes"][FACTOR_CATEGORIES[0]].values()),
+            "observations": "；".join(value for point in policy["observation_points"]
+                                      for value in point.values()),
+            "acceptance": "；".join(policy["acceptance_additions"]),
+        }
+        for section, text in texts.items():
+            with self.subTest(section=section):
+                self.assertIn("RC 独立控制", text)
+                self.assertIn("不适用 B 的 1412/HY000 验收", text)
+        self.assertIn("独立 Run ID", texts["prerequisites"])
+
     def test_all_scenarios_have_complete_policies(self):
         expected = {f"SC{i:02d}" for i in range(1, 49)}
         self.assertEqual(expected, set(SCENARIO_POLICIES))
