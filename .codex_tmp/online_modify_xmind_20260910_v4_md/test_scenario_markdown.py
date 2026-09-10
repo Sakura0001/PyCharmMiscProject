@@ -1,6 +1,7 @@
 """Contract tests for explicit, reviewable scenario coverage policies."""
 
 from copy import deepcopy
+import re
 import unittest
 from unittest.mock import patch
 
@@ -58,6 +59,60 @@ SCENARIO_MECHANISM_TERMS = {
     "SC46": ("连续", "克隆", "资源", "趋势"),
     "SC47": ("跨厂商", "缺陷", "增强", "独立期望"),
     "SC48": ("INSTANT", "OFF/ON", "范围外", "不计当前 PASS"),
+}
+
+
+# Independently authored observation mechanisms/evidence. Goals and scopes must
+# never supply the words required by this observation-only oracle.
+OBSERVATION_KEYWORDS_BY_SCENE = {
+    "SC01": ("自增", "旧上限", "回表", "提交位点"),
+    "SC02": ("扫描", "旧键/新键", "复合键", "事务时间线"),
+    "SC03": ("聚簇", "NULL", "稳定标识", "事务回执"),
+    "SC04": ("范围包含", "不安全边", "64 位", "errno/SQLSTATE"),
+    "SC05": ("CHAR_LENGTH", "OCTET_LENGTH", "前缀", "SHOW INDEX"),
+    "SC06": ("排序规则", "SAVEPOINT", "尾空格", "账本"),
+    "SC07": ("补零", "HEX/LENGTH", "255→256", "前缀"),
+    "SC08": ("Lmax", "页外", "HEX/LENGTH", "长值提交账本"),
+    "SC09": ("M/D", "十进制", "精度/标度", "重复回执"),
+    "SC10": ("FIRST/AFTER", "不可见", "旧新句柄", "SHOW CREATE"),
+    "SC11": ("SUB_PART", "扩大组", "复合唯一", "SHOW INDEX"),
+    "SC12": ("字节限额", "页大小", "同句原子性", "errno/SQLSTATE"),
+    "SC13": ("EXPLAIN", "ASC/DESC", "不可见", "SHOW INDEX"),
+    "SC14": ("MVI", "四行", "崩溃", "错误日志"),
+    "SC15": ("已有与新增", "词项", "SRID", "写等待", "回执"),
+    "SC16": ("NONE", "SHARED", "写等待链", "表达式不变"),
+    "SC17": ("窄结果", "溢出", "BIGINT", "提交回执"),
+    "SC18": ("CAST", "函数索引", "文本依赖", "调用回执"),
+    "SC19": ("父侧提交", "第二侧失败", "过渡规则", "FK 索引"),
+    "SC20": ("子先中间态", "级联", "全图", "删除/更新账本"),
+    "SC21": ("BINARY", "VARBINARY", "两侧拒绝", "HEX/LENGTH"),
+    "SC22": ("非路由", "跨叶", "剪枝", "执行计划"),
+    "SC23": ("p/s", "受限键", "安全 c", "分区定义快照"),
+    "SC24": ("64", "320", "48", "CREATE", "执行阶段"),
+    "SC25": ("同句动作类", "全列", "默认写入", "第一错误阶段"),
+    "SC26": ("压缩映射", "表达式", "安全子句", "提交账本"),
+    "SC27": ("SHOW INDEX", "重名/缺失/超限", "ADD/DROP", "回执"),
+    "SC28": ("最终违规", "CHECK/FK", "约束前后快照", "提交账本"),
+    "SC29": ("charset/collation", "物理选项", "转换字节", "快照"),
+    "SC30": ("155", "PREPARE/EXECUTE", "第一失败阶段", "回执"),
+    "SC31": ("扫描屏障", "ROLLBACK TO", "旧新键", "等待链"),
+    "SC32": ("临时回放冲突", "最终无重复", "事件时间线", "等待队列"),
+    "SC33": ("UK", "REPLACE/IODKU", "回放记录", "回执"),
+    "SC34": ("排除契约", "真实重复", "原子性", "提交证据"),
+    "SC35": ("MDL", "取消", "旧快照", "残留锁清单"),
+    "SC36": ("XA", "PREPARED", "COMMIT/ROLLBACK", "MDL", "回执"),
+    "SC37": ("容量", "越限", "row log", "四轮", "负载时间线"),
+    "SC38": ("持久化证据", "成功回执", "恢复 schema", "提交账本"),
+    "SC39": ("二次故障", "恢复回滚", "清理幂等", "恢复日志"),
+    "SC40": ("目标调用", "分配点", "注入回执", "配额恢复记录"),
+    "SC41": ("日志顺序", "提交位点", "BIGINT/DECIMAL/HEX", "复制追平"),
+    "SC42": ("切换记录", "新主", "原主回归", "提交账本"),
+    "SC43": ("备份清单", "恢复目标", "点位结构", "事务账本"),
+    "SC44": ("丢响应位置", "幂等键", "旧句柄", "提交记录"),
+    "SC45": ("无 DDL", "SHARED", "延迟分布", "原始采样"),
+    "SC46": ("每轮源定义", "资源趋势", "时间序列", "临时对象"),
+    "SC47": ("阿里支持我方不支持", "增强", "缺陷复现包", "错误日志"),
+    "SC48": ("INSTANT", "范围外", "不计当前 PASS", "执行清单"),
 }
 
 
@@ -119,9 +174,46 @@ class ScenarioPolicyTests(unittest.TestCase):
         self._assert_mutation_rejected(
             policies, "test_scenario_text_is_not_a_shared_placeholder")
 
+    def test_contract_rejects_observation_only_placeholders(self):
+        policies = deepcopy(SCENARIO_POLICIES)
+        policies["SC01"]["observation_points"] = [
+            {"object": f"对象编号{number}", "evidence": "检查记录", "decision": "通过"}
+            for number in range(5)
+        ]
+        self._assert_mutation_rejected(
+            policies, "test_all_scenarios_have_complete_policies")
+
+    def test_contract_rejects_short_observation_fields(self):
+        for field, value in (("object", "锁"), ("evidence", "记录"), ("decision", "通过")):
+            with self.subTest(field=field):
+                policies = deepcopy(SCENARIO_POLICIES)
+                policies["SC01"]["observation_points"][0][field] = value
+                self._assert_mutation_rejected(
+                    policies, "test_all_scenarios_have_complete_policies")
+
+    def test_contract_rejects_generic_observation_fields(self):
+        for field, value in (
+                ("object", "观测对象编号0001"),
+                ("evidence", "检查记录：测试结果符合要求"),
+                ("decision", "该观测项目符合要求，判定通过")):
+            with self.subTest(field=field):
+                policies = deepcopy(SCENARIO_POLICIES)
+                policies["SC01"]["observation_points"][0][field] = value
+                self._assert_mutation_rejected(
+                    policies, "test_all_scenarios_have_complete_policies")
+
+    def test_contract_rejects_wrong_observation_mechanism(self):
+        policies = deepcopy(SCENARIO_POLICIES)
+        policies["SC01"]["observation_points"] = deepcopy(
+            policies["SC02"]["observation_points"])
+        # Keep every other SC01 field intact, including its correct mechanism words.
+        self._assert_mutation_rejected(
+            policies, "test_all_scenarios_have_complete_policies")
+
     def test_all_scenarios_have_complete_policies(self):
         expected = {f"SC{i:02d}" for i in range(1, 49)}
         self.assertEqual(expected, set(SCENARIO_POLICIES))
+        self.assertEqual(expected, set(OBSERVATION_KEYWORDS_BY_SCENE))
         required = {
             "goal", "risk", "prerequisites", "factor_scopes",
             "observation_points", "acceptance_additions",
@@ -146,11 +238,33 @@ class ScenarioPolicyTests(unittest.TestCase):
             self.assertTrue(all(item.strip() for item in policy["prerequisites"]), scene_id)
             self.assertGreaterEqual(len(policy["observation_points"]), 5, scene_id)
             self.assertEqual(set(FACTOR_CATEGORIES), set(policy["factor_scopes"]), scene_id)
+            observation_text = []
             for observation in policy["observation_points"]:
                 self.assertEqual({"object", "evidence", "decision"}, set(observation), scene_id)
                 self.assertTrue(all(str(value).strip() for value in observation.values()), scene_id)
+                for field, minimum_length in (("object", 3), ("evidence", 8), ("decision", 12)):
+                    value = observation[field].strip()
+                    context = (scene_id, observation["object"], field)
+                    self.assertGreaterEqual(len(value), minimum_length, context)
+                    self.assertNotRegex(
+                        value,
+                        r"^(?:观测|检查|测试)?(?:对象|项目|证据|记录|结果)(?:编号)?[\s\d:：#._-]*$",
+                        context)
+                    for phrase in ("检查正常", "正常则通过", "通用检查", "检查记录",
+                                   "符合要求", "结果正常", "测试通过"):
+                        self.assertNotIn(phrase, value, context)
+                    observation_text.append(value)
                 self.assertTrue(any(token in observation["decision"] for token in
                                     ("通过", "失败", "BLOCKED", "范围外")), scene_id)
+                # Verdict words and punctuation are not an acceptance condition.
+                condition = re.sub(r"通过|失败|BLOCKED|范围外|[\W\d_]", "",
+                                   observation["decision"])
+                self.assertGreaterEqual(len(condition), 4,
+                                        (scene_id, observation["object"], "missing condition"))
+            combined_observations = "；".join(observation_text)
+            for keyword in OBSERVATION_KEYWORDS_BY_SCENE[scene_id]:
+                self.assertIn(keyword, combined_observations,
+                              (scene_id, "missing observation mechanism/evidence", keyword))
 
     def test_scope_values_are_explicit(self):
         allowed = {"全部覆盖", "指定覆盖", "边界覆盖", "专属子运行", "不适用"}
