@@ -28,7 +28,6 @@ except ModuleNotFoundError as exc:
 try:
     from render_markdown import (
         OUTPUT_MARKDOWN as RENDER_OUTPUT_MARKDOWN,
-        SCENE_DIMENSION_SUPPLEMENTS,
         SOURCE_XMIND as RENDER_SOURCE_XMIND,
         md_anchor,
         md_text,
@@ -44,10 +43,14 @@ except ModuleNotFoundError as exc:
     if exc.name != "render_markdown":
         raise
     RENDER_OUTPUT_MARKDOWN = RENDER_SOURCE_XMIND = None
-    SCENE_DIMENSION_SUPPLEMENTS = None
     md_anchor = md_text = render_document = render_factor_catalog = None
     render_factor_table = render_global_scope = render_observations = None
     render_scene = render_source_appendix = None
+
+try:
+    from render_markdown import SUPPLEMENTAL_DIMENSIONS_BY_SCENE
+except (ImportError, ModuleNotFoundError):
+    SUPPLEMENTAL_DIMENSIONS_BY_SCENE = None
 
 
 SOURCE_XMIND = Path(
@@ -562,17 +565,32 @@ class MarkdownRendererTests(unittest.TestCase):
     def test_factor_and_observation_tables_are_explicit(self):
         policy = SCENARIO_POLICIES["SC01"]
         factors = render_factor_table(policy)
-        self.assertIn("| 因子类别 | 覆盖要求 | 取值范围 | 组合策略 |", factors)
+        self.assertIn(
+            "| 因子类别 | 覆盖要求 | 具体范围或例外 | 执行策略 |",
+            factors,
+        )
         self.assertEqual(9, sum(
             factors.count(f"| {md_text(category)} |")
             for category in FACTOR_CATEGORIES
         ))
         observations = render_observations(policy)
-        self.assertIn("| 观测对象 | 显式证据 | 判定条件 |", observations)
         for point in policy["observation_points"]:
-            self.assertIn(md_text(point["object"]), observations)
-            self.assertIn(md_text(point["evidence"]), observations)
-            self.assertIn(md_text(point["decision"]), observations)
+            self.assertIn(
+                f"- **{md_text(point['object'])}**："
+                f"证据：{md_text(point['evidence'])}；"
+                f"判定：{md_text(point['decision'])}",
+                observations,
+            )
+
+    def test_global_scope_explains_complete_coverage_without_cartesian_product(self):
+        scope = render_global_scope(self.workbook)
+        for term in (
+                "全部覆盖",
+                "全局因子目录中所有兼容且适用的取值",
+                "不做无意义的全笛卡尔积",
+                "不适用/例外/专属子运行须显式说明",
+        ):
+            self.assertIn(term, scope)
 
     def test_sc01_preserves_all_seven_source_sections_note_id_and_references(self):
         source = self.scenes[0]
@@ -624,14 +642,14 @@ class MarkdownRendererTests(unittest.TestCase):
             "SC46": ("B09",),
             "SC31": ("B10",),
             "SC13": ("D07", "D22"),
-        }, SCENE_DIMENSION_SUPPLEMENTS)
+        }, SUPPLEMENTAL_DIMENSIONS_BY_SCENE)
         for identifier, dimensions in expected.items():
             block = self._scene_block(identifier)
+            traceability = block.split("#### 来源与追溯", maxsplit=1)[1]
             for dimension_id, title in dimensions:
-                self.assertIn(
-                    f"[{dimension_id} {title}](#dimension-{dimension_id.lower()})",
-                    block,
-                )
+                link = f"[{dimension_id} {title}](#dimension-{dimension_id.lower()})"
+                self.assertIn(link, block)
+                self.assertIn(link, traceability)
 
     def test_source_appendix_has_every_topic_anchor_once_and_all_sheet_roots(self):
         anchors = re.findall(r'<a id="topic-([^"]+)"></a>', self.document)

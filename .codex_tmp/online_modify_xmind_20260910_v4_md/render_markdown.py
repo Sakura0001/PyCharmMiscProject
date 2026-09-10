@@ -18,7 +18,7 @@ OUTPUT_MARKDOWN = SOURCE_XMIND.with_name(
     "RDS_MySQL_8.0.45_测试计划_V4_场景化完整覆盖版.md"
 )
 
-SCENE_DIMENSION_SUPPLEMENTS = {
+SUPPLEMENTAL_DIMENSIONS_BY_SCENE = {
     "SC01": ("B02",),
     "SC25": ("B08",),
     "SC46": ("B09",),
@@ -115,7 +115,7 @@ def render_factor_table(policy: dict[str, Any]) -> str:
     """Render all nine explicit factor scopes for one scenario."""
 
     lines = [
-        "| 因子类别 | 覆盖要求 | 取值范围 | 组合策略 |",
+        "| 因子类别 | 覆盖要求 | 具体范围或例外 | 执行策略 |",
         "|---|---|---|---|",
     ]
     scopes = policy["factor_scopes"]
@@ -131,14 +131,12 @@ def render_factor_table(policy: dict[str, Any]) -> str:
 def render_observations(policy: dict[str, Any]) -> str:
     """Render concrete observation evidence and decision conditions."""
 
-    lines = [
-        "| 观测对象 | 显式证据 | 判定条件 |",
-        "|---|---|---|",
-    ]
+    lines = []
     for point in policy["observation_points"]:
         lines.append(
-            f"| {md_text(point['object'])} | {md_text(point['evidence'])} | "
-            f"{md_text(point['decision'])} |"
+            f"- **{md_text(point['object'])}**："
+            f"证据：{md_text(point['evidence'])}；"
+            f"判定：{md_text(point['decision'])}"
         )
     return "\n".join(lines)
 
@@ -153,6 +151,8 @@ def render_global_scope(workbook: list[dict[str, Any]]) -> str:
         "- 本轮验收 INPLACE 在线修改列类型与 Online DDL 唯一键冲突优化。",
         "- 类型 INSTANT 为后续范围，不计入当前 PASS。",
         "- 阿里环境作为主机功能对照；我方主机、备机分别对独立预期核验。",
+        "- “全部覆盖”表示全局因子目录中所有兼容且适用的取值，"
+        "不做无意义的全笛卡尔积；不适用/例外/专属子运行须显式说明。",
         "",
         *_raw_block("源范围声明", source_note),
         "",
@@ -242,7 +242,7 @@ def _linked_dimensions(
         if dimension and dimension["dimension_id"] not in seen:
             linked.append(dimension)
             seen.add(dimension["dimension_id"])
-    for identifier in SCENE_DIMENSION_SUPPLEMENTS.get(scene["scene_id"], ()):
+    for identifier in SUPPLEMENTAL_DIMENSIONS_BY_SCENE.get(scene["scene_id"], ()):
         if identifier not in seen:
             linked.append(by_id[identifier])
             seen.add(identifier)
@@ -259,6 +259,13 @@ def render_scene(
     name = _SCENE_SUFFIX_PATTERN.sub("", scene["title"]).strip()
     sections = scene["sections"]
     linked_dimensions = _linked_dimensions(scene, dimensions)
+    dimensions_by_id = {
+        dimension["dimension_id"]: dimension for dimension in dimensions
+    }
+    supplemental_dimensions = [
+        dimensions_by_id[identifier]
+        for identifier in SUPPLEMENTAL_DIMENSIONS_BY_SCENE.get(scene["scene_id"], ())
+    ]
     dimension_links = "、".join(
         f"[{dimension['dimension_id']} {md_text(dimension['title'])}]"
         f"(#dimension-{dimension['dimension_id'].lower()})"
@@ -312,7 +319,13 @@ def render_scene(
         f"- 场景原始标题：{md_text(scene['title'])}",
     ]
     lines.extend(_raw_block("场景原始 notes", scene["notes"]))
+    supplemental_links = "、".join(
+        f"[{dimension['dimension_id']} {md_text(dimension['title'])}]"
+        f"(#dimension-{dimension['dimension_id'].lower()})"
+        for dimension in supplemental_dimensions
+    ) or "（无）"
     lines.extend([
+        f"- 补充挂载维度：{supplemental_links}",
         "- 原第 5/6/7 节（关联维度、原始用例、原编号技术核对，无损保留）：",
         _render_topic_tree(sections[4:7]),
         "- 场景 references（保持源顺序及重复项）：",
