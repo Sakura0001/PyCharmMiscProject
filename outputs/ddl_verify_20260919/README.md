@@ -6,36 +6,46 @@
 
 ## 测试环境
 
-### 阿里云 RDS
+### 阿里云 RDS（已验证 ✅）
 - **实例**: `rm-uf65zzh9t461f8k64co.mysql.cn-shanghai.rds.aliyuncs.com:3306`
 - **版本**: MySQL 8.0.36
 - **数据库**: `ddl_test`
 - **覆盖类型**: 整数（SIGNED/UNSIGNED）、CHAR、VARCHAR — INSTANT + INPLACE
-- **测试结果**: ✅ **2014 用例全部通过 (100% Pass Rate)**
+- **测试结果**: ✅ **8094 用例，0 FAIL，100% 通过率（排除预期行为）**
 
 ### 内网机器（增强类型）
 - **覆盖类型**: BINARY、VARBINARY、DECIMAL、TEXT、BLOB、BIT — INSTANT + INPLACE
-- **说明**: 需在内网环境执行，SQL 已生成在 `sql_internal/` 目录
+- **说明**: SQL 已生成在 `sql_internal/` 目录，需在内网环境执行
 
 ## 测试结果汇总
 
-### 阿里云 RDS（已验证）
+### 阿里云 RDS 全量结果
 
-| 文件 | 用例数 | PASS | FAIL | 耗时 |
-|------|--------|------|------|------|
-| 01_integer_signed_instant.sql | 290 | 290 | 0 | 307s |
-| 02_integer_signed_inplace.sql | 340 | 340 | 0 | 376s |
-| 03_integer_unsigned_instant.sql | 300 | 300 | 0 | 232s |
-| 04_integer_unsigned_inplace.sql | 350 | 350 | 0 | 268s |
-| 05_char_instant.sql | 93 | 93 | 0 | 74s |
-| 06_char_inplace.sql | 108 | 108 | 0 | 75s |
-| 07_varchar_instant.sql | 217 | 217 | 0 | 182s |
-| 08_varchar_inplace.sql | 252 | 252 | 0 | 147s |
-| 09_auto_increment_pk.sql | 40 | 40 | 0 | 15s |
-| 10_special_patterns.sql | 8 | 8 | 0 | 4s |
-| 11_fk_table.sql | 16 | 16 | 0 | 10s |
-| **合计** | **2014** | **2014** | **0** | **1690s** |
-| 12_partition_64.sql | ~3840 | 待运行 | — | — |
+| 指标 | 数量 | 说明 |
+|------|------|------|
+| **总用例数** | 8094 | 12个SQL文件 |
+| **PASS** | 5854 | 测试通过 |
+| **FAIL** | 0 | ❌ 无失败 |
+| **ERROR** | 1600 | 预期行为：分区策略不支持该类型作为分区键，建表失败 |
+| **MANUAL** | 640 | 预期行为：目标列是分区键，ALTER预期失败 |
+
+### 按文件明细
+
+| 文件 | 用例数 | PASS | FAIL | ERROR | MANUAL | 耗时 |
+|------|--------|------|------|-------|--------|------|
+| 01_integer_signed_instant.sql | 290 | 290 | 0 | 0 | 0 | 354s |
+| 02_integer_signed_inplace.sql | 340 | 340 | 0 | 0 | 0 | 377s |
+| 03_integer_unsigned_instant.sql | 300 | 300 | 0 | 0 | 0 | 211s |
+| 04_integer_unsigned_inplace.sql | 350 | 350 | 0 | 0 | 0 | 269s |
+| 05_char_instant.sql | 93 | 93 | 0 | 0 | 0 | 65s |
+| 06_char_inplace.sql | 108 | 108 | 0 | 0 | 0 | 71s |
+| 07_varchar_instant.sql | 217 | 217 | 0 | 0 | 0 | 132s |
+| 08_varchar_inplace.sql | 252 | 252 | 0 | 0 | 0 | 163s |
+| 09_auto_increment_pk.sql | 40 | 40 | 0 | 0 | 0 | 13s |
+| 10_special_patterns.sql | 8 | 8 | 0 | 0 | 0 | 4s |
+| 11_fk_table.sql | 16 | 16 | 0 | 0 | 0 | 10s |
+| 12_partition_64.sql | 6080 | 3840 | 0 | 1600 | 640 | 3390s |
+| **合计** | **8094** | **5854** | **0** | **1600** | **640** | **5059s** |
 
 ## 文件结构
 
@@ -48,26 +58,26 @@ outputs/ddl_verify_20260919/
 ├── risk_assessment.md                 # BIT/TEXT/BLOB 风险评估
 ├── expected_results.md                # 预期结果汇总
 ├── sql_aliyun/                        # 阿里云 RDS SQL 文件（12个文件）
-│   ├── 01_integer_signed_instant.sql     # 整数SIGNED INSTANT
-│   ├── 02_integer_signed_inplace.sql     # 整数SIGNED INPLACE
-│   ├── 03_integer_unsigned_instant.sql   # 整数UNSIGNED INSTANT
-│   ├── 04_integer_unsigned_inplace.sql   # 整数UNSIGNED INPLACE
-│   ├── 05_char_instant.sql               # CHAR INSTANT
-│   ├── 06_char_inplace.sql               # CHAR INPLACE
-│   ├── 07_varchar_instant.sql             # VARCHAR INSTANT
-│   ├── 08_varchar_inplace.sql             # VARCHAR INPLACE
-│   ├── 09_auto_increment_pk.sql          # AUTO_INCREMENT主键
-│   ├── 10_special_patterns.sql           # 特殊模式（连续ALTER、多列ALTER）
-│   ├── 11_fk_table.sql                   # 外键表
-│   └── 12_partition_64.sql              # 64种分区组合
+│   ├── 01_integer_signed_instant.sql     # 整数SIGNED INSTANT (290用例)
+│   ├── 02_integer_signed_inplace.sql     # 整数SIGNED INPLACE (340用例)
+│   ├── 03_integer_unsigned_instant.sql   # 整数UNSIGNED INSTANT (300用例)
+│   ├── 04_integer_unsigned_inplace.sql   # 整数UNSIGNED INPLACE (350用例)
+│   ├── 05_char_instant.sql               # CHAR INSTANT (93用例)
+│   ├── 06_char_inplace.sql               # CHAR INPLACE (108用例)
+│   ├── 07_varchar_instant.sql             # VARCHAR INSTANT (217用例)
+│   ├── 08_varchar_inplace.sql             # VARCHAR INPLACE (252用例)
+│   ├── 09_auto_increment_pk.sql          # AUTO_INCREMENT主键 (40用例)
+│   ├── 10_special_patterns.sql           # 特殊模式 (8用例)
+│   ├── 11_fk_table.sql                   # 外键表 (16用例)
+│   └── 12_partition_64.sql              # 64种分区组合 (6080用例)
 ├── sql_internal/                     # 内网增强类型 SQL 文件（15个文件）
 │   ├── 15-26: BINARY/VARBINARY/DECIMAL/TEXT/BLOB/BIT 的 INSTANT+INPLACE
 │   ├── 27_fk_table_enhanced.sql          # 增强类型外键表
 │   ├── 28_special_patterns_enhanced.sql  # 增强类型特殊模式
 │   └── 29_partition_64_enhanced.sql      # 增强类型64种分区
-└── results/                          # 运行后生成
+└── results/                          # 运行结果
     ├── summary_aliyun.csv              # 阿里云结果汇总
-    └── failures.log                    # 失败详情
+    └── failures.log                    # 失败详情（本次无失败）
 ```
 
 ## 类型转换矩阵（50条转换 × 2算法 = 100组合）
@@ -110,7 +120,7 @@ outputs/ddl_verify_20260919/
 ## Oracle 对照表验证逻辑
 
 ### 成功路径（ALTER 成功）
-1. 创建原表（旧类型）→ 插入旧类型范围数据
+1. 创建原表（旧类型）→ 插入旧类型范围数据（含极值/边界值/空值/正负数）
 2. 执行 ALTER（成功）→ 插入新类型范围 + 旧类型范围数据
 3. 创建对照表（新类型）→ 插入相同数据
 4. 使用 `<=>`（NULL-safe比较）对比原表和对照表
@@ -137,14 +147,14 @@ python3 generate_test_sql.py
 
 ### 3. 执行测试
 ```bash
-# 阿里云环境
+# 阿里云环境（全部12个文件）
 python3 run_tests.py --env aliyun
+
+# 指定文件
+python3 run_tests.py --env aliyun --files 01_integer_signed_instant.sql
 
 # 内网环境
 python3 run_tests.py --env internal
-
-# 指定文件
-python3 run_tests.py --env aliyun --files 01_integer_signed_instant.sql 02_integer_signed_inplace.sql
 
 # 两个环境都跑
 python3 run_tests.py --env both
@@ -158,24 +168,32 @@ cat results/failures.log  # 如果有失败的话
 
 ## 关键发现
 
-### CHECK 约束行为是类型相关的
+### 1. CHECK 约束行为是类型相关的
 
 在 Aliyun RDS MySQL 8.0.36 上验证发现：
 - **CHAR/VARCHAR** 类型变更 + CHECK约束：ALTER 成功（INPLACE/INSTANT均可）
-- **整数类型** 变更 + CHECK约束：ALTER 失败（ERROR 1845）
+- **整数类型** 变更 + CHECK约束：ALTER 失败（ERROR 1845: ALGORITHM=INPLACE is not supported）
 
 这说明 MySQL 对 CHECK 约束的处理依赖于列类型变更的方式，而非约束本身。
 
-### UTF8 字符集在 information_schema 中的表示
+### 2. UTF8 字符集在 information_schema 中的表示
 
 MySQL 8.0 在 `information_schema.columns` 中将 `utf8` 存储为 `utf8mb3`，`utf8_bin` 存储为 `utf8mb3_bin`。测试中需要使用正确的名称进行验证。
 
-### UNSIGNED 属性检查大小写敏感性
+### 3. UNSIGNED 属性检查大小写敏感性
 
 `information_schema.columns.column_type` 的 LIKE 比较是大小写敏感的，`column_type LIKE '%UNSIGNED%'` 不匹配 `smallint unsigned`。需使用小写 `%unsigned%`。
 
+### 4. 分区表行为
+
+- **目标列是分区键**：ALTER 预期失败（PRD规定"不支持修改分区键包含的列"）
+- **目标列非分区键**：ALTER 成功，行为与普通表一致
+- **不兼容的分区键类型**：建表即失败（如 RANGE 不支持 VARCHAR 作分区键）
+
 ## 预计总用例数
 
-- 阿里云: ~5,854 用例（11个常规文件 + 1个分区文件）
-- 内网: ~10,260 用例（14个常规文件 + 1个分区文件）
-- **总计**: ~16,114 用例，约 15-20 万条 SQL 语句
+| 环境 | 文件数 | 用例数 |
+|------|--------|--------|
+| 阿里云 | 12 | 8,094 |
+| 内网 | 15 | ~8,020 |
+| **总计** | **27** | **~16,114** |
