@@ -885,3 +885,53 @@ outputs/ddl_verify_20260919/
 ---
 
 > **文档结束** | 如有疑问请联系测试负责人。
+
+---
+
+## 附录: 并发 DML 验证覆盖 (2026-09-21 补充)
+
+### 测试框架
+- **Python 框架**: 3,049 行代码 (data_generator.py + dml_framework.py + run_concurrent_tests.py)
+- **Oracle 对照表双写法**: DDL 前后对 t1 (原表) 和 t2 (对照表) 执行相同 DML，最后用 `<=>` 对比
+
+### DML 操作覆盖
+| 操作 | 小表测试 | 大表测试 (58.9M 行) |
+|------|----------|---------------------|
+| INSERT | ✅ | ✅ (6,630 次) |
+| UPDATE | ✅ | ✅ (11 次) |
+| DELETE | ✅ | ✅ (4,490 次) |
+| SELECT | ✅ | ✅ (27 次, 含 COUNT/MAX/MIN/点查/索引扫描) |
+| UPSERT | ✅ | ✅ (6,383 次) |
+
+### 大表验证结果
+- 数据量: 58,916,864 行 (3.4 GB)
+- DDL (INPLACE INT→BIGINT): 310.7 秒
+- 期间 DML: 17,541 次操作
+- 验证: CHECKSUM 一致 + 行数一致 → **PASS**
+
+### 性能测试结果
+| 测试 | 结果 |
+|------|------|
+| 1017 列表 DDL | INSTANT 0.38s, INPLACE 0.21s |
+| 50 次连续 ADD COLUMN | QPS 47-50, 无退化 |
+| 1000 轮 DDL Fuzz | 0% 内存增长, NO_LEAK |
+| 30 轮连续 DDL | -3.65% 变化, STABLE |
+| 58.9M 行 INPLACE DDL | 310.7s, DML 不中断 |
+
+### 数据多样性覆盖
+- **整数**: MIN/MAX/±1/0/正负数/NULL/post-DDL 新范围值
+- **CHAR/VARCHAR**: 空串/单字符/MAX/MAX-1/MAX+1(FAIL)/多字节/emoji×8000/尾空格/特殊字符
+- **BINARY/VARBINARY**: 全 0x00/全 0xFF/混合二进制/相同前缀不同尾部/MAX
+- **TEXT/BLOB**: 255/256/8101/8192/16000/32000/60000/65535/65536 字节边界/emoji×8000/0x00 完整性
+- **BIT**: 0/1/MAX/MAX-1/交替位模式/NULL
+- **DECIMAL**: MIN/MAX/精度步长/0.00/±1.23/9位编码边界/38位编码边界/最大M
+
+### 增强类型在阿里云实测结果
+| 类型 | INSTANT | INPLACE |
+|------|---------|---------|
+| BINARY/VARBINARY | ✅ (超出预期) | ✅ |
+| DECIMAL | ❌ | ❌ |
+| TEXT/BLOB | ❌ | ❌ |
+| BIT | ❌ | ❌ |
+
+> 注: DECIMAL/TEXT/BLOB/BIT 需在内网增强环境验证
