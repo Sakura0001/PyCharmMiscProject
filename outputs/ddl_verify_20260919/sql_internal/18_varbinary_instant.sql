@@ -2,7 +2,7 @@
 -- RDS MySQL DDL 秒级/在线修改列类型 测试套件 — 内网环境
 -- 环境说明: 所有功能开关默认开启
 -- 覆盖类型: BINARY + VARBINARY + DECIMAL + TEXT + BLOB + BIT
--- 覆盖算法: INSTANT + INPLACE (增强类型 INSTANT 预期失败, 但仍需覆盖)
+-- 覆盖算法: INSTANT + INPLACE (增强类型 INSTANT 预期成功 (BINARY/VARBINARY/DECIMAL 已确认支持))
 -- ============================================================
 -- 本文件由 generate_test_sql.py 自动生成, 请勿手动修改
 -- 生成时间: 2026-09-20
@@ -11,10 +11,10 @@
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 SET SESSION innodb_lock_wait_timeout = 50;
 
--- File 18: VARBINARY INSTANT (预期失败)
+-- File 18: VARBINARY INSTANT (预期成功)
 
 -- Test Case: TC-I0001
--- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0001, t2_i0001;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -30,7 +30,7 @@ INSERT INTO t1_i0001 (target) VALUES (0x00000000000000000000000000000000000000);
 INSERT INTO t1_i0001 (target) VALUES (0x4d49584d49584d49584d49584d49584d49584d4d);
 INSERT INTO t1_i0001 (target) VALUES ('');
 INSERT INTO t1_i0001 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0001 MODIFY target VARBINARY(40), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0001 (target) VALUES (0x00000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -44,11 +44,11 @@ INSERT INTO t1_i0001 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff
 INSERT INTO t1_i0001 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0001 (target) VALUES (0x4141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(20)
+-- Oracle table: VARBINARY(40)
 CREATE TABLE t2_i0001 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(20),
+  target VARBINARY(40),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0001 (target) VALUES (0x0000000000000000000000000000000000000000);
@@ -79,7 +79,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0002
--- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=COMPACT, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0002, t2_i0002;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -95,7 +95,7 @@ INSERT INTO t1_i0002 (target) VALUES (0x00000000000000000000000000000000000000);
 INSERT INTO t1_i0002 (target) VALUES (0x4d49584d49584d49584d49584d49584d49584d4d);
 INSERT INTO t1_i0002 (target) VALUES ('');
 INSERT INTO t1_i0002 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0002 MODIFY target VARBINARY(40), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0002 (target) VALUES (0x00000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -109,11 +109,11 @@ INSERT INTO t1_i0002 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff
 INSERT INTO t1_i0002 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0002 (target) VALUES (0x4141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(20)
+-- Oracle table: VARBINARY(40)
 CREATE TABLE t2_i0002 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(20),
+  target VARBINARY(40),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=COMPACT;
 INSERT INTO t2_i0002 (target) VALUES (0x0000000000000000000000000000000000000000);
@@ -144,7 +144,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0003
--- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=REDUNDANT, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0003, t2_i0003;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -160,7 +160,7 @@ INSERT INTO t1_i0003 (target) VALUES (0x00000000000000000000000000000000000000);
 INSERT INTO t1_i0003 (target) VALUES (0x4d49584d49584d49584d49584d49584d49584d4d);
 INSERT INTO t1_i0003 (target) VALUES ('');
 INSERT INTO t1_i0003 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0003 MODIFY target VARBINARY(40), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0003 (target) VALUES (0x00000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -174,11 +174,11 @@ INSERT INTO t1_i0003 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff
 INSERT INTO t1_i0003 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0003 (target) VALUES (0x4141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(20)
+-- Oracle table: VARBINARY(40)
 CREATE TABLE t2_i0003 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(20),
+  target VARBINARY(40),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=REDUNDANT;
 INSERT INTO t2_i0003 (target) VALUES (0x0000000000000000000000000000000000000000);
@@ -270,7 +270,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0005
--- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=NO_EXPLICIT_PK, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0005, t2_i0005;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -286,7 +286,7 @@ INSERT INTO t1_i0005 (target) VALUES (0x00000000000000000000000000000000000000);
 INSERT INTO t1_i0005 (target) VALUES (0x4d49584d49584d49584d49584d49584d49584d4d);
 INSERT INTO t1_i0005 (target) VALUES ('');
 INSERT INTO t1_i0005 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0005 MODIFY target VARBINARY(40), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0005 (target) VALUES (0x00000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -300,11 +300,11 @@ INSERT INTO t1_i0005 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff
 INSERT INTO t1_i0005 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0005 (target) VALUES (0x4141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(20)
+-- Oracle table: VARBINARY(40)
 CREATE TABLE t2_i0005 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(20),
+  target VARBINARY(40),
   pad2 VARCHAR(20) DEFAULT 'pad2', INDEX idx_id (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0005 (target) VALUES (0x0000000000000000000000000000000000000000);
@@ -335,7 +335,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0006
--- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=NONE, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0006, t2_i0006;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -351,7 +351,7 @@ INSERT INTO t1_i0006 (target) VALUES (0x00000000000000000000000000000000000000);
 INSERT INTO t1_i0006 (target) VALUES (0x4d49584d49584d49584d49584d49584d49584d4d);
 INSERT INTO t1_i0006 (target) VALUES ('');
 INSERT INTO t1_i0006 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0006 MODIFY target VARBINARY(40), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0006 (target) VALUES (0x00000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -365,11 +365,11 @@ INSERT INTO t1_i0006 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff
 INSERT INTO t1_i0006 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0006 (target) VALUES (0x4141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(20)
+-- Oracle table: VARBINARY(40)
 CREATE TABLE t2_i0006 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(20),
+  target VARBINARY(40),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0006 (target) VALUES (0x0000000000000000000000000000000000000000);
@@ -400,7 +400,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0007
--- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=MULTIPLE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0007, t2_i0007;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -416,7 +416,7 @@ INSERT INTO t1_i0007 (target) VALUES (0x00000000000000000000000000000000000000);
 INSERT INTO t1_i0007 (target) VALUES (0x4d49584d49584d49584d49584d49584d49584d4d);
 INSERT INTO t1_i0007 (target) VALUES ('');
 INSERT INTO t1_i0007 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0007 MODIFY target VARBINARY(40), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0007 (target) VALUES (0x00000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -430,11 +430,11 @@ INSERT INTO t1_i0007 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff
 INSERT INTO t1_i0007 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0007 (target) VALUES (0x4141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(20)
+-- Oracle table: VARBINARY(40)
 CREATE TABLE t2_i0007 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(20),
+  target VARBINARY(40),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1), INDEX idx_pad2 (pad2)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0007 (target) VALUES (0x0000000000000000000000000000000000000000);
@@ -465,7 +465,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0008
--- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=UNIQUE, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0008, t2_i0008;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -481,7 +481,7 @@ INSERT INTO t1_i0008 (target) VALUES (0x00000000000000000000000000000000000000);
 INSERT INTO t1_i0008 (target) VALUES (0x4d49584d49584d49584d49584d49584d49584d4d);
 INSERT INTO t1_i0008 (target) VALUES ('');
 INSERT INTO t1_i0008 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0008 MODIFY target VARBINARY(40), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0008 (target) VALUES (0x00000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -495,11 +495,11 @@ INSERT INTO t1_i0008 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff
 INSERT INTO t1_i0008 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0008 (target) VALUES (0x4141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(20)
+-- Oracle table: VARBINARY(40)
 CREATE TABLE t2_i0008 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(20),
+  target VARBINARY(40),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), UNIQUE INDEX uq_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0008 (target) VALUES (0x0000000000000000000000000000000000000000);
@@ -530,7 +530,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0009
--- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=COMPOSITE_PREFIX, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0009, t2_i0009;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -546,7 +546,7 @@ INSERT INTO t1_i0009 (target) VALUES (0x00000000000000000000000000000000000000);
 INSERT INTO t1_i0009 (target) VALUES (0x4d49584d49584d49584d49584d49584d49584d4d);
 INSERT INTO t1_i0009 (target) VALUES ('');
 INSERT INTO t1_i0009 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0009 MODIFY target VARBINARY(40), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0009 (target) VALUES (0x00000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -560,11 +560,11 @@ INSERT INTO t1_i0009 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff
 INSERT INTO t1_i0009 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0009 (target) VALUES (0x4141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(20)
+-- Oracle table: VARBINARY(40)
 CREATE TABLE t2_i0009 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(20),
+  target VARBINARY(40),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_composite (pad1(10), pad2(10))
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0009 (target) VALUES (0x0000000000000000000000000000000000000000);
@@ -595,7 +595,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0010
--- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=FIRST
 DROP TABLE IF EXISTS t1_i0010, t2_i0010;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -611,7 +611,7 @@ INSERT INTO t1_i0010 (target) VALUES (0x00000000000000000000000000000000000000);
 INSERT INTO t1_i0010 (target) VALUES (0x4d49584d49584d49584d49584d49584d49584d4d);
 INSERT INTO t1_i0010 (target) VALUES ('');
 INSERT INTO t1_i0010 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0010 MODIFY target VARBINARY(40), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0010 (target) VALUES (0x00000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -625,9 +625,9 @@ INSERT INTO t1_i0010 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff
 INSERT INTO t1_i0010 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0010 (target) VALUES (0x4141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(20)
+-- Oracle table: VARBINARY(40)
 CREATE TABLE t2_i0010 (
-  target VARBINARY(20),
+  target VARBINARY(40),
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
@@ -660,7 +660,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0011
--- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=LAST
 DROP TABLE IF EXISTS t1_i0011, t2_i0011;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -676,7 +676,7 @@ INSERT INTO t1_i0011 (target) VALUES (0x00000000000000000000000000000000000000);
 INSERT INTO t1_i0011 (target) VALUES (0x4d49584d49584d49584d49584d49584d49584d4d);
 INSERT INTO t1_i0011 (target) VALUES ('');
 INSERT INTO t1_i0011 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0011 MODIFY target VARBINARY(40), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0011 (target) VALUES (0x00000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -690,12 +690,12 @@ INSERT INTO t1_i0011 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff
 INSERT INTO t1_i0011 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0011 (target) VALUES (0x4141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(20)
+-- Oracle table: VARBINARY(40)
 CREATE TABLE t2_i0011 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   pad2 VARCHAR(20) DEFAULT 'pad2',
-  target VARBINARY(20), PRIMARY KEY (id), INDEX idx_pad1 (pad1)
+  target VARBINARY(40), PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0011 (target) VALUES (0x0000000000000000000000000000000000000000);
 INSERT INTO t2_i0011 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff);
@@ -725,7 +725,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0012
--- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0012, t2_i0012;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -740,7 +740,7 @@ INSERT INTO t1_i0012 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff
 INSERT INTO t1_i0012 (target) VALUES (0x00000000000000000000000000000000000000);
 INSERT INTO t1_i0012 (target) VALUES (0x4d49584d49584d49584d49584d49584d49584d4d);
 INSERT INTO t1_i0012 (target) VALUES ('');
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0012 MODIFY target VARBINARY(40) NOT NULL, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0012 (target) VALUES (0x00000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -753,11 +753,11 @@ INSERT INTO t1_i0012 (target) VALUES ('');
 INSERT INTO t1_i0012 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0012 (target) VALUES (0x4141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(20)
+-- Oracle table: VARBINARY(40)
 CREATE TABLE t2_i0012 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(20) NOT NULL,
+  target VARBINARY(40) NOT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0012 (target) VALUES (0x0000000000000000000000000000000000000000);
@@ -786,7 +786,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0013
--- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=CONSTANT_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0013, t2_i0013;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -802,7 +802,7 @@ INSERT INTO t1_i0013 (target) VALUES (0x00000000000000000000000000000000000000);
 INSERT INTO t1_i0013 (target) VALUES (0x4d49584d49584d49584d49584d49584d49584d4d);
 INSERT INTO t1_i0013 (target) VALUES ('');
 INSERT INTO t1_i0013 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0013 MODIFY target VARBINARY(40) DEFAULT 0x00, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0013 (target) VALUES (0x00000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -816,11 +816,11 @@ INSERT INTO t1_i0013 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff
 INSERT INTO t1_i0013 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0013 (target) VALUES (0x4141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(20)
+-- Oracle table: VARBINARY(40)
 CREATE TABLE t2_i0013 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(20) DEFAULT 0x00,
+  target VARBINARY(40) DEFAULT 0x00,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0013 (target) VALUES (0x0000000000000000000000000000000000000000);
@@ -851,7 +851,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0014
--- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0014, t2_i0014;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -867,7 +867,7 @@ INSERT INTO t1_i0014 (target) VALUES (0x00000000000000000000000000000000000000);
 INSERT INTO t1_i0014 (target) VALUES (0x4d49584d49584d49584d49584d49584d49584d4d);
 INSERT INTO t1_i0014 (target) VALUES ('');
 INSERT INTO t1_i0014 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0014 MODIFY target VARBINARY(40) DEFAULT NULL, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0014 (target) VALUES (0x00000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -881,11 +881,11 @@ INSERT INTO t1_i0014 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff
 INSERT INTO t1_i0014 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0014 (target) VALUES (0x4141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(20)
+-- Oracle table: VARBINARY(40)
 CREATE TABLE t2_i0014 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(20) DEFAULT NULL,
+  target VARBINARY(40) DEFAULT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0014 (target) VALUES (0x0000000000000000000000000000000000000000);
@@ -916,7 +916,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0015
--- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0015, t2_i0015;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -931,7 +931,7 @@ INSERT INTO t1_i0015 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff
 INSERT INTO t1_i0015 (target) VALUES (0x00000000000000000000000000000000000000);
 INSERT INTO t1_i0015 (target) VALUES (0x4d49584d49584d49584d49584d49584d49584d4d);
 INSERT INTO t1_i0015 (target) VALUES ('');
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0015 MODIFY target VARBINARY(40) NOT NULL DEFAULT 0x00, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0015 (target) VALUES (0x00000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -944,11 +944,11 @@ INSERT INTO t1_i0015 (target) VALUES ('');
 INSERT INTO t1_i0015 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0015 (target) VALUES (0x4141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(20)
+-- Oracle table: VARBINARY(40)
 CREATE TABLE t2_i0015 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(20) NOT NULL DEFAULT 0x00,
+  target VARBINARY(40) NOT NULL DEFAULT 0x00,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0015 (target) VALUES (0x0000000000000000000000000000000000000000);
@@ -977,7 +977,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0016
--- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=INVISIBLE, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0016, t2_i0016;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -993,7 +993,7 @@ INSERT INTO t1_i0016 (target) VALUES (0x00000000000000000000000000000000000000);
 INSERT INTO t1_i0016 (target) VALUES (0x4d49584d49584d49584d49584d49584d49584d4d);
 INSERT INTO t1_i0016 (target) VALUES ('');
 INSERT INTO t1_i0016 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0016 MODIFY target VARBINARY(40) INVISIBLE, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0016 (target) VALUES (0x00000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -1007,11 +1007,11 @@ INSERT INTO t1_i0016 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff
 INSERT INTO t1_i0016 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0016 (target) VALUES (0x4141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(20)
+-- Oracle table: VARBINARY(40)
 CREATE TABLE t2_i0016 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(20) INVISIBLE,
+  target VARBINARY(40) INVISIBLE,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0016 (target) VALUES (0x0000000000000000000000000000000000000000);
@@ -1042,7 +1042,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0017
--- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0017, t2_i0017;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -1052,15 +1052,15 @@ CREATE TABLE t1_i0017 (
   target VARBINARY(20),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0017 MODIFY target VARBINARY(40), ALGORITHM=instant;
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0017 (target) VALUES (0x4141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(20)
+-- Oracle table: VARBINARY(40)
 CREATE TABLE t2_i0017 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(20),
+  target VARBINARY(40),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 SELECT 'TC-I0017' AS test_id,
@@ -1078,7 +1078,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0018
--- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S1, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0018, t2_i0018;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -1089,7 +1089,7 @@ CREATE TABLE t1_i0018 (
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t1_i0018 (target) VALUES (0x0000000000000000000000000000000000000000);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0018 MODIFY target VARBINARY(40), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0018 (target) VALUES (0x00000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -1103,11 +1103,11 @@ INSERT INTO t1_i0018 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff
 INSERT INTO t1_i0018 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0018 (target) VALUES (0x4141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(20)
+-- Oracle table: VARBINARY(40)
 CREATE TABLE t2_i0018 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(20),
+  target VARBINARY(40),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0018 (target) VALUES (0x0000000000000000000000000000000000000000);
@@ -1133,7 +1133,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0019
--- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=UNIFORM, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0019, t2_i0019;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -1149,7 +1149,7 @@ INSERT INTO t1_i0019 (target) VALUES (0x00000000000000000000000000000000000000);
 INSERT INTO t1_i0019 (target) VALUES (0x4d49584d49584d49584d49584d49584d49584d4d);
 INSERT INTO t1_i0019 (target) VALUES ('');
 INSERT INTO t1_i0019 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0019 MODIFY target VARBINARY(40), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0019 (target) VALUES (0x00000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -1163,11 +1163,11 @@ INSERT INTO t1_i0019 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff
 INSERT INTO t1_i0019 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0019 (target) VALUES (0x4141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(20)
+-- Oracle table: VARBINARY(40)
 CREATE TABLE t2_i0019 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(20),
+  target VARBINARY(40),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0019 (target) VALUES (0x0000000000000000000000000000000000000000);
@@ -1198,7 +1198,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0020
--- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=MONOTONIC, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0020, t2_i0020;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -1214,7 +1214,7 @@ INSERT INTO t1_i0020 (target) VALUES (0x00000000000000000000000000000000000000);
 INSERT INTO t1_i0020 (target) VALUES (0x4d49584d49584d49584d49584d49584d49584d4d);
 INSERT INTO t1_i0020 (target) VALUES ('');
 INSERT INTO t1_i0020 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0020 MODIFY target VARBINARY(40), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0020 (target) VALUES (0x00000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -1228,11 +1228,11 @@ INSERT INTO t1_i0020 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff
 INSERT INTO t1_i0020 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0020 (target) VALUES (0x4141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(20)
+-- Oracle table: VARBINARY(40)
 CREATE TABLE t2_i0020 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(20),
+  target VARBINARY(40),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0020 (target) VALUES (0x0000000000000000000000000000000000000000);
@@ -1263,7 +1263,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0021
--- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=ZERO, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0021, t2_i0021;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -1278,7 +1278,7 @@ INSERT INTO t1_i0021 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff
 INSERT INTO t1_i0021 (target) VALUES (0x00000000000000000000000000000000000000);
 INSERT INTO t1_i0021 (target) VALUES (0x4d49584d49584d49584d49584d49584d49584d4d);
 INSERT INTO t1_i0021 (target) VALUES ('');
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0021 MODIFY target VARBINARY(40), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0021 (target) VALUES (0x00000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -1291,11 +1291,11 @@ INSERT INTO t1_i0021 (target) VALUES ('');
 INSERT INTO t1_i0021 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0021 (target) VALUES (0x4141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(20)
+-- Oracle table: VARBINARY(40)
 CREATE TABLE t2_i0021 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(20),
+  target VARBINARY(40),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0021 (target) VALUES (0x0000000000000000000000000000000000000000);
@@ -1324,7 +1324,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0022
--- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=SINGLE, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0022, t2_i0022;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -1340,7 +1340,7 @@ INSERT INTO t1_i0022 (target) VALUES (0x00000000000000000000000000000000000000);
 INSERT INTO t1_i0022 (target) VALUES (0x4d49584d49584d49584d49584d49584d49584d4d);
 INSERT INTO t1_i0022 (target) VALUES ('');
 INSERT INTO t1_i0022 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0022 MODIFY target VARBINARY(40), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0022 (target) VALUES (0x00000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -1354,11 +1354,11 @@ INSERT INTO t1_i0022 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff
 INSERT INTO t1_i0022 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0022 (target) VALUES (0x4141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(20)
+-- Oracle table: VARBINARY(40)
 CREATE TABLE t2_i0022 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(20),
+  target VARBINARY(40),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0022 (target) VALUES (0x0000000000000000000000000000000000000000);
@@ -1389,7 +1389,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0023
--- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=ALL, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0023, t2_i0023;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -1400,7 +1400,7 @@ CREATE TABLE t1_i0023 (
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t1_i0023 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0023 MODIFY target VARBINARY(40), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0023 (target) VALUES (0x00000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -1414,11 +1414,11 @@ INSERT INTO t1_i0023 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff
 INSERT INTO t1_i0023 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0023 (target) VALUES (0x4141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(20)
+-- Oracle table: VARBINARY(40)
 CREATE TABLE t2_i0023 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(20),
+  target VARBINARY(40),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0023 (target) VALUES (NULL);
@@ -1444,7 +1444,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0024
--- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=NON_STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0024, t2_i0024;
 SET SESSION sql_mode = '';
@@ -1460,7 +1460,7 @@ INSERT INTO t1_i0024 (target) VALUES (0x00000000000000000000000000000000000000);
 INSERT INTO t1_i0024 (target) VALUES (0x4d49584d49584d49584d49584d49584d49584d4d);
 INSERT INTO t1_i0024 (target) VALUES ('');
 INSERT INTO t1_i0024 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0024 MODIFY target VARBINARY(40), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0024 (target) VALUES (0x00000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -1474,11 +1474,11 @@ INSERT INTO t1_i0024 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff
 INSERT INTO t1_i0024 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0024 (target) VALUES (0x4141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(20)
+-- Oracle table: VARBINARY(40)
 CREATE TABLE t2_i0024 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(20),
+  target VARBINARY(40),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0024 (target) VALUES (0x0000000000000000000000000000000000000000);
@@ -1509,7 +1509,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0025
--- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0025, t2_i0025;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -1519,15 +1519,15 @@ CREATE TABLE t1_i0025 (
   target VARBINARY(20) NOT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0025 MODIFY target VARBINARY(40) NOT NULL, ALGORITHM=instant;
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0025 (target) VALUES (0x4141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(20)
+-- Oracle table: VARBINARY(40)
 CREATE TABLE t2_i0025 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(20) NOT NULL,
+  target VARBINARY(40) NOT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 SELECT 'TC-I0025' AS test_id,
@@ -1545,7 +1545,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0026
--- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=UNIFORM, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0026, t2_i0026;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -1555,15 +1555,15 @@ CREATE TABLE t1_i0026 (
   target VARBINARY(20),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0026 MODIFY target VARBINARY(40), ALGORITHM=instant;
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0026 (target) VALUES (0x4141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(20)
+-- Oracle table: VARBINARY(40)
 CREATE TABLE t2_i0026 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(20),
+  target VARBINARY(40),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 SELECT 'TC-I0026' AS test_id,
@@ -1581,7 +1581,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0027
--- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(20) -> VARBINARY(40), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0027, t2_i0027;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -1591,15 +1591,15 @@ CREATE TABLE t1_i0027 (
   target VARBINARY(20) NOT NULL DEFAULT 0x00,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0027 MODIFY target VARBINARY(40) NOT NULL DEFAULT 0x00, ALGORITHM=instant;
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0027 (target) VALUES (0x4141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(20)
+-- Oracle table: VARBINARY(40)
 CREATE TABLE t2_i0027 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(20) NOT NULL DEFAULT 0x00,
+  target VARBINARY(40) NOT NULL DEFAULT 0x00,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 SELECT 'TC-I0027' AS test_id,
@@ -1698,7 +1698,7 @@ INSERT INTO t1_tc_ia0029 (target) VALUES (0x414141414141414141414141414141414141
 SELECT 'TC-IA0029' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_ia0029' AND column_name='target' AND column_comment='test_comment';
 
 -- Test Case: TC-I0030
--- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0030, t2_i0030;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -1714,7 +1714,7 @@ INSERT INTO t1_i0030 (target) VALUES (0x0000000000000000000000000000000000000000
 INSERT INTO t1_i0030 (target) VALUES (0x4d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d);
 INSERT INTO t1_i0030 (target) VALUES ('');
 INSERT INTO t1_i0030 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0030 MODIFY target VARBINARY(200), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0030 (target) VALUES (0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -1728,11 +1728,11 @@ INSERT INTO t1_i0030 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff
 INSERT INTO t1_i0030 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0030 (target) VALUES (0x414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(100)
+-- Oracle table: VARBINARY(200)
 CREATE TABLE t2_i0030 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(100),
+  target VARBINARY(200),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0030 (target) VALUES (0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -1763,7 +1763,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0031
--- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=COMPACT, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0031, t2_i0031;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -1779,7 +1779,7 @@ INSERT INTO t1_i0031 (target) VALUES (0x0000000000000000000000000000000000000000
 INSERT INTO t1_i0031 (target) VALUES (0x4d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d);
 INSERT INTO t1_i0031 (target) VALUES ('');
 INSERT INTO t1_i0031 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0031 MODIFY target VARBINARY(200), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0031 (target) VALUES (0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -1793,11 +1793,11 @@ INSERT INTO t1_i0031 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff
 INSERT INTO t1_i0031 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0031 (target) VALUES (0x414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(100)
+-- Oracle table: VARBINARY(200)
 CREATE TABLE t2_i0031 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(100),
+  target VARBINARY(200),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=COMPACT;
 INSERT INTO t2_i0031 (target) VALUES (0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -1828,7 +1828,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0032
--- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=REDUNDANT, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0032, t2_i0032;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -1844,7 +1844,7 @@ INSERT INTO t1_i0032 (target) VALUES (0x0000000000000000000000000000000000000000
 INSERT INTO t1_i0032 (target) VALUES (0x4d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d);
 INSERT INTO t1_i0032 (target) VALUES ('');
 INSERT INTO t1_i0032 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0032 MODIFY target VARBINARY(200), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0032 (target) VALUES (0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -1858,11 +1858,11 @@ INSERT INTO t1_i0032 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff
 INSERT INTO t1_i0032 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0032 (target) VALUES (0x414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(100)
+-- Oracle table: VARBINARY(200)
 CREATE TABLE t2_i0032 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(100),
+  target VARBINARY(200),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=REDUNDANT;
 INSERT INTO t2_i0032 (target) VALUES (0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -1954,7 +1954,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0034
--- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=NO_EXPLICIT_PK, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0034, t2_i0034;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -1970,7 +1970,7 @@ INSERT INTO t1_i0034 (target) VALUES (0x0000000000000000000000000000000000000000
 INSERT INTO t1_i0034 (target) VALUES (0x4d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d);
 INSERT INTO t1_i0034 (target) VALUES ('');
 INSERT INTO t1_i0034 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0034 MODIFY target VARBINARY(200), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0034 (target) VALUES (0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -1984,11 +1984,11 @@ INSERT INTO t1_i0034 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff
 INSERT INTO t1_i0034 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0034 (target) VALUES (0x414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(100)
+-- Oracle table: VARBINARY(200)
 CREATE TABLE t2_i0034 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(100),
+  target VARBINARY(200),
   pad2 VARCHAR(20) DEFAULT 'pad2', INDEX idx_id (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0034 (target) VALUES (0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -2019,7 +2019,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0035
--- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=NONE, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0035, t2_i0035;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -2035,7 +2035,7 @@ INSERT INTO t1_i0035 (target) VALUES (0x0000000000000000000000000000000000000000
 INSERT INTO t1_i0035 (target) VALUES (0x4d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d);
 INSERT INTO t1_i0035 (target) VALUES ('');
 INSERT INTO t1_i0035 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0035 MODIFY target VARBINARY(200), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0035 (target) VALUES (0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -2049,11 +2049,11 @@ INSERT INTO t1_i0035 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff
 INSERT INTO t1_i0035 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0035 (target) VALUES (0x414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(100)
+-- Oracle table: VARBINARY(200)
 CREATE TABLE t2_i0035 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(100),
+  target VARBINARY(200),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0035 (target) VALUES (0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -2084,7 +2084,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0036
--- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=MULTIPLE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0036, t2_i0036;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -2100,7 +2100,7 @@ INSERT INTO t1_i0036 (target) VALUES (0x0000000000000000000000000000000000000000
 INSERT INTO t1_i0036 (target) VALUES (0x4d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d);
 INSERT INTO t1_i0036 (target) VALUES ('');
 INSERT INTO t1_i0036 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0036 MODIFY target VARBINARY(200), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0036 (target) VALUES (0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -2114,11 +2114,11 @@ INSERT INTO t1_i0036 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff
 INSERT INTO t1_i0036 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0036 (target) VALUES (0x414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(100)
+-- Oracle table: VARBINARY(200)
 CREATE TABLE t2_i0036 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(100),
+  target VARBINARY(200),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1), INDEX idx_pad2 (pad2)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0036 (target) VALUES (0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -2149,7 +2149,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0037
--- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=UNIQUE, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0037, t2_i0037;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -2165,7 +2165,7 @@ INSERT INTO t1_i0037 (target) VALUES (0x0000000000000000000000000000000000000000
 INSERT INTO t1_i0037 (target) VALUES (0x4d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d);
 INSERT INTO t1_i0037 (target) VALUES ('');
 INSERT INTO t1_i0037 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0037 MODIFY target VARBINARY(200), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0037 (target) VALUES (0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -2179,11 +2179,11 @@ INSERT INTO t1_i0037 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff
 INSERT INTO t1_i0037 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0037 (target) VALUES (0x414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(100)
+-- Oracle table: VARBINARY(200)
 CREATE TABLE t2_i0037 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(100),
+  target VARBINARY(200),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), UNIQUE INDEX uq_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0037 (target) VALUES (0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -2214,7 +2214,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0038
--- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=COMPOSITE_PREFIX, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0038, t2_i0038;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -2230,7 +2230,7 @@ INSERT INTO t1_i0038 (target) VALUES (0x0000000000000000000000000000000000000000
 INSERT INTO t1_i0038 (target) VALUES (0x4d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d);
 INSERT INTO t1_i0038 (target) VALUES ('');
 INSERT INTO t1_i0038 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0038 MODIFY target VARBINARY(200), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0038 (target) VALUES (0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -2244,11 +2244,11 @@ INSERT INTO t1_i0038 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff
 INSERT INTO t1_i0038 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0038 (target) VALUES (0x414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(100)
+-- Oracle table: VARBINARY(200)
 CREATE TABLE t2_i0038 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(100),
+  target VARBINARY(200),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_composite (pad1(10), pad2(10))
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0038 (target) VALUES (0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -2279,7 +2279,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0039
--- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=FIRST
 DROP TABLE IF EXISTS t1_i0039, t2_i0039;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -2295,7 +2295,7 @@ INSERT INTO t1_i0039 (target) VALUES (0x0000000000000000000000000000000000000000
 INSERT INTO t1_i0039 (target) VALUES (0x4d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d);
 INSERT INTO t1_i0039 (target) VALUES ('');
 INSERT INTO t1_i0039 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0039 MODIFY target VARBINARY(200), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0039 (target) VALUES (0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -2309,9 +2309,9 @@ INSERT INTO t1_i0039 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff
 INSERT INTO t1_i0039 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0039 (target) VALUES (0x414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(100)
+-- Oracle table: VARBINARY(200)
 CREATE TABLE t2_i0039 (
-  target VARBINARY(100),
+  target VARBINARY(200),
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
@@ -2344,7 +2344,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0040
--- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=LAST
 DROP TABLE IF EXISTS t1_i0040, t2_i0040;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -2360,7 +2360,7 @@ INSERT INTO t1_i0040 (target) VALUES (0x0000000000000000000000000000000000000000
 INSERT INTO t1_i0040 (target) VALUES (0x4d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d);
 INSERT INTO t1_i0040 (target) VALUES ('');
 INSERT INTO t1_i0040 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0040 MODIFY target VARBINARY(200), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0040 (target) VALUES (0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -2374,12 +2374,12 @@ INSERT INTO t1_i0040 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff
 INSERT INTO t1_i0040 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0040 (target) VALUES (0x414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(100)
+-- Oracle table: VARBINARY(200)
 CREATE TABLE t2_i0040 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   pad2 VARCHAR(20) DEFAULT 'pad2',
-  target VARBINARY(100), PRIMARY KEY (id), INDEX idx_pad1 (pad1)
+  target VARBINARY(200), PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0040 (target) VALUES (0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
 INSERT INTO t2_i0040 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff);
@@ -2409,7 +2409,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0041
--- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0041, t2_i0041;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -2424,7 +2424,7 @@ INSERT INTO t1_i0041 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff
 INSERT INTO t1_i0041 (target) VALUES (0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
 INSERT INTO t1_i0041 (target) VALUES (0x4d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d);
 INSERT INTO t1_i0041 (target) VALUES ('');
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0041 MODIFY target VARBINARY(200) NOT NULL, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0041 (target) VALUES (0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -2437,11 +2437,11 @@ INSERT INTO t1_i0041 (target) VALUES ('');
 INSERT INTO t1_i0041 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0041 (target) VALUES (0x414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(100)
+-- Oracle table: VARBINARY(200)
 CREATE TABLE t2_i0041 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(100) NOT NULL,
+  target VARBINARY(200) NOT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0041 (target) VALUES (0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -2470,7 +2470,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0042
--- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=CONSTANT_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0042, t2_i0042;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -2486,7 +2486,7 @@ INSERT INTO t1_i0042 (target) VALUES (0x0000000000000000000000000000000000000000
 INSERT INTO t1_i0042 (target) VALUES (0x4d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d);
 INSERT INTO t1_i0042 (target) VALUES ('');
 INSERT INTO t1_i0042 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0042 MODIFY target VARBINARY(200) DEFAULT 0x00, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0042 (target) VALUES (0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -2500,11 +2500,11 @@ INSERT INTO t1_i0042 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff
 INSERT INTO t1_i0042 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0042 (target) VALUES (0x414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(100)
+-- Oracle table: VARBINARY(200)
 CREATE TABLE t2_i0042 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(100) DEFAULT 0x00,
+  target VARBINARY(200) DEFAULT 0x00,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0042 (target) VALUES (0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -2535,7 +2535,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0043
--- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0043, t2_i0043;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -2551,7 +2551,7 @@ INSERT INTO t1_i0043 (target) VALUES (0x0000000000000000000000000000000000000000
 INSERT INTO t1_i0043 (target) VALUES (0x4d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d);
 INSERT INTO t1_i0043 (target) VALUES ('');
 INSERT INTO t1_i0043 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0043 MODIFY target VARBINARY(200) DEFAULT NULL, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0043 (target) VALUES (0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -2565,11 +2565,11 @@ INSERT INTO t1_i0043 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff
 INSERT INTO t1_i0043 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0043 (target) VALUES (0x414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(100)
+-- Oracle table: VARBINARY(200)
 CREATE TABLE t2_i0043 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(100) DEFAULT NULL,
+  target VARBINARY(200) DEFAULT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0043 (target) VALUES (0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -2600,7 +2600,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0044
--- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0044, t2_i0044;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -2615,7 +2615,7 @@ INSERT INTO t1_i0044 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff
 INSERT INTO t1_i0044 (target) VALUES (0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
 INSERT INTO t1_i0044 (target) VALUES (0x4d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d);
 INSERT INTO t1_i0044 (target) VALUES ('');
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0044 MODIFY target VARBINARY(200) NOT NULL DEFAULT 0x00, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0044 (target) VALUES (0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -2628,11 +2628,11 @@ INSERT INTO t1_i0044 (target) VALUES ('');
 INSERT INTO t1_i0044 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0044 (target) VALUES (0x414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(100)
+-- Oracle table: VARBINARY(200)
 CREATE TABLE t2_i0044 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(100) NOT NULL DEFAULT 0x00,
+  target VARBINARY(200) NOT NULL DEFAULT 0x00,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0044 (target) VALUES (0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -2661,7 +2661,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0045
--- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=INVISIBLE, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0045, t2_i0045;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -2677,7 +2677,7 @@ INSERT INTO t1_i0045 (target) VALUES (0x0000000000000000000000000000000000000000
 INSERT INTO t1_i0045 (target) VALUES (0x4d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d);
 INSERT INTO t1_i0045 (target) VALUES ('');
 INSERT INTO t1_i0045 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0045 MODIFY target VARBINARY(200) INVISIBLE, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0045 (target) VALUES (0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -2691,11 +2691,11 @@ INSERT INTO t1_i0045 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff
 INSERT INTO t1_i0045 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0045 (target) VALUES (0x414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(100)
+-- Oracle table: VARBINARY(200)
 CREATE TABLE t2_i0045 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(100) INVISIBLE,
+  target VARBINARY(200) INVISIBLE,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0045 (target) VALUES (0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -2726,7 +2726,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0046
--- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0046, t2_i0046;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -2736,15 +2736,15 @@ CREATE TABLE t1_i0046 (
   target VARBINARY(100),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0046 MODIFY target VARBINARY(200), ALGORITHM=instant;
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0046 (target) VALUES (0x414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(100)
+-- Oracle table: VARBINARY(200)
 CREATE TABLE t2_i0046 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(100),
+  target VARBINARY(200),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 SELECT 'TC-I0046' AS test_id,
@@ -2762,7 +2762,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0047
--- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S1, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0047, t2_i0047;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -2773,7 +2773,7 @@ CREATE TABLE t1_i0047 (
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t1_i0047 (target) VALUES (0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0047 MODIFY target VARBINARY(200), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0047 (target) VALUES (0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -2787,11 +2787,11 @@ INSERT INTO t1_i0047 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff
 INSERT INTO t1_i0047 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0047 (target) VALUES (0x414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(100)
+-- Oracle table: VARBINARY(200)
 CREATE TABLE t2_i0047 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(100),
+  target VARBINARY(200),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0047 (target) VALUES (0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -2817,7 +2817,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0048
--- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=UNIFORM, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0048, t2_i0048;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -2833,7 +2833,7 @@ INSERT INTO t1_i0048 (target) VALUES (0x0000000000000000000000000000000000000000
 INSERT INTO t1_i0048 (target) VALUES (0x4d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d);
 INSERT INTO t1_i0048 (target) VALUES ('');
 INSERT INTO t1_i0048 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0048 MODIFY target VARBINARY(200), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0048 (target) VALUES (0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -2847,11 +2847,11 @@ INSERT INTO t1_i0048 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff
 INSERT INTO t1_i0048 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0048 (target) VALUES (0x414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(100)
+-- Oracle table: VARBINARY(200)
 CREATE TABLE t2_i0048 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(100),
+  target VARBINARY(200),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0048 (target) VALUES (0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -2882,7 +2882,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0049
--- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=MONOTONIC, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0049, t2_i0049;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -2898,7 +2898,7 @@ INSERT INTO t1_i0049 (target) VALUES (0x0000000000000000000000000000000000000000
 INSERT INTO t1_i0049 (target) VALUES (0x4d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d);
 INSERT INTO t1_i0049 (target) VALUES ('');
 INSERT INTO t1_i0049 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0049 MODIFY target VARBINARY(200), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0049 (target) VALUES (0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -2912,11 +2912,11 @@ INSERT INTO t1_i0049 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff
 INSERT INTO t1_i0049 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0049 (target) VALUES (0x414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(100)
+-- Oracle table: VARBINARY(200)
 CREATE TABLE t2_i0049 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(100),
+  target VARBINARY(200),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0049 (target) VALUES (0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -2947,7 +2947,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0050
--- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=ZERO, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0050, t2_i0050;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -2962,7 +2962,7 @@ INSERT INTO t1_i0050 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff
 INSERT INTO t1_i0050 (target) VALUES (0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
 INSERT INTO t1_i0050 (target) VALUES (0x4d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d);
 INSERT INTO t1_i0050 (target) VALUES ('');
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0050 MODIFY target VARBINARY(200), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0050 (target) VALUES (0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -2975,11 +2975,11 @@ INSERT INTO t1_i0050 (target) VALUES ('');
 INSERT INTO t1_i0050 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0050 (target) VALUES (0x414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(100)
+-- Oracle table: VARBINARY(200)
 CREATE TABLE t2_i0050 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(100),
+  target VARBINARY(200),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0050 (target) VALUES (0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -3008,7 +3008,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0051
--- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=SINGLE, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0051, t2_i0051;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -3024,7 +3024,7 @@ INSERT INTO t1_i0051 (target) VALUES (0x0000000000000000000000000000000000000000
 INSERT INTO t1_i0051 (target) VALUES (0x4d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d);
 INSERT INTO t1_i0051 (target) VALUES ('');
 INSERT INTO t1_i0051 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0051 MODIFY target VARBINARY(200), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0051 (target) VALUES (0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -3038,11 +3038,11 @@ INSERT INTO t1_i0051 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff
 INSERT INTO t1_i0051 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0051 (target) VALUES (0x414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(100)
+-- Oracle table: VARBINARY(200)
 CREATE TABLE t2_i0051 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(100),
+  target VARBINARY(200),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0051 (target) VALUES (0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -3073,7 +3073,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0052
--- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=ALL, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0052, t2_i0052;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -3084,7 +3084,7 @@ CREATE TABLE t1_i0052 (
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t1_i0052 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0052 MODIFY target VARBINARY(200), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0052 (target) VALUES (0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -3098,11 +3098,11 @@ INSERT INTO t1_i0052 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff
 INSERT INTO t1_i0052 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0052 (target) VALUES (0x414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(100)
+-- Oracle table: VARBINARY(200)
 CREATE TABLE t2_i0052 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(100),
+  target VARBINARY(200),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0052 (target) VALUES (NULL);
@@ -3128,7 +3128,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0053
--- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=NON_STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0053, t2_i0053;
 SET SESSION sql_mode = '';
@@ -3144,7 +3144,7 @@ INSERT INTO t1_i0053 (target) VALUES (0x0000000000000000000000000000000000000000
 INSERT INTO t1_i0053 (target) VALUES (0x4d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d49584d);
 INSERT INTO t1_i0053 (target) VALUES ('');
 INSERT INTO t1_i0053 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0053 MODIFY target VARBINARY(200), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0053 (target) VALUES (0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -3158,11 +3158,11 @@ INSERT INTO t1_i0053 (target) VALUES (0xffffffffffffffffffffffffffffffffffffffff
 INSERT INTO t1_i0053 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0053 (target) VALUES (0x414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(100)
+-- Oracle table: VARBINARY(200)
 CREATE TABLE t2_i0053 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(100),
+  target VARBINARY(200),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0053 (target) VALUES (0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
@@ -3193,7 +3193,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0054
--- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0054, t2_i0054;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -3203,15 +3203,15 @@ CREATE TABLE t1_i0054 (
   target VARBINARY(100) NOT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0054 MODIFY target VARBINARY(200) NOT NULL, ALGORITHM=instant;
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0054 (target) VALUES (0x414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(100)
+-- Oracle table: VARBINARY(200)
 CREATE TABLE t2_i0054 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(100) NOT NULL,
+  target VARBINARY(200) NOT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 SELECT 'TC-I0054' AS test_id,
@@ -3229,7 +3229,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0055
--- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=UNIFORM, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0055, t2_i0055;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -3239,15 +3239,15 @@ CREATE TABLE t1_i0055 (
   target VARBINARY(100),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0055 MODIFY target VARBINARY(200), ALGORITHM=instant;
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0055 (target) VALUES (0x414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(100)
+-- Oracle table: VARBINARY(200)
 CREATE TABLE t2_i0055 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(100),
+  target VARBINARY(200),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 SELECT 'TC-I0055' AS test_id,
@@ -3265,7 +3265,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0056
--- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: FAIL
+-- Type: VARBINARY(100) -> VARBINARY(200), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0056, t2_i0056;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -3275,15 +3275,15 @@ CREATE TABLE t1_i0056 (
   target VARBINARY(100) NOT NULL DEFAULT 0x00,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0056 MODIFY target VARBINARY(200) NOT NULL DEFAULT 0x00, ALGORITHM=instant;
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0056 (target) VALUES (0x414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141);
--- Oracle table: VARBINARY(100)
+-- Oracle table: VARBINARY(200)
 CREATE TABLE t2_i0056 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target VARBINARY(100) NOT NULL DEFAULT 0x00,
+  target VARBINARY(200) NOT NULL DEFAULT 0x00,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 SELECT 'TC-I0056' AS test_id,

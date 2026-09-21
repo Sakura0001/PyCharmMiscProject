@@ -593,7 +593,7 @@ def run_ddl_fuzz_test():
         """)
         return {r[0]: r[1] for r in cur.fetchall()}
     
-    for i in range(100):
+    for i in range(1000):
         try:
             exec_sql(conn, 'DROP TABLE IF EXISTS t_fuzz')
             exec_sql(conn, 'CREATE TABLE t_fuzz (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, c1 INT, c2 VARCHAR(50)) ENGINE=InnoDB')

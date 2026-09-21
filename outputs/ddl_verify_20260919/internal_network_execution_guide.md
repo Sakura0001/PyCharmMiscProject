@@ -95,11 +95,11 @@ python3 -c "import pymysql; print('pymysql OK')"
 | 序号 | 文件 | 类型 | 算法 | 用例数 | 预期结果 |
 |------|------|------|------|--------|----------|
 | 1 | `sql_internal/15_binary_inplace.sql` | BINARY(10)→BINARY(20), BINARY(40)→BINARY(80) | INPLACE | 68 | ✅ SUCCESS |
-| 2 | `sql_internal/16_binary_instant.sql` | 同上 | INSTANT | 58 | ❌ FAIL（预期失败） |
+| 2 | `sql_internal/16_binary_instant.sql` | 同上 | INSTANT | 58 | ✅ SUCCESS（已确认支持） |
 | 3 | `sql_internal/17_varbinary_inplace.sql` | VARBINARY(20)→VARBINARY(40), VARBINARY(100)→VARBINARY(200) | INPLACE | 68 | ✅ SUCCESS |
-| 4 | `sql_internal/18_varbinary_instant.sql` | 同上 | INSTANT | 58 | ❌ FAIL（预期失败） |
+| 4 | `sql_internal/18_varbinary_instant.sql` | 同上 | INSTANT | 58 | ✅ SUCCESS（已确认支持） |
 | 5 | `sql_internal/19_decimal_inplace.sql` | DECIMAL 多种精度扩展 | INPLACE | 204 | ✅ SUCCESS |
-| 6 | `sql_internal/20_decimal_instant.sql` | 同上 | INSTANT | 174 | ❌ FAIL（预期失败） |
+| 6 | `sql_internal/20_decimal_instant.sql` | 同上 | INSTANT | 174 | ✅ SUCCESS（用户确认内网支持） |
 | 7 | `sql_internal/21_text_instant.sql` | TINYTEXT→TEXT→MEDIUMTEXT→LONGTEXT | INSTANT | 93 | ✅ SUCCESS（PRD要求） |
 | 8 | `sql_internal/22_text_inplace.sql` | 同上 | INPLACE | 108 | ✅ SUCCESS |
 | 9 | `sql_internal/23_blob_instant.sql` | TINYBLOB→BLOB→MEDIUMBLOB→LONGBLOB | INSTANT | 87 | ✅ SUCCESS（PRD要求） |

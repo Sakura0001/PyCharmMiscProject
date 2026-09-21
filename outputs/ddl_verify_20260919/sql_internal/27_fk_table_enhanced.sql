@@ -2,7 +2,7 @@
 -- RDS MySQL DDL 秒级/在线修改列类型 测试套件 — 内网环境
 -- 环境说明: 所有功能开关默认开启
 -- 覆盖类型: BINARY + VARBINARY + DECIMAL + TEXT + BLOB + BIT
--- 覆盖算法: INSTANT + INPLACE (增强类型 INSTANT 预期失败, 但仍需覆盖)
+-- 覆盖算法: INSTANT + INPLACE (增强类型 INSTANT 预期成功 (BINARY/VARBINARY/DECIMAL 已确认支持))
 -- ============================================================
 -- 本文件由 generate_test_sql.py 自动生成, 请勿手动修改
 -- 生成时间: 2026-09-20

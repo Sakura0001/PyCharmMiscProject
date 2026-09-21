@@ -96,18 +96,18 @@ CHAR_VARCHAR_TRANSITIONS = [
 
 INTERNAL_TRANSITIONS = [
     # BINARY
-    {"id": "BIN-01", "category": "binary",    "old_type": "BINARY(10)",  "new_type": "BINARY(20)",  "charset": None, "old_max_len": 10,  "new_max_len": 20,  "instant": "FAIL", "inplace": "SUCCESS", "env": "internal"},
-    {"id": "BIN-02", "category": "binary",    "old_type": "BINARY(40)",  "new_type": "BINARY(80)",  "charset": None, "old_max_len": 40,  "new_max_len": 80,  "instant": "FAIL", "inplace": "SUCCESS", "env": "internal"},
+    {"id": "BIN-01", "category": "binary",    "old_type": "BINARY(10)",  "new_type": "BINARY(20)",  "charset": None, "old_max_len": 10,  "new_max_len": 20,  "instant": "SUCCESS", "inplace": "SUCCESS", "env": "internal"},
+    {"id": "BIN-02", "category": "binary",    "old_type": "BINARY(40)",  "new_type": "BINARY(80)",  "charset": None, "old_max_len": 40,  "new_max_len": 80,  "instant": "SUCCESS", "inplace": "SUCCESS", "env": "internal"},
     # VARBINARY
-    {"id": "VBIN-01", "category": "varbinary", "old_type": "VARBINARY(20)",  "new_type": "VARBINARY(40)",  "charset": None, "old_max_len": 20,  "new_max_len": 40,  "instant": "FAIL", "inplace": "SUCCESS", "env": "internal"},
-    {"id": "VBIN-02", "category": "varbinary", "old_type": "VARBINARY(100)", "new_type": "VARBINARY(200)", "charset": None, "old_max_len": 100, "new_max_len": 200, "instant": "FAIL", "inplace": "SUCCESS", "env": "internal"},
+    {"id": "VBIN-01", "category": "varbinary", "old_type": "VARBINARY(20)",  "new_type": "VARBINARY(40)",  "charset": None, "old_max_len": 20,  "new_max_len": 40,  "instant": "SUCCESS", "inplace": "SUCCESS", "env": "internal"},
+    {"id": "VBIN-02", "category": "varbinary", "old_type": "VARBINARY(100)", "new_type": "VARBINARY(200)", "charset": None, "old_max_len": 100, "new_max_len": 200, "instant": "SUCCESS", "inplace": "SUCCESS", "env": "internal"},
     # DECIMAL
-    {"id": "DEC-01", "category": "decimal", "old_type": "DECIMAL(10,2)",  "new_type": "DECIMAL(12,2)",  "charset": None, "instant": "FAIL", "inplace": "SUCCESS", "env": "internal"},
-    {"id": "DEC-02", "category": "decimal", "old_type": "DECIMAL(1,0)",   "new_type": "DECIMAL(2,0)",   "charset": None, "instant": "FAIL", "inplace": "SUCCESS", "env": "internal"},
-    {"id": "DEC-03", "category": "decimal", "old_type": "DECIMAL(1,1)",   "new_type": "DECIMAL(2,1)",   "charset": None, "instant": "FAIL", "inplace": "SUCCESS", "env": "internal"},
-    {"id": "DEC-04", "category": "decimal", "old_type": "DECIMAL(64,30)", "new_type": "DECIMAL(65,30)", "charset": None, "instant": "FAIL", "inplace": "SUCCESS", "env": "internal"},
-    {"id": "DEC-05", "category": "decimal", "old_type": "DECIMAL(18,0)",  "new_type": "DECIMAL(20,0)",  "charset": None, "instant": "FAIL", "inplace": "SUCCESS", "env": "internal"},
-    {"id": "DEC-06", "category": "decimal", "old_type": "DECIMAL(31,30)", "new_type": "DECIMAL(33,30)", "charset": None, "instant": "FAIL", "inplace": "SUCCESS", "env": "internal"},
+    {"id": "DEC-01", "category": "decimal", "old_type": "DECIMAL(10,2)",  "new_type": "DECIMAL(12,2)",  "charset": None, "instant": "SUCCESS", "inplace": "SUCCESS", "env": "internal"},
+    {"id": "DEC-02", "category": "decimal", "old_type": "DECIMAL(1,0)",   "new_type": "DECIMAL(2,0)",   "charset": None, "instant": "SUCCESS", "inplace": "SUCCESS", "env": "internal"},
+    {"id": "DEC-03", "category": "decimal", "old_type": "DECIMAL(1,1)",   "new_type": "DECIMAL(2,1)",   "charset": None, "instant": "SUCCESS", "inplace": "SUCCESS", "env": "internal"},
+    {"id": "DEC-04", "category": "decimal", "old_type": "DECIMAL(64,30)", "new_type": "DECIMAL(65,30)", "charset": None, "instant": "SUCCESS", "inplace": "SUCCESS", "env": "internal"},
+    {"id": "DEC-05", "category": "decimal", "old_type": "DECIMAL(18,0)",  "new_type": "DECIMAL(20,0)",  "charset": None, "instant": "SUCCESS", "inplace": "SUCCESS", "env": "internal"},
+    {"id": "DEC-06", "category": "decimal", "old_type": "DECIMAL(31,30)", "new_type": "DECIMAL(33,30)", "charset": None, "instant": "SUCCESS", "inplace": "SUCCESS", "env": "internal"},
     # TEXT
     {"id": "TEXT-01", "category": "text", "old_type": "TINYTEXT",   "new_type": "TEXT",       "charset": "utf8mb4", "old_max_len": 255,     "new_max_len": 65535,     "instant": "SUCCESS", "inplace": "SUCCESS", "env": "internal"},
     {"id": "TEXT-02", "category": "text", "old_type": "TEXT",       "new_type": "MEDIUMTEXT", "charset": "utf8mb4", "old_max_len": 65535,   "new_max_len": 16777215,  "instant": "SUCCESS", "inplace": "SUCCESS", "env": "internal"},
@@ -1070,7 +1070,7 @@ def _build_partition_test(test_id: str, transition: dict, algorithm: str,
     data = gen_test_data(transition)
 
     t1 = f"t1_{test_id.lower().replace(chr(45), chr(95))}"
-    t2 = f"t2_{test_id.lower().replace("-", "_")}"
+    t2 = f"t2_{test_id.lower().replace(chr(45), chr(95))}"
 
     lines = []
     lines.append(f"-- Test Case: {test_id}")
@@ -1183,9 +1183,9 @@ def _build_fk_test(test_id: str, fk_trans: tuple, algorithm: str, scenario: str)
     else:  # non_fk
         alter_expected = expected
 
-    t_parent = f"tp_{test_id.lower().replace("-", "_")}"
-    t_child = f"tc_{test_id.lower().replace("-", "_")}"
-    t2 = f"t2_{test_id.lower().replace("-", "_")}"
+    t_parent = f"tp_{test_id.lower().replace(chr(45), chr(95))}"
+    t_child = f"tc_{test_id.lower().replace(chr(45), chr(95))}"
+    t2 = f"t2_{test_id.lower().replace(chr(45), chr(95))}"
 
     lines = []
     lines.append(f"-- Test Case: {test_id}")
@@ -1313,7 +1313,7 @@ def _gen_fk_data(fk_trans: tuple, cat: str) -> dict:
 def _build_consecutive_alter(test_id: str, unsigned: bool, algorithm: str) -> str:
     """Build consecutive ALTER chain test: TINYINT → ... → BIGINT."""
     t1 = f"t1_{test_id.lower().replace(chr(45), chr(95))}"
-    t2 = f"t2_{test_id.lower().replace("-", "_")}"
+    t2 = f"t2_{test_id.lower().replace(chr(45), chr(95))}"
 
     if unsigned:
         types = ["TINYINT UNSIGNED", "SMALLINT UNSIGNED", "MEDIUMINT UNSIGNED",
@@ -1379,7 +1379,7 @@ def _build_consecutive_alter(test_id: str, unsigned: bool, algorithm: str) -> st
 def _build_multi_column_alter(test_id: str, algorithm: str, env: str) -> str:
     """Build multi-column ALTER test."""
     t1 = f"t1_{test_id.lower().replace(chr(45), chr(95))}"
-    t2 = f"t2_{test_id.lower().replace("-", "_")}"
+    t2 = f"t2_{test_id.lower().replace(chr(45), chr(95))}"
 
     lines = []
     lines.append(f"-- Test Case: {test_id}")
@@ -1466,7 +1466,7 @@ def _build_multi_column_alter(test_id: str, algorithm: str, env: str) -> str:
 def _build_virtual_generated_test(test_id: str, algorithm: str) -> str:
     """Build virtual generated column / function index test."""
     t1 = f"t1_{test_id.lower().replace(chr(45), chr(95))}"
-    t2 = f"t2_{test_id.lower().replace("-", "_")}"
+    t2 = f"t2_{test_id.lower().replace(chr(45), chr(95))}"
 
     lines = []
     lines.append(f"-- Test Case: {test_id}")
@@ -1525,7 +1525,7 @@ def _build_column_attribute_test(test_id: str, transition: dict, algorithm: str,
                                  attr_type: str) -> str:
     """Build column attribute preservation test."""
     t1 = f"t1_{test_id.lower().replace(chr(45), chr(95))}"
-    t2 = f"t2_{test_id.lower().replace("-", "_")}"
+    t2 = f"t2_{test_id.lower().replace(chr(45), chr(95))}"
     old_type = transition["old_type"]
     new_type = transition["new_type"]
     cs = transition.get("charset")
@@ -1785,7 +1785,7 @@ SET SESSION innodb_lock_wait_timeout = 50;
 -- RDS MySQL DDL 秒级/在线修改列类型 测试套件 — 内网环境
 -- 环境说明: 所有功能开关默认开启
 -- 覆盖类型: BINARY + VARBINARY + DECIMAL + TEXT + BLOB + BIT
--- 覆盖算法: INSTANT + INPLACE (增强类型 INSTANT 预期失败, 但仍需覆盖)
+-- 覆盖算法: INSTANT + INPLACE (增强类型 INSTANT 预期成功 (BINARY/VARBINARY/DECIMAL 已确认支持))
 -- ============================================================
 -- 本文件由 generate_test_sql.py 自动生成, 请勿手动修改
 -- 生成时间: 2026-09-20
@@ -1874,10 +1874,10 @@ SET SESSION innodb_lock_wait_timeout = 50;
     _write_sql_file(os.path.join(SQL_INTERNAL, "15_binary_inplace.sql"),
                     header_internal + "-- File 15: BINARY INPLACE\n\n", sql15)
 
-    # 16: BINARY INSTANT (expected FAIL)
+    # 16: BINARY INSTANT (expected SUCCESS)
     sql16 = _gen_regular_table_tests(bin_trans, "instant", "internal")
     _write_sql_file(os.path.join(SQL_INTERNAL, "16_binary_instant.sql"),
-                    header_internal + "-- File 16: BINARY INSTANT (预期失败)\n\n", sql16)
+                    header_internal + "-- File 16: BINARY INSTANT (预期成功)\n\n", sql16)
 
     # 17: VARBINARY INPLACE
     vbin_trans = [t for t in internal_trans if t["category"] == "varbinary"]
@@ -1885,10 +1885,10 @@ SET SESSION innodb_lock_wait_timeout = 50;
     _write_sql_file(os.path.join(SQL_INTERNAL, "17_varbinary_inplace.sql"),
                     header_internal + "-- File 17: VARBINARY INPLACE\n\n", sql17)
 
-    # 18: VARBINARY INSTANT (expected FAIL)
+    # 18: VARBINARY INSTANT (expected SUCCESS)
     sql18 = _gen_regular_table_tests(vbin_trans, "instant", "internal")
     _write_sql_file(os.path.join(SQL_INTERNAL, "18_varbinary_instant.sql"),
-                    header_internal + "-- File 18: VARBINARY INSTANT (预期失败)\n\n", sql18)
+                    header_internal + "-- File 18: VARBINARY INSTANT (预期成功)\n\n", sql18)
 
     # 19: DECIMAL INPLACE
     dec_trans = [t for t in internal_trans if t["category"] == "decimal"]
@@ -1896,10 +1896,10 @@ SET SESSION innodb_lock_wait_timeout = 50;
     _write_sql_file(os.path.join(SQL_INTERNAL, "19_decimal_inplace.sql"),
                     header_internal + "-- File 19: DECIMAL INPLACE\n\n", sql19)
 
-    # 20: DECIMAL INSTANT (expected FAIL)
+    # 20: DECIMAL INSTANT (expected SUCCESS)
     sql20 = _gen_regular_table_tests(dec_trans, "instant", "internal")
     _write_sql_file(os.path.join(SQL_INTERNAL, "20_decimal_instant.sql"),
-                    header_internal + "-- File 20: DECIMAL INSTANT (预期失败)\n\n", sql20)
+                    header_internal + "-- File 20: DECIMAL INSTANT (预期成功)\n\n", sql20)
 
     # 21: TEXT INSTANT
     text_trans = [t for t in internal_trans if t["category"] == "text"]

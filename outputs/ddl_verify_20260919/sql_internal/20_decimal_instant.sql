@@ -2,7 +2,7 @@
 -- RDS MySQL DDL 秒级/在线修改列类型 测试套件 — 内网环境
 -- 环境说明: 所有功能开关默认开启
 -- 覆盖类型: BINARY + VARBINARY + DECIMAL + TEXT + BLOB + BIT
--- 覆盖算法: INSTANT + INPLACE (增强类型 INSTANT 预期失败, 但仍需覆盖)
+-- 覆盖算法: INSTANT + INPLACE (增强类型 INSTANT 预期成功 (BINARY/VARBINARY/DECIMAL 已确认支持))
 -- ============================================================
 -- 本文件由 generate_test_sql.py 自动生成, 请勿手动修改
 -- 生成时间: 2026-09-20
@@ -11,10 +11,10 @@
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 SET SESSION innodb_lock_wait_timeout = 50;
 
--- File 20: DECIMAL INSTANT (预期失败)
+-- File 20: DECIMAL INSTANT (预期成功)
 
 -- Test Case: TC-I0001
--- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0001, t2_i0001;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -30,7 +30,7 @@ INSERT INTO t1_i0001 (target) VALUES (0.00);
 INSERT INTO t1_i0001 (target) VALUES (1.11);
 INSERT INTO t1_i0001 (target) VALUES (-1.11);
 INSERT INTO t1_i0001 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0001 MODIFY target DECIMAL(12,2), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0001 (target) VALUES (9999999999.99);
@@ -46,11 +46,11 @@ INSERT INTO t1_i0001 (target) VALUES (99999999.99);
 INSERT INTO t1_i0001 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0001 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(10,2)
+-- Oracle table: DECIMAL(12,2)
 CREATE TABLE t2_i0001 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(10,2),
+  target DECIMAL(12,2),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0001 (target) VALUES (-99999999.99);
@@ -82,7 +82,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0002
--- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=COMPACT, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0002, t2_i0002;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -98,7 +98,7 @@ INSERT INTO t1_i0002 (target) VALUES (0.00);
 INSERT INTO t1_i0002 (target) VALUES (1.11);
 INSERT INTO t1_i0002 (target) VALUES (-1.11);
 INSERT INTO t1_i0002 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0002 MODIFY target DECIMAL(12,2), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0002 (target) VALUES (9999999999.99);
@@ -114,11 +114,11 @@ INSERT INTO t1_i0002 (target) VALUES (99999999.99);
 INSERT INTO t1_i0002 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0002 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(10,2)
+-- Oracle table: DECIMAL(12,2)
 CREATE TABLE t2_i0002 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(10,2),
+  target DECIMAL(12,2),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=COMPACT;
 INSERT INTO t2_i0002 (target) VALUES (-99999999.99);
@@ -150,7 +150,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0003
--- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=REDUNDANT, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0003, t2_i0003;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -166,7 +166,7 @@ INSERT INTO t1_i0003 (target) VALUES (0.00);
 INSERT INTO t1_i0003 (target) VALUES (1.11);
 INSERT INTO t1_i0003 (target) VALUES (-1.11);
 INSERT INTO t1_i0003 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0003 MODIFY target DECIMAL(12,2), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0003 (target) VALUES (9999999999.99);
@@ -182,11 +182,11 @@ INSERT INTO t1_i0003 (target) VALUES (99999999.99);
 INSERT INTO t1_i0003 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0003 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(10,2)
+-- Oracle table: DECIMAL(12,2)
 CREATE TABLE t2_i0003 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(10,2),
+  target DECIMAL(12,2),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=REDUNDANT;
 INSERT INTO t2_i0003 (target) VALUES (-99999999.99);
@@ -282,7 +282,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0005
--- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=NO_EXPLICIT_PK, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0005, t2_i0005;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -298,7 +298,7 @@ INSERT INTO t1_i0005 (target) VALUES (0.00);
 INSERT INTO t1_i0005 (target) VALUES (1.11);
 INSERT INTO t1_i0005 (target) VALUES (-1.11);
 INSERT INTO t1_i0005 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0005 MODIFY target DECIMAL(12,2), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0005 (target) VALUES (9999999999.99);
@@ -314,11 +314,11 @@ INSERT INTO t1_i0005 (target) VALUES (99999999.99);
 INSERT INTO t1_i0005 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0005 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(10,2)
+-- Oracle table: DECIMAL(12,2)
 CREATE TABLE t2_i0005 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(10,2),
+  target DECIMAL(12,2),
   pad2 VARCHAR(20) DEFAULT 'pad2', INDEX idx_id (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0005 (target) VALUES (-99999999.99);
@@ -350,7 +350,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0006
--- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=NONE, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0006, t2_i0006;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -366,7 +366,7 @@ INSERT INTO t1_i0006 (target) VALUES (0.00);
 INSERT INTO t1_i0006 (target) VALUES (1.11);
 INSERT INTO t1_i0006 (target) VALUES (-1.11);
 INSERT INTO t1_i0006 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0006 MODIFY target DECIMAL(12,2), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0006 (target) VALUES (9999999999.99);
@@ -382,11 +382,11 @@ INSERT INTO t1_i0006 (target) VALUES (99999999.99);
 INSERT INTO t1_i0006 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0006 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(10,2)
+-- Oracle table: DECIMAL(12,2)
 CREATE TABLE t2_i0006 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(10,2),
+  target DECIMAL(12,2),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0006 (target) VALUES (-99999999.99);
@@ -418,7 +418,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0007
--- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=MULTIPLE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0007, t2_i0007;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -434,7 +434,7 @@ INSERT INTO t1_i0007 (target) VALUES (0.00);
 INSERT INTO t1_i0007 (target) VALUES (1.11);
 INSERT INTO t1_i0007 (target) VALUES (-1.11);
 INSERT INTO t1_i0007 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0007 MODIFY target DECIMAL(12,2), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0007 (target) VALUES (9999999999.99);
@@ -450,11 +450,11 @@ INSERT INTO t1_i0007 (target) VALUES (99999999.99);
 INSERT INTO t1_i0007 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0007 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(10,2)
+-- Oracle table: DECIMAL(12,2)
 CREATE TABLE t2_i0007 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(10,2),
+  target DECIMAL(12,2),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1), INDEX idx_pad2 (pad2)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0007 (target) VALUES (-99999999.99);
@@ -486,7 +486,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0008
--- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=UNIQUE, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0008, t2_i0008;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -502,7 +502,7 @@ INSERT INTO t1_i0008 (target) VALUES (0.00);
 INSERT INTO t1_i0008 (target) VALUES (1.11);
 INSERT INTO t1_i0008 (target) VALUES (-1.11);
 INSERT INTO t1_i0008 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0008 MODIFY target DECIMAL(12,2), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0008 (target) VALUES (9999999999.99);
@@ -518,11 +518,11 @@ INSERT INTO t1_i0008 (target) VALUES (99999999.99);
 INSERT INTO t1_i0008 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0008 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(10,2)
+-- Oracle table: DECIMAL(12,2)
 CREATE TABLE t2_i0008 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(10,2),
+  target DECIMAL(12,2),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), UNIQUE INDEX uq_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0008 (target) VALUES (-99999999.99);
@@ -554,7 +554,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0009
--- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=COMPOSITE_PREFIX, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0009, t2_i0009;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -570,7 +570,7 @@ INSERT INTO t1_i0009 (target) VALUES (0.00);
 INSERT INTO t1_i0009 (target) VALUES (1.11);
 INSERT INTO t1_i0009 (target) VALUES (-1.11);
 INSERT INTO t1_i0009 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0009 MODIFY target DECIMAL(12,2), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0009 (target) VALUES (9999999999.99);
@@ -586,11 +586,11 @@ INSERT INTO t1_i0009 (target) VALUES (99999999.99);
 INSERT INTO t1_i0009 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0009 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(10,2)
+-- Oracle table: DECIMAL(12,2)
 CREATE TABLE t2_i0009 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(10,2),
+  target DECIMAL(12,2),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_composite (pad1(10), pad2(10))
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0009 (target) VALUES (-99999999.99);
@@ -622,7 +622,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0010
--- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=FIRST
 DROP TABLE IF EXISTS t1_i0010, t2_i0010;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -638,7 +638,7 @@ INSERT INTO t1_i0010 (target) VALUES (0.00);
 INSERT INTO t1_i0010 (target) VALUES (1.11);
 INSERT INTO t1_i0010 (target) VALUES (-1.11);
 INSERT INTO t1_i0010 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0010 MODIFY target DECIMAL(12,2), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0010 (target) VALUES (9999999999.99);
@@ -654,9 +654,9 @@ INSERT INTO t1_i0010 (target) VALUES (99999999.99);
 INSERT INTO t1_i0010 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0010 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(10,2)
+-- Oracle table: DECIMAL(12,2)
 CREATE TABLE t2_i0010 (
-  target DECIMAL(10,2),
+  target DECIMAL(12,2),
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
@@ -690,7 +690,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0011
--- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=LAST
 DROP TABLE IF EXISTS t1_i0011, t2_i0011;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -706,7 +706,7 @@ INSERT INTO t1_i0011 (target) VALUES (0.00);
 INSERT INTO t1_i0011 (target) VALUES (1.11);
 INSERT INTO t1_i0011 (target) VALUES (-1.11);
 INSERT INTO t1_i0011 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0011 MODIFY target DECIMAL(12,2), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0011 (target) VALUES (9999999999.99);
@@ -722,12 +722,12 @@ INSERT INTO t1_i0011 (target) VALUES (99999999.99);
 INSERT INTO t1_i0011 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0011 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(10,2)
+-- Oracle table: DECIMAL(12,2)
 CREATE TABLE t2_i0011 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   pad2 VARCHAR(20) DEFAULT 'pad2',
-  target DECIMAL(10,2), PRIMARY KEY (id), INDEX idx_pad1 (pad1)
+  target DECIMAL(12,2), PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0011 (target) VALUES (-99999999.99);
 INSERT INTO t2_i0011 (target) VALUES (99999999.99);
@@ -758,7 +758,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0012
--- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0012, t2_i0012;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -773,7 +773,7 @@ INSERT INTO t1_i0012 (target) VALUES (99999999.99);
 INSERT INTO t1_i0012 (target) VALUES (0.00);
 INSERT INTO t1_i0012 (target) VALUES (1.11);
 INSERT INTO t1_i0012 (target) VALUES (-1.11);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0012 MODIFY target DECIMAL(12,2) NOT NULL, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0012 (target) VALUES (9999999999.99);
@@ -788,11 +788,11 @@ INSERT INTO t1_i0012 (target) VALUES (1.00);
 INSERT INTO t1_i0012 (target) VALUES (99999999.99);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0012 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(10,2)
+-- Oracle table: DECIMAL(12,2)
 CREATE TABLE t2_i0012 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(10,2) NOT NULL,
+  target DECIMAL(12,2) NOT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0012 (target) VALUES (-99999999.99);
@@ -822,7 +822,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0013
--- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=CONSTANT_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0013, t2_i0013;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -838,7 +838,7 @@ INSERT INTO t1_i0013 (target) VALUES (0.00);
 INSERT INTO t1_i0013 (target) VALUES (1.11);
 INSERT INTO t1_i0013 (target) VALUES (-1.11);
 INSERT INTO t1_i0013 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0013 MODIFY target DECIMAL(12,2) DEFAULT 0, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0013 (target) VALUES (9999999999.99);
@@ -854,11 +854,11 @@ INSERT INTO t1_i0013 (target) VALUES (99999999.99);
 INSERT INTO t1_i0013 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0013 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(10,2)
+-- Oracle table: DECIMAL(12,2)
 CREATE TABLE t2_i0013 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(10,2) DEFAULT 0,
+  target DECIMAL(12,2) DEFAULT 0,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0013 (target) VALUES (-99999999.99);
@@ -890,7 +890,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0014
--- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0014, t2_i0014;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -906,7 +906,7 @@ INSERT INTO t1_i0014 (target) VALUES (0.00);
 INSERT INTO t1_i0014 (target) VALUES (1.11);
 INSERT INTO t1_i0014 (target) VALUES (-1.11);
 INSERT INTO t1_i0014 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0014 MODIFY target DECIMAL(12,2) DEFAULT NULL, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0014 (target) VALUES (9999999999.99);
@@ -922,11 +922,11 @@ INSERT INTO t1_i0014 (target) VALUES (99999999.99);
 INSERT INTO t1_i0014 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0014 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(10,2)
+-- Oracle table: DECIMAL(12,2)
 CREATE TABLE t2_i0014 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(10,2) DEFAULT NULL,
+  target DECIMAL(12,2) DEFAULT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0014 (target) VALUES (-99999999.99);
@@ -958,7 +958,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0015
--- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0015, t2_i0015;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -973,7 +973,7 @@ INSERT INTO t1_i0015 (target) VALUES (99999999.99);
 INSERT INTO t1_i0015 (target) VALUES (0.00);
 INSERT INTO t1_i0015 (target) VALUES (1.11);
 INSERT INTO t1_i0015 (target) VALUES (-1.11);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0015 MODIFY target DECIMAL(12,2) NOT NULL DEFAULT 0, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0015 (target) VALUES (9999999999.99);
@@ -988,11 +988,11 @@ INSERT INTO t1_i0015 (target) VALUES (1.00);
 INSERT INTO t1_i0015 (target) VALUES (99999999.99);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0015 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(10,2)
+-- Oracle table: DECIMAL(12,2)
 CREATE TABLE t2_i0015 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(10,2) NOT NULL DEFAULT 0,
+  target DECIMAL(12,2) NOT NULL DEFAULT 0,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0015 (target) VALUES (-99999999.99);
@@ -1022,7 +1022,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0016
--- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=INVISIBLE, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0016, t2_i0016;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -1038,7 +1038,7 @@ INSERT INTO t1_i0016 (target) VALUES (0.00);
 INSERT INTO t1_i0016 (target) VALUES (1.11);
 INSERT INTO t1_i0016 (target) VALUES (-1.11);
 INSERT INTO t1_i0016 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0016 MODIFY target DECIMAL(12,2) INVISIBLE, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0016 (target) VALUES (9999999999.99);
@@ -1054,11 +1054,11 @@ INSERT INTO t1_i0016 (target) VALUES (99999999.99);
 INSERT INTO t1_i0016 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0016 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(10,2)
+-- Oracle table: DECIMAL(12,2)
 CREATE TABLE t2_i0016 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(10,2) INVISIBLE,
+  target DECIMAL(12,2) INVISIBLE,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0016 (target) VALUES (-99999999.99);
@@ -1090,7 +1090,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0017
--- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0017, t2_i0017;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -1100,15 +1100,15 @@ CREATE TABLE t1_i0017 (
   target DECIMAL(10,2),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0017 MODIFY target DECIMAL(12,2), ALGORITHM=instant;
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0017 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(10,2)
+-- Oracle table: DECIMAL(12,2)
 CREATE TABLE t2_i0017 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(10,2),
+  target DECIMAL(12,2),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 SELECT 'TC-I0017' AS test_id,
@@ -1126,7 +1126,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0018
--- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S1, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0018, t2_i0018;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -1137,7 +1137,7 @@ CREATE TABLE t1_i0018 (
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t1_i0018 (target) VALUES (-99999999.99);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0018 MODIFY target DECIMAL(12,2), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0018 (target) VALUES (9999999999.99);
@@ -1153,11 +1153,11 @@ INSERT INTO t1_i0018 (target) VALUES (99999999.99);
 INSERT INTO t1_i0018 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0018 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(10,2)
+-- Oracle table: DECIMAL(12,2)
 CREATE TABLE t2_i0018 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(10,2),
+  target DECIMAL(12,2),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0018 (target) VALUES (-99999999.99);
@@ -1184,7 +1184,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0019
--- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=UNIFORM, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0019, t2_i0019;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -1200,7 +1200,7 @@ INSERT INTO t1_i0019 (target) VALUES (0.00);
 INSERT INTO t1_i0019 (target) VALUES (1.11);
 INSERT INTO t1_i0019 (target) VALUES (-1.11);
 INSERT INTO t1_i0019 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0019 MODIFY target DECIMAL(12,2), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0019 (target) VALUES (9999999999.99);
@@ -1216,11 +1216,11 @@ INSERT INTO t1_i0019 (target) VALUES (99999999.99);
 INSERT INTO t1_i0019 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0019 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(10,2)
+-- Oracle table: DECIMAL(12,2)
 CREATE TABLE t2_i0019 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(10,2),
+  target DECIMAL(12,2),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0019 (target) VALUES (-99999999.99);
@@ -1252,7 +1252,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0020
--- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=MONOTONIC, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0020, t2_i0020;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -1268,7 +1268,7 @@ INSERT INTO t1_i0020 (target) VALUES (0.00);
 INSERT INTO t1_i0020 (target) VALUES (1.11);
 INSERT INTO t1_i0020 (target) VALUES (-1.11);
 INSERT INTO t1_i0020 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0020 MODIFY target DECIMAL(12,2), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0020 (target) VALUES (9999999999.99);
@@ -1284,11 +1284,11 @@ INSERT INTO t1_i0020 (target) VALUES (99999999.99);
 INSERT INTO t1_i0020 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0020 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(10,2)
+-- Oracle table: DECIMAL(12,2)
 CREATE TABLE t2_i0020 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(10,2),
+  target DECIMAL(12,2),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0020 (target) VALUES (-99999999.99);
@@ -1320,7 +1320,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0021
--- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=ZERO, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0021, t2_i0021;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -1335,7 +1335,7 @@ INSERT INTO t1_i0021 (target) VALUES (99999999.99);
 INSERT INTO t1_i0021 (target) VALUES (0.00);
 INSERT INTO t1_i0021 (target) VALUES (1.11);
 INSERT INTO t1_i0021 (target) VALUES (-1.11);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0021 MODIFY target DECIMAL(12,2), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0021 (target) VALUES (9999999999.99);
@@ -1350,11 +1350,11 @@ INSERT INTO t1_i0021 (target) VALUES (1.00);
 INSERT INTO t1_i0021 (target) VALUES (99999999.99);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0021 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(10,2)
+-- Oracle table: DECIMAL(12,2)
 CREATE TABLE t2_i0021 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(10,2),
+  target DECIMAL(12,2),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0021 (target) VALUES (-99999999.99);
@@ -1384,7 +1384,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0022
--- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=SINGLE, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0022, t2_i0022;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -1400,7 +1400,7 @@ INSERT INTO t1_i0022 (target) VALUES (0.00);
 INSERT INTO t1_i0022 (target) VALUES (1.11);
 INSERT INTO t1_i0022 (target) VALUES (-1.11);
 INSERT INTO t1_i0022 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0022 MODIFY target DECIMAL(12,2), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0022 (target) VALUES (9999999999.99);
@@ -1416,11 +1416,11 @@ INSERT INTO t1_i0022 (target) VALUES (99999999.99);
 INSERT INTO t1_i0022 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0022 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(10,2)
+-- Oracle table: DECIMAL(12,2)
 CREATE TABLE t2_i0022 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(10,2),
+  target DECIMAL(12,2),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0022 (target) VALUES (-99999999.99);
@@ -1452,7 +1452,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0023
--- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=ALL, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0023, t2_i0023;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -1463,7 +1463,7 @@ CREATE TABLE t1_i0023 (
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t1_i0023 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0023 MODIFY target DECIMAL(12,2), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0023 (target) VALUES (9999999999.99);
@@ -1479,11 +1479,11 @@ INSERT INTO t1_i0023 (target) VALUES (99999999.99);
 INSERT INTO t1_i0023 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0023 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(10,2)
+-- Oracle table: DECIMAL(12,2)
 CREATE TABLE t2_i0023 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(10,2),
+  target DECIMAL(12,2),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0023 (target) VALUES (NULL);
@@ -1510,7 +1510,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0024
--- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=NON_STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0024, t2_i0024;
 SET SESSION sql_mode = '';
@@ -1526,7 +1526,7 @@ INSERT INTO t1_i0024 (target) VALUES (0.00);
 INSERT INTO t1_i0024 (target) VALUES (1.11);
 INSERT INTO t1_i0024 (target) VALUES (-1.11);
 INSERT INTO t1_i0024 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0024 MODIFY target DECIMAL(12,2), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0024 (target) VALUES (9999999999.99);
@@ -1542,11 +1542,11 @@ INSERT INTO t1_i0024 (target) VALUES (99999999.99);
 INSERT INTO t1_i0024 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0024 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(10,2)
+-- Oracle table: DECIMAL(12,2)
 CREATE TABLE t2_i0024 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(10,2),
+  target DECIMAL(12,2),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0024 (target) VALUES (-99999999.99);
@@ -1578,7 +1578,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0025
--- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0025, t2_i0025;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -1588,15 +1588,15 @@ CREATE TABLE t1_i0025 (
   target DECIMAL(10,2) NOT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0025 MODIFY target DECIMAL(12,2) NOT NULL, ALGORITHM=instant;
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0025 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(10,2)
+-- Oracle table: DECIMAL(12,2)
 CREATE TABLE t2_i0025 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(10,2) NOT NULL,
+  target DECIMAL(12,2) NOT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 SELECT 'TC-I0025' AS test_id,
@@ -1614,7 +1614,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0026
--- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=UNIFORM, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0026, t2_i0026;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -1624,15 +1624,15 @@ CREATE TABLE t1_i0026 (
   target DECIMAL(10,2),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0026 MODIFY target DECIMAL(12,2), ALGORITHM=instant;
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0026 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(10,2)
+-- Oracle table: DECIMAL(12,2)
 CREATE TABLE t2_i0026 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(10,2),
+  target DECIMAL(12,2),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 SELECT 'TC-I0026' AS test_id,
@@ -1650,7 +1650,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0027
--- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(10,2) -> DECIMAL(12,2), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0027, t2_i0027;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -1660,15 +1660,15 @@ CREATE TABLE t1_i0027 (
   target DECIMAL(10,2) NOT NULL DEFAULT 0,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0027 MODIFY target DECIMAL(12,2) NOT NULL DEFAULT 0, ALGORITHM=instant;
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0027 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(10,2)
+-- Oracle table: DECIMAL(12,2)
 CREATE TABLE t2_i0027 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(10,2) NOT NULL DEFAULT 0,
+  target DECIMAL(12,2) NOT NULL DEFAULT 0,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 SELECT 'TC-I0027' AS test_id,
@@ -1770,7 +1770,7 @@ INSERT INTO t1_tc_ia0029 (target) VALUES (1.99);
 SELECT 'TC-IA0029' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_ia0029' AND column_name='target' AND column_comment='test_comment';
 
 -- Test Case: TC-I0030
--- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0030, t2_i0030;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -1786,7 +1786,7 @@ INSERT INTO t1_i0030 (target) VALUES (0);
 INSERT INTO t1_i0030 (target) VALUES (1);
 INSERT INTO t1_i0030 (target) VALUES (-1);
 INSERT INTO t1_i0030 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0030 MODIFY target DECIMAL(2,0), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0030 (target) VALUES (99);
@@ -1802,11 +1802,11 @@ INSERT INTO t1_i0030 (target) VALUES (9);
 INSERT INTO t1_i0030 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0030 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(1,0)
+-- Oracle table: DECIMAL(2,0)
 CREATE TABLE t2_i0030 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,0),
+  target DECIMAL(2,0),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0030 (target) VALUES (-9);
@@ -1838,7 +1838,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0031
--- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=COMPACT, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0031, t2_i0031;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -1854,7 +1854,7 @@ INSERT INTO t1_i0031 (target) VALUES (0);
 INSERT INTO t1_i0031 (target) VALUES (1);
 INSERT INTO t1_i0031 (target) VALUES (-1);
 INSERT INTO t1_i0031 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0031 MODIFY target DECIMAL(2,0), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0031 (target) VALUES (99);
@@ -1870,11 +1870,11 @@ INSERT INTO t1_i0031 (target) VALUES (9);
 INSERT INTO t1_i0031 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0031 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(1,0)
+-- Oracle table: DECIMAL(2,0)
 CREATE TABLE t2_i0031 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,0),
+  target DECIMAL(2,0),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=COMPACT;
 INSERT INTO t2_i0031 (target) VALUES (-9);
@@ -1906,7 +1906,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0032
--- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=REDUNDANT, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0032, t2_i0032;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -1922,7 +1922,7 @@ INSERT INTO t1_i0032 (target) VALUES (0);
 INSERT INTO t1_i0032 (target) VALUES (1);
 INSERT INTO t1_i0032 (target) VALUES (-1);
 INSERT INTO t1_i0032 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0032 MODIFY target DECIMAL(2,0), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0032 (target) VALUES (99);
@@ -1938,11 +1938,11 @@ INSERT INTO t1_i0032 (target) VALUES (9);
 INSERT INTO t1_i0032 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0032 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(1,0)
+-- Oracle table: DECIMAL(2,0)
 CREATE TABLE t2_i0032 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,0),
+  target DECIMAL(2,0),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=REDUNDANT;
 INSERT INTO t2_i0032 (target) VALUES (-9);
@@ -2038,7 +2038,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0034
--- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=NO_EXPLICIT_PK, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0034, t2_i0034;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -2054,7 +2054,7 @@ INSERT INTO t1_i0034 (target) VALUES (0);
 INSERT INTO t1_i0034 (target) VALUES (1);
 INSERT INTO t1_i0034 (target) VALUES (-1);
 INSERT INTO t1_i0034 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0034 MODIFY target DECIMAL(2,0), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0034 (target) VALUES (99);
@@ -2070,11 +2070,11 @@ INSERT INTO t1_i0034 (target) VALUES (9);
 INSERT INTO t1_i0034 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0034 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(1,0)
+-- Oracle table: DECIMAL(2,0)
 CREATE TABLE t2_i0034 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,0),
+  target DECIMAL(2,0),
   pad2 VARCHAR(20) DEFAULT 'pad2', INDEX idx_id (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0034 (target) VALUES (-9);
@@ -2106,7 +2106,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0035
--- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=NONE, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0035, t2_i0035;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -2122,7 +2122,7 @@ INSERT INTO t1_i0035 (target) VALUES (0);
 INSERT INTO t1_i0035 (target) VALUES (1);
 INSERT INTO t1_i0035 (target) VALUES (-1);
 INSERT INTO t1_i0035 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0035 MODIFY target DECIMAL(2,0), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0035 (target) VALUES (99);
@@ -2138,11 +2138,11 @@ INSERT INTO t1_i0035 (target) VALUES (9);
 INSERT INTO t1_i0035 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0035 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(1,0)
+-- Oracle table: DECIMAL(2,0)
 CREATE TABLE t2_i0035 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,0),
+  target DECIMAL(2,0),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0035 (target) VALUES (-9);
@@ -2174,7 +2174,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0036
--- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=MULTIPLE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0036, t2_i0036;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -2190,7 +2190,7 @@ INSERT INTO t1_i0036 (target) VALUES (0);
 INSERT INTO t1_i0036 (target) VALUES (1);
 INSERT INTO t1_i0036 (target) VALUES (-1);
 INSERT INTO t1_i0036 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0036 MODIFY target DECIMAL(2,0), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0036 (target) VALUES (99);
@@ -2206,11 +2206,11 @@ INSERT INTO t1_i0036 (target) VALUES (9);
 INSERT INTO t1_i0036 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0036 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(1,0)
+-- Oracle table: DECIMAL(2,0)
 CREATE TABLE t2_i0036 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,0),
+  target DECIMAL(2,0),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1), INDEX idx_pad2 (pad2)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0036 (target) VALUES (-9);
@@ -2242,7 +2242,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0037
--- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=UNIQUE, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0037, t2_i0037;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -2258,7 +2258,7 @@ INSERT INTO t1_i0037 (target) VALUES (0);
 INSERT INTO t1_i0037 (target) VALUES (1);
 INSERT INTO t1_i0037 (target) VALUES (-1);
 INSERT INTO t1_i0037 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0037 MODIFY target DECIMAL(2,0), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0037 (target) VALUES (99);
@@ -2274,11 +2274,11 @@ INSERT INTO t1_i0037 (target) VALUES (9);
 INSERT INTO t1_i0037 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0037 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(1,0)
+-- Oracle table: DECIMAL(2,0)
 CREATE TABLE t2_i0037 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,0),
+  target DECIMAL(2,0),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), UNIQUE INDEX uq_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0037 (target) VALUES (-9);
@@ -2310,7 +2310,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0038
--- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=COMPOSITE_PREFIX, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0038, t2_i0038;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -2326,7 +2326,7 @@ INSERT INTO t1_i0038 (target) VALUES (0);
 INSERT INTO t1_i0038 (target) VALUES (1);
 INSERT INTO t1_i0038 (target) VALUES (-1);
 INSERT INTO t1_i0038 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0038 MODIFY target DECIMAL(2,0), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0038 (target) VALUES (99);
@@ -2342,11 +2342,11 @@ INSERT INTO t1_i0038 (target) VALUES (9);
 INSERT INTO t1_i0038 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0038 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(1,0)
+-- Oracle table: DECIMAL(2,0)
 CREATE TABLE t2_i0038 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,0),
+  target DECIMAL(2,0),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_composite (pad1(10), pad2(10))
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0038 (target) VALUES (-9);
@@ -2378,7 +2378,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0039
--- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=FIRST
 DROP TABLE IF EXISTS t1_i0039, t2_i0039;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -2394,7 +2394,7 @@ INSERT INTO t1_i0039 (target) VALUES (0);
 INSERT INTO t1_i0039 (target) VALUES (1);
 INSERT INTO t1_i0039 (target) VALUES (-1);
 INSERT INTO t1_i0039 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0039 MODIFY target DECIMAL(2,0), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0039 (target) VALUES (99);
@@ -2410,9 +2410,9 @@ INSERT INTO t1_i0039 (target) VALUES (9);
 INSERT INTO t1_i0039 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0039 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(1,0)
+-- Oracle table: DECIMAL(2,0)
 CREATE TABLE t2_i0039 (
-  target DECIMAL(1,0),
+  target DECIMAL(2,0),
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
@@ -2446,7 +2446,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0040
--- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=LAST
 DROP TABLE IF EXISTS t1_i0040, t2_i0040;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -2462,7 +2462,7 @@ INSERT INTO t1_i0040 (target) VALUES (0);
 INSERT INTO t1_i0040 (target) VALUES (1);
 INSERT INTO t1_i0040 (target) VALUES (-1);
 INSERT INTO t1_i0040 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0040 MODIFY target DECIMAL(2,0), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0040 (target) VALUES (99);
@@ -2478,12 +2478,12 @@ INSERT INTO t1_i0040 (target) VALUES (9);
 INSERT INTO t1_i0040 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0040 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(1,0)
+-- Oracle table: DECIMAL(2,0)
 CREATE TABLE t2_i0040 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   pad2 VARCHAR(20) DEFAULT 'pad2',
-  target DECIMAL(1,0), PRIMARY KEY (id), INDEX idx_pad1 (pad1)
+  target DECIMAL(2,0), PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0040 (target) VALUES (-9);
 INSERT INTO t2_i0040 (target) VALUES (9);
@@ -2514,7 +2514,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0041
--- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0041, t2_i0041;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -2529,7 +2529,7 @@ INSERT INTO t1_i0041 (target) VALUES (9);
 INSERT INTO t1_i0041 (target) VALUES (0);
 INSERT INTO t1_i0041 (target) VALUES (1);
 INSERT INTO t1_i0041 (target) VALUES (-1);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0041 MODIFY target DECIMAL(2,0) NOT NULL, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0041 (target) VALUES (99);
@@ -2544,11 +2544,11 @@ INSERT INTO t1_i0041 (target) VALUES (1);
 INSERT INTO t1_i0041 (target) VALUES (9);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0041 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(1,0)
+-- Oracle table: DECIMAL(2,0)
 CREATE TABLE t2_i0041 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,0) NOT NULL,
+  target DECIMAL(2,0) NOT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0041 (target) VALUES (-9);
@@ -2578,7 +2578,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0042
--- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=CONSTANT_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0042, t2_i0042;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -2594,7 +2594,7 @@ INSERT INTO t1_i0042 (target) VALUES (0);
 INSERT INTO t1_i0042 (target) VALUES (1);
 INSERT INTO t1_i0042 (target) VALUES (-1);
 INSERT INTO t1_i0042 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0042 MODIFY target DECIMAL(2,0) DEFAULT 0, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0042 (target) VALUES (99);
@@ -2610,11 +2610,11 @@ INSERT INTO t1_i0042 (target) VALUES (9);
 INSERT INTO t1_i0042 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0042 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(1,0)
+-- Oracle table: DECIMAL(2,0)
 CREATE TABLE t2_i0042 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,0) DEFAULT 0,
+  target DECIMAL(2,0) DEFAULT 0,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0042 (target) VALUES (-9);
@@ -2646,7 +2646,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0043
--- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0043, t2_i0043;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -2662,7 +2662,7 @@ INSERT INTO t1_i0043 (target) VALUES (0);
 INSERT INTO t1_i0043 (target) VALUES (1);
 INSERT INTO t1_i0043 (target) VALUES (-1);
 INSERT INTO t1_i0043 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0043 MODIFY target DECIMAL(2,0) DEFAULT NULL, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0043 (target) VALUES (99);
@@ -2678,11 +2678,11 @@ INSERT INTO t1_i0043 (target) VALUES (9);
 INSERT INTO t1_i0043 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0043 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(1,0)
+-- Oracle table: DECIMAL(2,0)
 CREATE TABLE t2_i0043 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,0) DEFAULT NULL,
+  target DECIMAL(2,0) DEFAULT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0043 (target) VALUES (-9);
@@ -2714,7 +2714,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0044
--- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0044, t2_i0044;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -2729,7 +2729,7 @@ INSERT INTO t1_i0044 (target) VALUES (9);
 INSERT INTO t1_i0044 (target) VALUES (0);
 INSERT INTO t1_i0044 (target) VALUES (1);
 INSERT INTO t1_i0044 (target) VALUES (-1);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0044 MODIFY target DECIMAL(2,0) NOT NULL DEFAULT 0, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0044 (target) VALUES (99);
@@ -2744,11 +2744,11 @@ INSERT INTO t1_i0044 (target) VALUES (1);
 INSERT INTO t1_i0044 (target) VALUES (9);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0044 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(1,0)
+-- Oracle table: DECIMAL(2,0)
 CREATE TABLE t2_i0044 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,0) NOT NULL DEFAULT 0,
+  target DECIMAL(2,0) NOT NULL DEFAULT 0,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0044 (target) VALUES (-9);
@@ -2778,7 +2778,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0045
--- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=INVISIBLE, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0045, t2_i0045;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -2794,7 +2794,7 @@ INSERT INTO t1_i0045 (target) VALUES (0);
 INSERT INTO t1_i0045 (target) VALUES (1);
 INSERT INTO t1_i0045 (target) VALUES (-1);
 INSERT INTO t1_i0045 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0045 MODIFY target DECIMAL(2,0) INVISIBLE, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0045 (target) VALUES (99);
@@ -2810,11 +2810,11 @@ INSERT INTO t1_i0045 (target) VALUES (9);
 INSERT INTO t1_i0045 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0045 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(1,0)
+-- Oracle table: DECIMAL(2,0)
 CREATE TABLE t2_i0045 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,0) INVISIBLE,
+  target DECIMAL(2,0) INVISIBLE,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0045 (target) VALUES (-9);
@@ -2846,7 +2846,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0046
--- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0046, t2_i0046;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -2856,15 +2856,15 @@ CREATE TABLE t1_i0046 (
   target DECIMAL(1,0),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0046 MODIFY target DECIMAL(2,0), ALGORITHM=instant;
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0046 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(1,0)
+-- Oracle table: DECIMAL(2,0)
 CREATE TABLE t2_i0046 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,0),
+  target DECIMAL(2,0),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 SELECT 'TC-I0046' AS test_id,
@@ -2882,7 +2882,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0047
--- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S1, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0047, t2_i0047;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -2893,7 +2893,7 @@ CREATE TABLE t1_i0047 (
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t1_i0047 (target) VALUES (-9);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0047 MODIFY target DECIMAL(2,0), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0047 (target) VALUES (99);
@@ -2909,11 +2909,11 @@ INSERT INTO t1_i0047 (target) VALUES (9);
 INSERT INTO t1_i0047 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0047 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(1,0)
+-- Oracle table: DECIMAL(2,0)
 CREATE TABLE t2_i0047 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,0),
+  target DECIMAL(2,0),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0047 (target) VALUES (-9);
@@ -2940,7 +2940,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0048
--- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=UNIFORM, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0048, t2_i0048;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -2956,7 +2956,7 @@ INSERT INTO t1_i0048 (target) VALUES (0);
 INSERT INTO t1_i0048 (target) VALUES (1);
 INSERT INTO t1_i0048 (target) VALUES (-1);
 INSERT INTO t1_i0048 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0048 MODIFY target DECIMAL(2,0), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0048 (target) VALUES (99);
@@ -2972,11 +2972,11 @@ INSERT INTO t1_i0048 (target) VALUES (9);
 INSERT INTO t1_i0048 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0048 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(1,0)
+-- Oracle table: DECIMAL(2,0)
 CREATE TABLE t2_i0048 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,0),
+  target DECIMAL(2,0),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0048 (target) VALUES (-9);
@@ -3008,7 +3008,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0049
--- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=MONOTONIC, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0049, t2_i0049;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -3024,7 +3024,7 @@ INSERT INTO t1_i0049 (target) VALUES (0);
 INSERT INTO t1_i0049 (target) VALUES (1);
 INSERT INTO t1_i0049 (target) VALUES (-1);
 INSERT INTO t1_i0049 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0049 MODIFY target DECIMAL(2,0), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0049 (target) VALUES (99);
@@ -3040,11 +3040,11 @@ INSERT INTO t1_i0049 (target) VALUES (9);
 INSERT INTO t1_i0049 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0049 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(1,0)
+-- Oracle table: DECIMAL(2,0)
 CREATE TABLE t2_i0049 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,0),
+  target DECIMAL(2,0),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0049 (target) VALUES (-9);
@@ -3076,7 +3076,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0050
--- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=ZERO, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0050, t2_i0050;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -3091,7 +3091,7 @@ INSERT INTO t1_i0050 (target) VALUES (9);
 INSERT INTO t1_i0050 (target) VALUES (0);
 INSERT INTO t1_i0050 (target) VALUES (1);
 INSERT INTO t1_i0050 (target) VALUES (-1);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0050 MODIFY target DECIMAL(2,0), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0050 (target) VALUES (99);
@@ -3106,11 +3106,11 @@ INSERT INTO t1_i0050 (target) VALUES (1);
 INSERT INTO t1_i0050 (target) VALUES (9);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0050 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(1,0)
+-- Oracle table: DECIMAL(2,0)
 CREATE TABLE t2_i0050 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,0),
+  target DECIMAL(2,0),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0050 (target) VALUES (-9);
@@ -3140,7 +3140,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0051
--- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=SINGLE, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0051, t2_i0051;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -3156,7 +3156,7 @@ INSERT INTO t1_i0051 (target) VALUES (0);
 INSERT INTO t1_i0051 (target) VALUES (1);
 INSERT INTO t1_i0051 (target) VALUES (-1);
 INSERT INTO t1_i0051 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0051 MODIFY target DECIMAL(2,0), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0051 (target) VALUES (99);
@@ -3172,11 +3172,11 @@ INSERT INTO t1_i0051 (target) VALUES (9);
 INSERT INTO t1_i0051 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0051 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(1,0)
+-- Oracle table: DECIMAL(2,0)
 CREATE TABLE t2_i0051 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,0),
+  target DECIMAL(2,0),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0051 (target) VALUES (-9);
@@ -3208,7 +3208,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0052
--- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=ALL, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0052, t2_i0052;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -3219,7 +3219,7 @@ CREATE TABLE t1_i0052 (
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t1_i0052 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0052 MODIFY target DECIMAL(2,0), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0052 (target) VALUES (99);
@@ -3235,11 +3235,11 @@ INSERT INTO t1_i0052 (target) VALUES (9);
 INSERT INTO t1_i0052 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0052 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(1,0)
+-- Oracle table: DECIMAL(2,0)
 CREATE TABLE t2_i0052 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,0),
+  target DECIMAL(2,0),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0052 (target) VALUES (NULL);
@@ -3266,7 +3266,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0053
--- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=NON_STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0053, t2_i0053;
 SET SESSION sql_mode = '';
@@ -3282,7 +3282,7 @@ INSERT INTO t1_i0053 (target) VALUES (0);
 INSERT INTO t1_i0053 (target) VALUES (1);
 INSERT INTO t1_i0053 (target) VALUES (-1);
 INSERT INTO t1_i0053 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0053 MODIFY target DECIMAL(2,0), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0053 (target) VALUES (99);
@@ -3298,11 +3298,11 @@ INSERT INTO t1_i0053 (target) VALUES (9);
 INSERT INTO t1_i0053 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0053 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(1,0)
+-- Oracle table: DECIMAL(2,0)
 CREATE TABLE t2_i0053 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,0),
+  target DECIMAL(2,0),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0053 (target) VALUES (-9);
@@ -3334,7 +3334,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0054
--- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0054, t2_i0054;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -3344,15 +3344,15 @@ CREATE TABLE t1_i0054 (
   target DECIMAL(1,0) NOT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0054 MODIFY target DECIMAL(2,0) NOT NULL, ALGORITHM=instant;
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0054 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(1,0)
+-- Oracle table: DECIMAL(2,0)
 CREATE TABLE t2_i0054 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,0) NOT NULL,
+  target DECIMAL(2,0) NOT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 SELECT 'TC-I0054' AS test_id,
@@ -3370,7 +3370,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0055
--- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=UNIFORM, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0055, t2_i0055;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -3380,15 +3380,15 @@ CREATE TABLE t1_i0055 (
   target DECIMAL(1,0),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0055 MODIFY target DECIMAL(2,0), ALGORITHM=instant;
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0055 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(1,0)
+-- Oracle table: DECIMAL(2,0)
 CREATE TABLE t2_i0055 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,0),
+  target DECIMAL(2,0),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 SELECT 'TC-I0055' AS test_id,
@@ -3406,7 +3406,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0056
--- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,0) -> DECIMAL(2,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0056, t2_i0056;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -3416,15 +3416,15 @@ CREATE TABLE t1_i0056 (
   target DECIMAL(1,0) NOT NULL DEFAULT 0,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0056 MODIFY target DECIMAL(2,0) NOT NULL DEFAULT 0, ALGORITHM=instant;
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0056 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(1,0)
+-- Oracle table: DECIMAL(2,0)
 CREATE TABLE t2_i0056 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,0) NOT NULL DEFAULT 0,
+  target DECIMAL(2,0) NOT NULL DEFAULT 0,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 SELECT 'TC-I0056' AS test_id,
@@ -3526,7 +3526,7 @@ INSERT INTO t1_tc_ia0058 (target) VALUES (999999999);
 SELECT 'TC-IA0058' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_ia0058' AND column_name='target' AND column_comment='test_comment';
 
 -- Test Case: TC-I0059
--- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0059, t2_i0059;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -3542,7 +3542,7 @@ INSERT INTO t1_i0059 (target) VALUES (0.0);
 INSERT INTO t1_i0059 (target) VALUES (1.1);
 INSERT INTO t1_i0059 (target) VALUES (-1.1);
 INSERT INTO t1_i0059 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0059 MODIFY target DECIMAL(2,1), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0059 (target) VALUES (9.9);
@@ -3558,11 +3558,11 @@ INSERT INTO t1_i0059 (target) VALUES (.9);
 INSERT INTO t1_i0059 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0059 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(1,1)
+-- Oracle table: DECIMAL(2,1)
 CREATE TABLE t2_i0059 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,1),
+  target DECIMAL(2,1),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0059 (target) VALUES (-.9);
@@ -3594,7 +3594,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0060
--- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=COMPACT, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0060, t2_i0060;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -3610,7 +3610,7 @@ INSERT INTO t1_i0060 (target) VALUES (0.0);
 INSERT INTO t1_i0060 (target) VALUES (1.1);
 INSERT INTO t1_i0060 (target) VALUES (-1.1);
 INSERT INTO t1_i0060 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0060 MODIFY target DECIMAL(2,1), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0060 (target) VALUES (9.9);
@@ -3626,11 +3626,11 @@ INSERT INTO t1_i0060 (target) VALUES (.9);
 INSERT INTO t1_i0060 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0060 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(1,1)
+-- Oracle table: DECIMAL(2,1)
 CREATE TABLE t2_i0060 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,1),
+  target DECIMAL(2,1),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=COMPACT;
 INSERT INTO t2_i0060 (target) VALUES (-.9);
@@ -3662,7 +3662,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0061
--- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=REDUNDANT, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0061, t2_i0061;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -3678,7 +3678,7 @@ INSERT INTO t1_i0061 (target) VALUES (0.0);
 INSERT INTO t1_i0061 (target) VALUES (1.1);
 INSERT INTO t1_i0061 (target) VALUES (-1.1);
 INSERT INTO t1_i0061 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0061 MODIFY target DECIMAL(2,1), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0061 (target) VALUES (9.9);
@@ -3694,11 +3694,11 @@ INSERT INTO t1_i0061 (target) VALUES (.9);
 INSERT INTO t1_i0061 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0061 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(1,1)
+-- Oracle table: DECIMAL(2,1)
 CREATE TABLE t2_i0061 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,1),
+  target DECIMAL(2,1),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=REDUNDANT;
 INSERT INTO t2_i0061 (target) VALUES (-.9);
@@ -3794,7 +3794,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0063
--- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=NO_EXPLICIT_PK, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0063, t2_i0063;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -3810,7 +3810,7 @@ INSERT INTO t1_i0063 (target) VALUES (0.0);
 INSERT INTO t1_i0063 (target) VALUES (1.1);
 INSERT INTO t1_i0063 (target) VALUES (-1.1);
 INSERT INTO t1_i0063 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0063 MODIFY target DECIMAL(2,1), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0063 (target) VALUES (9.9);
@@ -3826,11 +3826,11 @@ INSERT INTO t1_i0063 (target) VALUES (.9);
 INSERT INTO t1_i0063 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0063 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(1,1)
+-- Oracle table: DECIMAL(2,1)
 CREATE TABLE t2_i0063 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,1),
+  target DECIMAL(2,1),
   pad2 VARCHAR(20) DEFAULT 'pad2', INDEX idx_id (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0063 (target) VALUES (-.9);
@@ -3862,7 +3862,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0064
--- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=NONE, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0064, t2_i0064;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -3878,7 +3878,7 @@ INSERT INTO t1_i0064 (target) VALUES (0.0);
 INSERT INTO t1_i0064 (target) VALUES (1.1);
 INSERT INTO t1_i0064 (target) VALUES (-1.1);
 INSERT INTO t1_i0064 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0064 MODIFY target DECIMAL(2,1), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0064 (target) VALUES (9.9);
@@ -3894,11 +3894,11 @@ INSERT INTO t1_i0064 (target) VALUES (.9);
 INSERT INTO t1_i0064 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0064 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(1,1)
+-- Oracle table: DECIMAL(2,1)
 CREATE TABLE t2_i0064 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,1),
+  target DECIMAL(2,1),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0064 (target) VALUES (-.9);
@@ -3930,7 +3930,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0065
--- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=MULTIPLE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0065, t2_i0065;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -3946,7 +3946,7 @@ INSERT INTO t1_i0065 (target) VALUES (0.0);
 INSERT INTO t1_i0065 (target) VALUES (1.1);
 INSERT INTO t1_i0065 (target) VALUES (-1.1);
 INSERT INTO t1_i0065 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0065 MODIFY target DECIMAL(2,1), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0065 (target) VALUES (9.9);
@@ -3962,11 +3962,11 @@ INSERT INTO t1_i0065 (target) VALUES (.9);
 INSERT INTO t1_i0065 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0065 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(1,1)
+-- Oracle table: DECIMAL(2,1)
 CREATE TABLE t2_i0065 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,1),
+  target DECIMAL(2,1),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1), INDEX idx_pad2 (pad2)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0065 (target) VALUES (-.9);
@@ -3998,7 +3998,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0066
--- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=UNIQUE, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0066, t2_i0066;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -4014,7 +4014,7 @@ INSERT INTO t1_i0066 (target) VALUES (0.0);
 INSERT INTO t1_i0066 (target) VALUES (1.1);
 INSERT INTO t1_i0066 (target) VALUES (-1.1);
 INSERT INTO t1_i0066 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0066 MODIFY target DECIMAL(2,1), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0066 (target) VALUES (9.9);
@@ -4030,11 +4030,11 @@ INSERT INTO t1_i0066 (target) VALUES (.9);
 INSERT INTO t1_i0066 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0066 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(1,1)
+-- Oracle table: DECIMAL(2,1)
 CREATE TABLE t2_i0066 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,1),
+  target DECIMAL(2,1),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), UNIQUE INDEX uq_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0066 (target) VALUES (-.9);
@@ -4066,7 +4066,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0067
--- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=COMPOSITE_PREFIX, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0067, t2_i0067;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -4082,7 +4082,7 @@ INSERT INTO t1_i0067 (target) VALUES (0.0);
 INSERT INTO t1_i0067 (target) VALUES (1.1);
 INSERT INTO t1_i0067 (target) VALUES (-1.1);
 INSERT INTO t1_i0067 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0067 MODIFY target DECIMAL(2,1), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0067 (target) VALUES (9.9);
@@ -4098,11 +4098,11 @@ INSERT INTO t1_i0067 (target) VALUES (.9);
 INSERT INTO t1_i0067 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0067 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(1,1)
+-- Oracle table: DECIMAL(2,1)
 CREATE TABLE t2_i0067 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,1),
+  target DECIMAL(2,1),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_composite (pad1(10), pad2(10))
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0067 (target) VALUES (-.9);
@@ -4134,7 +4134,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0068
--- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=FIRST
 DROP TABLE IF EXISTS t1_i0068, t2_i0068;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -4150,7 +4150,7 @@ INSERT INTO t1_i0068 (target) VALUES (0.0);
 INSERT INTO t1_i0068 (target) VALUES (1.1);
 INSERT INTO t1_i0068 (target) VALUES (-1.1);
 INSERT INTO t1_i0068 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0068 MODIFY target DECIMAL(2,1), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0068 (target) VALUES (9.9);
@@ -4166,9 +4166,9 @@ INSERT INTO t1_i0068 (target) VALUES (.9);
 INSERT INTO t1_i0068 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0068 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(1,1)
+-- Oracle table: DECIMAL(2,1)
 CREATE TABLE t2_i0068 (
-  target DECIMAL(1,1),
+  target DECIMAL(2,1),
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
@@ -4202,7 +4202,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0069
--- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=LAST
 DROP TABLE IF EXISTS t1_i0069, t2_i0069;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -4218,7 +4218,7 @@ INSERT INTO t1_i0069 (target) VALUES (0.0);
 INSERT INTO t1_i0069 (target) VALUES (1.1);
 INSERT INTO t1_i0069 (target) VALUES (-1.1);
 INSERT INTO t1_i0069 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0069 MODIFY target DECIMAL(2,1), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0069 (target) VALUES (9.9);
@@ -4234,12 +4234,12 @@ INSERT INTO t1_i0069 (target) VALUES (.9);
 INSERT INTO t1_i0069 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0069 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(1,1)
+-- Oracle table: DECIMAL(2,1)
 CREATE TABLE t2_i0069 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   pad2 VARCHAR(20) DEFAULT 'pad2',
-  target DECIMAL(1,1), PRIMARY KEY (id), INDEX idx_pad1 (pad1)
+  target DECIMAL(2,1), PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0069 (target) VALUES (-.9);
 INSERT INTO t2_i0069 (target) VALUES (.9);
@@ -4270,7 +4270,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0070
--- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0070, t2_i0070;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -4285,7 +4285,7 @@ INSERT INTO t1_i0070 (target) VALUES (.9);
 INSERT INTO t1_i0070 (target) VALUES (0.0);
 INSERT INTO t1_i0070 (target) VALUES (1.1);
 INSERT INTO t1_i0070 (target) VALUES (-1.1);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0070 MODIFY target DECIMAL(2,1) NOT NULL, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0070 (target) VALUES (9.9);
@@ -4300,11 +4300,11 @@ INSERT INTO t1_i0070 (target) VALUES (1.0);
 INSERT INTO t1_i0070 (target) VALUES (.9);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0070 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(1,1)
+-- Oracle table: DECIMAL(2,1)
 CREATE TABLE t2_i0070 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,1) NOT NULL,
+  target DECIMAL(2,1) NOT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0070 (target) VALUES (-.9);
@@ -4334,7 +4334,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0071
--- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=CONSTANT_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0071, t2_i0071;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -4350,7 +4350,7 @@ INSERT INTO t1_i0071 (target) VALUES (0.0);
 INSERT INTO t1_i0071 (target) VALUES (1.1);
 INSERT INTO t1_i0071 (target) VALUES (-1.1);
 INSERT INTO t1_i0071 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0071 MODIFY target DECIMAL(2,1) DEFAULT 0, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0071 (target) VALUES (9.9);
@@ -4366,11 +4366,11 @@ INSERT INTO t1_i0071 (target) VALUES (.9);
 INSERT INTO t1_i0071 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0071 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(1,1)
+-- Oracle table: DECIMAL(2,1)
 CREATE TABLE t2_i0071 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,1) DEFAULT 0,
+  target DECIMAL(2,1) DEFAULT 0,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0071 (target) VALUES (-.9);
@@ -4402,7 +4402,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0072
--- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0072, t2_i0072;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -4418,7 +4418,7 @@ INSERT INTO t1_i0072 (target) VALUES (0.0);
 INSERT INTO t1_i0072 (target) VALUES (1.1);
 INSERT INTO t1_i0072 (target) VALUES (-1.1);
 INSERT INTO t1_i0072 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0072 MODIFY target DECIMAL(2,1) DEFAULT NULL, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0072 (target) VALUES (9.9);
@@ -4434,11 +4434,11 @@ INSERT INTO t1_i0072 (target) VALUES (.9);
 INSERT INTO t1_i0072 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0072 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(1,1)
+-- Oracle table: DECIMAL(2,1)
 CREATE TABLE t2_i0072 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,1) DEFAULT NULL,
+  target DECIMAL(2,1) DEFAULT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0072 (target) VALUES (-.9);
@@ -4470,7 +4470,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0073
--- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0073, t2_i0073;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -4485,7 +4485,7 @@ INSERT INTO t1_i0073 (target) VALUES (.9);
 INSERT INTO t1_i0073 (target) VALUES (0.0);
 INSERT INTO t1_i0073 (target) VALUES (1.1);
 INSERT INTO t1_i0073 (target) VALUES (-1.1);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0073 MODIFY target DECIMAL(2,1) NOT NULL DEFAULT 0, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0073 (target) VALUES (9.9);
@@ -4500,11 +4500,11 @@ INSERT INTO t1_i0073 (target) VALUES (1.0);
 INSERT INTO t1_i0073 (target) VALUES (.9);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0073 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(1,1)
+-- Oracle table: DECIMAL(2,1)
 CREATE TABLE t2_i0073 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,1) NOT NULL DEFAULT 0,
+  target DECIMAL(2,1) NOT NULL DEFAULT 0,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0073 (target) VALUES (-.9);
@@ -4534,7 +4534,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0074
--- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=INVISIBLE, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0074, t2_i0074;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -4550,7 +4550,7 @@ INSERT INTO t1_i0074 (target) VALUES (0.0);
 INSERT INTO t1_i0074 (target) VALUES (1.1);
 INSERT INTO t1_i0074 (target) VALUES (-1.1);
 INSERT INTO t1_i0074 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0074 MODIFY target DECIMAL(2,1) INVISIBLE, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0074 (target) VALUES (9.9);
@@ -4566,11 +4566,11 @@ INSERT INTO t1_i0074 (target) VALUES (.9);
 INSERT INTO t1_i0074 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0074 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(1,1)
+-- Oracle table: DECIMAL(2,1)
 CREATE TABLE t2_i0074 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,1) INVISIBLE,
+  target DECIMAL(2,1) INVISIBLE,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0074 (target) VALUES (-.9);
@@ -4602,7 +4602,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0075
--- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0075, t2_i0075;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -4612,15 +4612,15 @@ CREATE TABLE t1_i0075 (
   target DECIMAL(1,1),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0075 MODIFY target DECIMAL(2,1), ALGORITHM=instant;
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0075 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(1,1)
+-- Oracle table: DECIMAL(2,1)
 CREATE TABLE t2_i0075 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,1),
+  target DECIMAL(2,1),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 SELECT 'TC-I0075' AS test_id,
@@ -4638,7 +4638,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0076
--- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S1, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0076, t2_i0076;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -4649,7 +4649,7 @@ CREATE TABLE t1_i0076 (
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t1_i0076 (target) VALUES (-.9);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0076 MODIFY target DECIMAL(2,1), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0076 (target) VALUES (9.9);
@@ -4665,11 +4665,11 @@ INSERT INTO t1_i0076 (target) VALUES (.9);
 INSERT INTO t1_i0076 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0076 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(1,1)
+-- Oracle table: DECIMAL(2,1)
 CREATE TABLE t2_i0076 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,1),
+  target DECIMAL(2,1),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0076 (target) VALUES (-.9);
@@ -4696,7 +4696,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0077
--- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=UNIFORM, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0077, t2_i0077;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -4712,7 +4712,7 @@ INSERT INTO t1_i0077 (target) VALUES (0.0);
 INSERT INTO t1_i0077 (target) VALUES (1.1);
 INSERT INTO t1_i0077 (target) VALUES (-1.1);
 INSERT INTO t1_i0077 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0077 MODIFY target DECIMAL(2,1), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0077 (target) VALUES (9.9);
@@ -4728,11 +4728,11 @@ INSERT INTO t1_i0077 (target) VALUES (.9);
 INSERT INTO t1_i0077 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0077 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(1,1)
+-- Oracle table: DECIMAL(2,1)
 CREATE TABLE t2_i0077 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,1),
+  target DECIMAL(2,1),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0077 (target) VALUES (-.9);
@@ -4764,7 +4764,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0078
--- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=MONOTONIC, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0078, t2_i0078;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -4780,7 +4780,7 @@ INSERT INTO t1_i0078 (target) VALUES (0.0);
 INSERT INTO t1_i0078 (target) VALUES (1.1);
 INSERT INTO t1_i0078 (target) VALUES (-1.1);
 INSERT INTO t1_i0078 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0078 MODIFY target DECIMAL(2,1), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0078 (target) VALUES (9.9);
@@ -4796,11 +4796,11 @@ INSERT INTO t1_i0078 (target) VALUES (.9);
 INSERT INTO t1_i0078 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0078 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(1,1)
+-- Oracle table: DECIMAL(2,1)
 CREATE TABLE t2_i0078 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,1),
+  target DECIMAL(2,1),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0078 (target) VALUES (-.9);
@@ -4832,7 +4832,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0079
--- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=ZERO, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0079, t2_i0079;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -4847,7 +4847,7 @@ INSERT INTO t1_i0079 (target) VALUES (.9);
 INSERT INTO t1_i0079 (target) VALUES (0.0);
 INSERT INTO t1_i0079 (target) VALUES (1.1);
 INSERT INTO t1_i0079 (target) VALUES (-1.1);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0079 MODIFY target DECIMAL(2,1), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0079 (target) VALUES (9.9);
@@ -4862,11 +4862,11 @@ INSERT INTO t1_i0079 (target) VALUES (1.0);
 INSERT INTO t1_i0079 (target) VALUES (.9);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0079 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(1,1)
+-- Oracle table: DECIMAL(2,1)
 CREATE TABLE t2_i0079 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,1),
+  target DECIMAL(2,1),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0079 (target) VALUES (-.9);
@@ -4896,7 +4896,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0080
--- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=SINGLE, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0080, t2_i0080;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -4912,7 +4912,7 @@ INSERT INTO t1_i0080 (target) VALUES (0.0);
 INSERT INTO t1_i0080 (target) VALUES (1.1);
 INSERT INTO t1_i0080 (target) VALUES (-1.1);
 INSERT INTO t1_i0080 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0080 MODIFY target DECIMAL(2,1), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0080 (target) VALUES (9.9);
@@ -4928,11 +4928,11 @@ INSERT INTO t1_i0080 (target) VALUES (.9);
 INSERT INTO t1_i0080 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0080 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(1,1)
+-- Oracle table: DECIMAL(2,1)
 CREATE TABLE t2_i0080 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,1),
+  target DECIMAL(2,1),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0080 (target) VALUES (-.9);
@@ -4964,7 +4964,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0081
--- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=ALL, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0081, t2_i0081;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -4975,7 +4975,7 @@ CREATE TABLE t1_i0081 (
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t1_i0081 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0081 MODIFY target DECIMAL(2,1), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0081 (target) VALUES (9.9);
@@ -4991,11 +4991,11 @@ INSERT INTO t1_i0081 (target) VALUES (.9);
 INSERT INTO t1_i0081 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0081 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(1,1)
+-- Oracle table: DECIMAL(2,1)
 CREATE TABLE t2_i0081 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,1),
+  target DECIMAL(2,1),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0081 (target) VALUES (NULL);
@@ -5022,7 +5022,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0082
--- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=NON_STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0082, t2_i0082;
 SET SESSION sql_mode = '';
@@ -5038,7 +5038,7 @@ INSERT INTO t1_i0082 (target) VALUES (0.0);
 INSERT INTO t1_i0082 (target) VALUES (1.1);
 INSERT INTO t1_i0082 (target) VALUES (-1.1);
 INSERT INTO t1_i0082 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0082 MODIFY target DECIMAL(2,1), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0082 (target) VALUES (9.9);
@@ -5054,11 +5054,11 @@ INSERT INTO t1_i0082 (target) VALUES (.9);
 INSERT INTO t1_i0082 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0082 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(1,1)
+-- Oracle table: DECIMAL(2,1)
 CREATE TABLE t2_i0082 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,1),
+  target DECIMAL(2,1),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0082 (target) VALUES (-.9);
@@ -5090,7 +5090,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0083
--- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0083, t2_i0083;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -5100,15 +5100,15 @@ CREATE TABLE t1_i0083 (
   target DECIMAL(1,1) NOT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0083 MODIFY target DECIMAL(2,1) NOT NULL, ALGORITHM=instant;
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0083 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(1,1)
+-- Oracle table: DECIMAL(2,1)
 CREATE TABLE t2_i0083 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,1) NOT NULL,
+  target DECIMAL(2,1) NOT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 SELECT 'TC-I0083' AS test_id,
@@ -5126,7 +5126,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0084
--- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=UNIFORM, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0084, t2_i0084;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -5136,15 +5136,15 @@ CREATE TABLE t1_i0084 (
   target DECIMAL(1,1),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0084 MODIFY target DECIMAL(2,1), ALGORITHM=instant;
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0084 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(1,1)
+-- Oracle table: DECIMAL(2,1)
 CREATE TABLE t2_i0084 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,1),
+  target DECIMAL(2,1),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 SELECT 'TC-I0084' AS test_id,
@@ -5162,7 +5162,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0085
--- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(1,1) -> DECIMAL(2,1), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0085, t2_i0085;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -5172,15 +5172,15 @@ CREATE TABLE t1_i0085 (
   target DECIMAL(1,1) NOT NULL DEFAULT 0,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0085 MODIFY target DECIMAL(2,1) NOT NULL DEFAULT 0, ALGORITHM=instant;
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0085 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(1,1)
+-- Oracle table: DECIMAL(2,1)
 CREATE TABLE t2_i0085 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(1,1) NOT NULL DEFAULT 0,
+  target DECIMAL(2,1) NOT NULL DEFAULT 0,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 SELECT 'TC-I0085' AS test_id,
@@ -5282,7 +5282,7 @@ INSERT INTO t1_tc_ia0087 (target) VALUES (1.9);
 SELECT 'TC-IA0087' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_ia0087' AND column_name='target' AND column_comment='test_comment';
 
 -- Test Case: TC-I0088
--- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0088, t2_i0088;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -5298,7 +5298,7 @@ INSERT INTO t1_i0088 (target) VALUES (0.000000000000000000000000000000);
 INSERT INTO t1_i0088 (target) VALUES (1.111111111111111111111111111111);
 INSERT INTO t1_i0088 (target) VALUES (-1.111111111111111111111111111111);
 INSERT INTO t1_i0088 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0088 MODIFY target DECIMAL(65,30), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0088 (target) VALUES (99999999999999999999999999999999999.999999999999999999999999999999);
@@ -5314,11 +5314,11 @@ INSERT INTO t1_i0088 (target) VALUES (9999999999999999999999999999999999.9999999
 INSERT INTO t1_i0088 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0088 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(64,30)
+-- Oracle table: DECIMAL(65,30)
 CREATE TABLE t2_i0088 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(64,30),
+  target DECIMAL(65,30),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0088 (target) VALUES (-9999999999999999999999999999999999.999999999999999999999999999999);
@@ -5350,7 +5350,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0089
--- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=COMPACT, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0089, t2_i0089;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -5366,7 +5366,7 @@ INSERT INTO t1_i0089 (target) VALUES (0.000000000000000000000000000000);
 INSERT INTO t1_i0089 (target) VALUES (1.111111111111111111111111111111);
 INSERT INTO t1_i0089 (target) VALUES (-1.111111111111111111111111111111);
 INSERT INTO t1_i0089 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0089 MODIFY target DECIMAL(65,30), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0089 (target) VALUES (99999999999999999999999999999999999.999999999999999999999999999999);
@@ -5382,11 +5382,11 @@ INSERT INTO t1_i0089 (target) VALUES (9999999999999999999999999999999999.9999999
 INSERT INTO t1_i0089 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0089 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(64,30)
+-- Oracle table: DECIMAL(65,30)
 CREATE TABLE t2_i0089 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(64,30),
+  target DECIMAL(65,30),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=COMPACT;
 INSERT INTO t2_i0089 (target) VALUES (-9999999999999999999999999999999999.999999999999999999999999999999);
@@ -5418,7 +5418,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0090
--- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=REDUNDANT, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0090, t2_i0090;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -5434,7 +5434,7 @@ INSERT INTO t1_i0090 (target) VALUES (0.000000000000000000000000000000);
 INSERT INTO t1_i0090 (target) VALUES (1.111111111111111111111111111111);
 INSERT INTO t1_i0090 (target) VALUES (-1.111111111111111111111111111111);
 INSERT INTO t1_i0090 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0090 MODIFY target DECIMAL(65,30), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0090 (target) VALUES (99999999999999999999999999999999999.999999999999999999999999999999);
@@ -5450,11 +5450,11 @@ INSERT INTO t1_i0090 (target) VALUES (9999999999999999999999999999999999.9999999
 INSERT INTO t1_i0090 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0090 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(64,30)
+-- Oracle table: DECIMAL(65,30)
 CREATE TABLE t2_i0090 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(64,30),
+  target DECIMAL(65,30),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=REDUNDANT;
 INSERT INTO t2_i0090 (target) VALUES (-9999999999999999999999999999999999.999999999999999999999999999999);
@@ -5550,7 +5550,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0092
--- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=NO_EXPLICIT_PK, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0092, t2_i0092;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -5566,7 +5566,7 @@ INSERT INTO t1_i0092 (target) VALUES (0.000000000000000000000000000000);
 INSERT INTO t1_i0092 (target) VALUES (1.111111111111111111111111111111);
 INSERT INTO t1_i0092 (target) VALUES (-1.111111111111111111111111111111);
 INSERT INTO t1_i0092 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0092 MODIFY target DECIMAL(65,30), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0092 (target) VALUES (99999999999999999999999999999999999.999999999999999999999999999999);
@@ -5582,11 +5582,11 @@ INSERT INTO t1_i0092 (target) VALUES (9999999999999999999999999999999999.9999999
 INSERT INTO t1_i0092 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0092 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(64,30)
+-- Oracle table: DECIMAL(65,30)
 CREATE TABLE t2_i0092 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(64,30),
+  target DECIMAL(65,30),
   pad2 VARCHAR(20) DEFAULT 'pad2', INDEX idx_id (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0092 (target) VALUES (-9999999999999999999999999999999999.999999999999999999999999999999);
@@ -5618,7 +5618,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0093
--- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=NONE, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0093, t2_i0093;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -5634,7 +5634,7 @@ INSERT INTO t1_i0093 (target) VALUES (0.000000000000000000000000000000);
 INSERT INTO t1_i0093 (target) VALUES (1.111111111111111111111111111111);
 INSERT INTO t1_i0093 (target) VALUES (-1.111111111111111111111111111111);
 INSERT INTO t1_i0093 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0093 MODIFY target DECIMAL(65,30), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0093 (target) VALUES (99999999999999999999999999999999999.999999999999999999999999999999);
@@ -5650,11 +5650,11 @@ INSERT INTO t1_i0093 (target) VALUES (9999999999999999999999999999999999.9999999
 INSERT INTO t1_i0093 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0093 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(64,30)
+-- Oracle table: DECIMAL(65,30)
 CREATE TABLE t2_i0093 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(64,30),
+  target DECIMAL(65,30),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0093 (target) VALUES (-9999999999999999999999999999999999.999999999999999999999999999999);
@@ -5686,7 +5686,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0094
--- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=MULTIPLE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0094, t2_i0094;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -5702,7 +5702,7 @@ INSERT INTO t1_i0094 (target) VALUES (0.000000000000000000000000000000);
 INSERT INTO t1_i0094 (target) VALUES (1.111111111111111111111111111111);
 INSERT INTO t1_i0094 (target) VALUES (-1.111111111111111111111111111111);
 INSERT INTO t1_i0094 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0094 MODIFY target DECIMAL(65,30), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0094 (target) VALUES (99999999999999999999999999999999999.999999999999999999999999999999);
@@ -5718,11 +5718,11 @@ INSERT INTO t1_i0094 (target) VALUES (9999999999999999999999999999999999.9999999
 INSERT INTO t1_i0094 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0094 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(64,30)
+-- Oracle table: DECIMAL(65,30)
 CREATE TABLE t2_i0094 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(64,30),
+  target DECIMAL(65,30),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1), INDEX idx_pad2 (pad2)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0094 (target) VALUES (-9999999999999999999999999999999999.999999999999999999999999999999);
@@ -5754,7 +5754,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0095
--- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=UNIQUE, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0095, t2_i0095;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -5770,7 +5770,7 @@ INSERT INTO t1_i0095 (target) VALUES (0.000000000000000000000000000000);
 INSERT INTO t1_i0095 (target) VALUES (1.111111111111111111111111111111);
 INSERT INTO t1_i0095 (target) VALUES (-1.111111111111111111111111111111);
 INSERT INTO t1_i0095 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0095 MODIFY target DECIMAL(65,30), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0095 (target) VALUES (99999999999999999999999999999999999.999999999999999999999999999999);
@@ -5786,11 +5786,11 @@ INSERT INTO t1_i0095 (target) VALUES (9999999999999999999999999999999999.9999999
 INSERT INTO t1_i0095 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0095 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(64,30)
+-- Oracle table: DECIMAL(65,30)
 CREATE TABLE t2_i0095 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(64,30),
+  target DECIMAL(65,30),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), UNIQUE INDEX uq_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0095 (target) VALUES (-9999999999999999999999999999999999.999999999999999999999999999999);
@@ -5822,7 +5822,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0096
--- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=COMPOSITE_PREFIX, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0096, t2_i0096;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -5838,7 +5838,7 @@ INSERT INTO t1_i0096 (target) VALUES (0.000000000000000000000000000000);
 INSERT INTO t1_i0096 (target) VALUES (1.111111111111111111111111111111);
 INSERT INTO t1_i0096 (target) VALUES (-1.111111111111111111111111111111);
 INSERT INTO t1_i0096 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0096 MODIFY target DECIMAL(65,30), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0096 (target) VALUES (99999999999999999999999999999999999.999999999999999999999999999999);
@@ -5854,11 +5854,11 @@ INSERT INTO t1_i0096 (target) VALUES (9999999999999999999999999999999999.9999999
 INSERT INTO t1_i0096 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0096 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(64,30)
+-- Oracle table: DECIMAL(65,30)
 CREATE TABLE t2_i0096 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(64,30),
+  target DECIMAL(65,30),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_composite (pad1(10), pad2(10))
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0096 (target) VALUES (-9999999999999999999999999999999999.999999999999999999999999999999);
@@ -5890,7 +5890,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0097
--- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=FIRST
 DROP TABLE IF EXISTS t1_i0097, t2_i0097;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -5906,7 +5906,7 @@ INSERT INTO t1_i0097 (target) VALUES (0.000000000000000000000000000000);
 INSERT INTO t1_i0097 (target) VALUES (1.111111111111111111111111111111);
 INSERT INTO t1_i0097 (target) VALUES (-1.111111111111111111111111111111);
 INSERT INTO t1_i0097 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0097 MODIFY target DECIMAL(65,30), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0097 (target) VALUES (99999999999999999999999999999999999.999999999999999999999999999999);
@@ -5922,9 +5922,9 @@ INSERT INTO t1_i0097 (target) VALUES (9999999999999999999999999999999999.9999999
 INSERT INTO t1_i0097 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0097 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(64,30)
+-- Oracle table: DECIMAL(65,30)
 CREATE TABLE t2_i0097 (
-  target DECIMAL(64,30),
+  target DECIMAL(65,30),
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
@@ -5958,7 +5958,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0098
--- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=LAST
 DROP TABLE IF EXISTS t1_i0098, t2_i0098;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -5974,7 +5974,7 @@ INSERT INTO t1_i0098 (target) VALUES (0.000000000000000000000000000000);
 INSERT INTO t1_i0098 (target) VALUES (1.111111111111111111111111111111);
 INSERT INTO t1_i0098 (target) VALUES (-1.111111111111111111111111111111);
 INSERT INTO t1_i0098 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0098 MODIFY target DECIMAL(65,30), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0098 (target) VALUES (99999999999999999999999999999999999.999999999999999999999999999999);
@@ -5990,12 +5990,12 @@ INSERT INTO t1_i0098 (target) VALUES (9999999999999999999999999999999999.9999999
 INSERT INTO t1_i0098 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0098 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(64,30)
+-- Oracle table: DECIMAL(65,30)
 CREATE TABLE t2_i0098 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   pad2 VARCHAR(20) DEFAULT 'pad2',
-  target DECIMAL(64,30), PRIMARY KEY (id), INDEX idx_pad1 (pad1)
+  target DECIMAL(65,30), PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0098 (target) VALUES (-9999999999999999999999999999999999.999999999999999999999999999999);
 INSERT INTO t2_i0098 (target) VALUES (9999999999999999999999999999999999.999999999999999999999999999999);
@@ -6026,7 +6026,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0099
--- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0099, t2_i0099;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -6041,7 +6041,7 @@ INSERT INTO t1_i0099 (target) VALUES (9999999999999999999999999999999999.9999999
 INSERT INTO t1_i0099 (target) VALUES (0.000000000000000000000000000000);
 INSERT INTO t1_i0099 (target) VALUES (1.111111111111111111111111111111);
 INSERT INTO t1_i0099 (target) VALUES (-1.111111111111111111111111111111);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0099 MODIFY target DECIMAL(65,30) NOT NULL, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0099 (target) VALUES (99999999999999999999999999999999999.999999999999999999999999999999);
@@ -6056,11 +6056,11 @@ INSERT INTO t1_i0099 (target) VALUES (1.000000000000000000000000000000);
 INSERT INTO t1_i0099 (target) VALUES (9999999999999999999999999999999999.999999999999999999999999999999);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0099 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(64,30)
+-- Oracle table: DECIMAL(65,30)
 CREATE TABLE t2_i0099 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(64,30) NOT NULL,
+  target DECIMAL(65,30) NOT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0099 (target) VALUES (-9999999999999999999999999999999999.999999999999999999999999999999);
@@ -6090,7 +6090,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0100
--- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=CONSTANT_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0100, t2_i0100;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -6106,7 +6106,7 @@ INSERT INTO t1_i0100 (target) VALUES (0.000000000000000000000000000000);
 INSERT INTO t1_i0100 (target) VALUES (1.111111111111111111111111111111);
 INSERT INTO t1_i0100 (target) VALUES (-1.111111111111111111111111111111);
 INSERT INTO t1_i0100 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0100 MODIFY target DECIMAL(65,30) DEFAULT 0, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0100 (target) VALUES (99999999999999999999999999999999999.999999999999999999999999999999);
@@ -6122,11 +6122,11 @@ INSERT INTO t1_i0100 (target) VALUES (9999999999999999999999999999999999.9999999
 INSERT INTO t1_i0100 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0100 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(64,30)
+-- Oracle table: DECIMAL(65,30)
 CREATE TABLE t2_i0100 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(64,30) DEFAULT 0,
+  target DECIMAL(65,30) DEFAULT 0,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0100 (target) VALUES (-9999999999999999999999999999999999.999999999999999999999999999999);
@@ -6158,7 +6158,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0101
--- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0101, t2_i0101;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -6174,7 +6174,7 @@ INSERT INTO t1_i0101 (target) VALUES (0.000000000000000000000000000000);
 INSERT INTO t1_i0101 (target) VALUES (1.111111111111111111111111111111);
 INSERT INTO t1_i0101 (target) VALUES (-1.111111111111111111111111111111);
 INSERT INTO t1_i0101 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0101 MODIFY target DECIMAL(65,30) DEFAULT NULL, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0101 (target) VALUES (99999999999999999999999999999999999.999999999999999999999999999999);
@@ -6190,11 +6190,11 @@ INSERT INTO t1_i0101 (target) VALUES (9999999999999999999999999999999999.9999999
 INSERT INTO t1_i0101 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0101 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(64,30)
+-- Oracle table: DECIMAL(65,30)
 CREATE TABLE t2_i0101 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(64,30) DEFAULT NULL,
+  target DECIMAL(65,30) DEFAULT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0101 (target) VALUES (-9999999999999999999999999999999999.999999999999999999999999999999);
@@ -6226,7 +6226,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0102
--- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0102, t2_i0102;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -6241,7 +6241,7 @@ INSERT INTO t1_i0102 (target) VALUES (9999999999999999999999999999999999.9999999
 INSERT INTO t1_i0102 (target) VALUES (0.000000000000000000000000000000);
 INSERT INTO t1_i0102 (target) VALUES (1.111111111111111111111111111111);
 INSERT INTO t1_i0102 (target) VALUES (-1.111111111111111111111111111111);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0102 MODIFY target DECIMAL(65,30) NOT NULL DEFAULT 0, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0102 (target) VALUES (99999999999999999999999999999999999.999999999999999999999999999999);
@@ -6256,11 +6256,11 @@ INSERT INTO t1_i0102 (target) VALUES (1.000000000000000000000000000000);
 INSERT INTO t1_i0102 (target) VALUES (9999999999999999999999999999999999.999999999999999999999999999999);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0102 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(64,30)
+-- Oracle table: DECIMAL(65,30)
 CREATE TABLE t2_i0102 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(64,30) NOT NULL DEFAULT 0,
+  target DECIMAL(65,30) NOT NULL DEFAULT 0,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0102 (target) VALUES (-9999999999999999999999999999999999.999999999999999999999999999999);
@@ -6290,7 +6290,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0103
--- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=INVISIBLE, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0103, t2_i0103;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -6306,7 +6306,7 @@ INSERT INTO t1_i0103 (target) VALUES (0.000000000000000000000000000000);
 INSERT INTO t1_i0103 (target) VALUES (1.111111111111111111111111111111);
 INSERT INTO t1_i0103 (target) VALUES (-1.111111111111111111111111111111);
 INSERT INTO t1_i0103 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0103 MODIFY target DECIMAL(65,30) INVISIBLE, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0103 (target) VALUES (99999999999999999999999999999999999.999999999999999999999999999999);
@@ -6322,11 +6322,11 @@ INSERT INTO t1_i0103 (target) VALUES (9999999999999999999999999999999999.9999999
 INSERT INTO t1_i0103 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0103 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(64,30)
+-- Oracle table: DECIMAL(65,30)
 CREATE TABLE t2_i0103 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(64,30) INVISIBLE,
+  target DECIMAL(65,30) INVISIBLE,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0103 (target) VALUES (-9999999999999999999999999999999999.999999999999999999999999999999);
@@ -6358,7 +6358,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0104
--- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0104, t2_i0104;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -6368,15 +6368,15 @@ CREATE TABLE t1_i0104 (
   target DECIMAL(64,30),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0104 MODIFY target DECIMAL(65,30), ALGORITHM=instant;
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0104 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(64,30)
+-- Oracle table: DECIMAL(65,30)
 CREATE TABLE t2_i0104 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(64,30),
+  target DECIMAL(65,30),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 SELECT 'TC-I0104' AS test_id,
@@ -6394,7 +6394,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0105
--- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S1, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0105, t2_i0105;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -6405,7 +6405,7 @@ CREATE TABLE t1_i0105 (
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t1_i0105 (target) VALUES (-9999999999999999999999999999999999.999999999999999999999999999999);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0105 MODIFY target DECIMAL(65,30), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0105 (target) VALUES (99999999999999999999999999999999999.999999999999999999999999999999);
@@ -6421,11 +6421,11 @@ INSERT INTO t1_i0105 (target) VALUES (9999999999999999999999999999999999.9999999
 INSERT INTO t1_i0105 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0105 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(64,30)
+-- Oracle table: DECIMAL(65,30)
 CREATE TABLE t2_i0105 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(64,30),
+  target DECIMAL(65,30),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0105 (target) VALUES (-9999999999999999999999999999999999.999999999999999999999999999999);
@@ -6452,7 +6452,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0106
--- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=UNIFORM, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0106, t2_i0106;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -6468,7 +6468,7 @@ INSERT INTO t1_i0106 (target) VALUES (0.000000000000000000000000000000);
 INSERT INTO t1_i0106 (target) VALUES (1.111111111111111111111111111111);
 INSERT INTO t1_i0106 (target) VALUES (-1.111111111111111111111111111111);
 INSERT INTO t1_i0106 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0106 MODIFY target DECIMAL(65,30), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0106 (target) VALUES (99999999999999999999999999999999999.999999999999999999999999999999);
@@ -6484,11 +6484,11 @@ INSERT INTO t1_i0106 (target) VALUES (9999999999999999999999999999999999.9999999
 INSERT INTO t1_i0106 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0106 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(64,30)
+-- Oracle table: DECIMAL(65,30)
 CREATE TABLE t2_i0106 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(64,30),
+  target DECIMAL(65,30),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0106 (target) VALUES (-9999999999999999999999999999999999.999999999999999999999999999999);
@@ -6520,7 +6520,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0107
--- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=MONOTONIC, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0107, t2_i0107;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -6536,7 +6536,7 @@ INSERT INTO t1_i0107 (target) VALUES (0.000000000000000000000000000000);
 INSERT INTO t1_i0107 (target) VALUES (1.111111111111111111111111111111);
 INSERT INTO t1_i0107 (target) VALUES (-1.111111111111111111111111111111);
 INSERT INTO t1_i0107 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0107 MODIFY target DECIMAL(65,30), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0107 (target) VALUES (99999999999999999999999999999999999.999999999999999999999999999999);
@@ -6552,11 +6552,11 @@ INSERT INTO t1_i0107 (target) VALUES (9999999999999999999999999999999999.9999999
 INSERT INTO t1_i0107 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0107 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(64,30)
+-- Oracle table: DECIMAL(65,30)
 CREATE TABLE t2_i0107 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(64,30),
+  target DECIMAL(65,30),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0107 (target) VALUES (-9999999999999999999999999999999999.999999999999999999999999999999);
@@ -6588,7 +6588,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0108
--- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=ZERO, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0108, t2_i0108;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -6603,7 +6603,7 @@ INSERT INTO t1_i0108 (target) VALUES (9999999999999999999999999999999999.9999999
 INSERT INTO t1_i0108 (target) VALUES (0.000000000000000000000000000000);
 INSERT INTO t1_i0108 (target) VALUES (1.111111111111111111111111111111);
 INSERT INTO t1_i0108 (target) VALUES (-1.111111111111111111111111111111);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0108 MODIFY target DECIMAL(65,30), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0108 (target) VALUES (99999999999999999999999999999999999.999999999999999999999999999999);
@@ -6618,11 +6618,11 @@ INSERT INTO t1_i0108 (target) VALUES (1.000000000000000000000000000000);
 INSERT INTO t1_i0108 (target) VALUES (9999999999999999999999999999999999.999999999999999999999999999999);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0108 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(64,30)
+-- Oracle table: DECIMAL(65,30)
 CREATE TABLE t2_i0108 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(64,30),
+  target DECIMAL(65,30),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0108 (target) VALUES (-9999999999999999999999999999999999.999999999999999999999999999999);
@@ -6652,7 +6652,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0109
--- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=SINGLE, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0109, t2_i0109;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -6668,7 +6668,7 @@ INSERT INTO t1_i0109 (target) VALUES (0.000000000000000000000000000000);
 INSERT INTO t1_i0109 (target) VALUES (1.111111111111111111111111111111);
 INSERT INTO t1_i0109 (target) VALUES (-1.111111111111111111111111111111);
 INSERT INTO t1_i0109 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0109 MODIFY target DECIMAL(65,30), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0109 (target) VALUES (99999999999999999999999999999999999.999999999999999999999999999999);
@@ -6684,11 +6684,11 @@ INSERT INTO t1_i0109 (target) VALUES (9999999999999999999999999999999999.9999999
 INSERT INTO t1_i0109 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0109 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(64,30)
+-- Oracle table: DECIMAL(65,30)
 CREATE TABLE t2_i0109 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(64,30),
+  target DECIMAL(65,30),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0109 (target) VALUES (-9999999999999999999999999999999999.999999999999999999999999999999);
@@ -6720,7 +6720,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0110
--- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=ALL, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0110, t2_i0110;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -6731,7 +6731,7 @@ CREATE TABLE t1_i0110 (
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t1_i0110 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0110 MODIFY target DECIMAL(65,30), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0110 (target) VALUES (99999999999999999999999999999999999.999999999999999999999999999999);
@@ -6747,11 +6747,11 @@ INSERT INTO t1_i0110 (target) VALUES (9999999999999999999999999999999999.9999999
 INSERT INTO t1_i0110 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0110 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(64,30)
+-- Oracle table: DECIMAL(65,30)
 CREATE TABLE t2_i0110 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(64,30),
+  target DECIMAL(65,30),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0110 (target) VALUES (NULL);
@@ -6778,7 +6778,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0111
--- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=NON_STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0111, t2_i0111;
 SET SESSION sql_mode = '';
@@ -6794,7 +6794,7 @@ INSERT INTO t1_i0111 (target) VALUES (0.000000000000000000000000000000);
 INSERT INTO t1_i0111 (target) VALUES (1.111111111111111111111111111111);
 INSERT INTO t1_i0111 (target) VALUES (-1.111111111111111111111111111111);
 INSERT INTO t1_i0111 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0111 MODIFY target DECIMAL(65,30), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0111 (target) VALUES (99999999999999999999999999999999999.999999999999999999999999999999);
@@ -6810,11 +6810,11 @@ INSERT INTO t1_i0111 (target) VALUES (9999999999999999999999999999999999.9999999
 INSERT INTO t1_i0111 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0111 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(64,30)
+-- Oracle table: DECIMAL(65,30)
 CREATE TABLE t2_i0111 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(64,30),
+  target DECIMAL(65,30),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0111 (target) VALUES (-9999999999999999999999999999999999.999999999999999999999999999999);
@@ -6846,7 +6846,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0112
--- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0112, t2_i0112;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -6856,15 +6856,15 @@ CREATE TABLE t1_i0112 (
   target DECIMAL(64,30) NOT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0112 MODIFY target DECIMAL(65,30) NOT NULL, ALGORITHM=instant;
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0112 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(64,30)
+-- Oracle table: DECIMAL(65,30)
 CREATE TABLE t2_i0112 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(64,30) NOT NULL,
+  target DECIMAL(65,30) NOT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 SELECT 'TC-I0112' AS test_id,
@@ -6882,7 +6882,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0113
--- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=UNIFORM, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0113, t2_i0113;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -6892,15 +6892,15 @@ CREATE TABLE t1_i0113 (
   target DECIMAL(64,30),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0113 MODIFY target DECIMAL(65,30), ALGORITHM=instant;
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0113 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(64,30)
+-- Oracle table: DECIMAL(65,30)
 CREATE TABLE t2_i0113 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(64,30),
+  target DECIMAL(65,30),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 SELECT 'TC-I0113' AS test_id,
@@ -6918,7 +6918,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0114
--- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(64,30) -> DECIMAL(65,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0114, t2_i0114;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -6928,15 +6928,15 @@ CREATE TABLE t1_i0114 (
   target DECIMAL(64,30) NOT NULL DEFAULT 0,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0114 MODIFY target DECIMAL(65,30) NOT NULL DEFAULT 0, ALGORITHM=instant;
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0114 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(64,30)
+-- Oracle table: DECIMAL(65,30)
 CREATE TABLE t2_i0114 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(64,30) NOT NULL DEFAULT 0,
+  target DECIMAL(65,30) NOT NULL DEFAULT 0,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 SELECT 'TC-I0114' AS test_id,
@@ -7038,7 +7038,7 @@ INSERT INTO t1_tc_ia0116 (target) VALUES (1.999999999999999999999999999999);
 SELECT 'TC-IA0116' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_ia0116' AND column_name='target' AND column_comment='test_comment';
 
 -- Test Case: TC-I0117
--- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0117, t2_i0117;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -7054,7 +7054,7 @@ INSERT INTO t1_i0117 (target) VALUES (0);
 INSERT INTO t1_i0117 (target) VALUES (1);
 INSERT INTO t1_i0117 (target) VALUES (-1);
 INSERT INTO t1_i0117 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0117 MODIFY target DECIMAL(20,0), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0117 (target) VALUES (99999999999999999999);
@@ -7070,11 +7070,11 @@ INSERT INTO t1_i0117 (target) VALUES (999999999999999999);
 INSERT INTO t1_i0117 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0117 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(18,0)
+-- Oracle table: DECIMAL(20,0)
 CREATE TABLE t2_i0117 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(18,0),
+  target DECIMAL(20,0),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0117 (target) VALUES (-999999999999999999);
@@ -7106,7 +7106,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0118
--- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=COMPACT, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0118, t2_i0118;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -7122,7 +7122,7 @@ INSERT INTO t1_i0118 (target) VALUES (0);
 INSERT INTO t1_i0118 (target) VALUES (1);
 INSERT INTO t1_i0118 (target) VALUES (-1);
 INSERT INTO t1_i0118 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0118 MODIFY target DECIMAL(20,0), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0118 (target) VALUES (99999999999999999999);
@@ -7138,11 +7138,11 @@ INSERT INTO t1_i0118 (target) VALUES (999999999999999999);
 INSERT INTO t1_i0118 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0118 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(18,0)
+-- Oracle table: DECIMAL(20,0)
 CREATE TABLE t2_i0118 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(18,0),
+  target DECIMAL(20,0),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=COMPACT;
 INSERT INTO t2_i0118 (target) VALUES (-999999999999999999);
@@ -7174,7 +7174,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0119
--- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=REDUNDANT, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0119, t2_i0119;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -7190,7 +7190,7 @@ INSERT INTO t1_i0119 (target) VALUES (0);
 INSERT INTO t1_i0119 (target) VALUES (1);
 INSERT INTO t1_i0119 (target) VALUES (-1);
 INSERT INTO t1_i0119 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0119 MODIFY target DECIMAL(20,0), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0119 (target) VALUES (99999999999999999999);
@@ -7206,11 +7206,11 @@ INSERT INTO t1_i0119 (target) VALUES (999999999999999999);
 INSERT INTO t1_i0119 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0119 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(18,0)
+-- Oracle table: DECIMAL(20,0)
 CREATE TABLE t2_i0119 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(18,0),
+  target DECIMAL(20,0),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=REDUNDANT;
 INSERT INTO t2_i0119 (target) VALUES (-999999999999999999);
@@ -7306,7 +7306,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0121
--- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=NO_EXPLICIT_PK, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0121, t2_i0121;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -7322,7 +7322,7 @@ INSERT INTO t1_i0121 (target) VALUES (0);
 INSERT INTO t1_i0121 (target) VALUES (1);
 INSERT INTO t1_i0121 (target) VALUES (-1);
 INSERT INTO t1_i0121 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0121 MODIFY target DECIMAL(20,0), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0121 (target) VALUES (99999999999999999999);
@@ -7338,11 +7338,11 @@ INSERT INTO t1_i0121 (target) VALUES (999999999999999999);
 INSERT INTO t1_i0121 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0121 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(18,0)
+-- Oracle table: DECIMAL(20,0)
 CREATE TABLE t2_i0121 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(18,0),
+  target DECIMAL(20,0),
   pad2 VARCHAR(20) DEFAULT 'pad2', INDEX idx_id (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0121 (target) VALUES (-999999999999999999);
@@ -7374,7 +7374,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0122
--- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=NONE, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0122, t2_i0122;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -7390,7 +7390,7 @@ INSERT INTO t1_i0122 (target) VALUES (0);
 INSERT INTO t1_i0122 (target) VALUES (1);
 INSERT INTO t1_i0122 (target) VALUES (-1);
 INSERT INTO t1_i0122 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0122 MODIFY target DECIMAL(20,0), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0122 (target) VALUES (99999999999999999999);
@@ -7406,11 +7406,11 @@ INSERT INTO t1_i0122 (target) VALUES (999999999999999999);
 INSERT INTO t1_i0122 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0122 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(18,0)
+-- Oracle table: DECIMAL(20,0)
 CREATE TABLE t2_i0122 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(18,0),
+  target DECIMAL(20,0),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0122 (target) VALUES (-999999999999999999);
@@ -7442,7 +7442,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0123
--- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=MULTIPLE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0123, t2_i0123;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -7458,7 +7458,7 @@ INSERT INTO t1_i0123 (target) VALUES (0);
 INSERT INTO t1_i0123 (target) VALUES (1);
 INSERT INTO t1_i0123 (target) VALUES (-1);
 INSERT INTO t1_i0123 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0123 MODIFY target DECIMAL(20,0), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0123 (target) VALUES (99999999999999999999);
@@ -7474,11 +7474,11 @@ INSERT INTO t1_i0123 (target) VALUES (999999999999999999);
 INSERT INTO t1_i0123 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0123 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(18,0)
+-- Oracle table: DECIMAL(20,0)
 CREATE TABLE t2_i0123 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(18,0),
+  target DECIMAL(20,0),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1), INDEX idx_pad2 (pad2)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0123 (target) VALUES (-999999999999999999);
@@ -7510,7 +7510,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0124
--- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=UNIQUE, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0124, t2_i0124;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -7526,7 +7526,7 @@ INSERT INTO t1_i0124 (target) VALUES (0);
 INSERT INTO t1_i0124 (target) VALUES (1);
 INSERT INTO t1_i0124 (target) VALUES (-1);
 INSERT INTO t1_i0124 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0124 MODIFY target DECIMAL(20,0), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0124 (target) VALUES (99999999999999999999);
@@ -7542,11 +7542,11 @@ INSERT INTO t1_i0124 (target) VALUES (999999999999999999);
 INSERT INTO t1_i0124 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0124 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(18,0)
+-- Oracle table: DECIMAL(20,0)
 CREATE TABLE t2_i0124 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(18,0),
+  target DECIMAL(20,0),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), UNIQUE INDEX uq_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0124 (target) VALUES (-999999999999999999);
@@ -7578,7 +7578,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0125
--- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=COMPOSITE_PREFIX, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0125, t2_i0125;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -7594,7 +7594,7 @@ INSERT INTO t1_i0125 (target) VALUES (0);
 INSERT INTO t1_i0125 (target) VALUES (1);
 INSERT INTO t1_i0125 (target) VALUES (-1);
 INSERT INTO t1_i0125 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0125 MODIFY target DECIMAL(20,0), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0125 (target) VALUES (99999999999999999999);
@@ -7610,11 +7610,11 @@ INSERT INTO t1_i0125 (target) VALUES (999999999999999999);
 INSERT INTO t1_i0125 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0125 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(18,0)
+-- Oracle table: DECIMAL(20,0)
 CREATE TABLE t2_i0125 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(18,0),
+  target DECIMAL(20,0),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_composite (pad1(10), pad2(10))
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0125 (target) VALUES (-999999999999999999);
@@ -7646,7 +7646,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0126
--- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=FIRST
 DROP TABLE IF EXISTS t1_i0126, t2_i0126;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -7662,7 +7662,7 @@ INSERT INTO t1_i0126 (target) VALUES (0);
 INSERT INTO t1_i0126 (target) VALUES (1);
 INSERT INTO t1_i0126 (target) VALUES (-1);
 INSERT INTO t1_i0126 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0126 MODIFY target DECIMAL(20,0), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0126 (target) VALUES (99999999999999999999);
@@ -7678,9 +7678,9 @@ INSERT INTO t1_i0126 (target) VALUES (999999999999999999);
 INSERT INTO t1_i0126 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0126 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(18,0)
+-- Oracle table: DECIMAL(20,0)
 CREATE TABLE t2_i0126 (
-  target DECIMAL(18,0),
+  target DECIMAL(20,0),
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
@@ -7714,7 +7714,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0127
--- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=LAST
 DROP TABLE IF EXISTS t1_i0127, t2_i0127;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -7730,7 +7730,7 @@ INSERT INTO t1_i0127 (target) VALUES (0);
 INSERT INTO t1_i0127 (target) VALUES (1);
 INSERT INTO t1_i0127 (target) VALUES (-1);
 INSERT INTO t1_i0127 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0127 MODIFY target DECIMAL(20,0), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0127 (target) VALUES (99999999999999999999);
@@ -7746,12 +7746,12 @@ INSERT INTO t1_i0127 (target) VALUES (999999999999999999);
 INSERT INTO t1_i0127 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0127 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(18,0)
+-- Oracle table: DECIMAL(20,0)
 CREATE TABLE t2_i0127 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   pad2 VARCHAR(20) DEFAULT 'pad2',
-  target DECIMAL(18,0), PRIMARY KEY (id), INDEX idx_pad1 (pad1)
+  target DECIMAL(20,0), PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0127 (target) VALUES (-999999999999999999);
 INSERT INTO t2_i0127 (target) VALUES (999999999999999999);
@@ -7782,7 +7782,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0128
--- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0128, t2_i0128;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -7797,7 +7797,7 @@ INSERT INTO t1_i0128 (target) VALUES (999999999999999999);
 INSERT INTO t1_i0128 (target) VALUES (0);
 INSERT INTO t1_i0128 (target) VALUES (1);
 INSERT INTO t1_i0128 (target) VALUES (-1);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0128 MODIFY target DECIMAL(20,0) NOT NULL, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0128 (target) VALUES (99999999999999999999);
@@ -7812,11 +7812,11 @@ INSERT INTO t1_i0128 (target) VALUES (1);
 INSERT INTO t1_i0128 (target) VALUES (999999999999999999);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0128 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(18,0)
+-- Oracle table: DECIMAL(20,0)
 CREATE TABLE t2_i0128 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(18,0) NOT NULL,
+  target DECIMAL(20,0) NOT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0128 (target) VALUES (-999999999999999999);
@@ -7846,7 +7846,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0129
--- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=CONSTANT_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0129, t2_i0129;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -7862,7 +7862,7 @@ INSERT INTO t1_i0129 (target) VALUES (0);
 INSERT INTO t1_i0129 (target) VALUES (1);
 INSERT INTO t1_i0129 (target) VALUES (-1);
 INSERT INTO t1_i0129 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0129 MODIFY target DECIMAL(20,0) DEFAULT 0, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0129 (target) VALUES (99999999999999999999);
@@ -7878,11 +7878,11 @@ INSERT INTO t1_i0129 (target) VALUES (999999999999999999);
 INSERT INTO t1_i0129 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0129 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(18,0)
+-- Oracle table: DECIMAL(20,0)
 CREATE TABLE t2_i0129 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(18,0) DEFAULT 0,
+  target DECIMAL(20,0) DEFAULT 0,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0129 (target) VALUES (-999999999999999999);
@@ -7914,7 +7914,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0130
--- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0130, t2_i0130;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -7930,7 +7930,7 @@ INSERT INTO t1_i0130 (target) VALUES (0);
 INSERT INTO t1_i0130 (target) VALUES (1);
 INSERT INTO t1_i0130 (target) VALUES (-1);
 INSERT INTO t1_i0130 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0130 MODIFY target DECIMAL(20,0) DEFAULT NULL, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0130 (target) VALUES (99999999999999999999);
@@ -7946,11 +7946,11 @@ INSERT INTO t1_i0130 (target) VALUES (999999999999999999);
 INSERT INTO t1_i0130 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0130 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(18,0)
+-- Oracle table: DECIMAL(20,0)
 CREATE TABLE t2_i0130 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(18,0) DEFAULT NULL,
+  target DECIMAL(20,0) DEFAULT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0130 (target) VALUES (-999999999999999999);
@@ -7982,7 +7982,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0131
--- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0131, t2_i0131;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -7997,7 +7997,7 @@ INSERT INTO t1_i0131 (target) VALUES (999999999999999999);
 INSERT INTO t1_i0131 (target) VALUES (0);
 INSERT INTO t1_i0131 (target) VALUES (1);
 INSERT INTO t1_i0131 (target) VALUES (-1);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0131 MODIFY target DECIMAL(20,0) NOT NULL DEFAULT 0, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0131 (target) VALUES (99999999999999999999);
@@ -8012,11 +8012,11 @@ INSERT INTO t1_i0131 (target) VALUES (1);
 INSERT INTO t1_i0131 (target) VALUES (999999999999999999);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0131 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(18,0)
+-- Oracle table: DECIMAL(20,0)
 CREATE TABLE t2_i0131 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(18,0) NOT NULL DEFAULT 0,
+  target DECIMAL(20,0) NOT NULL DEFAULT 0,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0131 (target) VALUES (-999999999999999999);
@@ -8046,7 +8046,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0132
--- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=INVISIBLE, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0132, t2_i0132;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -8062,7 +8062,7 @@ INSERT INTO t1_i0132 (target) VALUES (0);
 INSERT INTO t1_i0132 (target) VALUES (1);
 INSERT INTO t1_i0132 (target) VALUES (-1);
 INSERT INTO t1_i0132 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0132 MODIFY target DECIMAL(20,0) INVISIBLE, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0132 (target) VALUES (99999999999999999999);
@@ -8078,11 +8078,11 @@ INSERT INTO t1_i0132 (target) VALUES (999999999999999999);
 INSERT INTO t1_i0132 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0132 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(18,0)
+-- Oracle table: DECIMAL(20,0)
 CREATE TABLE t2_i0132 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(18,0) INVISIBLE,
+  target DECIMAL(20,0) INVISIBLE,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0132 (target) VALUES (-999999999999999999);
@@ -8114,7 +8114,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0133
--- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0133, t2_i0133;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -8124,15 +8124,15 @@ CREATE TABLE t1_i0133 (
   target DECIMAL(18,0),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0133 MODIFY target DECIMAL(20,0), ALGORITHM=instant;
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0133 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(18,0)
+-- Oracle table: DECIMAL(20,0)
 CREATE TABLE t2_i0133 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(18,0),
+  target DECIMAL(20,0),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 SELECT 'TC-I0133' AS test_id,
@@ -8150,7 +8150,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0134
--- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S1, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0134, t2_i0134;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -8161,7 +8161,7 @@ CREATE TABLE t1_i0134 (
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t1_i0134 (target) VALUES (-999999999999999999);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0134 MODIFY target DECIMAL(20,0), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0134 (target) VALUES (99999999999999999999);
@@ -8177,11 +8177,11 @@ INSERT INTO t1_i0134 (target) VALUES (999999999999999999);
 INSERT INTO t1_i0134 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0134 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(18,0)
+-- Oracle table: DECIMAL(20,0)
 CREATE TABLE t2_i0134 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(18,0),
+  target DECIMAL(20,0),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0134 (target) VALUES (-999999999999999999);
@@ -8208,7 +8208,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0135
--- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=UNIFORM, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0135, t2_i0135;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -8224,7 +8224,7 @@ INSERT INTO t1_i0135 (target) VALUES (0);
 INSERT INTO t1_i0135 (target) VALUES (1);
 INSERT INTO t1_i0135 (target) VALUES (-1);
 INSERT INTO t1_i0135 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0135 MODIFY target DECIMAL(20,0), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0135 (target) VALUES (99999999999999999999);
@@ -8240,11 +8240,11 @@ INSERT INTO t1_i0135 (target) VALUES (999999999999999999);
 INSERT INTO t1_i0135 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0135 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(18,0)
+-- Oracle table: DECIMAL(20,0)
 CREATE TABLE t2_i0135 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(18,0),
+  target DECIMAL(20,0),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0135 (target) VALUES (-999999999999999999);
@@ -8276,7 +8276,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0136
--- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=MONOTONIC, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0136, t2_i0136;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -8292,7 +8292,7 @@ INSERT INTO t1_i0136 (target) VALUES (0);
 INSERT INTO t1_i0136 (target) VALUES (1);
 INSERT INTO t1_i0136 (target) VALUES (-1);
 INSERT INTO t1_i0136 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0136 MODIFY target DECIMAL(20,0), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0136 (target) VALUES (99999999999999999999);
@@ -8308,11 +8308,11 @@ INSERT INTO t1_i0136 (target) VALUES (999999999999999999);
 INSERT INTO t1_i0136 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0136 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(18,0)
+-- Oracle table: DECIMAL(20,0)
 CREATE TABLE t2_i0136 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(18,0),
+  target DECIMAL(20,0),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0136 (target) VALUES (-999999999999999999);
@@ -8344,7 +8344,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0137
--- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=ZERO, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0137, t2_i0137;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -8359,7 +8359,7 @@ INSERT INTO t1_i0137 (target) VALUES (999999999999999999);
 INSERT INTO t1_i0137 (target) VALUES (0);
 INSERT INTO t1_i0137 (target) VALUES (1);
 INSERT INTO t1_i0137 (target) VALUES (-1);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0137 MODIFY target DECIMAL(20,0), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0137 (target) VALUES (99999999999999999999);
@@ -8374,11 +8374,11 @@ INSERT INTO t1_i0137 (target) VALUES (1);
 INSERT INTO t1_i0137 (target) VALUES (999999999999999999);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0137 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(18,0)
+-- Oracle table: DECIMAL(20,0)
 CREATE TABLE t2_i0137 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(18,0),
+  target DECIMAL(20,0),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0137 (target) VALUES (-999999999999999999);
@@ -8408,7 +8408,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0138
--- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=SINGLE, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0138, t2_i0138;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -8424,7 +8424,7 @@ INSERT INTO t1_i0138 (target) VALUES (0);
 INSERT INTO t1_i0138 (target) VALUES (1);
 INSERT INTO t1_i0138 (target) VALUES (-1);
 INSERT INTO t1_i0138 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0138 MODIFY target DECIMAL(20,0), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0138 (target) VALUES (99999999999999999999);
@@ -8440,11 +8440,11 @@ INSERT INTO t1_i0138 (target) VALUES (999999999999999999);
 INSERT INTO t1_i0138 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0138 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(18,0)
+-- Oracle table: DECIMAL(20,0)
 CREATE TABLE t2_i0138 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(18,0),
+  target DECIMAL(20,0),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0138 (target) VALUES (-999999999999999999);
@@ -8476,7 +8476,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0139
--- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=ALL, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0139, t2_i0139;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -8487,7 +8487,7 @@ CREATE TABLE t1_i0139 (
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t1_i0139 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0139 MODIFY target DECIMAL(20,0), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0139 (target) VALUES (99999999999999999999);
@@ -8503,11 +8503,11 @@ INSERT INTO t1_i0139 (target) VALUES (999999999999999999);
 INSERT INTO t1_i0139 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0139 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(18,0)
+-- Oracle table: DECIMAL(20,0)
 CREATE TABLE t2_i0139 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(18,0),
+  target DECIMAL(20,0),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0139 (target) VALUES (NULL);
@@ -8534,7 +8534,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0140
--- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=NON_STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0140, t2_i0140;
 SET SESSION sql_mode = '';
@@ -8550,7 +8550,7 @@ INSERT INTO t1_i0140 (target) VALUES (0);
 INSERT INTO t1_i0140 (target) VALUES (1);
 INSERT INTO t1_i0140 (target) VALUES (-1);
 INSERT INTO t1_i0140 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0140 MODIFY target DECIMAL(20,0), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0140 (target) VALUES (99999999999999999999);
@@ -8566,11 +8566,11 @@ INSERT INTO t1_i0140 (target) VALUES (999999999999999999);
 INSERT INTO t1_i0140 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0140 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(18,0)
+-- Oracle table: DECIMAL(20,0)
 CREATE TABLE t2_i0140 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(18,0),
+  target DECIMAL(20,0),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0140 (target) VALUES (-999999999999999999);
@@ -8602,7 +8602,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0141
--- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0141, t2_i0141;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -8612,15 +8612,15 @@ CREATE TABLE t1_i0141 (
   target DECIMAL(18,0) NOT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0141 MODIFY target DECIMAL(20,0) NOT NULL, ALGORITHM=instant;
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0141 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(18,0)
+-- Oracle table: DECIMAL(20,0)
 CREATE TABLE t2_i0141 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(18,0) NOT NULL,
+  target DECIMAL(20,0) NOT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 SELECT 'TC-I0141' AS test_id,
@@ -8638,7 +8638,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0142
--- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=UNIFORM, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0142, t2_i0142;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -8648,15 +8648,15 @@ CREATE TABLE t1_i0142 (
   target DECIMAL(18,0),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0142 MODIFY target DECIMAL(20,0), ALGORITHM=instant;
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0142 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(18,0)
+-- Oracle table: DECIMAL(20,0)
 CREATE TABLE t2_i0142 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(18,0),
+  target DECIMAL(20,0),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 SELECT 'TC-I0142' AS test_id,
@@ -8674,7 +8674,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0143
--- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(18,0) -> DECIMAL(20,0), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0143, t2_i0143;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -8684,15 +8684,15 @@ CREATE TABLE t1_i0143 (
   target DECIMAL(18,0) NOT NULL DEFAULT 0,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0143 MODIFY target DECIMAL(20,0) NOT NULL DEFAULT 0, ALGORITHM=instant;
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0143 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999);
--- Oracle table: DECIMAL(18,0)
+-- Oracle table: DECIMAL(20,0)
 CREATE TABLE t2_i0143 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(18,0) NOT NULL DEFAULT 0,
+  target DECIMAL(20,0) NOT NULL DEFAULT 0,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 SELECT 'TC-I0143' AS test_id,
@@ -8794,7 +8794,7 @@ INSERT INTO t1_tc_ia0145 (target) VALUES (999999999);
 SELECT 'TC-IA0145' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_ia0145' AND column_name='target' AND column_comment='test_comment';
 
 -- Test Case: TC-I0146
--- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0146, t2_i0146;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -8810,7 +8810,7 @@ INSERT INTO t1_i0146 (target) VALUES (0.000000000000000000000000000000);
 INSERT INTO t1_i0146 (target) VALUES (1.111111111111111111111111111111);
 INSERT INTO t1_i0146 (target) VALUES (-1.111111111111111111111111111111);
 INSERT INTO t1_i0146 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0146 MODIFY target DECIMAL(33,30), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0146 (target) VALUES (999.999999999999999999999999999999);
@@ -8826,11 +8826,11 @@ INSERT INTO t1_i0146 (target) VALUES (9.999999999999999999999999999999);
 INSERT INTO t1_i0146 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0146 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(31,30)
+-- Oracle table: DECIMAL(33,30)
 CREATE TABLE t2_i0146 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(31,30),
+  target DECIMAL(33,30),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0146 (target) VALUES (-9.999999999999999999999999999999);
@@ -8862,7 +8862,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0147
--- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=COMPACT, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0147, t2_i0147;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -8878,7 +8878,7 @@ INSERT INTO t1_i0147 (target) VALUES (0.000000000000000000000000000000);
 INSERT INTO t1_i0147 (target) VALUES (1.111111111111111111111111111111);
 INSERT INTO t1_i0147 (target) VALUES (-1.111111111111111111111111111111);
 INSERT INTO t1_i0147 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0147 MODIFY target DECIMAL(33,30), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0147 (target) VALUES (999.999999999999999999999999999999);
@@ -8894,11 +8894,11 @@ INSERT INTO t1_i0147 (target) VALUES (9.999999999999999999999999999999);
 INSERT INTO t1_i0147 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0147 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(31,30)
+-- Oracle table: DECIMAL(33,30)
 CREATE TABLE t2_i0147 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(31,30),
+  target DECIMAL(33,30),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=COMPACT;
 INSERT INTO t2_i0147 (target) VALUES (-9.999999999999999999999999999999);
@@ -8930,7 +8930,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0148
--- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=REDUNDANT, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0148, t2_i0148;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -8946,7 +8946,7 @@ INSERT INTO t1_i0148 (target) VALUES (0.000000000000000000000000000000);
 INSERT INTO t1_i0148 (target) VALUES (1.111111111111111111111111111111);
 INSERT INTO t1_i0148 (target) VALUES (-1.111111111111111111111111111111);
 INSERT INTO t1_i0148 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0148 MODIFY target DECIMAL(33,30), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0148 (target) VALUES (999.999999999999999999999999999999);
@@ -8962,11 +8962,11 @@ INSERT INTO t1_i0148 (target) VALUES (9.999999999999999999999999999999);
 INSERT INTO t1_i0148 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0148 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(31,30)
+-- Oracle table: DECIMAL(33,30)
 CREATE TABLE t2_i0148 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(31,30),
+  target DECIMAL(33,30),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=REDUNDANT;
 INSERT INTO t2_i0148 (target) VALUES (-9.999999999999999999999999999999);
@@ -9062,7 +9062,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0150
--- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=NO_EXPLICIT_PK, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0150, t2_i0150;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -9078,7 +9078,7 @@ INSERT INTO t1_i0150 (target) VALUES (0.000000000000000000000000000000);
 INSERT INTO t1_i0150 (target) VALUES (1.111111111111111111111111111111);
 INSERT INTO t1_i0150 (target) VALUES (-1.111111111111111111111111111111);
 INSERT INTO t1_i0150 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0150 MODIFY target DECIMAL(33,30), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0150 (target) VALUES (999.999999999999999999999999999999);
@@ -9094,11 +9094,11 @@ INSERT INTO t1_i0150 (target) VALUES (9.999999999999999999999999999999);
 INSERT INTO t1_i0150 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0150 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(31,30)
+-- Oracle table: DECIMAL(33,30)
 CREATE TABLE t2_i0150 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(31,30),
+  target DECIMAL(33,30),
   pad2 VARCHAR(20) DEFAULT 'pad2', INDEX idx_id (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0150 (target) VALUES (-9.999999999999999999999999999999);
@@ -9130,7 +9130,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0151
--- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=NONE, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0151, t2_i0151;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -9146,7 +9146,7 @@ INSERT INTO t1_i0151 (target) VALUES (0.000000000000000000000000000000);
 INSERT INTO t1_i0151 (target) VALUES (1.111111111111111111111111111111);
 INSERT INTO t1_i0151 (target) VALUES (-1.111111111111111111111111111111);
 INSERT INTO t1_i0151 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0151 MODIFY target DECIMAL(33,30), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0151 (target) VALUES (999.999999999999999999999999999999);
@@ -9162,11 +9162,11 @@ INSERT INTO t1_i0151 (target) VALUES (9.999999999999999999999999999999);
 INSERT INTO t1_i0151 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0151 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(31,30)
+-- Oracle table: DECIMAL(33,30)
 CREATE TABLE t2_i0151 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(31,30),
+  target DECIMAL(33,30),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0151 (target) VALUES (-9.999999999999999999999999999999);
@@ -9198,7 +9198,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0152
--- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=MULTIPLE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0152, t2_i0152;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -9214,7 +9214,7 @@ INSERT INTO t1_i0152 (target) VALUES (0.000000000000000000000000000000);
 INSERT INTO t1_i0152 (target) VALUES (1.111111111111111111111111111111);
 INSERT INTO t1_i0152 (target) VALUES (-1.111111111111111111111111111111);
 INSERT INTO t1_i0152 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0152 MODIFY target DECIMAL(33,30), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0152 (target) VALUES (999.999999999999999999999999999999);
@@ -9230,11 +9230,11 @@ INSERT INTO t1_i0152 (target) VALUES (9.999999999999999999999999999999);
 INSERT INTO t1_i0152 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0152 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(31,30)
+-- Oracle table: DECIMAL(33,30)
 CREATE TABLE t2_i0152 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(31,30),
+  target DECIMAL(33,30),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1), INDEX idx_pad2 (pad2)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0152 (target) VALUES (-9.999999999999999999999999999999);
@@ -9266,7 +9266,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0153
--- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=UNIQUE, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0153, t2_i0153;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -9282,7 +9282,7 @@ INSERT INTO t1_i0153 (target) VALUES (0.000000000000000000000000000000);
 INSERT INTO t1_i0153 (target) VALUES (1.111111111111111111111111111111);
 INSERT INTO t1_i0153 (target) VALUES (-1.111111111111111111111111111111);
 INSERT INTO t1_i0153 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0153 MODIFY target DECIMAL(33,30), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0153 (target) VALUES (999.999999999999999999999999999999);
@@ -9298,11 +9298,11 @@ INSERT INTO t1_i0153 (target) VALUES (9.999999999999999999999999999999);
 INSERT INTO t1_i0153 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0153 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(31,30)
+-- Oracle table: DECIMAL(33,30)
 CREATE TABLE t2_i0153 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(31,30),
+  target DECIMAL(33,30),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), UNIQUE INDEX uq_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0153 (target) VALUES (-9.999999999999999999999999999999);
@@ -9334,7 +9334,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0154
--- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=COMPOSITE_PREFIX, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0154, t2_i0154;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -9350,7 +9350,7 @@ INSERT INTO t1_i0154 (target) VALUES (0.000000000000000000000000000000);
 INSERT INTO t1_i0154 (target) VALUES (1.111111111111111111111111111111);
 INSERT INTO t1_i0154 (target) VALUES (-1.111111111111111111111111111111);
 INSERT INTO t1_i0154 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0154 MODIFY target DECIMAL(33,30), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0154 (target) VALUES (999.999999999999999999999999999999);
@@ -9366,11 +9366,11 @@ INSERT INTO t1_i0154 (target) VALUES (9.999999999999999999999999999999);
 INSERT INTO t1_i0154 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0154 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(31,30)
+-- Oracle table: DECIMAL(33,30)
 CREATE TABLE t2_i0154 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(31,30),
+  target DECIMAL(33,30),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_composite (pad1(10), pad2(10))
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0154 (target) VALUES (-9.999999999999999999999999999999);
@@ -9402,7 +9402,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0155
--- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=FIRST
 DROP TABLE IF EXISTS t1_i0155, t2_i0155;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -9418,7 +9418,7 @@ INSERT INTO t1_i0155 (target) VALUES (0.000000000000000000000000000000);
 INSERT INTO t1_i0155 (target) VALUES (1.111111111111111111111111111111);
 INSERT INTO t1_i0155 (target) VALUES (-1.111111111111111111111111111111);
 INSERT INTO t1_i0155 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0155 MODIFY target DECIMAL(33,30), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0155 (target) VALUES (999.999999999999999999999999999999);
@@ -9434,9 +9434,9 @@ INSERT INTO t1_i0155 (target) VALUES (9.999999999999999999999999999999);
 INSERT INTO t1_i0155 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0155 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(31,30)
+-- Oracle table: DECIMAL(33,30)
 CREATE TABLE t2_i0155 (
-  target DECIMAL(31,30),
+  target DECIMAL(33,30),
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
@@ -9470,7 +9470,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0156
--- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=LAST
 DROP TABLE IF EXISTS t1_i0156, t2_i0156;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -9486,7 +9486,7 @@ INSERT INTO t1_i0156 (target) VALUES (0.000000000000000000000000000000);
 INSERT INTO t1_i0156 (target) VALUES (1.111111111111111111111111111111);
 INSERT INTO t1_i0156 (target) VALUES (-1.111111111111111111111111111111);
 INSERT INTO t1_i0156 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0156 MODIFY target DECIMAL(33,30), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0156 (target) VALUES (999.999999999999999999999999999999);
@@ -9502,12 +9502,12 @@ INSERT INTO t1_i0156 (target) VALUES (9.999999999999999999999999999999);
 INSERT INTO t1_i0156 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0156 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(31,30)
+-- Oracle table: DECIMAL(33,30)
 CREATE TABLE t2_i0156 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   pad2 VARCHAR(20) DEFAULT 'pad2',
-  target DECIMAL(31,30), PRIMARY KEY (id), INDEX idx_pad1 (pad1)
+  target DECIMAL(33,30), PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0156 (target) VALUES (-9.999999999999999999999999999999);
 INSERT INTO t2_i0156 (target) VALUES (9.999999999999999999999999999999);
@@ -9538,7 +9538,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0157
--- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0157, t2_i0157;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -9553,7 +9553,7 @@ INSERT INTO t1_i0157 (target) VALUES (9.999999999999999999999999999999);
 INSERT INTO t1_i0157 (target) VALUES (0.000000000000000000000000000000);
 INSERT INTO t1_i0157 (target) VALUES (1.111111111111111111111111111111);
 INSERT INTO t1_i0157 (target) VALUES (-1.111111111111111111111111111111);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0157 MODIFY target DECIMAL(33,30) NOT NULL, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0157 (target) VALUES (999.999999999999999999999999999999);
@@ -9568,11 +9568,11 @@ INSERT INTO t1_i0157 (target) VALUES (1.000000000000000000000000000000);
 INSERT INTO t1_i0157 (target) VALUES (9.999999999999999999999999999999);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0157 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(31,30)
+-- Oracle table: DECIMAL(33,30)
 CREATE TABLE t2_i0157 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(31,30) NOT NULL,
+  target DECIMAL(33,30) NOT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0157 (target) VALUES (-9.999999999999999999999999999999);
@@ -9602,7 +9602,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0158
--- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=CONSTANT_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0158, t2_i0158;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -9618,7 +9618,7 @@ INSERT INTO t1_i0158 (target) VALUES (0.000000000000000000000000000000);
 INSERT INTO t1_i0158 (target) VALUES (1.111111111111111111111111111111);
 INSERT INTO t1_i0158 (target) VALUES (-1.111111111111111111111111111111);
 INSERT INTO t1_i0158 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0158 MODIFY target DECIMAL(33,30) DEFAULT 0, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0158 (target) VALUES (999.999999999999999999999999999999);
@@ -9634,11 +9634,11 @@ INSERT INTO t1_i0158 (target) VALUES (9.999999999999999999999999999999);
 INSERT INTO t1_i0158 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0158 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(31,30)
+-- Oracle table: DECIMAL(33,30)
 CREATE TABLE t2_i0158 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(31,30) DEFAULT 0,
+  target DECIMAL(33,30) DEFAULT 0,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0158 (target) VALUES (-9.999999999999999999999999999999);
@@ -9670,7 +9670,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0159
--- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0159, t2_i0159;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -9686,7 +9686,7 @@ INSERT INTO t1_i0159 (target) VALUES (0.000000000000000000000000000000);
 INSERT INTO t1_i0159 (target) VALUES (1.111111111111111111111111111111);
 INSERT INTO t1_i0159 (target) VALUES (-1.111111111111111111111111111111);
 INSERT INTO t1_i0159 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0159 MODIFY target DECIMAL(33,30) DEFAULT NULL, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0159 (target) VALUES (999.999999999999999999999999999999);
@@ -9702,11 +9702,11 @@ INSERT INTO t1_i0159 (target) VALUES (9.999999999999999999999999999999);
 INSERT INTO t1_i0159 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0159 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(31,30)
+-- Oracle table: DECIMAL(33,30)
 CREATE TABLE t2_i0159 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(31,30) DEFAULT NULL,
+  target DECIMAL(33,30) DEFAULT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0159 (target) VALUES (-9.999999999999999999999999999999);
@@ -9738,7 +9738,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0160
--- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0160, t2_i0160;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -9753,7 +9753,7 @@ INSERT INTO t1_i0160 (target) VALUES (9.999999999999999999999999999999);
 INSERT INTO t1_i0160 (target) VALUES (0.000000000000000000000000000000);
 INSERT INTO t1_i0160 (target) VALUES (1.111111111111111111111111111111);
 INSERT INTO t1_i0160 (target) VALUES (-1.111111111111111111111111111111);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0160 MODIFY target DECIMAL(33,30) NOT NULL DEFAULT 0, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0160 (target) VALUES (999.999999999999999999999999999999);
@@ -9768,11 +9768,11 @@ INSERT INTO t1_i0160 (target) VALUES (1.000000000000000000000000000000);
 INSERT INTO t1_i0160 (target) VALUES (9.999999999999999999999999999999);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0160 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(31,30)
+-- Oracle table: DECIMAL(33,30)
 CREATE TABLE t2_i0160 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(31,30) NOT NULL DEFAULT 0,
+  target DECIMAL(33,30) NOT NULL DEFAULT 0,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0160 (target) VALUES (-9.999999999999999999999999999999);
@@ -9802,7 +9802,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0161
--- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=INVISIBLE, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0161, t2_i0161;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -9818,7 +9818,7 @@ INSERT INTO t1_i0161 (target) VALUES (0.000000000000000000000000000000);
 INSERT INTO t1_i0161 (target) VALUES (1.111111111111111111111111111111);
 INSERT INTO t1_i0161 (target) VALUES (-1.111111111111111111111111111111);
 INSERT INTO t1_i0161 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0161 MODIFY target DECIMAL(33,30) INVISIBLE, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0161 (target) VALUES (999.999999999999999999999999999999);
@@ -9834,11 +9834,11 @@ INSERT INTO t1_i0161 (target) VALUES (9.999999999999999999999999999999);
 INSERT INTO t1_i0161 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0161 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(31,30)
+-- Oracle table: DECIMAL(33,30)
 CREATE TABLE t2_i0161 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(31,30) INVISIBLE,
+  target DECIMAL(33,30) INVISIBLE,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0161 (target) VALUES (-9.999999999999999999999999999999);
@@ -9870,7 +9870,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0162
--- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0162, t2_i0162;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -9880,15 +9880,15 @@ CREATE TABLE t1_i0162 (
   target DECIMAL(31,30),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0162 MODIFY target DECIMAL(33,30), ALGORITHM=instant;
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0162 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(31,30)
+-- Oracle table: DECIMAL(33,30)
 CREATE TABLE t2_i0162 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(31,30),
+  target DECIMAL(33,30),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 SELECT 'TC-I0162' AS test_id,
@@ -9906,7 +9906,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0163
--- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S1, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0163, t2_i0163;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -9917,7 +9917,7 @@ CREATE TABLE t1_i0163 (
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t1_i0163 (target) VALUES (-9.999999999999999999999999999999);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0163 MODIFY target DECIMAL(33,30), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0163 (target) VALUES (999.999999999999999999999999999999);
@@ -9933,11 +9933,11 @@ INSERT INTO t1_i0163 (target) VALUES (9.999999999999999999999999999999);
 INSERT INTO t1_i0163 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0163 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(31,30)
+-- Oracle table: DECIMAL(33,30)
 CREATE TABLE t2_i0163 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(31,30),
+  target DECIMAL(33,30),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0163 (target) VALUES (-9.999999999999999999999999999999);
@@ -9964,7 +9964,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0164
--- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=UNIFORM, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0164, t2_i0164;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -9980,7 +9980,7 @@ INSERT INTO t1_i0164 (target) VALUES (0.000000000000000000000000000000);
 INSERT INTO t1_i0164 (target) VALUES (1.111111111111111111111111111111);
 INSERT INTO t1_i0164 (target) VALUES (-1.111111111111111111111111111111);
 INSERT INTO t1_i0164 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0164 MODIFY target DECIMAL(33,30), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0164 (target) VALUES (999.999999999999999999999999999999);
@@ -9996,11 +9996,11 @@ INSERT INTO t1_i0164 (target) VALUES (9.999999999999999999999999999999);
 INSERT INTO t1_i0164 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0164 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(31,30)
+-- Oracle table: DECIMAL(33,30)
 CREATE TABLE t2_i0164 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(31,30),
+  target DECIMAL(33,30),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0164 (target) VALUES (-9.999999999999999999999999999999);
@@ -10032,7 +10032,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0165
--- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=MONOTONIC, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0165, t2_i0165;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -10048,7 +10048,7 @@ INSERT INTO t1_i0165 (target) VALUES (0.000000000000000000000000000000);
 INSERT INTO t1_i0165 (target) VALUES (1.111111111111111111111111111111);
 INSERT INTO t1_i0165 (target) VALUES (-1.111111111111111111111111111111);
 INSERT INTO t1_i0165 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0165 MODIFY target DECIMAL(33,30), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0165 (target) VALUES (999.999999999999999999999999999999);
@@ -10064,11 +10064,11 @@ INSERT INTO t1_i0165 (target) VALUES (9.999999999999999999999999999999);
 INSERT INTO t1_i0165 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0165 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(31,30)
+-- Oracle table: DECIMAL(33,30)
 CREATE TABLE t2_i0165 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(31,30),
+  target DECIMAL(33,30),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0165 (target) VALUES (-9.999999999999999999999999999999);
@@ -10100,7 +10100,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0166
--- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=ZERO, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0166, t2_i0166;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -10115,7 +10115,7 @@ INSERT INTO t1_i0166 (target) VALUES (9.999999999999999999999999999999);
 INSERT INTO t1_i0166 (target) VALUES (0.000000000000000000000000000000);
 INSERT INTO t1_i0166 (target) VALUES (1.111111111111111111111111111111);
 INSERT INTO t1_i0166 (target) VALUES (-1.111111111111111111111111111111);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0166 MODIFY target DECIMAL(33,30), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0166 (target) VALUES (999.999999999999999999999999999999);
@@ -10130,11 +10130,11 @@ INSERT INTO t1_i0166 (target) VALUES (1.000000000000000000000000000000);
 INSERT INTO t1_i0166 (target) VALUES (9.999999999999999999999999999999);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0166 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(31,30)
+-- Oracle table: DECIMAL(33,30)
 CREATE TABLE t2_i0166 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(31,30),
+  target DECIMAL(33,30),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0166 (target) VALUES (-9.999999999999999999999999999999);
@@ -10164,7 +10164,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0167
--- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=SINGLE, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0167, t2_i0167;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -10180,7 +10180,7 @@ INSERT INTO t1_i0167 (target) VALUES (0.000000000000000000000000000000);
 INSERT INTO t1_i0167 (target) VALUES (1.111111111111111111111111111111);
 INSERT INTO t1_i0167 (target) VALUES (-1.111111111111111111111111111111);
 INSERT INTO t1_i0167 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0167 MODIFY target DECIMAL(33,30), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0167 (target) VALUES (999.999999999999999999999999999999);
@@ -10196,11 +10196,11 @@ INSERT INTO t1_i0167 (target) VALUES (9.999999999999999999999999999999);
 INSERT INTO t1_i0167 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0167 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(31,30)
+-- Oracle table: DECIMAL(33,30)
 CREATE TABLE t2_i0167 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(31,30),
+  target DECIMAL(33,30),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0167 (target) VALUES (-9.999999999999999999999999999999);
@@ -10232,7 +10232,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0168
--- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=ALL, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0168, t2_i0168;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -10243,7 +10243,7 @@ CREATE TABLE t1_i0168 (
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t1_i0168 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0168 MODIFY target DECIMAL(33,30), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0168 (target) VALUES (999.999999999999999999999999999999);
@@ -10259,11 +10259,11 @@ INSERT INTO t1_i0168 (target) VALUES (9.999999999999999999999999999999);
 INSERT INTO t1_i0168 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0168 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(31,30)
+-- Oracle table: DECIMAL(33,30)
 CREATE TABLE t2_i0168 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(31,30),
+  target DECIMAL(33,30),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0168 (target) VALUES (NULL);
@@ -10290,7 +10290,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0169
--- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=NON_STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0169, t2_i0169;
 SET SESSION sql_mode = '';
@@ -10306,7 +10306,7 @@ INSERT INTO t1_i0169 (target) VALUES (0.000000000000000000000000000000);
 INSERT INTO t1_i0169 (target) VALUES (1.111111111111111111111111111111);
 INSERT INTO t1_i0169 (target) VALUES (-1.111111111111111111111111111111);
 INSERT INTO t1_i0169 (target) VALUES (NULL);
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0169 MODIFY target DECIMAL(33,30), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
 INSERT INTO t1_i0169 (target) VALUES (999.999999999999999999999999999999);
@@ -10322,11 +10322,11 @@ INSERT INTO t1_i0169 (target) VALUES (9.999999999999999999999999999999);
 INSERT INTO t1_i0169 (target) VALUES (NULL);
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0169 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(31,30)
+-- Oracle table: DECIMAL(33,30)
 CREATE TABLE t2_i0169 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(31,30),
+  target DECIMAL(33,30),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 INSERT INTO t2_i0169 (target) VALUES (-9.999999999999999999999999999999);
@@ -10358,7 +10358,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0170
--- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0170, t2_i0170;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -10368,15 +10368,15 @@ CREATE TABLE t1_i0170 (
   target DECIMAL(31,30) NOT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0170 MODIFY target DECIMAL(33,30) NOT NULL, ALGORITHM=instant;
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0170 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(31,30)
+-- Oracle table: DECIMAL(33,30)
 CREATE TABLE t2_i0170 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(31,30) NOT NULL,
+  target DECIMAL(33,30) NOT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 SELECT 'TC-I0170' AS test_id,
@@ -10394,7 +10394,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0171
--- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=UNIFORM, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0171, t2_i0171;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -10404,15 +10404,15 @@ CREATE TABLE t1_i0171 (
   target DECIMAL(31,30),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0171 MODIFY target DECIMAL(33,30), ALGORITHM=instant;
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0171 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(31,30)
+-- Oracle table: DECIMAL(33,30)
 CREATE TABLE t2_i0171 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(31,30),
+  target DECIMAL(33,30),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 SELECT 'TC-I0171' AS test_id,
@@ -10430,7 +10430,7 @@ FROM (
 ) AS mismatches;
 
 -- Test Case: TC-I0172
--- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: FAIL
+-- Type: DECIMAL(31,30) -> DECIMAL(33,30), Algorithm: instant, Expected: SUCCESS
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_DEFAULT, target_position=MIDDLE
 DROP TABLE IF EXISTS t1_i0172, t2_i0172;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -10440,15 +10440,15 @@ CREATE TABLE t1_i0172 (
   target DECIMAL(31,30) NOT NULL DEFAULT 0,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
--- Expected: ALTER FAILS (table keeps old type)
+-- Expected: ALTER SUCCESS
 ALTER TABLE t1_i0172 MODIFY target DECIMAL(33,30) NOT NULL DEFAULT 0, ALGORITHM=instant;
 -- Insert value exceeding new type (expected FAIL on both tables)
 -- INSERT INTO t1_i0172 (target) VALUES (9999999999999999999999999999999999999999999999999999999999999999999999.99);
--- Oracle table: DECIMAL(31,30)
+-- Oracle table: DECIMAL(33,30)
 CREATE TABLE t2_i0172 (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
-  target DECIMAL(31,30) NOT NULL DEFAULT 0,
+  target DECIMAL(33,30) NOT NULL DEFAULT 0,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 SELECT 'TC-I0172' AS test_id,

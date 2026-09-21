@@ -42,9 +42,9 @@
 
 | 类型转换 | INSTANT 预期 | 说明 |
 |----------|-------------|------|
-| BINARY变长 | **FAIL** | 不在秒级支持列表（PRD新增INPLACE但非INSTANT） |
-| VARBINARY变长 | **FAIL** | 同上 |
-| DECIMAL精度扩(M增D不变) | **FAIL** | 同上 |
+| BINARY变长 | **SUCCESS** | 阿里云实测确认支持，内网同样支持 |
+| VARBINARY变长 | **SUCCESS** | 阿里云实测确认支持，内网同样支持 |
+| DECIMAL精度扩(M增D不变) | **SUCCESS** | 用户确认内网支持 |
 | TEXT子类型扩展 | SUCCESS | PRD标注INSTANT支持 |
 | BLOB子类型扩展 | SUCCESS | PRD标注INSTANT支持 |
 | BIT变长 | SUCCESS | PRD标注INSTANT支持 |
@@ -87,10 +87,25 @@
 | CHARACTER SET | 保持 |
 | COLLATE | 保持 |
 
+## 阿里云实测结果（2026-09-20~21）
+
+| 类型 | INSTANT 实测 | INPLACE 实测 | 备注 |
+|------|-------------|--------------|------|
+| 整数(SIGNED/UNSIGNED) | ✅ SUCCESS | ✅ SUCCESS | 全部通过 |
+| CHAR(latin1/utf8mb4) | ✅ SUCCESS | ✅ SUCCESS | 跨字节边界除外 |
+| VARCHAR(跨pack边界) | ✅ SUCCESS | ✅ SUCCESS | 全部通过 |
+| BINARY | ✅ SUCCESS(超出预期) | ✅ SUCCESS | 阿里云意外支持INSTANT |
+| VARBINARY | ✅ SUCCESS(超出预期) | ✅ SUCCESS | 阿里云意外支持INSTANT |
+| DECIMAL | ❌ FAIL | ❌ FAIL | 需内网验证 |
+| TEXT | ❌ FAIL | ❌ FAIL | 需内网验证 |
+| BLOB | ❌ FAIL | ❌ FAIL | 需内网验证 |
+| BIT | ❌ FAIL | ❌ FAIL | 需内网验证 |
+
 ## 注意事项
 
-1. BINARY/VARBINARY/DECIMAL 的 INSTANT 预期 FAIL 基于PRD分析，但仍需测试以捕获开发遗漏
-2. TEXT/BLOB/BIT 的 INSTANT SUCCESS 是PRD标注的新增能力，需重点验证
-3. CORE-0416/0417的旧"拒绝"预期已被PRD"新增BINARY/VARBINARY支持"覆盖
+1. BINARY/VARBINARY 的 INSTANT 在阿里云上意外成功，已更新SQL用例为成功路径
+2. DECIMAL 的 INSTANT 阿里云不支持，但用户确认内网支持，SQL用例已更新为成功路径
+3. TEXT/BLOB/BIT 需在内网环境验证
 4. COMPRESSED行格式不做（PRD排除压缩列）
 5. GIPK主键不做（需特定开关）
+6. DDL Fuzz 测试已从100轮调整为1000轮
