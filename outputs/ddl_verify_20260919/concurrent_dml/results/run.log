@@ -1,0 +1,56 @@
+2026-09-21 00:49:20,814 [MainThread] ============================================================
+2026-09-21 00:49:20,814 [MainThread] RDS MySQL DDL Concurrent DML Verification Suite
+2026-09-21 00:49:20,814 [MainThread] ============================================================
+2026-09-21 00:49:20,814 [MainThread] 
+### Phase 1: Individual Test Cases ###
+2026-09-21 00:49:20,814 [MainThread] === Max Column Count Test (1017 columns) ===
+2026-09-21 00:49:22,604 [MainThread] Max column test results: {
+  "instant": {
+    "success": true,
+    "duration": 0.449,
+    "error": null,
+    "data_check": "(1015,)"
+  },
+  "inplace": {
+    "success": true,
+    "duration": 0.2144,
+    "error": null,
+    "data_check": "(1015,)"
+  }
+}
+2026-09-21 00:49:22,604 [MainThread] === Consecutive INSTANT Performance Test ===
+2026-09-21 00:49:34,388 [MainThread] Consecutive INSTANT results: {
+  "add_10_cols": {
+    "duration": 0.4714
+  },
+  "qps_after_10": {
+    "qps": 48.26,
+    "duration": 2.072
+  },
+  "insert_qps_after_10": {
+    "qps": 4919.69
+  },
+  "add_30_cols": {
+    "duration": 1.4395
+  },
+  "qps_after_30": {
+    "qps": 48.47,
+    "duration": 2.0631
+  },
+  "insert_qps_after_30": {
+    "qps": 4885.37
+  },
+  "add_50_cols": {
+    "duration": 2.3641
+  },
+  "qps_after_50": {
+    "qps": 48.25,
+    "duration": 2.0725
+  },
+  "insert_qps_after_50": {
+    "qps": 4163.35
+  }
+}
+2026-09-21 00:49:34,388 [MainThread] === DDL Fuzz Memory Leak Test (1000 rounds) ===
+2026-09-21 00:49:34,747 [MainThread] Fuzz round 0: innodb memory = 0.00 MB
+2026-09-21 00:49:47,752 [MainThread] Fuzz round 50: innodb memory = 0.00 MB

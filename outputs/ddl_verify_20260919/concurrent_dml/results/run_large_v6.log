@@ -1,0 +1,49 @@
+2026-09-21 21:42:53,845 [MainThread] ============================================================
+2026-09-21 21:42:53,846 [MainThread] RDS MySQL DDL Large Table Verification Suite (Large Only)
+2026-09-21 21:42:53,846 [MainThread] ============================================================
+2026-09-21 21:42:53,846 [MainThread] QUICK MODE: reduced to 100K rows per test
+2026-09-21 21:42:53,846 [MainThread] 
+### Large Table Tests: 68 entries ###
+2026-09-21 21:42:53,846 [MainThread] === Large Table Tests: All Types ===
+2026-09-21 21:42:53,846 [MainThread] === Large Table [INT-BIGINT-IP] INT->BIGINT INPLACE 100000 rows ===
+2026-09-21 21:42:54,160 [MainThread] Populating 100000 rows...
+2026-09-21 21:42:54,223 [MainThread]   t_large: initial 9 rows
+2026-09-21 21:42:54,990 [MainThread]   t_large: final 29952 rows
+2026-09-21 21:42:54,990 [MainThread] Syncing to Oracle table...
+2026-09-21 21:42:58,261 [MainThread] Firing INPLACE ALTER on 29952 row table...
+2026-09-21 21:42:58,480 [MainThread] DDL completed in 0.22s (success=True)
+2026-09-21 21:43:09,694 [MainThread] [LT-INT-BIGINT-IP] verification=FAIL: ddl_match=True, mismatches=43, dml_err=26.64%, new_range=True, count_diff=90537, ddl=0.22s, ops=991
+2026-09-21 21:43:09,694 [MainThread] === Large Table [INT-BIGINT-IT] INT->BIGINT INSTANT 100000 rows ===
+2026-09-21 21:43:09,969 [MainThread] Populating 100000 rows...
+2026-09-21 21:43:10,116 [MainThread] [LT-INT-BIGINT-IT] verification=None, ddl=Nones, ops=None
+2026-09-21 21:43:10,117 [MainThread] === Large Table [TINY-SMALL-IP] TINYINT->SMALLINT INPLACE 100000 rows ===
+2026-09-21 21:43:10,425 [MainThread] === Large Table [TINY-SMALL-IT] TINYINT->SMALLINT INSTANT 100000 rows ===
+2026-09-21 21:43:10,686 [MainThread] Populating 100000 rows...
+2026-09-21 21:43:10,830 [MainThread] [LT-TINY-SMALL-IT] verification=None, ddl=Nones, ops=None
+2026-09-21 21:43:10,830 [MainThread] === Large Table [TINY-INT-IP] TINYINT->INT INPLACE 100000 rows ===
+2026-09-21 21:43:11,116 [MainThread] === Large Table [TINY-INT-IT] TINYINT->INT INSTANT 100000 rows ===
+2026-09-21 21:43:11,396 [MainThread] Populating 100000 rows...
+2026-09-21 21:43:11,565 [MainThread] [LT-TINY-INT-IT] verification=None, ddl=Nones, ops=None
+2026-09-21 21:43:11,565 [MainThread] === Large Table [TINY-BIG-IT] TINYINT->BIGINT INSTANT 100000 rows ===
+2026-09-21 21:43:11,858 [MainThread] === Large Table [SMALL-MED-IP] SMALLINT->MEDIUMINT INPLACE 100000 rows ===
+2026-09-21 21:43:12,113 [MainThread] Populating 100000 rows...
+2026-09-21 21:43:12,285 [MainThread] [LT-SMALL-MED-IP] verification=None, ddl=Nones, ops=None
+2026-09-21 21:43:12,285 [MainThread] === Large Table [SMALL-MED-IT] SMALLINT->MEDIUMINT INSTANT 100000 rows ===
+2026-09-21 21:43:12,587 [MainThread] === Large Table [SMALL-INT-IT] SMALLINT->INT INSTANT 100000 rows ===
+2026-09-21 21:43:12,835 [MainThread] Populating 100000 rows...
+2026-09-21 21:43:12,951 [MainThread] [LT-SMALL-INT-IT] verification=None, ddl=Nones, ops=None
+2026-09-21 21:43:12,951 [MainThread] === Large Table [SMALL-BIG-IT] SMALLINT->BIGINT INSTANT 100000 rows ===
+2026-09-21 21:43:13,231 [MainThread] === Large Table [MED-INT-IP] MEDIUMINT->INT INPLACE 100000 rows ===
+2026-09-21 21:43:13,524 [MainThread] Populating 100000 rows...
+2026-09-21 21:43:13,681 [MainThread] [LT-MED-INT-IP] verification=None, ddl=Nones, ops=None
+2026-09-21 21:43:13,682 [MainThread] === Large Table [MED-INT-IT] MEDIUMINT->INT INSTANT 100000 rows ===
+2026-09-21 21:43:13,986 [MainThread] === Large Table [MED-BIG-IT] MEDIUMINT->BIGINT INSTANT 100000 rows ===
+2026-09-21 21:43:14,264 [MainThread] Populating 100000 rows...
+2026-09-21 21:43:14,414 [MainThread] [LT-MED-BIG-IT] verification=None, ddl=Nones, ops=None
+2026-09-21 21:43:14,414 [MainThread] === Large Table [INTU-BIGINTU-IP] INT UNSIGNED->BIGINT UNSIGNED INPLACE 100000 rows ===
+2026-09-21 21:43:14,705 [MainThread] Populating 100000 rows...
+2026-09-21 21:43:14,767 [MainThread]   t_large: initial 9 rows
+2026-09-21 21:43:16,098 [MainThread]   t_large: final 99609 rows
+2026-09-21 21:43:16,098 [MainThread] Syncing to Oracle table...
+2026-09-21 21:43:19,205 [MainThread] Firing INPLACE ALTER on 99609 row table...
+2026-09-21 21:43:19,503 [MainThread] DDL completed in 0.3s (success=True)

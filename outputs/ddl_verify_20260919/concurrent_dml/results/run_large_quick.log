@@ -1,0 +1,8 @@
+2026-09-21 20:41:45,388 [MainThread] ============================================================
+2026-09-21 20:41:45,388 [MainThread] RDS MySQL DDL Large Table Verification Suite (Large Only)
+2026-09-21 20:41:45,388 [MainThread] ============================================================
+2026-09-21 20:41:45,388 [MainThread] QUICK MODE: reduced to 100K rows per test
+2026-09-21 20:41:45,388 [MainThread] 
+### Large Table Tests: 41 entries ###
+2026-09-21 20:41:45,388 [MainThread] === Large Table Tests: All Types ===
+2026-09-21 20:41:45,388 [MainThread] === Large Table [INT-BIGINT-IP] INT->BIGINT INPLACE 100000 rows ===

@@ -1,0 +1,22 @@
+2026-09-21 21:45:59,411 [MainThread] ============================================================
+2026-09-21 21:45:59,411 [MainThread] RDS MySQL DDL Large Table Verification Suite (Large Only)
+2026-09-21 21:45:59,412 [MainThread] ============================================================
+2026-09-21 21:45:59,412 [MainThread] QUICK MODE: reduced to 100K rows per test
+2026-09-21 21:45:59,412 [MainThread] 
+### Large Table Tests: 68 entries ###
+2026-09-21 21:45:59,412 [MainThread] === Large Table Tests: All Types ===
+2026-09-21 21:45:59,412 [MainThread] === Large Table [INT-BIGINT-IP] INT->BIGINT INPLACE 100000 rows ===
+2026-09-21 21:45:59,706 [MainThread] Populating 100000 rows...
+2026-09-21 21:45:59,770 [MainThread]   t_large: initial 9 rows
+2026-09-21 21:46:00,961 [MainThread]   t_large: final 100000 rows
+2026-09-21 21:46:00,961 [MainThread] Syncing to Oracle table...
+2026-09-21 21:46:04,689 [MainThread] Firing INPLACE ALTER on 100000 row table...
+2026-09-21 21:46:04,964 [MainThread] DDL completed in 0.27s (success=True)
+2026-09-21 21:46:15,207 [MainThread] [LT-INT-BIGINT-IP] verification=PASS, ddl=0.27s, ops=1189
+2026-09-21 21:46:15,207 [MainThread] === Large Table [INT-BIGINT-IT] INT->BIGINT INSTANT 100000 rows ===
+2026-09-21 21:46:15,459 [MainThread] Populating 100000 rows...
+2026-09-21 21:46:15,511 [MainThread]   t_large: initial 9 rows
+2026-09-21 21:46:16,451 [MainThread]   t_large: final 100000 rows
+2026-09-21 21:46:16,451 [MainThread] Syncing to Oracle table...
+2026-09-21 21:46:19,942 [MainThread] Firing INSTANT ALTER on 100000 row table...
+2026-09-21 21:46:19,984 [MainThread] DDL completed in 0.04s (success=True)

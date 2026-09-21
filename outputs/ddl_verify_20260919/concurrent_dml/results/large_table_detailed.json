@@ -1,0 +1,5192 @@
+[
+  [
+    "LARGE_TABLE",
+    {
+      "total": 68,
+      "passed": 67,
+      "failed": 0,
+      "errors": 1,
+      "results": [
+        {
+          "test_id": "LT-INT-BIGINT-IP",
+          "category": "integer",
+          "old_type": "INT",
+          "new_type": "BIGINT",
+          "algorithm": "INPLACE",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 1517775826)",
+            "t2": "('ddl_test.t_large_oracle', 745772234)"
+          },
+          "ddl": {
+            "success": true,
+            "duration": 0.27,
+            "error": null,
+            "algorithm": "INPLACE"
+          },
+          "dml_ops": 1173,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 242,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 118,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 173,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 435,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 205,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 96.7,
+            "during_ddl_avg_qps": 105.9,
+            "post_ddl_avg_qps": 96.4,
+            "ddl_qps_drop_pct": -9.5,
+            "post_ddl_recovery_pct": 99.7,
+            "qps_samples": {
+              "pre_ddl": [
+                85.8,
+                107.6
+              ],
+              "during_ddl": [
+                105.9
+              ],
+              "post_ddl": [
+                103.3,
+                103.6,
+                108.8,
+                107.6,
+                106.2,
+                103.7,
+                99.7,
+                107.1,
+                27.7
+              ]
+            }
+          },
+          "checksum_post": {
+            "t1": "('ddl_test.t_large', 3299491813)",
+            "t2": "('ddl_test.t_large_oracle', 3299491813)"
+          },
+          "t1_count": 100274,
+          "t2_count": 100274,
+          "count_diff": 0,
+          "mismatches": 0,
+          "dml_error_rate": 0.0,
+          "new_range_ok": true,
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-INT-BIGINT-IT",
+          "category": "integer",
+          "old_type": "INT",
+          "new_type": "BIGINT",
+          "algorithm": "INSTANT",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 3680527368)",
+            "t2": "('ddl_test.t_large_oracle', 1653806238)"
+          },
+          "ddl": {
+            "success": true,
+            "duration": 0.05,
+            "error": null,
+            "algorithm": "INSTANT"
+          },
+          "dml_ops": 1019,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 249,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 97,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 162,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 290,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 221,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 92.3,
+            "during_ddl_avg_qps": 97.6,
+            "post_ddl_avg_qps": 90.6,
+            "ddl_qps_drop_pct": -5.7,
+            "post_ddl_recovery_pct": 98.2,
+            "qps_samples": {
+              "pre_ddl": [
+                87.1,
+                97.5
+              ],
+              "during_ddl": [
+                97.6
+              ],
+              "post_ddl": [
+                92.4,
+                91.2,
+                94.8,
+                88.5,
+                83.6,
+                89.5,
+                90.1,
+                95.0
+              ]
+            }
+          },
+          "checksum_post": {
+            "t1": "('ddl_test.t_large', 3635469948)",
+            "t2": "('ddl_test.t_large_oracle', 3635469948)"
+          },
+          "t1_count": 100308,
+          "t2_count": 100308,
+          "count_diff": 0,
+          "mismatches": 0,
+          "dml_error_rate": 0.0,
+          "new_range_ok": true,
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-TINY-SMALL-IP",
+          "category": "integer",
+          "old_type": "TINYINT",
+          "new_type": "SMALLINT",
+          "algorithm": "INPLACE",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 3069009657)",
+            "t2": "('ddl_test.t_large_oracle', 1090063267)"
+          },
+          "ddl": {
+            "success": true,
+            "duration": 0.24,
+            "error": null,
+            "algorithm": "INPLACE"
+          },
+          "dml_ops": 1155,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 260,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 92,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 164,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 383,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 256,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 97.6,
+            "during_ddl_avg_qps": 105.9,
+            "post_ddl_avg_qps": 94.0,
+            "ddl_qps_drop_pct": -8.5,
+            "post_ddl_recovery_pct": 96.3,
+            "qps_samples": {
+              "pre_ddl": [
+                92.1,
+                103.1
+              ],
+              "during_ddl": [
+                105.9
+              ],
+              "post_ddl": [
+                104.8,
+                99.0,
+                103.0,
+                105.9,
+                100.0,
+                104.1,
+                104.7,
+                101.8,
+                22.9
+              ]
+            }
+          },
+          "checksum_post": {
+            "t1": "('ddl_test.t_large', 1030521189)",
+            "t2": "('ddl_test.t_large_oracle', 1030521189)"
+          },
+          "t1_count": 100352,
+          "t2_count": 100352,
+          "count_diff": 0,
+          "mismatches": 0,
+          "dml_error_rate": 0.0,
+          "new_range_ok": true,
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-TINY-SMALL-IT",
+          "category": "integer",
+          "old_type": "TINYINT",
+          "new_type": "SMALLINT",
+          "algorithm": "INSTANT",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 890665584)",
+            "t2": "('ddl_test.t_large_oracle', 2508126314)"
+          },
+          "ddl": {
+            "success": true,
+            "duration": 0.07,
+            "error": null,
+            "algorithm": "INSTANT"
+          },
+          "dml_ops": 1005,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 201,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 108,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 169,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 292,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 235,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 87.8,
+            "during_ddl_avg_qps": 94.5,
+            "post_ddl_avg_qps": 81.0,
+            "ddl_qps_drop_pct": -7.6,
+            "post_ddl_recovery_pct": 92.3,
+            "qps_samples": {
+              "pre_ddl": [
+                78.2,
+                97.3
+              ],
+              "during_ddl": [
+                94.5
+              ],
+              "post_ddl": [
+                90.4,
+                91.2,
+                87.8,
+                94.1,
+                87.1,
+                90.6,
+                92.0,
+                89.4,
+                6.0
+              ]
+            }
+          },
+          "checksum_post": {
+            "t1": "('ddl_test.t_large', 452498396)",
+            "t2": "('ddl_test.t_large_oracle', 452498396)"
+          },
+          "t1_count": 100267,
+          "t2_count": 100267,
+          "count_diff": 0,
+          "mismatches": 0,
+          "dml_error_rate": 0.0,
+          "new_range_ok": true,
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-TINY-INT-IP",
+          "category": "integer",
+          "old_type": "TINYINT",
+          "new_type": "INT",
+          "algorithm": "INPLACE",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 3069009657)",
+            "t2": "('ddl_test.t_large_oracle', 1569830828)"
+          },
+          "ddl": {
+            "success": true,
+            "duration": 0.24,
+            "error": null,
+            "algorithm": "INPLACE"
+          },
+          "dml_ops": 1063,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 200,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 105,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 156,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 396,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 206,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 76.0,
+            "during_ddl_avg_qps": 94.9,
+            "post_ddl_avg_qps": 90.1,
+            "ddl_qps_drop_pct": -24.9,
+            "post_ddl_recovery_pct": 118.6,
+            "qps_samples": {
+              "pre_ddl": [
+                87.2,
+                64.8
+              ],
+              "during_ddl": [
+                94.9
+              ],
+              "post_ddl": [
+                99.9,
+                99.9,
+                100.7,
+                96.1,
+                98.0,
+                100.0,
+                94.3,
+                98.0,
+                23.9
+              ]
+            }
+          },
+          "checksum_post": {
+            "t1": "('ddl_test.t_large', 3650784936)",
+            "t2": "('ddl_test.t_large_oracle', 3650784936)"
+          },
+          "t1_count": 100250,
+          "t2_count": 100250,
+          "count_diff": 0,
+          "mismatches": 0,
+          "dml_error_rate": 0.0,
+          "new_range_ok": true,
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-TINY-INT-IT",
+          "category": "integer",
+          "old_type": "TINYINT",
+          "new_type": "INT",
+          "algorithm": "INSTANT",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 890665584)",
+            "t2": "('ddl_test.t_large_oracle', 1770192751)"
+          },
+          "ddl": {
+            "success": true,
+            "duration": 0.05,
+            "error": null,
+            "algorithm": "INSTANT"
+          },
+          "dml_ops": 1027,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 236,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 101,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 154,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 299,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 237,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 83.4,
+            "during_ddl_avg_qps": 98.8,
+            "post_ddl_avg_qps": 94.0,
+            "ddl_qps_drop_pct": -18.5,
+            "post_ddl_recovery_pct": 112.7,
+            "qps_samples": {
+              "pre_ddl": [
+                86.1,
+                80.7
+              ],
+              "during_ddl": [
+                98.8
+              ],
+              "post_ddl": [
+                79.4,
+                96.0,
+                93.8,
+                96.2,
+                96.0,
+                97.6,
+                92.4,
+                100.5
+              ]
+            }
+          },
+          "checksum_post": {
+            "t1": "('ddl_test.t_large', 1059401030)",
+            "t2": "('ddl_test.t_large_oracle', 1059401030)"
+          },
+          "t1_count": 100319,
+          "t2_count": 100319,
+          "count_diff": 0,
+          "mismatches": 0,
+          "dml_error_rate": 0.0,
+          "new_range_ok": true,
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-TINY-BIG-IT",
+          "category": "integer",
+          "old_type": "TINYINT",
+          "new_type": "BIGINT",
+          "algorithm": "INSTANT",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 890665584)",
+            "t2": "('ddl_test.t_large_oracle', 1755594630)"
+          },
+          "ddl": {
+            "success": true,
+            "duration": 0.09,
+            "error": null,
+            "algorithm": "INSTANT"
+          },
+          "dml_ops": 1015,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 247,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 102,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 147,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 270,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 249,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 91.9,
+            "during_ddl_avg_qps": 95.9,
+            "post_ddl_avg_qps": 81.2,
+            "ddl_qps_drop_pct": -4.4,
+            "post_ddl_recovery_pct": 88.4,
+            "qps_samples": {
+              "pre_ddl": [
+                83.8,
+                100.0
+              ],
+              "during_ddl": [
+                95.9
+              ],
+              "post_ddl": [
+                92.5,
+                74.9,
+                91.8,
+                90.6,
+                93.5,
+                94.5,
+                88.4,
+                95.4,
+                9.0
+              ]
+            }
+          },
+          "checksum_post": {
+            "t1": "('ddl_test.t_large', 3521401135)",
+            "t2": "('ddl_test.t_large_oracle', 3521401135)"
+          },
+          "t1_count": 100349,
+          "t2_count": 100349,
+          "count_diff": 0,
+          "mismatches": 0,
+          "dml_error_rate": 0.0,
+          "new_range_ok": true,
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-SMALL-MED-IP",
+          "category": "integer",
+          "old_type": "SMALLINT",
+          "new_type": "MEDIUMINT",
+          "algorithm": "INPLACE",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 2664576771)",
+            "t2": "('ddl_test.t_large_oracle', 325708793)"
+          },
+          "ddl": {
+            "success": true,
+            "duration": 0.25,
+            "error": null,
+            "algorithm": "INPLACE"
+          },
+          "dml_ops": 1165,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 223,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 105,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 194,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 410,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 233,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 98.6,
+            "during_ddl_avg_qps": 103.1,
+            "post_ddl_avg_qps": 95.2,
+            "ddl_qps_drop_pct": -4.6,
+            "post_ddl_recovery_pct": 96.6,
+            "qps_samples": {
+              "pre_ddl": [
+                93.0,
+                104.2
+              ],
+              "during_ddl": [
+                103.1
+              ],
+              "post_ddl": [
+                108.6,
+                103.6,
+                106.2,
+                101.2,
+                103.3,
+                101.4,
+                106.6,
+                103.4,
+                22.8
+              ]
+            }
+          },
+          "checksum_post": {
+            "t1": "('ddl_test.t_large', 3394437023)",
+            "t2": "('ddl_test.t_large_oracle', 3394437023)"
+          },
+          "t1_count": 100262,
+          "t2_count": 100262,
+          "count_diff": 0,
+          "mismatches": 0,
+          "dml_error_rate": 0.0,
+          "new_range_ok": true,
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-SMALL-MED-IT",
+          "category": "integer",
+          "old_type": "SMALLINT",
+          "new_type": "MEDIUMINT",
+          "algorithm": "INSTANT",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 2598474376)",
+            "t2": "('ddl_test.t_large_oracle', 1016848830)"
+          },
+          "ddl": {
+            "success": true,
+            "duration": 0.08,
+            "error": null,
+            "algorithm": "INSTANT"
+          },
+          "dml_ops": 1047,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 261,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 106,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 162,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 277,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 241,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 91.4,
+            "during_ddl_avg_qps": 99.3,
+            "post_ddl_avg_qps": 84.3,
+            "ddl_qps_drop_pct": -8.6,
+            "post_ddl_recovery_pct": 92.2,
+            "qps_samples": {
+              "pre_ddl": [
+                83.5,
+                99.3
+              ],
+              "during_ddl": [
+                99.3
+              ],
+              "post_ddl": [
+                94.0,
+                92.4,
+                96.6,
+                93.4,
+                93.2,
+                92.1,
+                95.3,
+                95.7,
+                6.0
+              ]
+            }
+          },
+          "checksum_post": {
+            "t1": "('ddl_test.t_large', 568542518)",
+            "t2": "('ddl_test.t_large_oracle', 568542518)"
+          },
+          "t1_count": 100340,
+          "t2_count": 100340,
+          "count_diff": 0,
+          "mismatches": 0,
+          "dml_error_rate": 0.0,
+          "new_range_ok": true,
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-SMALL-INT-IT",
+          "category": "integer",
+          "old_type": "SMALLINT",
+          "new_type": "INT",
+          "algorithm": "INSTANT",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 2598474376)",
+            "t2": "('ddl_test.t_large_oracle', 4073927057)"
+          },
+          "ddl": {
+            "success": true,
+            "duration": 0.05,
+            "error": null,
+            "algorithm": "INSTANT"
+          },
+          "dml_ops": 1047,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 268,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 105,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 159,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 292,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 223,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 89.2,
+            "during_ddl_avg_qps": 97.9,
+            "post_ddl_avg_qps": 94.9,
+            "ddl_qps_drop_pct": -9.8,
+            "post_ddl_recovery_pct": 106.4,
+            "qps_samples": {
+              "pre_ddl": [
+                83.8,
+                94.7
+              ],
+              "during_ddl": [
+                97.9
+              ],
+              "post_ddl": [
+                90.9,
+                91.2,
+                94.2,
+                98.5,
+                89.4,
+                102.1,
+                96.3,
+                96.3
+              ]
+            }
+          },
+          "checksum_post": {
+            "t1": "('ddl_test.t_large', 1368483313)",
+            "t2": "('ddl_test.t_large_oracle', 1368483313)"
+          },
+          "t1_count": 100332,
+          "t2_count": 100332,
+          "count_diff": 0,
+          "mismatches": 0,
+          "dml_error_rate": 0.0,
+          "new_range_ok": true,
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-SMALL-BIG-IT",
+          "category": "integer",
+          "old_type": "SMALLINT",
+          "new_type": "BIGINT",
+          "algorithm": "INSTANT",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 2598474376)",
+            "t2": "('ddl_test.t_large_oracle', 1443030398)"
+          },
+          "ddl": {
+            "success": true,
+            "duration": 0.06,
+            "error": null,
+            "algorithm": "INSTANT"
+          },
+          "dml_ops": 1001,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 231,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 105,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 146,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 273,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 246,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 90.8,
+            "during_ddl_avg_qps": 93.7,
+            "post_ddl_avg_qps": 89.5,
+            "ddl_qps_drop_pct": -3.2,
+            "post_ddl_recovery_pct": 98.6,
+            "qps_samples": {
+              "pre_ddl": [
+                84.7,
+                97.0
+              ],
+              "during_ddl": [
+                93.7
+              ],
+              "post_ddl": [
+                92.1,
+                89.4,
+                74.8,
+                94.1,
+                89.5,
+                94.4,
+                88.8,
+                92.6
+              ]
+            }
+          },
+          "checksum_post": {
+            "t1": "('ddl_test.t_large', 3518102586)",
+            "t2": "('ddl_test.t_large_oracle', 3518102586)"
+          },
+          "t1_count": 100331,
+          "t2_count": 100331,
+          "count_diff": 0,
+          "mismatches": 0,
+          "dml_error_rate": 0.0,
+          "new_range_ok": true,
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-MED-INT-IP",
+          "category": "integer",
+          "old_type": "MEDIUMINT",
+          "new_type": "INT",
+          "algorithm": "INPLACE",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 1481041253)",
+            "t2": "('ddl_test.t_large_oracle', 2343535354)"
+          },
+          "ddl": {
+            "success": true,
+            "duration": 0.25,
+            "error": null,
+            "algorithm": "INPLACE"
+          },
+          "dml_ops": 1134,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 244,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 109,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 136,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 389,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 256,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 96.8,
+            "during_ddl_avg_qps": 100.0,
+            "post_ddl_avg_qps": 92.4,
+            "ddl_qps_drop_pct": -3.3,
+            "post_ddl_recovery_pct": 95.5,
+            "qps_samples": {
+              "pre_ddl": [
+                94.4,
+                99.1
+              ],
+              "during_ddl": [
+                100.0
+              ],
+              "post_ddl": [
+                101.0,
+                102.4,
+                99.0,
+                104.0,
+                100.4,
+                101.0,
+                100.8,
+                100.0,
+                22.8
+              ]
+            }
+          },
+          "checksum_post": {
+            "t1": "('ddl_test.t_large', 627887683)",
+            "t2": "('ddl_test.t_large_oracle', 627887683)"
+          },
+          "t1_count": 100364,
+          "t2_count": 100364,
+          "count_diff": 0,
+          "mismatches": 0,
+          "dml_error_rate": 0.0,
+          "new_range_ok": true,
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-MED-INT-IT",
+          "category": "integer",
+          "old_type": "MEDIUMINT",
+          "new_type": "INT",
+          "algorithm": "INSTANT",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 129486524)",
+            "t2": "('ddl_test.t_large_oracle', 3512313626)"
+          },
+          "ddl": {
+            "success": true,
+            "duration": 0.05,
+            "error": null,
+            "algorithm": "INSTANT"
+          },
+          "dml_ops": 1030,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 219,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 107,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 182,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 304,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 218,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 90.2,
+            "during_ddl_avg_qps": 97.6,
+            "post_ddl_avg_qps": 82.9,
+            "ddl_qps_drop_pct": -8.2,
+            "post_ddl_recovery_pct": 91.9,
+            "qps_samples": {
+              "pre_ddl": [
+                85.6,
+                94.9
+              ],
+              "during_ddl": [
+                97.6
+              ],
+              "post_ddl": [
+                94.7,
+                96.6,
+                100.1,
+                92.8,
+                95.0,
+                89.9,
+                91.1,
+                80.6,
+                4.9
+              ]
+            }
+          },
+          "checksum_post": {
+            "t1": "('ddl_test.t_large', 1184940797)",
+            "t2": "('ddl_test.t_large_oracle', 1184940797)"
+          },
+          "t1_count": 100255,
+          "t2_count": 100255,
+          "count_diff": 0,
+          "mismatches": 0,
+          "dml_error_rate": 0.0,
+          "new_range_ok": true,
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-MED-BIG-IT",
+          "category": "integer",
+          "old_type": "MEDIUMINT",
+          "new_type": "BIGINT",
+          "algorithm": "INSTANT",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 129486524)",
+            "t2": "('ddl_test.t_large_oracle', 1905506568)"
+          },
+          "ddl": {
+            "success": true,
+            "duration": 0.07,
+            "error": null,
+            "algorithm": "INSTANT"
+          },
+          "dml_ops": 1011,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 247,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 99,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 160,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 272,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 233,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 92.0,
+            "during_ddl_avg_qps": 91.5,
+            "post_ddl_avg_qps": 81.1,
+            "ddl_qps_drop_pct": 0.5,
+            "post_ddl_recovery_pct": 88.2,
+            "qps_samples": {
+              "pre_ddl": [
+                86.1,
+                98.0
+              ],
+              "during_ddl": [
+                91.5
+              ],
+              "post_ddl": [
+                90.2,
+                94.6,
+                91.6,
+                87.2,
+                88.7,
+                93.9,
+                91.4,
+                87.4,
+                5.0
+              ]
+            }
+          },
+          "checksum_post": {
+            "t1": "('ddl_test.t_large', 2610207779)",
+            "t2": "('ddl_test.t_large_oracle', 2610207779)"
+          },
+          "t1_count": 100320,
+          "t2_count": 100320,
+          "count_diff": 0,
+          "mismatches": 0,
+          "dml_error_rate": 0.0,
+          "new_range_ok": true,
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-INTU-BIGINTU-IP",
+          "category": "integer",
+          "old_type": "INT UNSIGNED",
+          "new_type": "BIGINT UNSIGNED",
+          "algorithm": "INPLACE",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 36161112)",
+            "t2": "('ddl_test.t_large_oracle', 3357703690)"
+          },
+          "ddl": {
+            "success": true,
+            "duration": 0.27,
+            "error": null,
+            "algorithm": "INPLACE"
+          },
+          "dml_ops": 1218,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 254,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 108,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 163,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 433,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 260,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 104.5,
+            "during_ddl_avg_qps": 110.8,
+            "post_ddl_avg_qps": 99.1,
+            "ddl_qps_drop_pct": -6.0,
+            "post_ddl_recovery_pct": 94.8,
+            "qps_samples": {
+              "pre_ddl": [
+                99.8,
+                109.3
+              ],
+              "during_ddl": [
+                110.8
+              ],
+              "post_ddl": [
+                106.9,
+                108.4,
+                106.9,
+                107.8,
+                108.9,
+                109.9,
+                104.1,
+                110.7,
+                27.9
+              ]
+            }
+          },
+          "checksum_post": {
+            "t1": "('ddl_test.t_large', 477712911)",
+            "t2": "('ddl_test.t_large_oracle', 477712911)"
+          },
+          "t1_count": 100351,
+          "t2_count": 100351,
+          "count_diff": 0,
+          "mismatches": 0,
+          "dml_error_rate": 0.0,
+          "new_range_ok": true,
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-INTU-BIGINTU-IT",
+          "category": "integer",
+          "old_type": "INT UNSIGNED",
+          "new_type": "BIGINT UNSIGNED",
+          "algorithm": "INSTANT",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 3740333962)",
+            "t2": "('ddl_test.t_large_oracle', 2706609863)"
+          },
+          "ddl": {
+            "success": true,
+            "duration": 0.05,
+            "error": null,
+            "algorithm": "INSTANT"
+          },
+          "dml_ops": 1001,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 212,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 110,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 153,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 277,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 249,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 87.5,
+            "during_ddl_avg_qps": 88.5,
+            "post_ddl_avg_qps": 81.4,
+            "ddl_qps_drop_pct": -1.1,
+            "post_ddl_recovery_pct": 93.0,
+            "qps_samples": {
+              "pre_ddl": [
+                83.0,
+                91.9
+              ],
+              "during_ddl": [
+                88.5
+              ],
+              "post_ddl": [
+                95.3,
+                90.4,
+                86.6,
+                95.7,
+                89.7,
+                93.8,
+                85.2,
+                90.4,
+                5.9
+              ]
+            }
+          },
+          "checksum_post": {
+            "t1": "('ddl_test.t_large', 237951127)",
+            "t2": "('ddl_test.t_large_oracle', 237951127)"
+          },
+          "t1_count": 100308,
+          "t2_count": 100308,
+          "count_diff": 0,
+          "mismatches": 0,
+          "dml_error_rate": 0.0,
+          "new_range_ok": true,
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-TINYU-SMALLU-IT",
+          "category": "integer",
+          "old_type": "TINYINT UNSIGNED",
+          "new_type": "SMALLINT UNSIGNED",
+          "algorithm": "INSTANT",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 3664943792)",
+            "t2": "('ddl_test.t_large_oracle', 2944302751)"
+          },
+          "ddl": {
+            "success": true,
+            "duration": 0.05,
+            "error": null,
+            "algorithm": "INSTANT"
+          },
+          "dml_ops": 1024,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 239,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 104,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 155,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 295,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 231,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 88.1,
+            "during_ddl_avg_qps": 92.1,
+            "post_ddl_avg_qps": 83.4,
+            "ddl_qps_drop_pct": -4.5,
+            "post_ddl_recovery_pct": 94.7,
+            "qps_samples": {
+              "pre_ddl": [
+                80.2,
+                95.9
+              ],
+              "during_ddl": [
+                92.1
+              ],
+              "post_ddl": [
+                92.8,
+                95.2,
+                93.1,
+                91.9,
+                98.0,
+                86.4,
+                94.3,
+                93.9,
+                5.0
+              ]
+            }
+          },
+          "checksum_post": {
+            "t1": "('ddl_test.t_large', 1188460162)",
+            "t2": "('ddl_test.t_large_oracle', 1188460162)"
+          },
+          "t1_count": 100315,
+          "t2_count": 100315,
+          "count_diff": 0,
+          "mismatches": 0,
+          "dml_error_rate": 0.0,
+          "new_range_ok": true,
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-TINYU-INTU-IT",
+          "category": "integer",
+          "old_type": "TINYINT UNSIGNED",
+          "new_type": "INT UNSIGNED",
+          "algorithm": "INSTANT",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 3664943792)",
+            "t2": "('ddl_test.t_large_oracle', 2922563209)"
+          },
+          "ddl": {
+            "success": true,
+            "duration": 0.05,
+            "error": null,
+            "algorithm": "INSTANT"
+          },
+          "dml_ops": 1045,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 223,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 106,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 192,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 278,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 246,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 91.6,
+            "during_ddl_avg_qps": 99.8,
+            "post_ddl_avg_qps": 84.1,
+            "ddl_qps_drop_pct": -9.0,
+            "post_ddl_recovery_pct": 91.8,
+            "qps_samples": {
+              "pre_ddl": [
+                86.8,
+                96.4
+              ],
+              "during_ddl": [
+                99.8
+              ],
+              "post_ddl": [
+                89.3,
+                90.5,
+                94.4,
+                94.6,
+                90.7,
+                96.0,
+                97.1,
+                98.7,
+                6.0
+              ]
+            }
+          },
+          "checksum_post": {
+            "t1": "('ddl_test.t_large', 55935983)",
+            "t2": "('ddl_test.t_large_oracle', 55935983)"
+          },
+          "t1_count": 100277,
+          "t2_count": 100277,
+          "count_diff": 0,
+          "mismatches": 0,
+          "dml_error_rate": 0.0,
+          "new_range_ok": true,
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-SMALLU-MEDU-IT",
+          "category": "integer",
+          "old_type": "SMALLINT UNSIGNED",
+          "new_type": "MEDIUMINT UNSIGNED",
+          "algorithm": "INSTANT",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 2869832943)",
+            "t2": "('ddl_test.t_large_oracle', 3283470459)"
+          },
+          "ddl": {
+            "success": true,
+            "duration": 0.05,
+            "error": null,
+            "algorithm": "INSTANT"
+          },
+          "dml_ops": 1072,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 236,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 107,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 181,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 279,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 269,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 97.3,
+            "during_ddl_avg_qps": 98.9,
+            "post_ddl_avg_qps": 95.9,
+            "ddl_qps_drop_pct": -1.6,
+            "post_ddl_recovery_pct": 98.6,
+            "qps_samples": {
+              "pre_ddl": [
+                94.1,
+                100.6
+              ],
+              "during_ddl": [
+                98.9
+              ],
+              "post_ddl": [
+                96.0,
+                97.4,
+                98.0,
+                96.7,
+                96.0,
+                94.0,
+                95.1,
+                94.3
+              ]
+            }
+          },
+          "checksum_post": {
+            "t1": "('ddl_test.t_large', 1745293428)",
+            "t2": "('ddl_test.t_large_oracle', 1745293428)"
+          },
+          "t1_count": 100324,
+          "t2_count": 100324,
+          "count_diff": 0,
+          "mismatches": 0,
+          "dml_error_rate": 0.0,
+          "new_range_ok": true,
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-MEDU-INTU-IT",
+          "category": "integer",
+          "old_type": "MEDIUMINT UNSIGNED",
+          "new_type": "INT UNSIGNED",
+          "algorithm": "INSTANT",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 773538921)",
+            "t2": "('ddl_test.t_large_oracle', 1612489134)"
+          },
+          "ddl": {
+            "success": true,
+            "duration": 0.07,
+            "error": null,
+            "algorithm": "INSTANT"
+          },
+          "dml_ops": 1011,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 202,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 104,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 167,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 292,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 246,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 91.0,
+            "during_ddl_avg_qps": 94.2,
+            "post_ddl_avg_qps": 81.0,
+            "ddl_qps_drop_pct": -3.5,
+            "post_ddl_recovery_pct": 89.0,
+            "qps_samples": {
+              "pre_ddl": [
+                85.0,
+                97.1
+              ],
+              "during_ddl": [
+                94.2
+              ],
+              "post_ddl": [
+                88.9,
+                90.2,
+                85.2,
+                86.8,
+                90.5,
+                92.9,
+                97.1,
+                91.3,
+                6.0
+              ]
+            }
+          },
+          "checksum_post": {
+            "t1": "('ddl_test.t_large', 1305872155)",
+            "t2": "('ddl_test.t_large_oracle', 1305872155)"
+          },
+          "t1_count": 100281,
+          "t2_count": 100281,
+          "count_diff": 0,
+          "mismatches": 0,
+          "dml_error_rate": 0.0,
+          "new_range_ok": true,
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-CHAR1-2-IP",
+          "category": "char",
+          "old_type": "CHAR(1)",
+          "new_type": "CHAR(2)",
+          "algorithm": "INPLACE",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 1906528214)",
+            "t2": "('ddl_test.t_large_oracle', 44878429)"
+          },
+          "ddl": {
+            "success": true,
+            "duration": 0.29,
+            "error": null,
+            "algorithm": "INPLACE"
+          },
+          "dml_ops": 1140,
+          "dml_errors": 72,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 258,
+              "errors": 37
+            },
+            "UPDATE": {
+              "ops": 103,
+              "errors": 8
+            },
+            "DELETE": {
+              "ops": 169,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 390,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 220,
+              "errors": 27
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 99.8,
+            "during_ddl_avg_qps": 105.0,
+            "post_ddl_avg_qps": 91.8,
+            "ddl_qps_drop_pct": -5.2,
+            "post_ddl_recovery_pct": 92.0,
+            "qps_samples": {
+              "pre_ddl": [
+                91.4,
+                108.1
+              ],
+              "during_ddl": [
+                105.0
+              ],
+              "post_ddl": [
+                103.0,
+                97.2,
+                94.2,
+                99.6,
+                106.3,
+                104.2,
+                99.1,
+                100.2,
+                22.8
+              ]
+            }
+          },
+          "checksum_post": {
+            "t1": "('ddl_test.t_large', 1121789412)",
+            "t2": "('ddl_test.t_large_oracle', 1121789412)"
+          },
+          "t1_count": 100309,
+          "t2_count": 100309,
+          "count_diff": 0,
+          "mismatches": 0,
+          "dml_error_rate": 0.0632,
+          "new_range_ok": true,
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-CHAR1-2-IT",
+          "category": "char",
+          "old_type": "CHAR(1)",
+          "new_type": "CHAR(2)",
+          "algorithm": "INSTANT",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 1541476174)",
+            "t2": "('ddl_test.t_large_oracle', 1126297773)"
+          },
+          "ddl": {
+            "success": true,
+            "duration": 0.05,
+            "error": null,
+            "algorithm": "INSTANT"
+          },
+          "dml_ops": 981,
+          "dml_errors": 57,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 229,
+              "errors": 31
+            },
+            "UPDATE": {
+              "ops": 95,
+              "errors": 11
+            },
+            "DELETE": {
+              "ops": 155,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 249,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 253,
+              "errors": 15
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 82.8,
+            "during_ddl_avg_qps": 97.7,
+            "post_ddl_avg_qps": 79.2,
+            "ddl_qps_drop_pct": -18.0,
+            "post_ddl_recovery_pct": 95.7,
+            "qps_samples": {
+              "pre_ddl": [
+                77.7,
+                88.0
+              ],
+              "during_ddl": [
+                97.7
+              ],
+              "post_ddl": [
+                93.8,
+                86.3,
+                86.3,
+                87.8,
+                88.2,
+                88.9,
+                83.2,
+                93.2,
+                5.0
+              ]
+            }
+          },
+          "checksum_post": {
+            "t1": "('ddl_test.t_large', 1123009703)",
+            "t2": "('ddl_test.t_large_oracle', 1123009703)"
+          },
+          "t1_count": 100327,
+          "t2_count": 100327,
+          "count_diff": 0,
+          "mismatches": 0,
+          "dml_error_rate": 0.0581,
+          "new_range_ok": true,
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-CHAR63-64-IT",
+          "category": "char",
+          "old_type": "CHAR(63)",
+          "new_type": "CHAR(64)",
+          "algorithm": "INSTANT",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 310536028)",
+            "t2": "('ddl_test.t_large_oracle', 2486184187)"
+          },
+          "ddl": {
+            "success": true,
+            "duration": 0.06,
+            "error": null,
+            "algorithm": "INSTANT"
+          },
+          "dml_ops": 974,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 253,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 94,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 155,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 229,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 243,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 88.4,
+            "during_ddl_avg_qps": 90.8,
+            "post_ddl_avg_qps": 77.9,
+            "ddl_qps_drop_pct": -2.7,
+            "post_ddl_recovery_pct": 88.1,
+            "qps_samples": {
+              "pre_ddl": [
+                83.2,
+                93.6
+              ],
+              "during_ddl": [
+                90.8
+              ],
+              "post_ddl": [
+                96.0,
+                84.9,
+                90.8,
+                93.1,
+                76.3,
+                79.3,
+                80.2,
+                95.2,
+                5.0
+              ]
+            }
+          },
+          "checksum_post": {
+            "t1": "('ddl_test.t_large', 432262363)",
+            "t2": "('ddl_test.t_large_oracle', 432262363)"
+          },
+          "t1_count": 100341,
+          "t2_count": 100341,
+          "count_diff": 0,
+          "mismatches": 0,
+          "dml_error_rate": 0.0,
+          "new_range_ok": true,
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-CHAR63-64-IP",
+          "category": "char",
+          "old_type": "CHAR(63)",
+          "new_type": "CHAR(64)",
+          "algorithm": "INPLACE",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 3488986970)",
+            "t2": "('ddl_test.t_large_oracle', 2411810625)"
+          },
+          "ddl": {
+            "success": true,
+            "duration": 0.87,
+            "error": null,
+            "algorithm": "INPLACE"
+          },
+          "dml_ops": 1136,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 230,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 101,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 165,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 401,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 239,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 91.3,
+            "during_ddl_avg_qps": 98.1,
+            "post_ddl_avg_qps": 94.3,
+            "ddl_qps_drop_pct": -7.4,
+            "post_ddl_recovery_pct": 103.3,
+            "qps_samples": {
+              "pre_ddl": [
+                84.2,
+                98.4
+              ],
+              "during_ddl": [
+                98.1
+              ],
+              "post_ddl": [
+                91.0,
+                91.7,
+                99.1,
+                96.3,
+                95.9,
+                95.7,
+                100.0,
+                94.9,
+                84.4
+              ]
+            }
+          },
+          "checksum_post": {
+            "t1": "('ddl_test.t_large', 2072323246)",
+            "t2": "('ddl_test.t_large_oracle', 2072323246)"
+          },
+          "t1_count": 100304,
+          "t2_count": 100304,
+          "count_diff": 0,
+          "mismatches": 0,
+          "dml_error_rate": 0.0,
+          "new_range_ok": true,
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-CHAR254-255-IP",
+          "category": "char",
+          "old_type": "CHAR(254)",
+          "new_type": "CHAR(255)",
+          "algorithm": "INPLACE",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 3542520711)",
+            "t2": "('ddl_test.t_large_oracle', 1418371094)"
+          },
+          "ddl": {
+            "success": true,
+            "duration": 3.51,
+            "error": null,
+            "algorithm": "INPLACE"
+          },
+          "dml_ops": 1406,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 314,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 122,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 196,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 466,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 308,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 97.2,
+            "during_ddl_avg_qps": 83.4,
+            "post_ddl_avg_qps": 96.6,
+            "ddl_qps_drop_pct": 14.2,
+            "post_ddl_recovery_pct": 99.4,
+            "qps_samples": {
+              "pre_ddl": [
+                91.2,
+                103.1
+              ],
+              "during_ddl": [
+                106.8,
+                87.4,
+                79.2,
+                60.4
+              ],
+              "post_ddl": [
+                95.0,
+                107.6,
+                103.7,
+                102.4,
+                100.3,
+                102.3,
+                100.7,
+                107.3,
+                49.8
+              ]
+            }
+          },
+          "checksum_post": {
+            "t1": "('ddl_test.t_large', 3299801956)",
+            "t2": "('ddl_test.t_large_oracle', 3299801956)"
+          },
+          "t1_count": 100426,
+          "t2_count": 100426,
+          "count_diff": 0,
+          "mismatches": 0,
+          "dml_error_rate": 0.0,
+          "new_range_ok": true,
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-CHAR254-255-IT",
+          "category": "char",
+          "old_type": "CHAR(254)",
+          "new_type": "CHAR(255)",
+          "algorithm": "INSTANT",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 208336205)",
+            "t2": "('ddl_test.t_large_oracle', 3204405692)"
+          },
+          "ddl": {
+            "success": true,
+            "duration": 0.06,
+            "error": null,
+            "algorithm": "INSTANT"
+          },
+          "dml_ops": 910,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 211,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 93,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 151,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 212,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 243,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 80.6,
+            "during_ddl_avg_qps": 89.2,
+            "post_ddl_avg_qps": 72.7,
+            "ddl_qps_drop_pct": -10.7,
+            "post_ddl_recovery_pct": 90.2,
+            "qps_samples": {
+              "pre_ddl": [
+                76.7,
+                84.5
+              ],
+              "during_ddl": [
+                89.2
+              ],
+              "post_ddl": [
+                71.5,
+                81.5,
+                90.0,
+                85.2,
+                81.8,
+                77.0,
+                78.4,
+                84.2,
+                5.0
+              ]
+            }
+          },
+          "checksum_post": {
+            "t1": "('ddl_test.t_large', 1090776748)",
+            "t2": "('ddl_test.t_large_oracle', 1090776748)"
+          },
+          "t1_count": 100303,
+          "t2_count": 100303,
+          "count_diff": 0,
+          "mismatches": 0,
+          "dml_error_rate": 0.0,
+          "new_range_ok": true,
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-VAR1-2-IP",
+          "category": "varchar",
+          "old_type": "VARCHAR(1)",
+          "new_type": "VARCHAR(2)",
+          "algorithm": "INPLACE",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 1594066370)",
+            "t2": "('ddl_test.t_large_oracle', 1594066370)"
+          },
+          "ddl": {
+            "success": true,
+            "duration": 0.04,
+            "error": null,
+            "algorithm": "INPLACE"
+          },
+          "dml_ops": 1024,
+          "dml_errors": 61,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 225,
+              "errors": 31
+            },
+            "UPDATE": {
+              "ops": 96,
+              "errors": 10
+            },
+            "DELETE": {
+              "ops": 129,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 361,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 213,
+              "errors": 20
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 95.0,
+            "during_ddl_avg_qps": 101.9,
+            "post_ddl_avg_qps": 90.2,
+            "ddl_qps_drop_pct": -7.3,
+            "post_ddl_recovery_pct": 94.9,
+            "qps_samples": {
+              "pre_ddl": [
+                87.7,
+                102.2
+              ],
+              "during_ddl": [
+                101.9
+              ],
+              "post_ddl": [
+                85.3,
+                91.3,
+                95.0,
+                88.1,
+                94.4,
+                90.8,
+                89.4,
+                87.3
+              ]
+            }
+          },
+          "checksum_post": {
+            "t1": "('ddl_test.t_large', 3296272056)",
+            "t2": "('ddl_test.t_large_oracle', 3296272056)"
+          },
+          "t1_count": 100309,
+          "t2_count": 100309,
+          "count_diff": 0,
+          "mismatches": 0,
+          "dml_error_rate": 0.0596,
+          "new_range_ok": true,
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-VAR1-2-IT",
+          "category": "varchar",
+          "old_type": "VARCHAR(1)",
+          "new_type": "VARCHAR(2)",
+          "algorithm": "INSTANT",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 31935342)",
+            "t2": "('ddl_test.t_large_oracle', 31935342)"
+          },
+          "ddl": {
+            "success": true,
+            "duration": 0.04,
+            "error": null,
+            "algorithm": "INSTANT"
+          },
+          "dml_ops": 999,
+          "dml_errors": 51,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 237,
+              "errors": 26
+            },
+            "UPDATE": {
+              "ops": 99,
+              "errors": 7
+            },
+            "DELETE": {
+              "ops": 150,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 304,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 209,
+              "errors": 18
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 92.8,
+            "during_ddl_avg_qps": 93.5,
+            "post_ddl_avg_qps": 88.7,
+            "ddl_qps_drop_pct": -0.8,
+            "post_ddl_recovery_pct": 95.6,
+            "qps_samples": {
+              "pre_ddl": [
+                86.7,
+                98.9
+              ],
+              "during_ddl": [
+                93.5
+              ],
+              "post_ddl": [
+                86.9,
+                90.3,
+                95.0,
+                92.2,
+                88.7,
+                93.8,
+                76.4,
+                86.5
+              ]
+            }
+          },
+          "checksum_post": {
+            "t1": "('ddl_test.t_large', 1270838253)",
+            "t2": "('ddl_test.t_large_oracle', 1270838253)"
+          },
+          "t1_count": 100296,
+          "t2_count": 100296,
+          "count_diff": 0,
+          "mismatches": 0,
+          "dml_error_rate": 0.0511,
+          "new_range_ok": true,
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-VAR254-255-IP",
+          "category": "varchar",
+          "old_type": "VARCHAR(254)",
+          "new_type": "VARCHAR(255)",
+          "algorithm": "INPLACE",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 670603993)",
+            "t2": "('ddl_test.t_large_oracle', 670603993)"
+          },
+          "ddl": {
+            "success": true,
+            "duration": 0.04,
+            "error": null,
+            "algorithm": "INPLACE"
+          },
+          "dml_ops": 1118,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 258,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 107,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 137,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 395,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 221,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 100.3,
+            "during_ddl_avg_qps": 0,
+            "post_ddl_avg_qps": 90.1,
+            "ddl_qps_drop_pct": 100.0,
+            "post_ddl_recovery_pct": 89.8,
+            "qps_samples": {
+              "pre_ddl": [
+                92.0,
+                105.7,
+                103.2
+              ],
+              "during_ddl": [],
+              "post_ddl": [
+                101.1,
+                100.7,
+                99.5,
+                100.2,
+                95.8,
+                106.9,
+                102.0,
+                100.0,
+                5.0
+              ]
+            }
+          },
+          "checksum_post": {
+            "t1": "('ddl_test.t_large', 1405687483)",
+            "t2": "('ddl_test.t_large_oracle', 1405687483)"
+          },
+          "t1_count": 100342,
+          "t2_count": 100342,
+          "count_diff": 0,
+          "mismatches": 0,
+          "dml_error_rate": 0.0,
+          "new_range_ok": true,
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-VAR254-255-IT",
+          "category": "varchar",
+          "old_type": "VARCHAR(254)",
+          "new_type": "VARCHAR(255)",
+          "algorithm": "INSTANT",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 936256736)",
+            "t2": "('ddl_test.t_large_oracle', 936256736)"
+          },
+          "ddl": {
+            "success": true,
+            "duration": 0.04,
+            "error": null,
+            "algorithm": "INSTANT"
+          },
+          "dml_ops": 1029,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 240,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 106,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 164,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 284,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 235,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 86.3,
+            "during_ddl_avg_qps": 96.1,
+            "post_ddl_avg_qps": 93.8,
+            "ddl_qps_drop_pct": -11.4,
+            "post_ddl_recovery_pct": 108.7,
+            "qps_samples": {
+              "pre_ddl": [
+                80.4,
+                92.3
+              ],
+              "during_ddl": [
+                96.1
+              ],
+              "post_ddl": [
+                94.8,
+                96.1,
+                98.4,
+                88.3,
+                96.2,
+                93.2,
+                92.6,
+                90.9
+              ]
+            }
+          },
+          "checksum_post": {
+            "t1": "('ddl_test.t_large', 3942472806)",
+            "t2": "('ddl_test.t_large_oracle', 3942472806)"
+          },
+          "t1_count": 100311,
+          "t2_count": 100311,
+          "count_diff": 0,
+          "mismatches": 0,
+          "dml_error_rate": 0.0,
+          "new_range_ok": true,
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-VAR255-256-IP",
+          "category": "varchar",
+          "old_type": "VARCHAR(255)",
+          "new_type": "VARCHAR(256)",
+          "algorithm": "INPLACE",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 670603993)",
+            "t2": "('ddl_test.t_large_oracle', 670603993)"
+          },
+          "ddl": {
+            "success": true,
+            "duration": 0.24,
+            "error": null,
+            "algorithm": "INPLACE"
+          },
+          "dml_ops": 1190,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 231,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 110,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 162,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 447,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 240,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 99.8,
+            "during_ddl_avg_qps": 99.9,
+            "post_ddl_avg_qps": 98.1,
+            "ddl_qps_drop_pct": -0.1,
+            "post_ddl_recovery_pct": 98.3,
+            "qps_samples": {
+              "pre_ddl": [
+                93.5,
+                106.0
+              ],
+              "during_ddl": [
+                99.9
+              ],
+              "post_ddl": [
+                104.9,
+                107.9,
+                106.0,
+                107.6,
+                109.5,
+                106.7,
+                109.4,
+                105.4,
+                25.8
+              ]
+            }
+          },
+          "checksum_post": {
+            "t1": "('ddl_test.t_large', 3816037917)",
+            "t2": "('ddl_test.t_large_oracle', 3816037917)"
+          },
+          "t1_count": 100309,
+          "t2_count": 100309,
+          "count_diff": 0,
+          "mismatches": 0,
+          "dml_error_rate": 0.0,
+          "new_range_ok": true,
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-VAR255-256-IT",
+          "category": "varchar",
+          "old_type": "VARCHAR(255)",
+          "new_type": "VARCHAR(256)",
+          "algorithm": "INSTANT",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 936256736)",
+            "t2": "('ddl_test.t_large_oracle', 936256736)"
+          },
+          "ddl": {
+            "success": true,
+            "duration": 0.05,
+            "error": null,
+            "algorithm": "INSTANT"
+          },
+          "dml_ops": 1031,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 247,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 108,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 193,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 258,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 225,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 87.6,
+            "during_ddl_avg_qps": 95.2,
+            "post_ddl_avg_qps": 93.9,
+            "ddl_qps_drop_pct": -8.7,
+            "post_ddl_recovery_pct": 107.2,
+            "qps_samples": {
+              "pre_ddl": [
+                84.1,
+                91.1
+              ],
+              "during_ddl": [
+                95.2
+              ],
+              "post_ddl": [
+                96.3,
+                95.3,
+                88.2,
+                94.9,
+                93.3,
+                94.3,
+                93.9,
+                94.6
+              ]
+            }
+          },
+          "checksum_post": {
+            "t1": "('ddl_test.t_large', 4199729089)",
+            "t2": "('ddl_test.t_large_oracle', 4199729089)"
+          },
+          "t1_count": 100279,
+          "t2_count": 100279,
+          "count_diff": 0,
+          "mismatches": 0,
+          "dml_error_rate": 0.0,
+          "new_range_ok": true,
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-VAR85-86U3-IP",
+          "category": "varchar",
+          "old_type": "VARCHAR(85)",
+          "new_type": "VARCHAR(86)",
+          "algorithm": "INPLACE",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 670603993)",
+            "t2": "('ddl_test.t_large_oracle', 670603993)"
+          },
+          "ddl": {
+            "success": true,
+            "duration": 0.24,
+            "error": null,
+            "algorithm": "INPLACE"
+          },
+          "dml_ops": 1105,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 255,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 107,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 174,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 340,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 229,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 93.8,
+            "during_ddl_avg_qps": 95.7,
+            "post_ddl_avg_qps": 90.5,
+            "ddl_qps_drop_pct": -2.0,
+            "post_ddl_recovery_pct": 96.5,
+            "qps_samples": {
+              "pre_ddl": [
+                88.4,
+                99.2
+              ],
+              "during_ddl": [
+                95.7
+              ],
+              "post_ddl": [
+                103.9,
+                95.2,
+                96.4,
+                99.2,
+                99.5,
+                101.2,
+                98.2,
+                96.0,
+                24.8
+              ]
+            }
+          },
+          "checksum_post": {
+            "t1": "('ddl_test.t_large', 2680674302)",
+            "t2": "('ddl_test.t_large_oracle', 2680674302)"
+          },
+          "t1_count": 100310,
+          "t2_count": 100310,
+          "count_diff": 0,
+          "mismatches": 0,
+          "dml_error_rate": 0.0,
+          "new_range_ok": true,
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-VAR85-86U3-IT",
+          "category": "varchar",
+          "old_type": "VARCHAR(85)",
+          "new_type": "VARCHAR(86)",
+          "algorithm": "INSTANT",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 936256736)",
+            "t2": "('ddl_test.t_large_oracle', 936256736)"
+          },
+          "ddl": {
+            "success": true,
+            "duration": 0.08,
+            "error": null,
+            "algorithm": "INSTANT"
+          },
+          "dml_ops": 1012,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 220,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 100,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 177,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 265,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 250,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 87.7,
+            "during_ddl_avg_qps": 95.0,
+            "post_ddl_avg_qps": 81.7,
+            "ddl_qps_drop_pct": -8.3,
+            "post_ddl_recovery_pct": 93.2,
+            "qps_samples": {
+              "pre_ddl": [
+                84.9,
+                90.4
+              ],
+              "during_ddl": [
+                95.0
+              ],
+              "post_ddl": [
+                92.7,
+                87.2,
+                88.8,
+                96.6,
+                88.3,
+                90.2,
+                94.2,
+                87.7,
+                9.9
+              ]
+            }
+          },
+          "checksum_post": {
+            "t1": "('ddl_test.t_large', 1337495859)",
+            "t2": "('ddl_test.t_large_oracle', 1337495859)"
+          },
+          "t1_count": 100293,
+          "t2_count": 100293,
+          "count_diff": 0,
+          "mismatches": 0,
+          "dml_error_rate": 0.0,
+          "new_range_ok": true,
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-VAR63-64U4-IP",
+          "category": "varchar",
+          "old_type": "VARCHAR(63)",
+          "new_type": "VARCHAR(64)",
+          "algorithm": "INPLACE",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 1949725356)",
+            "t2": "('ddl_test.t_large_oracle', 1949725356)"
+          },
+          "ddl": {
+            "success": true,
+            "duration": 0.33,
+            "error": null,
+            "algorithm": "INPLACE"
+          },
+          "dml_ops": 1130,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 236,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 108,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 147,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 372,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 267,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 95.7,
+            "during_ddl_avg_qps": 97.1,
+            "post_ddl_avg_qps": 92.7,
+            "ddl_qps_drop_pct": -1.5,
+            "post_ddl_recovery_pct": 96.9,
+            "qps_samples": {
+              "pre_ddl": [
+                90.9,
+                100.5
+              ],
+              "during_ddl": [
+                97.1
+              ],
+              "post_ddl": [
+                100.8,
+                98.6,
+                101.0,
+                101.9,
+                100.2,
+                101.0,
+                102.0,
+                98.5,
+                30.7
+              ]
+            }
+          },
+          "checksum_post": {
+            "t1": "('ddl_test.t_large', 3583359672)",
+            "t2": "('ddl_test.t_large_oracle', 3583359672)"
+          },
+          "t1_count": 100356,
+          "t2_count": 100356,
+          "count_diff": 0,
+          "mismatches": 0,
+          "dml_error_rate": 0.0,
+          "new_range_ok": true,
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-VAR63-64U4-IT",
+          "category": "varchar",
+          "old_type": "VARCHAR(63)",
+          "new_type": "VARCHAR(64)",
+          "algorithm": "INSTANT",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 936256736)",
+            "t2": "('ddl_test.t_large_oracle', 936256736)"
+          },
+          "ddl": {
+            "success": true,
+            "duration": 0.06,
+            "error": null,
+            "algorithm": "INSTANT"
+          },
+          "dml_ops": 1025,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 266,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 106,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 160,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 276,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 217,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 88.8,
+            "during_ddl_avg_qps": 92.8,
+            "post_ddl_avg_qps": 83.2,
+            "ddl_qps_drop_pct": -4.5,
+            "post_ddl_recovery_pct": 93.7,
+            "qps_samples": {
+              "pre_ddl": [
+                82.3,
+                95.3
+              ],
+              "during_ddl": [
+                92.8
+              ],
+              "post_ddl": [
+                91.3,
+                89.9,
+                90.1,
+                90.8,
+                93.5,
+                96.3,
+                99.0,
+                91.2,
+                6.9
+              ]
+            }
+          },
+          "checksum_post": {
+            "t1": "('ddl_test.t_large', 1323412092)",
+            "t2": "('ddl_test.t_large_oracle', 1323412092)"
+          },
+          "t1_count": 100323,
+          "t2_count": 100323,
+          "count_diff": 0,
+          "mismatches": 0,
+          "dml_error_rate": 0.0,
+          "new_range_ok": true,
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-VAR100-200-IP",
+          "category": "varchar",
+          "old_type": "VARCHAR(100)",
+          "new_type": "VARCHAR(200)",
+          "algorithm": "INPLACE",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 1949725356)",
+            "t2": "('ddl_test.t_large_oracle', 1949725356)"
+          },
+          "ddl": {
+            "success": true,
+            "duration": 0.08,
+            "error": null,
+            "algorithm": "INPLACE"
+          },
+          "dml_ops": 1130,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 269,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 103,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 132,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 385,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 241,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 100.2,
+            "during_ddl_avg_qps": 109.3,
+            "post_ddl_avg_qps": 90.4,
+            "ddl_qps_drop_pct": -9.1,
+            "post_ddl_recovery_pct": 90.2,
+            "qps_samples": {
+              "pre_ddl": [
+                97.0,
+                103.5
+              ],
+              "during_ddl": [
+                109.3
+              ],
+              "post_ddl": [
+                99.5,
+                104.3,
+                102.1,
+                100.8,
+                101.5,
+                102.4,
+                91.3,
+                104.3,
+                7.0
+              ]
+            }
+          },
+          "checksum_post": {
+            "t1": "('ddl_test.t_large', 2060672922)",
+            "t2": "('ddl_test.t_large_oracle', 2060672922)"
+          },
+          "t1_count": 100378,
+          "t2_count": 100378,
+          "count_diff": 0,
+          "mismatches": 0,
+          "dml_error_rate": 0.0,
+          "new_range_ok": true,
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-VAR100-200-IT",
+          "category": "varchar",
+          "old_type": "VARCHAR(100)",
+          "new_type": "VARCHAR(200)",
+          "algorithm": "INSTANT",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 936256736)",
+            "t2": "('ddl_test.t_large_oracle', 936256736)"
+          },
+          "ddl": {
+            "success": true,
+            "duration": 0.05,
+            "error": null,
+            "algorithm": "INSTANT"
+          },
+          "dml_ops": 1047,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 234,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 107,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 161,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 296,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 249,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 89.5,
+            "during_ddl_avg_qps": 93.7,
+            "post_ddl_avg_qps": 95.5,
+            "ddl_qps_drop_pct": -4.7,
+            "post_ddl_recovery_pct": 106.7,
+            "qps_samples": {
+              "pre_ddl": [
+                85.2,
+                93.7
+              ],
+              "during_ddl": [
+                93.7
+              ],
+              "post_ddl": [
+                94.1,
+                93.4,
+                93.8,
+                95.8,
+                95.9,
+                93.1,
+                98.0,
+                99.7
+              ]
+            }
+          },
+          "checksum_post": {
+            "t1": "('ddl_test.t_large', 746643411)",
+            "t2": "('ddl_test.t_large_oracle', 746643411)"
+          },
+          "t1_count": 100322,
+          "t2_count": 100322,
+          "count_diff": 0,
+          "mismatches": 0,
+          "dml_error_rate": 0.0,
+          "new_range_ok": true,
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-BIN10-20-IP",
+          "category": "binary",
+          "old_type": "BINARY(10)",
+          "new_type": "BINARY(20)",
+          "algorithm": "INPLACE",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 3301159962)",
+            "t2": "('ddl_test.t_large_oracle', 1678466407)"
+          },
+          "ddl": {
+            "success": true,
+            "duration": 0.3,
+            "error": null,
+            "algorithm": "INPLACE"
+          },
+          "dml_ops": 1193,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 258,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 110,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 171,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 384,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 270,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 99.3,
+            "during_ddl_avg_qps": 107.8,
+            "post_ddl_avg_qps": 97.6,
+            "ddl_qps_drop_pct": -8.6,
+            "post_ddl_recovery_pct": 98.3,
+            "qps_samples": {
+              "pre_ddl": [
+                93.2,
+                105.5
+              ],
+              "during_ddl": [
+                107.8
+              ],
+              "post_ddl": [
+                109.3,
+                103.4,
+                104.2,
+                106.2,
+                107.7,
+                104.1,
+                106.9,
+                107.1,
+                29.7
+              ]
+            }
+          },
+          "checksum_post": {
+            "t1": "('ddl_test.t_large', 3043234926)",
+            "t2": "('ddl_test.t_large_oracle', 3043234926)"
+          },
+          "t1_count": 100357,
+          "t2_count": 100357,
+          "count_diff": 0,
+          "mismatches": 0,
+          "dml_error_rate": 0.0,
+          "new_range_ok": true,
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-BIN10-20-IT",
+          "category": "binary",
+          "old_type": "BINARY(10)",
+          "new_type": "BINARY(20)",
+          "algorithm": "INSTANT",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 2511984840)",
+            "t2": "('ddl_test.t_large_oracle', 3050552753)"
+          },
+          "ddl": {
+            "success": true,
+            "duration": 0.07,
+            "error": null,
+            "algorithm": "INSTANT"
+          },
+          "dml_ops": 1018,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 245,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 104,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 160,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 274,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 235,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 88.4,
+            "during_ddl_avg_qps": 93.8,
+            "post_ddl_avg_qps": 82.4,
+            "ddl_qps_drop_pct": -6.1,
+            "post_ddl_recovery_pct": 93.2,
+            "qps_samples": {
+              "pre_ddl": [
+                81.3,
+                95.5
+              ],
+              "during_ddl": [
+                93.8
+              ],
+              "post_ddl": [
+                91.0,
+                90.2,
+                95.3,
+                90.8,
+                93.5,
+                91.4,
+                89.7,
+                93.2,
+                6.9
+              ]
+            }
+          },
+          "checksum_post": {
+            "t1": "('ddl_test.t_large', 2554333937)",
+            "t2": "('ddl_test.t_large_oracle', 2554333937)"
+          },
+          "t1_count": 100320,
+          "t2_count": 100320,
+          "count_diff": 0,
+          "mismatches": 0,
+          "dml_error_rate": 0.0,
+          "new_range_ok": true,
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-BIN40-80-IP",
+          "category": "binary",
+          "old_type": "BINARY(40)",
+          "new_type": "BINARY(80)",
+          "algorithm": "INPLACE",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 3899345809)",
+            "t2": "('ddl_test.t_large_oracle', 1676514588)"
+          },
+          "ddl": {
+            "success": true,
+            "duration": 0.45,
+            "error": null,
+            "algorithm": "INPLACE"
+          },
+          "dml_ops": 1213,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 241,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 108,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 174,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 428,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 262,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 98.3,
+            "during_ddl_avg_qps": 105.3,
+            "post_ddl_avg_qps": 100.3,
+            "ddl_qps_drop_pct": -7.1,
+            "post_ddl_recovery_pct": 102.0,
+            "qps_samples": {
+              "pre_ddl": [
+                87.7,
+                109.0
+              ],
+              "during_ddl": [
+                105.3
+              ],
+              "post_ddl": [
+                105.5,
+                107.6,
+                110.0,
+                110.1,
+                105.9,
+                105.6,
+                109.0,
+                100.4,
+                48.6
+              ]
+            }
+          },
+          "checksum_post": {
+            "t1": "('ddl_test.t_large', 3974644241)",
+            "t2": "('ddl_test.t_large_oracle', 3974644241)"
+          },
+          "t1_count": 100329,
+          "t2_count": 100329,
+          "count_diff": 0,
+          "mismatches": 0,
+          "dml_error_rate": 0.0,
+          "new_range_ok": true,
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-VBIN20-40-IP",
+          "category": "varbinary",
+          "old_type": "VARBINARY(20)",
+          "new_type": "VARBINARY(40)",
+          "algorithm": "INPLACE",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 1778005577)",
+            "t2": "('ddl_test.t_large_oracle', 1778005577)"
+          },
+          "ddl": {
+            "success": true,
+            "duration": 0.05,
+            "error": null,
+            "algorithm": "INPLACE"
+          },
+          "dml_ops": 1133,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 268,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 106,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 126,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 432,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 201,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 98.3,
+            "during_ddl_avg_qps": 101.0,
+            "post_ddl_avg_qps": 103.0,
+            "ddl_qps_drop_pct": -2.7,
+            "post_ddl_recovery_pct": 104.8,
+            "qps_samples": {
+              "pre_ddl": [
+                94.5,
+                102.1
+              ],
+              "during_ddl": [
+                101.0
+              ],
+              "post_ddl": [
+                107.1,
+                101.8,
+                100.2,
+                104.4,
+                104.4,
+                100.1,
+                102.2,
+                103.5
+              ]
+            }
+          },
+          "checksum_post": {
+            "t1": "('ddl_test.t_large', 3182653935)",
+            "t2": "('ddl_test.t_large_oracle', 3182653935)"
+          },
+          "t1_count": 100343,
+          "t2_count": 100343,
+          "count_diff": 0,
+          "mismatches": 0,
+          "dml_error_rate": 0.0,
+          "new_range_ok": true,
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-VBIN20-40-IT",
+          "category": "varbinary",
+          "old_type": "VARBINARY(20)",
+          "new_type": "VARBINARY(40)",
+          "algorithm": "INSTANT",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 2860400797)",
+            "t2": "('ddl_test.t_large_oracle', 2860400797)"
+          },
+          "ddl": {
+            "success": true,
+            "duration": 0.05,
+            "error": null,
+            "algorithm": "INSTANT"
+          },
+          "dml_ops": 1034,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 235,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 103,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 174,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 290,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 232,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 92.8,
+            "during_ddl_avg_qps": 76.2,
+            "post_ddl_avg_qps": 95.0,
+            "ddl_qps_drop_pct": 17.9,
+            "post_ddl_recovery_pct": 102.4,
+            "qps_samples": {
+              "pre_ddl": [
+                88.2,
+                97.4
+              ],
+              "during_ddl": [
+                76.2
+              ],
+              "post_ddl": [
+                93.1,
+                99.2,
+                100.4,
+                94.3,
+                87.1,
+                97.5,
+                94.0,
+                94.3
+              ]
+            }
+          },
+          "checksum_post": {
+            "t1": "('ddl_test.t_large', 1835742236)",
+            "t2": "('ddl_test.t_large_oracle', 1835742236)"
+          },
+          "t1_count": 100293,
+          "t2_count": 100293,
+          "count_diff": 0,
+          "mismatches": 0,
+          "dml_error_rate": 0.0,
+          "new_range_ok": true,
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-VBIN100-200-IP",
+          "category": "varbinary",
+          "old_type": "VARBINARY(100)",
+          "new_type": "VARBINARY(200)",
+          "algorithm": "INPLACE",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 384097387)",
+            "t2": "('ddl_test.t_large_oracle', 384097387)"
+          },
+          "ddl": {
+            "success": true,
+            "duration": 0.07,
+            "error": null,
+            "algorithm": "INPLACE"
+          },
+          "dml_ops": 1089,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 236,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 106,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 138,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 375,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 234,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 96.2,
+            "during_ddl_avg_qps": 106.0,
+            "post_ddl_avg_qps": 87.2,
+            "ddl_qps_drop_pct": -10.2,
+            "post_ddl_recovery_pct": 90.6,
+            "qps_samples": {
+              "pre_ddl": [
+                89.3,
+                103.1
+              ],
+              "during_ddl": [
+                106.0
+              ],
+              "post_ddl": [
+                99.2,
+                82.6,
+                96.7,
+                101.1,
+                101.7,
+                101.8,
+                94.9,
+                99.5,
+                7.0
+              ]
+            }
+          },
+          "checksum_post": {
+            "t1": "('ddl_test.t_large', 884075418)",
+            "t2": "('ddl_test.t_large_oracle', 884075418)"
+          },
+          "t1_count": 100332,
+          "t2_count": 100332,
+          "count_diff": 0,
+          "mismatches": 0,
+          "dml_error_rate": 0.0,
+          "new_range_ok": true,
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-DEC10-12-IP",
+          "category": "decimal",
+          "old_type": "DECIMAL(10,2)",
+          "new_type": "DECIMAL(12,2)",
+          "algorithm": "INPLACE",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 3961006806)",
+            "t2": "('ddl_test.t_large_oracle', 1830970871)"
+          },
+          "ddl": {
+            "success": false,
+            "duration": 0.04,
+            "error": "(1846, 'ALGORITHM=INPLACE is not supported. Reason: Cannot change column type INPLACE. Try ALGORITHM=COPY.')",
+            "algorithm": "INPLACE"
+          },
+          "dml_ops": 1099,
+          "dml_errors": 99,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 198,
+              "errors": 38
+            },
+            "UPDATE": {
+              "ops": 92,
+              "errors": 20
+            },
+            "DELETE": {
+              "ops": 161,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 415,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 233,
+              "errors": 41
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 100.7,
+            "during_ddl_avg_qps": 107.5,
+            "post_ddl_avg_qps": 97.8,
+            "ddl_qps_drop_pct": -6.8,
+            "post_ddl_recovery_pct": 97.1,
+            "qps_samples": {
+              "pre_ddl": [
+                93.9,
+                107.5
+              ],
+              "during_ddl": [
+                107.5
+              ],
+              "post_ddl": [
+                99.0,
+                96.4,
+                103.7,
+                98.8,
+                97.1,
+                98.0,
+                94.1,
+                95.6
+              ]
+            }
+          },
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-DEC10-12-IT",
+          "category": "decimal",
+          "old_type": "DECIMAL(10,2)",
+          "new_type": "DECIMAL(12,2)",
+          "algorithm": "INSTANT",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 2582922382)",
+            "t2": "('ddl_test.t_large_oracle', 1064545741)"
+          },
+          "ddl": {
+            "success": false,
+            "duration": 0.05,
+            "error": "(1846, 'ALGORITHM=INSTANT is not supported. Reason: Need to rebuild the table to change column type. Try ALGORITHM=COPY/INPLACE.')",
+            "algorithm": "INSTANT"
+          },
+          "dml_ops": 979,
+          "dml_errors": 83,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 208,
+              "errors": 33
+            },
+            "UPDATE": {
+              "ops": 95,
+              "errors": 15
+            },
+            "DELETE": {
+              "ops": 165,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 282,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 229,
+              "errors": 35
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 87.8,
+            "during_ddl_avg_qps": 92.8,
+            "post_ddl_avg_qps": 78.7,
+            "ddl_qps_drop_pct": -5.7,
+            "post_ddl_recovery_pct": 89.6,
+            "qps_samples": {
+              "pre_ddl": [
+                82.0,
+                93.6
+              ],
+              "during_ddl": [
+                92.8
+              ],
+              "post_ddl": [
+                86.7,
+                88.5,
+                85.0,
+                85.9,
+                89.8,
+                86.9,
+                88.5,
+                88.8,
+                7.9
+              ]
+            }
+          },
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-DEC18-20-IP",
+          "category": "decimal",
+          "old_type": "DECIMAL(18,0)",
+          "new_type": "DECIMAL(20,0)",
+          "algorithm": "INPLACE",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 264726542)",
+            "t2": "('ddl_test.t_large_oracle', 967736906)"
+          },
+          "ddl": {
+            "success": false,
+            "duration": 0.04,
+            "error": "(1846, 'ALGORITHM=INPLACE is not supported. Reason: Cannot change column type INPLACE. Try ALGORITHM=COPY.')",
+            "algorithm": "INPLACE"
+          },
+          "dml_ops": 1106,
+          "dml_errors": 89,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 233,
+              "errors": 31
+            },
+            "UPDATE": {
+              "ops": 92,
+              "errors": 12
+            },
+            "DELETE": {
+              "ops": 176,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 398,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 207,
+              "errors": 46
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 98.5,
+            "during_ddl_avg_qps": 109.9,
+            "post_ddl_avg_qps": 99.0,
+            "ddl_qps_drop_pct": -11.6,
+            "post_ddl_recovery_pct": 100.5,
+            "qps_samples": {
+              "pre_ddl": [
+                94.0,
+                102.9
+              ],
+              "during_ddl": [
+                109.9
+              ],
+              "post_ddl": [
+                104.1,
+                96.8,
+                102.0,
+                82.7,
+                101.4,
+                100.5,
+                100.7,
+                104.1
+              ]
+            }
+          },
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-DEC1-2-IT",
+          "category": "decimal",
+          "old_type": "DECIMAL(1,0)",
+          "new_type": "DECIMAL(2,0)",
+          "algorithm": "INSTANT",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 1507218005)",
+            "t2": "('ddl_test.t_large_oracle', 1507218005)"
+          },
+          "ddl": {
+            "success": false,
+            "duration": 0.05,
+            "error": "(1846, 'ALGORITHM=INSTANT is not supported. Reason: Need to rebuild the table to change column type. Try ALGORITHM=COPY/INPLACE.')",
+            "algorithm": "INSTANT"
+          },
+          "dml_ops": 975,
+          "dml_errors": 66,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 239,
+              "errors": 24
+            },
+            "UPDATE": {
+              "ops": 91,
+              "errors": 14
+            },
+            "DELETE": {
+              "ops": 158,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 261,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 226,
+              "errors": 28
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 86.4,
+            "during_ddl_avg_qps": 95.0,
+            "post_ddl_avg_qps": 78.0,
+            "ddl_qps_drop_pct": -10.0,
+            "post_ddl_recovery_pct": 90.3,
+            "qps_samples": {
+              "pre_ddl": [
+                82.2,
+                90.6
+              ],
+              "during_ddl": [
+                95.0
+              ],
+              "post_ddl": [
+                86.9,
+                89.4,
+                81.2,
+                92.9,
+                88.7,
+                82.5,
+                88.9,
+                86.8,
+                5.0
+              ]
+            }
+          },
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-DEC6430-6530-IP",
+          "category": "decimal",
+          "old_type": "DECIMAL(64,30)",
+          "new_type": "DECIMAL(65,30)",
+          "algorithm": "INPLACE",
+          "target_rows": 100000,
+          "row_count": 0,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 0)",
+            "t2": "('ddl_test.t_large_oracle', 0)"
+          },
+          "ddl": {
+            "success": false,
+            "duration": 0.04,
+            "error": "(1846, 'ALGORITHM=INPLACE is not supported. Reason: Cannot change column type INPLACE. Try ALGORITHM=COPY.')",
+            "algorithm": "INPLACE"
+          },
+          "dml_ops": 1023,
+          "dml_errors": 85,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 218,
+              "errors": 36
+            },
+            "UPDATE": {
+              "ops": 0,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 165,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 433,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 207,
+              "errors": 49
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 93.8,
+            "during_ddl_avg_qps": 94.3,
+            "post_ddl_avg_qps": 91.4,
+            "ddl_qps_drop_pct": -0.5,
+            "post_ddl_recovery_pct": 97.4,
+            "qps_samples": {
+              "pre_ddl": [
+                87.5,
+                100.0
+              ],
+              "during_ddl": [
+                94.3
+              ],
+              "post_ddl": [
+                91.7,
+                93.8,
+                90.3,
+                95.6,
+                91.4,
+                91.3,
+                91.4,
+                85.4
+              ]
+            }
+          },
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-TEXT-T-IP",
+          "category": "text",
+          "old_type": "TINYTEXT",
+          "new_type": "TEXT",
+          "algorithm": "INPLACE",
+          "target_rows": 100000,
+          "error": "CREATE t1 failed: (1071, 'Specified key was too long; max key length is 255 bytes')"
+        },
+        {
+          "test_id": "LT-TEXT-T-IT",
+          "category": "text",
+          "old_type": "TINYTEXT",
+          "new_type": "TEXT",
+          "algorithm": "INSTANT",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 1946709309)",
+            "t2": "('ddl_test.t_large_oracle', 1946709309)"
+          },
+          "ddl": {
+            "success": false,
+            "duration": 0.04,
+            "error": "(1846, 'ALGORITHM=INSTANT is not supported. Reason: Need to rebuild the table to change column type. Try ALGORITHM=COPY/INPLACE.')",
+            "algorithm": "INSTANT"
+          },
+          "dml_ops": 873,
+          "dml_errors": 77,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 203,
+              "errors": 30
+            },
+            "UPDATE": {
+              "ops": 99,
+              "errors": 8
+            },
+            "DELETE": {
+              "ops": 169,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 193,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 209,
+              "errors": 39
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 76.8,
+            "during_ddl_avg_qps": 84.7,
+            "post_ddl_avg_qps": 78.2,
+            "ddl_qps_drop_pct": -10.3,
+            "post_ddl_recovery_pct": 101.8,
+            "qps_samples": {
+              "pre_ddl": [
+                72.4,
+                81.3
+              ],
+              "during_ddl": [
+                84.7
+              ],
+              "post_ddl": [
+                79.5,
+                76.7,
+                77.5,
+                80.8,
+                78.2,
+                78.9,
+                78.2,
+                75.4
+              ]
+            }
+          },
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-TEXT-MT-IP",
+          "category": "text",
+          "old_type": "TEXT",
+          "new_type": "MEDIUMTEXT",
+          "algorithm": "INPLACE",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 1946709309)",
+            "t2": "('ddl_test.t_large_oracle', 1946709309)"
+          },
+          "ddl": {
+            "success": false,
+            "duration": 0.04,
+            "error": "(1846, 'ALGORITHM=INPLACE is not supported. Reason: Cannot change column type INPLACE. Try ALGORITHM=COPY.')",
+            "algorithm": "INPLACE"
+          },
+          "dml_ops": 913,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 221,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 98,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 168,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 190,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 236,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 77.3,
+            "during_ddl_avg_qps": 85.3,
+            "post_ddl_avg_qps": 83.1,
+            "ddl_qps_drop_pct": -10.3,
+            "post_ddl_recovery_pct": 107.5,
+            "qps_samples": {
+              "pre_ddl": [
+                71.4,
+                83.2
+              ],
+              "during_ddl": [
+                85.3
+              ],
+              "post_ddl": [
+                86.7,
+                79.2,
+                88.1,
+                85.6,
+                82.2,
+                72.3,
+                84.2,
+                86.4
+              ]
+            }
+          },
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-TEXT-MT-IT",
+          "category": "text",
+          "old_type": "TEXT",
+          "new_type": "MEDIUMTEXT",
+          "algorithm": "INSTANT",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 1946709309)",
+            "t2": "('ddl_test.t_large_oracle', 1946709309)"
+          },
+          "ddl": {
+            "success": false,
+            "duration": 0.04,
+            "error": "(1846, 'ALGORITHM=INSTANT is not supported. Reason: Need to rebuild the table to change column type. Try ALGORITHM=COPY/INPLACE.')",
+            "algorithm": "INSTANT"
+          },
+          "dml_ops": 947,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 252,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 108,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 160,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 194,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 233,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 81.2,
+            "during_ddl_avg_qps": 88.3,
+            "post_ddl_avg_qps": 86.0,
+            "ddl_qps_drop_pct": -8.7,
+            "post_ddl_recovery_pct": 105.9,
+            "qps_samples": {
+              "pre_ddl": [
+                76.2,
+                86.2
+              ],
+              "during_ddl": [
+                88.3
+              ],
+              "post_ddl": [
+                89.9,
+                83.2,
+                83.2,
+                88.8,
+                88.3,
+                82.6,
+                86.3,
+                85.5
+              ]
+            }
+          },
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-TEXT-ML-IP",
+          "category": "text",
+          "old_type": "MEDIUMTEXT",
+          "new_type": "LONGTEXT",
+          "algorithm": "INPLACE",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 1946709309)",
+            "t2": "('ddl_test.t_large_oracle', 1946709309)"
+          },
+          "ddl": {
+            "success": false,
+            "duration": 0.13,
+            "error": "(1846, 'ALGORITHM=INPLACE is not supported. Reason: Cannot change column type INPLACE. Try ALGORITHM=COPY.')",
+            "algorithm": "INPLACE"
+          },
+          "dml_ops": 880,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 216,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 98,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 169,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 189,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 208,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 78.7,
+            "during_ddl_avg_qps": 83.5,
+            "post_ddl_avg_qps": 70.5,
+            "ddl_qps_drop_pct": -6.1,
+            "post_ddl_recovery_pct": 89.6,
+            "qps_samples": {
+              "pre_ddl": [
+                73.6,
+                83.8
+              ],
+              "during_ddl": [
+                83.5
+              ],
+              "post_ddl": [
+                69.8,
+                82.9,
+                83.9,
+                77.2,
+                64.4,
+                84.3,
+                83.3,
+                76.4,
+                11.9
+              ]
+            }
+          },
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-TEXT-ML-IT",
+          "category": "text",
+          "old_type": "MEDIUMTEXT",
+          "new_type": "LONGTEXT",
+          "algorithm": "INSTANT",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 1946709309)",
+            "t2": "('ddl_test.t_large_oracle', 1946709309)"
+          },
+          "ddl": {
+            "success": false,
+            "duration": 0.04,
+            "error": "(1846, 'ALGORITHM=INSTANT is not supported. Reason: Need to rebuild the table to change column type. Try ALGORITHM=COPY/INPLACE.')",
+            "algorithm": "INSTANT"
+          },
+          "dml_ops": 911,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 236,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 99,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 155,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 191,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 230,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 81.0,
+            "during_ddl_avg_qps": 81.8,
+            "post_ddl_avg_qps": 82.2,
+            "ddl_qps_drop_pct": -1.0,
+            "post_ddl_recovery_pct": 101.5,
+            "qps_samples": {
+              "pre_ddl": [
+                78.5,
+                83.4
+              ],
+              "during_ddl": [
+                81.8
+              ],
+              "post_ddl": [
+                86.8,
+                76.2,
+                78.7,
+                83.4,
+                82.8,
+                84.2,
+                86.4,
+                78.9
+              ]
+            }
+          },
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-BLOB-B-IP",
+          "category": "blob",
+          "old_type": "TINYBLOB",
+          "new_type": "BLOB",
+          "algorithm": "INPLACE",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 4187795770)",
+            "t2": "('ddl_test.t_large_oracle', 4187795770)"
+          },
+          "ddl": {
+            "success": false,
+            "duration": 0.04,
+            "error": "(1846, 'ALGORITHM=INPLACE is not supported. Reason: Cannot change column type INPLACE. Try ALGORITHM=COPY.')",
+            "algorithm": "INPLACE"
+          },
+          "dml_ops": 940,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 221,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 106,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 165,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 216,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 232,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 82.2,
+            "during_ddl_avg_qps": 79.6,
+            "post_ddl_avg_qps": 76.7,
+            "ddl_qps_drop_pct": 3.2,
+            "post_ddl_recovery_pct": 93.3,
+            "qps_samples": {
+              "pre_ddl": [
+                76.2,
+                88.3
+              ],
+              "during_ddl": [
+                79.6
+              ],
+              "post_ddl": [
+                87.4,
+                88.6,
+                81.9,
+                84.7,
+                85.5,
+                82.6,
+                89.5,
+                85.4,
+                5.0
+              ]
+            }
+          },
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-BLOB-B-IT",
+          "category": "blob",
+          "old_type": "TINYBLOB",
+          "new_type": "BLOB",
+          "algorithm": "INSTANT",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 4187795770)",
+            "t2": "('ddl_test.t_large_oracle', 4187795770)"
+          },
+          "ddl": {
+            "success": false,
+            "duration": 0.04,
+            "error": "(1846, 'ALGORITHM=INSTANT is not supported. Reason: Need to rebuild the table to change column type. Try ALGORITHM=COPY/INPLACE.')",
+            "algorithm": "INSTANT"
+          },
+          "dml_ops": 990,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 252,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 109,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 172,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 210,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 247,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 85.5,
+            "during_ddl_avg_qps": 0,
+            "post_ddl_avg_qps": 81.0,
+            "ddl_qps_drop_pct": 100.0,
+            "post_ddl_recovery_pct": 94.7,
+            "qps_samples": {
+              "pre_ddl": [
+                79.0,
+                90.6,
+                86.9
+              ],
+              "during_ddl": [],
+              "post_ddl": [
+                91.6,
+                95.1,
+                88.1,
+                91.6,
+                86.8,
+                90.9,
+                88.4,
+                87.4,
+                8.9
+              ]
+            }
+          },
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-BLOB-MB-IP",
+          "category": "blob",
+          "old_type": "BLOB",
+          "new_type": "MEDIUMBLOB",
+          "algorithm": "INPLACE",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 4187795770)",
+            "t2": "('ddl_test.t_large_oracle', 4187795770)"
+          },
+          "ddl": {
+            "success": false,
+            "duration": 0.04,
+            "error": "(1846, 'ALGORITHM=INPLACE is not supported. Reason: Cannot change column type INPLACE. Try ALGORITHM=COPY.')",
+            "algorithm": "INPLACE"
+          },
+          "dml_ops": 911,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 230,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 106,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 163,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 198,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 214,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 75.5,
+            "during_ddl_avg_qps": 86.4,
+            "post_ddl_avg_qps": 82.9,
+            "ddl_qps_drop_pct": -14.4,
+            "post_ddl_recovery_pct": 109.8,
+            "qps_samples": {
+              "pre_ddl": [
+                72.3,
+                78.7
+              ],
+              "during_ddl": [
+                86.4
+              ],
+              "post_ddl": [
+                84.7,
+                81.6,
+                77.5,
+                80.2,
+                89.8,
+                82.3,
+                84.2,
+                83.0
+              ]
+            }
+          },
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-BLOB-MB-IT",
+          "category": "blob",
+          "old_type": "BLOB",
+          "new_type": "MEDIUMBLOB",
+          "algorithm": "INSTANT",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 4187795770)",
+            "t2": "('ddl_test.t_large_oracle', 4187795770)"
+          },
+          "ddl": {
+            "success": false,
+            "duration": 0.04,
+            "error": "(1846, 'ALGORITHM=INSTANT is not supported. Reason: Need to rebuild the table to change column type. Try ALGORITHM=COPY/INPLACE.')",
+            "algorithm": "INSTANT"
+          },
+          "dml_ops": 978,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 249,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 104,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 170,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 214,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 241,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 85.7,
+            "during_ddl_avg_qps": 76.5,
+            "post_ddl_avg_qps": 90.0,
+            "ddl_qps_drop_pct": 10.7,
+            "post_ddl_recovery_pct": 105.0,
+            "qps_samples": {
+              "pre_ddl": [
+                85.4,
+                85.9
+              ],
+              "during_ddl": [
+                76.5
+              ],
+              "post_ddl": [
+                90.0,
+                90.1,
+                85.5,
+                90.9,
+                93.1,
+                90.3,
+                88.0,
+                92.1
+              ]
+            }
+          },
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-BLOB-ML-IP",
+          "category": "blob",
+          "old_type": "MEDIUMBLOB",
+          "new_type": "LONGBLOB",
+          "algorithm": "INPLACE",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 4187795770)",
+            "t2": "('ddl_test.t_large_oracle', 4187795770)"
+          },
+          "ddl": {
+            "success": false,
+            "duration": 0.03,
+            "error": "(1846, 'ALGORITHM=INPLACE is not supported. Reason: Cannot change column type INPLACE. Try ALGORITHM=COPY.')",
+            "algorithm": "INPLACE"
+          },
+          "dml_ops": 950,
+          "dml_errors": 0,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 233,
+              "errors": 0
+            },
+            "UPDATE": {
+              "ops": 100,
+              "errors": 0
+            },
+            "DELETE": {
+              "ops": 164,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 206,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 247,
+              "errors": 0
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 81.1,
+            "during_ddl_avg_qps": 0,
+            "post_ddl_avg_qps": 78.2,
+            "ddl_qps_drop_pct": 100.0,
+            "post_ddl_recovery_pct": 96.4,
+            "qps_samples": {
+              "pre_ddl": [
+                80.6,
+                89.7,
+                72.9
+              ],
+              "during_ddl": [],
+              "post_ddl": [
+                75.3,
+                88.8,
+                90.9,
+                89.9,
+                89.7,
+                90.0,
+                80.6,
+                91.8,
+                6.9
+              ]
+            }
+          },
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-BIT1-8-IP",
+          "category": "bit",
+          "old_type": "BIT(1)",
+          "new_type": "BIT(8)",
+          "algorithm": "INPLACE",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 4135713716)",
+            "t2": "('ddl_test.t_large_oracle', 4135713716)"
+          },
+          "ddl": {
+            "success": false,
+            "duration": 0.06,
+            "error": "(1846, 'ALGORITHM=INPLACE is not supported. Reason: Cannot change column type INPLACE. Try ALGORITHM=COPY.')",
+            "algorithm": "INPLACE"
+          },
+          "dml_ops": 1091,
+          "dml_errors": 98,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 214,
+              "errors": 39
+            },
+            "UPDATE": {
+              "ops": 96,
+              "errors": 19
+            },
+            "DELETE": {
+              "ops": 184,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 365,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 232,
+              "errors": 40
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 94.2,
+            "during_ddl_avg_qps": 108.9,
+            "post_ddl_avg_qps": 87.7,
+            "ddl_qps_drop_pct": -15.6,
+            "post_ddl_recovery_pct": 93.1,
+            "qps_samples": {
+              "pre_ddl": [
+                86.9,
+                101.6
+              ],
+              "during_ddl": [
+                108.9
+              ],
+              "post_ddl": [
+                97.1,
+                101.8,
+                94.1,
+                100.0,
+                98.5,
+                90.8,
+                101.0,
+                97.6,
+                8.0
+              ]
+            }
+          },
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-BIT1-8-IT",
+          "category": "bit",
+          "old_type": "BIT(1)",
+          "new_type": "BIT(8)",
+          "algorithm": "INSTANT",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 901132901)",
+            "t2": "('ddl_test.t_large_oracle', 901132901)"
+          },
+          "ddl": {
+            "success": false,
+            "duration": 0.04,
+            "error": "(1846, 'ALGORITHM=INSTANT is not supported. Reason: Need to rebuild the table to change column type. Try ALGORITHM=COPY/INPLACE.')",
+            "algorithm": "INSTANT"
+          },
+          "dml_ops": 967,
+          "dml_errors": 74,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 216,
+              "errors": 35
+            },
+            "UPDATE": {
+              "ops": 99,
+              "errors": 12
+            },
+            "DELETE": {
+              "ops": 165,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 285,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 202,
+              "errors": 27
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 87.4,
+            "during_ddl_avg_qps": 95.9,
+            "post_ddl_avg_qps": 76.7,
+            "ddl_qps_drop_pct": -9.7,
+            "post_ddl_recovery_pct": 87.8,
+            "qps_samples": {
+              "pre_ddl": [
+                82.6,
+                92.3
+              ],
+              "during_ddl": [
+                95.9
+              ],
+              "post_ddl": [
+                89.2,
+                86.4,
+                74.7,
+                85.8,
+                85.1,
+                90.0,
+                87.3,
+                88.2,
+                4.0
+              ]
+            }
+          },
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-BIT8-16-IP",
+          "category": "bit",
+          "old_type": "BIT(8)",
+          "new_type": "BIT(16)",
+          "algorithm": "INPLACE",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 286809886)",
+            "t2": "('ddl_test.t_large_oracle', 4008728815)"
+          },
+          "ddl": {
+            "success": false,
+            "duration": 0.04,
+            "error": "(1846, 'ALGORITHM=INPLACE is not supported. Reason: Cannot change column type INPLACE. Try ALGORITHM=COPY.')",
+            "algorithm": "INPLACE"
+          },
+          "dml_ops": 1075,
+          "dml_errors": 93,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 196,
+              "errors": 34
+            },
+            "UPDATE": {
+              "ops": 77,
+              "errors": 21
+            },
+            "DELETE": {
+              "ops": 164,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 426,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 212,
+              "errors": 38
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 101.2,
+            "during_ddl_avg_qps": 108.8,
+            "post_ddl_avg_qps": 94.2,
+            "ddl_qps_drop_pct": -7.5,
+            "post_ddl_recovery_pct": 93.1,
+            "qps_samples": {
+              "pre_ddl": [
+                93.3,
+                109.1
+              ],
+              "during_ddl": [
+                108.8
+              ],
+              "post_ddl": [
+                99.4,
+                98.5,
+                102.3,
+                82.2,
+                81.9,
+                98.9,
+                96.7,
+                94.1
+              ]
+            }
+          },
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-BIT8-16-IT",
+          "category": "bit",
+          "old_type": "BIT(8)",
+          "new_type": "BIT(16)",
+          "algorithm": "INSTANT",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 3231789678)",
+            "t2": "('ddl_test.t_large_oracle', 2457122331)"
+          },
+          "ddl": {
+            "success": false,
+            "duration": 0.04,
+            "error": "(1846, 'ALGORITHM=INSTANT is not supported. Reason: Need to rebuild the table to change column type. Try ALGORITHM=COPY/INPLACE.')",
+            "algorithm": "INSTANT"
+          },
+          "dml_ops": 987,
+          "dml_errors": 96,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 200,
+              "errors": 38
+            },
+            "UPDATE": {
+              "ops": 94,
+              "errors": 17
+            },
+            "DELETE": {
+              "ops": 192,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 286,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 215,
+              "errors": 41
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 90.3,
+            "during_ddl_avg_qps": 95.3,
+            "post_ddl_avg_qps": 87.7,
+            "ddl_qps_drop_pct": -5.5,
+            "post_ddl_recovery_pct": 97.1,
+            "qps_samples": {
+              "pre_ddl": [
+                84.3,
+                96.4
+              ],
+              "during_ddl": [
+                95.3
+              ],
+              "post_ddl": [
+                82.9,
+                93.5,
+                88.2,
+                82.3,
+                85.7,
+                85.3,
+                87.1,
+                96.7
+              ]
+            }
+          },
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-BIT16-32-IP",
+          "category": "bit",
+          "old_type": "BIT(16)",
+          "new_type": "BIT(32)",
+          "algorithm": "INPLACE",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 4008728815)",
+            "t2": "('ddl_test.t_large_oracle', 3245979878)"
+          },
+          "ddl": {
+            "success": false,
+            "duration": 0.04,
+            "error": "(1846, 'ALGORITHM=INPLACE is not supported. Reason: Cannot change column type INPLACE. Try ALGORITHM=COPY.')",
+            "algorithm": "INPLACE"
+          },
+          "dml_ops": 1096,
+          "dml_errors": 96,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 228,
+              "errors": 33
+            },
+            "UPDATE": {
+              "ops": 97,
+              "errors": 18
+            },
+            "DELETE": {
+              "ops": 169,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 383,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 219,
+              "errors": 45
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 97.7,
+            "during_ddl_avg_qps": 104.0,
+            "post_ddl_avg_qps": 98.2,
+            "ddl_qps_drop_pct": -6.4,
+            "post_ddl_recovery_pct": 100.5,
+            "qps_samples": {
+              "pre_ddl": [
+                93.3,
+                102.0
+              ],
+              "during_ddl": [
+                104.0
+              ],
+              "post_ddl": [
+                98.9,
+                97.2,
+                98.4,
+                100.6,
+                95.3,
+                94.5,
+                100.2,
+                100.8
+              ]
+            }
+          },
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-BIT16-32-IT",
+          "category": "bit",
+          "old_type": "BIT(16)",
+          "new_type": "BIT(32)",
+          "algorithm": "INSTANT",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 2457122331)",
+            "t2": "('ddl_test.t_large_oracle', 3002133252)"
+          },
+          "ddl": {
+            "success": false,
+            "duration": 0.03,
+            "error": "(1846, 'ALGORITHM=INSTANT is not supported. Reason: Need to rebuild the table to change column type. Try ALGORITHM=COPY/INPLACE.')",
+            "algorithm": "INSTANT"
+          },
+          "dml_ops": 909,
+          "dml_errors": 107,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 206,
+              "errors": 42
+            },
+            "UPDATE": {
+              "ops": 98,
+              "errors": 17
+            },
+            "DELETE": {
+              "ops": 133,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 262,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 210,
+              "errors": 48
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 79.6,
+            "during_ddl_avg_qps": 84.8,
+            "post_ddl_avg_qps": 82.0,
+            "ddl_qps_drop_pct": -6.5,
+            "post_ddl_recovery_pct": 103.0,
+            "qps_samples": {
+              "pre_ddl": [
+                67.5,
+                91.7
+              ],
+              "during_ddl": [
+                84.8
+              ],
+              "post_ddl": [
+                89.3,
+                81.9,
+                86.8,
+                77.5,
+                83.3,
+                85.8,
+                82.0,
+                69.5
+              ]
+            }
+          },
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-BIT32-64-IP",
+          "category": "bit",
+          "old_type": "BIT(32)",
+          "new_type": "BIT(64)",
+          "algorithm": "INPLACE",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 3245979878)",
+            "t2": "('ddl_test.t_large_oracle', 3376796811)"
+          },
+          "ddl": {
+            "success": false,
+            "duration": 0.04,
+            "error": "(1846, 'ALGORITHM=INPLACE is not supported. Reason: Cannot change column type INPLACE. Try ALGORITHM=COPY.')",
+            "algorithm": "INPLACE"
+          },
+          "dml_ops": 1095,
+          "dml_errors": 82,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 224,
+              "errors": 28
+            },
+            "UPDATE": {
+              "ops": 96,
+              "errors": 17
+            },
+            "DELETE": {
+              "ops": 160,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 381,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 234,
+              "errors": 37
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 92.3,
+            "during_ddl_avg_qps": 102.0,
+            "post_ddl_avg_qps": 99.7,
+            "ddl_qps_drop_pct": -10.5,
+            "post_ddl_recovery_pct": 108.0,
+            "qps_samples": {
+              "pre_ddl": [
+                78.4,
+                106.3
+              ],
+              "during_ddl": [
+                102.0
+              ],
+              "post_ddl": [
+                101.4,
+                99.8,
+                98.0,
+                100.3,
+                97.1,
+                102.0,
+                99.2,
+                99.8
+              ]
+            }
+          },
+          "verification": "PASS"
+        },
+        {
+          "test_id": "LT-BIT32-64-IT",
+          "category": "bit",
+          "old_type": "BIT(32)",
+          "new_type": "BIT(64)",
+          "algorithm": "INSTANT",
+          "target_rows": 100000,
+          "row_count": 100000,
+          "checksum_pre": {
+            "t1": "('ddl_test.t_large', 3002133252)",
+            "t2": "('ddl_test.t_large_oracle', 3528667133)"
+          },
+          "ddl": {
+            "success": false,
+            "duration": 0.04,
+            "error": "(1846, 'ALGORITHM=INSTANT is not supported. Reason: Need to rebuild the table to change column type. Try ALGORITHM=COPY/INPLACE.')",
+            "algorithm": "INSTANT"
+          },
+          "dml_ops": 999,
+          "dml_errors": 77,
+          "dml_breakdown": {
+            "INSERT": {
+              "ops": 223,
+              "errors": 33
+            },
+            "UPDATE": {
+              "ops": 98,
+              "errors": 14
+            },
+            "DELETE": {
+              "ops": 168,
+              "errors": 0
+            },
+            "SELECT": {
+              "ops": 307,
+              "errors": 0
+            },
+            "UPSERT": {
+              "ops": 203,
+              "errors": 30
+            }
+          },
+          "qps_summary": {
+            "pre_ddl_avg_qps": 87.5,
+            "during_ddl_avg_qps": 98.1,
+            "post_ddl_avg_qps": 89.6,
+            "ddl_qps_drop_pct": -12.1,
+            "post_ddl_recovery_pct": 102.4,
+            "qps_samples": {
+              "pre_ddl": [
+                82.4,
+                92.5
+              ],
+              "during_ddl": [
+                98.1
+              ],
+              "post_ddl": [
+                88.3,
+                92.4,
+                90.7,
+                89.9,
+                88.9,
+                91.7,
+                89.2,
+                85.8
+              ]
+            }
+          },
+          "verification": "PASS"
+        }
+      ]
+    }
+  ]
+]
