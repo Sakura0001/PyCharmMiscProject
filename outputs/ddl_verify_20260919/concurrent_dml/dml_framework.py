@@ -26,6 +26,94 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(threadName)s] %(m
 logger = logging.getLogger(__name__)
 
 
+
+class QPSSampler:
+    """时间窗口化QPS采集器：每秒采样DML ops，区分 pre-DDL / during-DDL / post-DDL"""
+    def __init__(self):
+        self._samples = []
+        self._phase = 'idle'
+        self._last_ops = 0
+        self._last_errors = 0
+        self._last_ts = None
+        self._lock = threading.Lock()
+
+    def start(self):
+        self._last_ts = time.time()
+        self._phase = 'pre_ddl'
+
+    def set_phase(self, phase):
+        """切换阶段: 'pre_ddl' / 'during_ddl' / 'post_ddl'"""
+        self._phase = phase
+
+    def sample(self, current_ops, current_errors):
+        """采样一次，计算最近一个interval的QPS"""
+        with self._lock:
+            now = time.time()
+            if self._last_ts is None:
+                self._last_ts = now
+                self._last_ops = current_ops
+                self._last_errors = current_errors
+                return
+            elapsed = now - self._last_ts
+            if elapsed >= 0.5:  # 采样间隔≥0.5s
+                qps = (current_ops - self._last_ops) / elapsed if elapsed > 0 else 0
+                eps = (current_errors - self._last_errors) / elapsed if elapsed > 0 else 0
+                self._samples.append({
+                    'ts': round(now - (self._samples[0]['ts'] if self._samples else now), 3),
+                    'phase': self._phase,
+                    'qps': round(qps, 1),
+                    'errors_per_sec': round(eps, 2),
+                    'total_ops': current_ops,
+                    'total_errors': current_errors,
+                })
+                self._last_ops = current_ops
+                self._last_errors = current_errors
+                self._last_ts = now
+
+    def get_summary(self):
+        """返回QPS摘要统计"""
+        if not self._samples:
+            return {'qps_curve': [], 'qps_summary': {}}
+        
+        phases = {}
+        for s in self._samples:
+            p = s['phase']
+            if p not in phases:
+                phases[p] = []
+            phases[p].append(s['qps'])
+        
+        def avg(lst):
+            return round(sum(lst) / len(lst), 1) if lst else 0
+        
+        summary = {}
+        for phase, qps_list in phases.items():
+            summary[f'{phase}_avg_qps'] = avg(qps_list)
+            summary[f'{phase}_max_qps'] = max(qps_list) if qps_list else 0
+            summary[f'{phase}_min_qps'] = min(qps_list) if qps_list else 0
+            summary[f'{phase}_samples'] = len(qps_list)
+        
+        # 计算QPS下降比例
+        baseline = summary.get('pre_ddl_avg_qps', 0)
+        during = summary.get('during_ddl_avg_qps', 0)
+        if baseline > 0:
+            summary['ddl_qps_drop_pct'] = round((1 - during / baseline) * 100, 1)
+        else:
+            summary['ddl_qps_drop_pct'] = 0 if during == 0 else 100
+        
+        # 恢复QPS
+        post = summary.get('post_ddl_avg_qps', 0)
+        if baseline > 0:
+            summary['post_ddl_recovery_pct'] = round(post / baseline * 100, 1)
+        else:
+            summary['post_ddl_recovery_pct'] = 0
+        
+        return {
+            'qps_curve': self._samples,
+            'qps_summary': summary,
+        }
+
+
+
 class DualWriteOracle:
     """Dual-Write Oracle 并发DML验证"""
 
@@ -61,6 +149,7 @@ class DualWriteOracle:
             'verification': None,
             'mismatches': [],
             'errors': [],
+            'qps_data': None,
         }
 
         self.data_type_info = data_type_info or {}
@@ -73,6 +162,9 @@ class DualWriteOracle:
         # Track all PKs inserted for UPDATE/DELETE targeting
         self._pk_list = []
         self._pk_lock = threading.Lock()
+        # QPS采样器
+        self._qps_sampler = QPSSampler()
+        self._qps_thread = None
 
     def _get_conn(self, retries=3, delay=5):
         for attempt in range(retries):
@@ -265,6 +357,10 @@ class DualWriteOracle:
                 self._dml_ops[worker_id] += 1
                 op_count += 1
 
+                # QPS采样 (每~0.5s)
+                if worker_id == 0:
+                    self._qps_sampler.sample(sum(self._dml_ops), sum(self._dml_errors))
+
                 # Track new PKs for UPDATE/DELETE targeting
                 if op_type in ('INSERT', 'UPSERT') and r1[0]:
                     with self._pk_lock:
@@ -353,6 +449,7 @@ class DualWriteOracle:
 
     def run_ddl(self):
         """执行 DDL ALTER"""
+        self._qps_sampler.set_phase('during_ddl')
         conn = self._get_conn()
         try:
             t0 = time.time()
@@ -375,6 +472,7 @@ class DualWriteOracle:
         finally:
             conn.close()
             self._ddl_done.set()
+            self._qps_sampler.set_phase('post_ddl')
 
     def run_post_ddl_inserts(self):
         """DDL后插入新范围数据，然后将t1完全同步到t2"""
@@ -497,6 +595,9 @@ class DualWriteOracle:
             self.results['verification'] = 'SETUP_FAILED'
             return self.results
 
+        # 启动QPS采样器
+        self._qps_sampler.start()
+
         # 启动 DML 线程
         logger.info(f'[{self.test_id}] Starting {self.num_workers} DML workers...')
         op_types = ['INSERT', 'UPDATE', 'DELETE', 'SELECT', 'UPSERT']
@@ -540,6 +641,10 @@ class DualWriteOracle:
         # 验证
         logger.info(f'[{self.test_id}] Verifying...')
         self.verify()
+
+        # 采集QPS数据
+        self._qps_sampler.sample(sum(self._dml_ops), sum(self._dml_errors))
+        self.results['qps_data'] = self._qps_sampler.get_summary()
 
         # 清理
         try:

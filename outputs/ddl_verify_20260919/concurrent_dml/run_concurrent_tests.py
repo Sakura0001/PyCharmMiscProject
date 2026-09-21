@@ -1556,6 +1556,33 @@ def run_large_table_test():
         ddl_done = threading.Event()
         dml_stats = {'ops': [0]*5, 'errors': [0]*5, 'lock': threading.Lock()}
         dml_types = ['INSERT', 'UPDATE', 'DELETE', 'SELECT', 'UPSERT']
+        # QPS采样
+        qps_samples = {'pre_ddl': [], 'during_ddl': [], 'post_ddl': []}
+        qps_last_ops = [0]
+        qps_last_ts = [time.time()]
+        qps_phase = ['pre_ddl']
+        
+        def sample_qps():
+            with dml_stats['lock']:
+                cur_ops = sum(dml_stats['ops'])
+                cur_errs = sum(dml_stats['errors'])
+            now = time.time()
+            elapsed = now - qps_last_ts[0]
+            if elapsed >= 1.0:
+                qps = (cur_ops - qps_last_ops[0]) / elapsed
+                qps_samples[qps_phase[0]].append(round(qps, 1))
+                qps_last_ops[0] = cur_ops
+                qps_last_ts[0] = now
+        
+        import threading as _threading
+        qps_stop = _threading.Event()
+        def qps_sampler_thread():
+            while not qps_stop.is_set():
+                sample_qps()
+                time.sleep(1.0)
+            sample_qps()  # final sample
+        qps_thread = _threading.Thread(target=qps_sampler_thread, daemon=True, name='QPS-Sampler')
+        qps_thread.start()
         
         def dml_worker(worker_id):
             w_conn = get_conn()
@@ -1638,6 +1665,8 @@ def run_large_table_test():
             threads.append(t)
         
         time.sleep(3)
+        qps_phase[0] = 'during_ddl'
+        sample_qps()  # capture pre-ddl final sample
         
         logger.info(f'Firing INPLACE ALTER on {row_count} row table...')
         t0 = time.time()
@@ -1646,18 +1675,39 @@ def run_large_table_test():
         ddl_duration = round(t1-t0, 2)
         results['ddl'] = {'success': ok, 'duration': ddl_duration, 'error': err}
         ddl_done.set()
+        qps_phase[0] = 'post_ddl'
+        sample_qps()  # capture during-ddl final sample
         logger.info(f'DDL completed in {ddl_duration}s')
         
         time.sleep(10)
         stop_event.set()
+        qps_stop.set()
         for t in threads:
             t.join(timeout=10)
+        qps_thread.join(timeout=5)
         
         total_ops = sum(dml_stats['ops'])
         total_errors = sum(dml_stats['errors'])
         results['dml_ops'] = total_ops
         results['dml_errors'] = total_errors
         results['dml_breakdown'] = {dml_types[i]: {'ops': dml_stats['ops'][i], 'errors': dml_stats['errors'][i]} for i in range(num_workers)}
+        
+        # QPS分析
+        def avg_qps(lst):
+            return round(sum(lst)/len(lst), 1) if lst else 0
+        pre_qps = avg_qps(qps_samples['pre_ddl'])
+        during_qps = avg_qps(qps_samples['during_ddl'])
+        post_qps = avg_qps(qps_samples['post_ddl'])
+        drop_pct = round((1 - during_qps/pre_qps) * 100, 1) if pre_qps > 0 else 0
+        recovery_pct = round(post_qps/pre_qps * 100, 1) if pre_qps > 0 else 0
+        results['qps_summary'] = {
+            'pre_ddl_avg_qps': pre_qps,
+            'during_ddl_avg_qps': during_qps,
+            'post_ddl_avg_qps': post_qps,
+            'ddl_qps_drop_pct': drop_pct,
+            'post_ddl_recovery_pct': recovery_pct,
+            'qps_samples': qps_samples,
+        }
         
         if ok:
             cur.execute('CHECKSUM TABLE t_large')
@@ -1856,7 +1906,7 @@ def main():
     csv_path = os.path.join(RESULTS_DIR, 'concurrent_summary.csv')
     with open(csv_path, 'w', newline='') as f:
         writer = csv.writer(f)
-        writer.writerow(['test_id', 'algorithm', 'expected', 'actual', 'verification', 'ddl_duration', 'dml_ops', 'dml_errors', 'details'])
+        writer.writerow(['test_id', 'algorithm', 'expected', 'actual', 'verification', 'ddl_duration', 'dml_ops', 'dml_errors', 'pre_ddl_qps', 'during_ddl_qps', 'ddl_qps_drop_pct', 'details'])
         for test_id, result in all_results:
             if isinstance(result, dict):
                 algo = result.get('algorithm', '')
@@ -1866,8 +1916,12 @@ def main():
                 dur = result.get('ddl_duration_s', result.get('ddl', {}).get('duration', '') if isinstance(result.get('ddl'), dict) else '')
                 ops = result.get('dml_ops', '')
                 errs = result.get('dml_errors', '')
-                details = json.dumps({k: v for k, v in result.items() if k not in ['mismatch_log', 'errors']}, default=str)[:500]
-                writer.writerow([test_id, algo, expected, actual, verif, dur, ops, errs, details])
+                qps = result.get('qps_data', {}).get('qps_summary', {}) if isinstance(result.get('qps_data'), dict) else {}
+                pre_qps = qps.get('pre_ddl_avg_qps', '')
+                during_qps = qps.get('during_ddl_avg_qps', '')
+                drop_pct = qps.get('ddl_qps_drop_pct', '')
+                details = json.dumps({k: v for k, v in result.items() if k not in ['mismatch_log', 'errors', 'qps_data']}, default=str)[:500]
+                writer.writerow([test_id, algo, expected, actual, verif, dur, ops, errs, pre_qps, during_qps, drop_pct, details])
             else:
                 writer.writerow([test_id, '', '', '', str(result)[:500], '', '', '', ''])
     
