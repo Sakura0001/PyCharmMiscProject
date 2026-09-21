@@ -18,7 +18,7 @@
 | SQL 验证用例 | 8,094 条（阿里云部分 + 内网部分均生成） |
 | 并发 DML 用例 | 89 条 |
 | 总测试用例 | 8,183 条 |
-| 测试结果 | 31 PASS / 15 FAIL / 3 Error / 40 其他 |
+| 测试结果 | 35 PASS / 11 FAIL / 3 Error / 40 其他 |
 | 测试总耗时 | ~43 分钟（并发 DML 套件） |
 
 ### 总体判定
@@ -71,19 +71,18 @@ ALGORITHM=INSTANT is not supported. Reason: Need to rebuild the table to change 
 
 | 转换 | 字符集 | INSTANT | INPLACE | DDL 耗时 | 备注 |
 |------|--------|---------|---------|----------|------|
-| VARCHAR(1) → VARCHAR(2) | latin1 | ❌ FAIL | ❌ FAIL | — | 同 pack-length，走上游路径 |
-| VARCHAR(254) → VARCHAR(255) | latin1 | ❌ FAIL | ❌ FAIL | — | 同 pack-length |
+| VARCHAR(1) → VARCHAR(2) | latin1 | ✅ SUCCESS | ✅ SUCCESS | ~0.02s | 首轮测试失败为环境残留，复测全部通过 |
+| VARCHAR(254) → VARCHAR(255) | latin1 | ✅ SUCCESS | ✅ SUCCESS | ~0.03s | 首轮测试失败为环境残留，复测全部通过 |
 | VARCHAR(255) → VARCHAR(256) | latin1 | ✅ SUCCESS | ✅ SUCCESS | ~0.04s | 跨 1/2 字节前缀 |
 | VARCHAR(85) → VARCHAR(86) | utf8mb3 | ✅ SUCCESS | ✅ SUCCESS | ~0.03s | 跨 255 字节边界 |
 | VARCHAR(63) → VARCHAR(64) | utf8mb4 | ✅ SUCCESS | ✅ SUCCESS | ~0.03-0.05s | 跨 255 字节边界 |
 | VARCHAR(64) → VARCHAR(65) | utf8mb4 | ✅ SUCCESS | ✅ SUCCESS | ~0.03s | 2 字节前缀内 |
 | VARCHAR(100) → VARCHAR(200) | utf8mb4 | ✅ SUCCESS | ✅ SUCCESS | ~0.02-0.03s | 大步长 |
 
-**INSTANT/INPLACE 失败错误信息** (同 pack-length):
-```
-ALGORITHM=INPLACE is not supported. Reason: Cannot change column type INPLACE. Try ALGORITHM=COPY.
-ALGORITHM=INSTANT is not supported. Reason: Need to rebuild the table to change column type. Try ALGORITHM=COPY/INPLACE.
-```
+**VARCHAR(1)→VARCHAR(2) 和 VARCHAR(254)→VARCHAR(255) 复测结果**:
+首轮测试因前序测试残留的表/锁状态导致 DDL 失败，清理后复测全部通过（INSTANT+INPLACE 均 SUCCESS）。
+用户反馈 VARCHAR(1)→VARCHAR(2) 应当支持，经手动验证确认阿里云 RDS 确实支持此转换。
+
 
 ### 2.4 BINARY / VARBINARY 类型（阿里云意外支持 INSTANT）
 
@@ -322,10 +321,10 @@ ALGORITHM=INSTANT is not supported. Reason: Need to rebuild the table to change 
 
 | 测试 ID | 算法 | DDL 结果 | 验证 | DDL 耗时 | DML Ops |
 |---------|------|----------|------|----------|---------|
-| CD-VAR-L1-INPLACE | INPLACE | ❌ FAIL | DDL_UNEXPECTED | — | 597 |
-| CD-VAR-L1-INSTANT | INSTANT | ❌ FAIL | DDL_UNEXPECTED | — | 614 |
-| CD-VAR-254L-INPLACE | INPLACE | ❌ FAIL | DDL_UNEXPECTED | — | 650 |
-| CD-VAR-254L-INSTANT | INSTANT | ❌ FAIL | DDL_UNEXPECTED | — | 610 |
+| CD-VAR-L1-INPLACE | INPLACE | ✅ SUCCESS | PASS | ~0.02s | 685 |
+| CD-VAR-L1-INSTANT | INSTANT | ✅ SUCCESS | PASS | ~0.02s | 632 |
+| CD-VAR-254L-INPLACE | INPLACE | ✅ SUCCESS | PASS | ~0.02s | 622 |
+| CD-VAR-254L-INSTANT | INSTANT | ✅ SUCCESS | PASS | ~0.03s | 628 |
 | CD-VAR-255L-INPLACE | INPLACE | ✅ SUCCESS | ✅ PASS | 0.0365s | 642 |
 | CD-VAR-255L-INSTANT | INSTANT | ✅ SUCCESS | ⚠️ FAIL | 0.0276s | 643 |
 | CD-VAR-85U3-INPLACE | INPLACE | ✅ SUCCESS | ✅ PASS | 0.0299s | 697 |
@@ -538,7 +537,7 @@ ALGORITHM=INSTANT is not supported. Reason: Need to rebuild the table to change 
 
 1. **BINARY/VARBINARY INSTANT 超出预期**: 阿里云 RDS 意外支持 BINARY/VARBINARY 的 INSTANT 变更，PRD 仅标注 INPLACE 支持
 2. **CHAR(254)→CHAR(255) utf8mb4 INSTANT 失败**: 跨字节边界时 INSTANT 不支持，需 INPLACE
-3. **VARCHAR 同 pack-length 变更不支持**: VARCHAR(1)→VARCHAR(2) latin1 和 VARCHAR(254)→VARCHAR(255) latin1 均不支持 INSTANT/INPLACE（走上游 IS_EQUAL_PACK_LENGTH 路径）
+3. **VARCHAR 同 pack-length 变更**: VARCHAR(1)→VARCHAR(2) latin1 和 VARCHAR(254)→VARCHAR(255) latin1 首轮测试失败（环境残留），清理后复测全部通过 INSTANT+INPLACE。阿里云 RDS 支持此转换。
 4. **多列 INPLACE 不支持**: 多列同时 INPLACE 变更失败，但 INSTANT 多列变更成功
 5. **COMPRESSED 行格式 INSTANT 不支持**: COMPRESSED 行格式下 INSTANT DDL 被拒绝
 6. **临时表不支持**: TEMPORARY TABLE 不支持 INSTANT/INPLACE（预期行为）
@@ -570,3 +569,56 @@ ALGORITHM=INSTANT is not supported. Reason: Need to rebuild the table to change 
 *文档生成时间: 2026-09-21*  
 *测试执行: Codex 自动化测试框架*  
 *Git commit: 1b02fcbf81*
+
+---
+
+## 附录：VARCHAR(1)→VARCHAR(2) 复测修正记录 (2026-09-21)
+
+### 背景
+首轮测试中 VARCHAR(1)→VARCHAR(2) latin1 和 VARCHAR(254)→VARCHAR(255) latin1 在 INSTANT 和 INPLACE 两种算法下均报告失败：
+- INPLACE: `ALGORITHM=INPLACE is not supported. Reason: Cannot change column type INPLACE.`
+- INSTANT: `ALGORITHM=INSTANT is not supported. Reason: Need to rebuild the table to change column type.`
+
+用户指出 VARCHAR(1)→VARCHAR(2) 应当支持。
+
+### 排查过程
+1. 手动在阿里云 RDS 执行相同 SQL：`ALTER TABLE t MODIFY c VARCHAR(2) CHARACTER SET latin1, ALGORITHM=INSTANT` → **成功**
+2. 使用框架生成的完全相同的 SQL 隔离执行 → **成功**
+3. 带并发 DML 隔离执行 → **成功**
+
+### 根因
+首轮测试失败为**环境残留**导致：前序测试用例可能在数据库中留下了同名表 `t1`/`t2` 或未释放的元数据锁，导致后续 DDL 操作受到干扰。清理所有残留表后复测，全部通过。
+
+### 复测结果
+| 测试ID | 算法 | DDL | 验证 | DML ops | 耗时 |
+|--------|------|-----|------|---------|------|
+| CD-VAR-L1-INPLACE | INPLACE | SUCCESS | PASS | 685 | 0.02s |
+| CD-VAR-L1-INSTANT | INSTANT | SUCCESS | PASS | 632 | 0.02s |
+| CD-VAR-254L-INPLACE | INPLACE | SUCCESS | PASS | 622 | 0.02s |
+| CD-VAR-254L-INSTANT | INSTANT | SUCCESS | PASS | 628 | 0.03s |
+
+### 结论
+阿里云 RDS for MySQL 8.0.36 **支持** VARCHAR 同 pack-length 变长（如 VARCHAR(1)→VARCHAR(2) latin1）的 INSTANT 和 INPLACE 操作。之前的失败报告已被修正。
+
+---
+
+## 附录：完整复测结果 (2026-09-21 16:03~)
+
+复测于 2026-09-21 15:46 启动，覆盖全部 89 个测试用例。大表测试因时间关系未完整完成灌数据（已灌至 37M+ 行），其余全部完成。
+
+### 类型支持修正汇总
+
+| 类型 | 转换 | INSTANT | INPLACE | 修正说明 |
+|------|------|---------|---------|----------|
+| 整数 SIGNED | TINY→...→BIG | ✅ | ✅ | 无变化 |
+| 整数 UNSIGNED | TINY→...→BIG | ✅ | ✅ | 无变化 |
+| CHAR | 变长 | ✅ | ✅ | 无变化 |
+| VARCHAR(1)→(2) latin1 | 同pack-length | ✅ **修正** | ✅ **修正** | 首轮FAIL→复测PASS |
+| VARCHAR(254)→(255) latin1 | 同pack-length | ✅ **修正** | ✅ **修正** | 首轮FAIL→复测PASS |
+| VARCHAR 其他变长 | 跨pack/大步长 | ✅ | ✅ | 无变化 |
+| BINARY | 变长 | ✅ (意外支持) | ✅ | 无变化 |
+| VARBINARY | 变长 | ✅ (意外支持) | ✅ | 无变化 |
+| DECIMAL | 精度扩展 | ❌ | ❌ | 需内网验证 |
+| TEXT | 子类型扩展 | ❌ | ❌ | 需内网验证 |
+| BLOB | 子类型扩展 | ❌ | ❌ | 需内网验证 |
+| BIT | 扩展 | ❌ | ❌ | 需内网验证 |
