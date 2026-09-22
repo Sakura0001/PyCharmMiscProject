@@ -332,9 +332,13 @@ def gen_decimal_data(old_M, new_M, D=2, phase='pre'):
 
 # DECIMAL 9位编码边界转换
 DECIMAL_9BIT_TRANSITIONS = [
-    (9, 10, 2),   (18, 19, 2),   (27, 28, 2),
-    (36, 37, 2),  (45, 46, 2),   (54, 55, 2),
-    (1, 2, 0),    (1, 2, 1),     (64, 65, 30),  (31, 33, 30),
+    # 9-digit encoding boundary crossings (9 digits = 4 bytes internal storage)
+    (8, 9, 2),    (9, 10, 2),    (17, 18, 2),   (18, 19, 2),
+    (27, 28, 2),  (36, 37, 2),   (45, 46, 2),   (54, 55, 2),
+    (62, 63, 30), # 7th storage unit boundary with max D
+    # Min/max precision
+    (1, 2, 0),    (1, 2, 1),     (64, 65, 0),   (64, 65, 30),  (31, 33, 30),
+    # Typical
     (10, 12, 2),  (18, 20, 0),
 ]
 

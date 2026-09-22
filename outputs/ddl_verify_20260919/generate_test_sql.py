@@ -92,15 +92,20 @@ CHAR_VARCHAR_TRANSITIONS = [
     {"id": "VC-05", "category": "varchar", "old_type": "VARCHAR(63)",  "new_type": "VARCHAR(64)",  "charset": "utf8mb4", "old_max_len": 63,  "new_max_len": 64,  "instant": "SUCCESS", "inplace": "SUCCESS", "env": "aliyun"},
     {"id": "VC-06", "category": "varchar", "old_type": "VARCHAR(64)",  "new_type": "VARCHAR(65)",  "charset": "utf8mb4", "old_max_len": 64,  "new_max_len": 65,  "instant": "SUCCESS", "inplace": "SUCCESS", "env": "aliyun"},
     {"id": "VC-07", "category": "varchar", "old_type": "VARCHAR(100)", "new_type": "VARCHAR(200)", "charset": "utf8mb4", "old_max_len": 100, "new_max_len": 200, "instant": "SUCCESS", "inplace": "SUCCESS", "env": "aliyun"},
+    # VARCHAR upper limits — convert to MySQL maximum
+    {"id": "VC-08", "category": "varchar", "old_type": "VARCHAR(16382)", "new_type": "VARCHAR(16383)", "charset": "utf8mb4", "old_max_len": 16382, "new_max_len": 16383, "instant": "SUCCESS", "inplace": "SUCCESS", "env": "aliyun", "minimal_table": True},
+    {"id": "VC-09", "category": "varchar", "old_type": "VARCHAR(65528)", "new_type": "VARCHAR(65529)", "charset": "latin1", "old_max_len": 65528, "new_max_len": 65529, "instant": "SUCCESS", "inplace": "SUCCESS", "env": "aliyun", "minimal_table": True},
 ]
 
 INTERNAL_TRANSITIONS = [
     # BINARY
     {"id": "BIN-01", "category": "binary",    "old_type": "BINARY(10)",  "new_type": "BINARY(20)",  "charset": None, "old_max_len": 10,  "new_max_len": 20,  "instant": "SUCCESS", "inplace": "SUCCESS", "env": "internal"},
     {"id": "BIN-02", "category": "binary",    "old_type": "BINARY(40)",  "new_type": "BINARY(80)",  "charset": None, "old_max_len": 40,  "new_max_len": 80,  "instant": "SUCCESS", "inplace": "SUCCESS", "env": "internal"},
+    {"id": "BIN-03", "category": "binary",    "old_type": "BINARY(254)", "new_type": "BINARY(255)", "charset": None, "old_max_len": 254, "new_max_len": 255, "instant": "SUCCESS", "inplace": "SUCCESS", "env": "internal"},
     # VARBINARY
     {"id": "VBIN-01", "category": "varbinary", "old_type": "VARBINARY(20)",  "new_type": "VARBINARY(40)",  "charset": None, "old_max_len": 20,  "new_max_len": 40,  "instant": "SUCCESS", "inplace": "SUCCESS", "env": "internal"},
     {"id": "VBIN-02", "category": "varbinary", "old_type": "VARBINARY(100)", "new_type": "VARBINARY(200)", "charset": None, "old_max_len": 100, "new_max_len": 200, "instant": "SUCCESS", "inplace": "SUCCESS", "env": "internal"},
+    {"id": "VBIN-03", "category": "varbinary", "old_type": "VARBINARY(65528)", "new_type": "VARBINARY(65529)", "charset": None, "old_max_len": 65528, "new_max_len": 65529, "instant": "SUCCESS", "inplace": "SUCCESS", "env": "internal", "minimal_table": True},
     # DECIMAL
     {"id": "DEC-01", "category": "decimal", "old_type": "DECIMAL(10,2)",  "new_type": "DECIMAL(12,2)",  "charset": None, "instant": "SUCCESS", "inplace": "SUCCESS", "env": "internal"},
     {"id": "DEC-02", "category": "decimal", "old_type": "DECIMAL(1,0)",   "new_type": "DECIMAL(2,0)",   "charset": None, "instant": "SUCCESS", "inplace": "SUCCESS", "env": "internal"},
@@ -108,6 +113,13 @@ INTERNAL_TRANSITIONS = [
     {"id": "DEC-04", "category": "decimal", "old_type": "DECIMAL(64,30)", "new_type": "DECIMAL(65,30)", "charset": None, "instant": "SUCCESS", "inplace": "SUCCESS", "env": "internal"},
     {"id": "DEC-05", "category": "decimal", "old_type": "DECIMAL(18,0)",  "new_type": "DECIMAL(20,0)",  "charset": None, "instant": "SUCCESS", "inplace": "SUCCESS", "env": "internal"},
     {"id": "DEC-06", "category": "decimal", "old_type": "DECIMAL(31,30)", "new_type": "DECIMAL(33,30)", "charset": None, "instant": "SUCCESS", "inplace": "SUCCESS", "env": "internal"},
+    # DECIMAL upper limit (max M with D=0, integer DECIMAL)
+    {"id": "DEC-07", "category": "decimal", "old_type": "DECIMAL(64,0)", "new_type": "DECIMAL(65,0)", "charset": None, "instant": "SUCCESS", "inplace": "SUCCESS", "env": "internal"},
+    # DECIMAL 9-digit encoding boundary crossings (internal storage uses 9-digit groups in 4 bytes)
+    {"id": "DEC-08", "category": "decimal", "old_type": "DECIMAL(8,2)",  "new_type": "DECIMAL(9,2)",  "charset": None, "instant": "SUCCESS", "inplace": "SUCCESS", "env": "internal"},
+    {"id": "DEC-09", "category": "decimal", "old_type": "DECIMAL(9,2)",  "new_type": "DECIMAL(10,2)", "charset": None, "instant": "SUCCESS", "inplace": "SUCCESS", "env": "internal"},
+    {"id": "DEC-10", "category": "decimal", "old_type": "DECIMAL(17,2)", "new_type": "DECIMAL(18,2)", "charset": None, "instant": "SUCCESS", "inplace": "SUCCESS", "env": "internal"},
+    {"id": "DEC-11", "category": "decimal", "old_type": "DECIMAL(62,30)", "new_type": "DECIMAL(63,30)", "charset": None, "instant": "SUCCESS", "inplace": "SUCCESS", "env": "internal"},
     # TEXT
     {"id": "TEXT-01", "category": "text", "old_type": "TINYTEXT",   "new_type": "TEXT",       "charset": "utf8mb4", "old_max_len": 255,     "new_max_len": 65535,     "instant": "SUCCESS", "inplace": "SUCCESS", "env": "internal"},
     {"id": "TEXT-02", "category": "text", "old_type": "TEXT",       "new_type": "MEDIUMTEXT", "charset": "utf8mb4", "old_max_len": 65535,   "new_max_len": 16777215,  "instant": "SUCCESS", "inplace": "SUCCESS", "env": "internal"},
@@ -646,7 +658,19 @@ def _build_create_table(table: str, target_type: str, factors: dict, transition:
     cols = []
     target_col_def = _build_column_def(target_type, factors, transition)
 
-    if pos == "FIRST":
+    # Minimal table for very large types (VARCHAR(65528+), VARBINARY(65528+))
+    # that exceed row size limit with pad columns
+    minimal_table = transition.get("minimal_table", False)
+
+    if minimal_table:
+        # Only id + target column, no pad columns (row size limit)
+        if pos == "FIRST":
+            cols.append(f"  target {target_col_def}")
+            cols.append("  id INT NOT NULL AUTO_INCREMENT")
+        else:
+            cols.append("  id INT NOT NULL AUTO_INCREMENT")
+            cols.append(f"  target {target_col_def}")
+    elif pos == "FIRST":
         cols.append(f"  target {target_col_def}")
         cols.append("  id INT NOT NULL AUTO_INCREMENT")
         cols.append("  pad1 VARCHAR(20) DEFAULT 'pad1'")
@@ -666,25 +690,29 @@ def _build_create_table(table: str, target_type: str, factors: dict, transition:
         cols.extend(extra_cols)
 
     # Primary key
-    if pk_type == "CLUSTERED":
+    if pk_type == "CLUSTERED" or minimal_table:
         pk_clause = ", PRIMARY KEY (id)"
     elif pk_type == "COMPOSITE_PK":
-        pk_clause = ", PRIMARY KEY (id, target)"
+        if minimal_table:
+            pk_clause = ", PRIMARY KEY (id)"
+        else:
+            pk_clause = ", PRIMARY KEY (id, target)"
     elif pk_type == "NO_EXPLICIT_PK":
         pk_clause = ", INDEX idx_id (id)"  # AUTO_INCREMENT needs an index
     else:
         pk_clause = ", PRIMARY KEY (id)"
 
-    # Non-target indexes
+    # Non-target indexes (skip for minimal_table since no pad columns)
     idx_clauses = ""
-    if idx_type == "ONE_SECONDARY":
-        idx_clauses = ", INDEX idx_pad1 (pad1)"
-    elif idx_type == "MULTIPLE_SECONDARY":
-        idx_clauses = ", INDEX idx_pad1 (pad1), INDEX idx_pad2 (pad2)"
-    elif idx_type == "UNIQUE":
-        idx_clauses = ", UNIQUE INDEX uq_pad1 (pad1)"
-    elif idx_type == "COMPOSITE_PREFIX":
-        idx_clauses = ", INDEX idx_composite (pad1(10), pad2(10))"
+    if not minimal_table:
+        if idx_type == "ONE_SECONDARY":
+            idx_clauses = ", INDEX idx_pad1 (pad1)"
+        elif idx_type == "MULTIPLE_SECONDARY":
+            idx_clauses = ", INDEX idx_pad1 (pad1), INDEX idx_pad2 (pad2)"
+        elif idx_type == "UNIQUE":
+            idx_clauses = ", UNIQUE INDEX uq_pad1 (pad1)"
+        elif idx_type == "COMPOSITE_PREFIX":
+            idx_clauses = ", INDEX idx_composite (pad1(10), pad2(10))"
 
     # Index on target (for INPLACE dependencies)
     dep = factors.get("dependencies", "NONE")
@@ -914,8 +942,8 @@ def _build_test_case_sql(test_id: str, transition: dict, algorithm: str, factors
     for v in all_vals:
         lines.append(_build_insert_stmt(t2, "target", v))
 
-    # Step 8: Compare
-    compare_cols = ["id", "pad1", "target", "pad2"]
+    # Step 8: Compare — use minimal columns for minimal_table types
+    compare_cols = ["id", "target"] if transition.get("minimal_table") else ["id", "pad1", "target", "pad2"]
     lines.append(_build_compare_sql(test_id, t1, t2, compare_cols))
 
     return "\n".join(lines)
@@ -1158,7 +1186,8 @@ def _build_partition_test(test_id: str, transition: dict, algorithm: str,
         for v in all_vals:
             lines.append(_build_insert_stmt(t2, "target", v))
 
-        lines.append(_build_compare_sql(test_id, t1, t2, ["id", "pad1", "target", "pad2"]))
+        _cmp_cols = ["id", "target"] if transition.get("minimal_table") else ["id", "pad1", "target", "pad2"]
+        lines.append(_build_compare_sql(test_id, t1, t2, _cmp_cols))
         return "\n".join(lines)
 
 

@@ -2,3 +2,13 @@ __pycache__/
 *.pyc
 config.ini
 results/
+
+# Large SQL files (compressed versions tracked instead)
+sql_aliyun/07_varchar_instant.sql
+sql_aliyun/08_varchar_inplace.sql
+sql_aliyun/12_partition_64.sql
+sql_internal/17_varbinary_inplace.sql
+sql_internal/18_varbinary_instant.sql
+sql_internal/21_text_instant.sql
+sql_internal/22_text_inplace.sql
+sql_internal/29_partition_64_enhanced.sql

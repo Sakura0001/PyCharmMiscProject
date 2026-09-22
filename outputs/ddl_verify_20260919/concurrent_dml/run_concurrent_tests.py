@@ -93,6 +93,9 @@ ALIYUN_TYPES = [
     ('VAR-85U3', 'varchar', 'VARCHAR(85)', 'VARCHAR(86)', 'utf8mb3', None, 85, 86, None),
     ('VAR-63U4', 'varchar', 'VARCHAR(63)', 'VARCHAR(64)', 'utf8mb4', None, 63, 64, None),
     ('VAR-100U4', 'varchar', 'VARCHAR(100)', 'VARCHAR(200)', 'utf8mb4', None, 100, 200, None),
+    # VARCHAR upper limits
+    ('VAR-16382U4', 'varchar', 'VARCHAR(16382)', 'VARCHAR(16383)', 'utf8mb4', None, 16382, 16383, None),
+    ('VAR-65528L', 'varchar', 'VARCHAR(65528)', 'VARCHAR(65529)', 'latin1', None, 65528, 65529, None),
 ]
 
 # TEXT/BLOB/BIT/BINARY/VARBINARY/DECIMAL — 生成SQL但部分在阿里云上可能不支持INPLACE
@@ -117,6 +120,17 @@ ENHANCED_TYPES = [
     ('BIT-8to16', 'bit', 'BIT(8)', 'BIT(16)', None, None, 8, 16, None),
     ('BIT-16to32', 'bit', 'BIT(16)', 'BIT(32)', None, None, 16, 32, None),
     ('BIT-32to64', 'bit', 'BIT(32)', 'BIT(64)', None, None, 32, 64, None),
+    # BINARY upper limit
+    ('BIN-254', 'binary', 'BINARY(254)', 'BINARY(255)', 'binary', None, 254, 255, None),
+    # VARBINARY upper limit
+    ('VBIN-65528', 'varbinary', 'VARBINARY(65528)', 'VARBINARY(65529)', 'binary', None, 65528, 65529, None),
+    # DECIMAL upper limit (max M, D=0)
+    ('DEC-640-650', 'decimal', 'DECIMAL(64,0)', 'DECIMAL(65,0)', None, None, 64, 65, 0),
+    # DECIMAL 9-digit encoding boundary crossings
+    ('DEC-82-92', 'decimal', 'DECIMAL(8,2)', 'DECIMAL(9,2)', None, None, 8, 9, 2),
+    ('DEC-92-102', 'decimal', 'DECIMAL(9,2)', 'DECIMAL(10,2)', None, None, 9, 10, 2),
+    ('DEC-172-182', 'decimal', 'DECIMAL(17,2)', 'DECIMAL(18,2)', None, None, 17, 18, 2),
+    ('DEC-6230-6330', 'decimal', 'DECIMAL(62,30)', 'DECIMAL(63,30)', None, None, 62, 63, 30),
 ]
 
 
@@ -1733,16 +1747,27 @@ LARGE_TABLE_TYPES = [
     ('VAR63-64U4-IT', 'varchar', 'VARCHAR(63)', 'VARCHAR(64)', 'utf8mb4', None, 'INSTANT', True, 1_000_000),
     ('VAR100-200-IP', 'varchar', 'VARCHAR(100)', 'VARCHAR(200)', 'utf8mb4', None, 'INPLACE', True, 1_000_000),
     ('VAR100-200-IT', 'varchar', 'VARCHAR(100)', 'VARCHAR(200)', 'utf8mb4', None, 'INSTANT', True, 1_000_000),
+    # VARCHAR upper limits (reduced row count due to large row size)
+    ('VAR16382-16383U4-IP', 'varchar', 'VARCHAR(16382)', 'VARCHAR(16383)', 'utf8mb4', None, 'INPLACE', True, 50_000),
+    ('VAR16382-16383U4-IT', 'varchar', 'VARCHAR(16382)', 'VARCHAR(16383)', 'utf8mb4', None, 'INSTANT', True, 50_000),
+    ('VAR65528-65529L-IP', 'varchar', 'VARCHAR(65528)', 'VARCHAR(65529)', 'latin1', None, 'INPLACE', True, 50_000),
+    ('VAR65528-65529L-IT', 'varchar', 'VARCHAR(65528)', 'VARCHAR(65529)', 'latin1', None, 'INSTANT', True, 50_000),
     # === BINARY === (Aliyun: INPLACE=OK, INSTANT=OK)
     ('BIN10-20-IP', 'binary', 'BINARY(10)', 'BINARY(20)', 'binary', None, 'INPLACE', True, 1_000_000),
     ('BIN10-20-IT', 'binary', 'BINARY(10)', 'BINARY(20)', 'binary', None, 'INSTANT', True, 1_000_000),
     ('BIN40-80-IP', 'binary', 'BINARY(40)', 'BINARY(80)', 'binary', None, 'INPLACE', True, 500_000),
     ('BIN40-80-IT', 'binary', 'BINARY(40)', 'BINARY(80)', 'binary', None, 'INSTANT', True, 500_000),
+    # BINARY upper limit
+    ('BIN254-255-IP', 'binary', 'BINARY(254)', 'BINARY(255)', 'binary', None, 'INPLACE', True, 500_000),
+    ('BIN254-255-IT', 'binary', 'BINARY(254)', 'BINARY(255)', 'binary', None, 'INSTANT', True, 500_000),
     # === VARBINARY === (Aliyun: INPLACE=OK, INSTANT=OK)
     ('VBIN20-40-IP', 'varbinary', 'VARBINARY(20)', 'VARBINARY(40)', 'binary', None, 'INPLACE', True, 1_000_000),
     ('VBIN20-40-IT', 'varbinary', 'VARBINARY(20)', 'VARBINARY(40)', 'binary', None, 'INSTANT', True, 1_000_000),
     ('VBIN100-200-IP', 'varbinary', 'VARBINARY(100)', 'VARBINARY(200)', 'binary', None, 'INPLACE', True, 500_000),
     ('VBIN100-200-IT', 'varbinary', 'VARBINARY(100)', 'VARBINARY(200)', 'binary', None, 'INSTANT', True, 500_000),
+    # VARBINARY upper limit (reduced row count due to large row size)
+    ('VBIN65528-65529-IP', 'varbinary', 'VARBINARY(65528)', 'VARBINARY(65529)', 'binary', None, 'INPLACE', True, 50_000),
+    ('VBIN65528-65529-IT', 'varbinary', 'VARBINARY(65528)', 'VARBINARY(65529)', 'binary', None, 'INSTANT', True, 50_000),
     # === DECIMAL === (Aliyun: NOT supported; Internal: both OK)
     ('DEC10-12-IP', 'decimal', 'DECIMAL(10,2)', 'DECIMAL(12,2)', None, None, 'INPLACE', False, 200_000),
     ('DEC10-12-IT', 'decimal', 'DECIMAL(10,2)', 'DECIMAL(12,2)', None, None, 'INSTANT', False, 200_000),
@@ -1756,6 +1781,16 @@ LARGE_TABLE_TYPES = [
     ('DEC6430-6530-IT', 'decimal', 'DECIMAL(64,30)', 'DECIMAL(65,30)', None, None, 'INSTANT', False, 200_000),
     ('DEC3130-3330-IP', 'decimal', 'DECIMAL(31,30)', 'DECIMAL(33,30)', None, None, 'INPLACE', False, 200_000),
     ('DEC3130-3330-IT', 'decimal', 'DECIMAL(31,30)', 'DECIMAL(33,30)', None, None, 'INSTANT', False, 200_000),
+    # DECIMAL upper limit (max M, D=0)
+    ('DEC640-650-IP', 'decimal', 'DECIMAL(64,0)', 'DECIMAL(65,0)', None, None, 'INPLACE', False, 200_000),
+    ('DEC640-650-IT', 'decimal', 'DECIMAL(64,0)', 'DECIMAL(65,0)', None, None, 'INSTANT', False, 200_000),
+    # DECIMAL 9-digit boundary crossings
+    ('DEC82-92-IP', 'decimal', 'DECIMAL(8,2)', 'DECIMAL(9,2)', None, None, 'INPLACE', False, 200_000),
+    ('DEC82-92-IT', 'decimal', 'DECIMAL(8,2)', 'DECIMAL(9,2)', None, None, 'INSTANT', False, 200_000),
+    ('DEC172-182-IP', 'decimal', 'DECIMAL(17,2)', 'DECIMAL(18,2)', None, None, 'INPLACE', False, 200_000),
+    ('DEC172-182-IT', 'decimal', 'DECIMAL(17,2)', 'DECIMAL(18,2)', None, None, 'INSTANT', False, 200_000),
+    ('DEC6230-6330-IP', 'decimal', 'DECIMAL(62,30)', 'DECIMAL(63,30)', None, None, 'INPLACE', False, 200_000),
+    ('DEC6230-6330-IT', 'decimal', 'DECIMAL(62,30)', 'DECIMAL(63,30)', None, None, 'INSTANT', False, 200_000),
     # === TEXT === (Aliyun: NOT supported; Internal: both OK)
     ('TEXT-T-IP', 'text', 'TINYTEXT', 'TEXT', 'utf8mb4', None, 'INPLACE', False, 200_000),
     ('TEXT-T-IT', 'text', 'TINYTEXT', 'TEXT', 'utf8mb4', None, 'INSTANT', False, 200_000),
