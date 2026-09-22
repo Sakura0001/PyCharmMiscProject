@@ -435,9 +435,16 @@ def _gen_decimal_data(t: dict) -> dict:
     new_max = "9" * new_int_digits + ("." + "9" * new_D if new_D > 0 else "")
     new_min = "-" + new_max
 
-    pre = [old_min, old_max, "0" + ("." + "0" * old_D if old_D > 0 else ""),
-           "1" + ("." + "1" * old_D if old_D > 0 else ""),
-           "-1" + ("." + "1" * old_D if old_D > 0 else "")]
+    # When int_digits=0 (e.g. DECIMAL(1,1)), "1.x" exceeds range — use 0.x values instead
+    if old_int_digits > 0:
+        pre = [old_min, old_max, "0" + ("." + "0" * old_D if old_D > 0 else ""),
+               "1" + ("." + "1" * old_D if old_D > 0 else ""),
+               "-1" + ("." + "1" * old_D if old_D > 0 else "")]
+    else:
+        # int_digits=0: use small fractional values within range
+        pre = [old_min, old_max, "0" + ("." + "0" * old_D if old_D > 0 else ""),
+               "0" + ("." + "1" * old_D if old_D > 0 else ""),
+               "-0" + ("." + "1" * old_D if old_D > 0 else "")]
 
     post_new = [new_max, new_min]
     if old_D > 0:

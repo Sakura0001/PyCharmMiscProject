@@ -221,58 +221,112 @@ def gen_binary_data(old_len, new_len, phase='pre'):
 # ============================================================
 def gen_decimal_data(old_M, new_M, D=2, phase='pre'):
     """生成 DECIMAL 测试数据，覆盖9位编码边界"""
+    from decimal import Decimal, getcontext
+    # Set precision high enough for max DECIMAL(65) = 65 digits
+    getcontext().prec = 100
     data = []
     
+    def decimal_max_str(M, D):
+        """String representation of max value to avoid float precision loss"""
+        int_digits = M - D
+        if D == 0:
+            return "9" * int_digits
+        else:
+            return "9" * int_digits + "." + "9" * D
+    
+    def decimal_min_str(M, D):
+        return "-" + decimal_max_str(M, D)
+    
     def decimal_max(M, D):
-        return float(10 ** (M - D) - 1) if D == 0 else float(f"{'9'*(M-D)}.{'9'*D}")
+        return float(decimal_max_str(M, D))
     
     def decimal_min(M, D):
         return -decimal_max(M, D)
     
-    old_max = decimal_max(old_M, D)
-    old_min = decimal_min(old_M, D)
-    new_max = decimal_max(new_M, D)
-    new_min = decimal_min(new_M, D)
+    def decimal_step(D):
+        """Smallest increment for given scale"""
+        return Decimal("0." + "0" * (D - 1) + "1") if D > 0 else Decimal(1)
+    
+    old_max_str = decimal_max_str(old_M, D)
+    old_min_str = decimal_min_str(old_M, D)
+    new_max_str = decimal_max_str(new_M, D)
+    new_min_str = decimal_min_str(new_M, D)
+    old_max_dec = Decimal(old_max_str)
+    old_min_dec = Decimal(old_min_str)
+    new_max_dec = Decimal(new_max_str)
+    new_min_dec = Decimal(new_min_str)
+    
+    # For comparison, use Decimal
+    old_max = float(old_max_dec)
+    old_min = float(old_min_dec)
+    new_max = float(new_max_dec)
+    new_min = float(new_min_dec)
+    
+    def in_old_range(v):
+        """Check if value fits within old type range"""
+        if v is None:
+            return True
+        return old_min_dec <= Decimal(str(v)) <= old_max_dec
+    
+    def in_new_range(v):
+        """Check if value fits within new type range"""
+        if v is None:
+            return True
+        return new_min_dec <= Decimal(str(v)) <= new_max_dec
     
     if phase == 'pre':
-        # ① 负数/零/正数
-        data.append((-1.0 if D > 0 else -1, 'neg'))
-        data.append((0.0 if D > 0 else 0, 'zero'))
-        data.append((1.0 if D > 0 else 1, 'pos'))
+        # ① 负数/零/正数 (filtered to old type range)
+        for v, label in [(-1.0 if D > 0 else -1, 'neg'), (0.0 if D > 0 else 0, 'zero'), (1.0 if D > 0 else 1, 'pos')]:
+            if in_old_range(v):
+                data.append((v, label))
         
-        # ② 源类型 MIN/MAX
-        data.append((old_max, 'source_max'))
-        data.append((old_min, 'source_min'))
+        # ② 源类型 MIN/MAX — use string representation for precision
+        data.append((old_max_str, 'source_max'))
+        data.append((old_min_str, 'source_min'))
+        # Source MAX-1 and MIN+1 (boundary) — use Decimal arithmetic
+        step_dec = decimal_step(D)
+        data.append((str(old_max_dec - step_dec), 'source_max_minus1'))
+        data.append((str(old_min_dec + step_dec), 'source_min_plus1'))
         
         # ⑤ NULL
         data.append((None, 'null'))
         
-        # DECIMAL 特定值
+        # DECIMAL 特定值 (filtered to old type range)
         if D > 0:
-            data.append((0.01, 'smallest_decimal'))
-            data.append((-0.01, 'neg_smallest'))
-            data.append((1.23, 'normal_pos'))
-            data.append((-1.23, 'normal_neg'))
-            data.append((99.99, 'near_max'))
-            data.append((-99.99, 'near_min'))
+            candidates = [
+                (0.01, 'smallest_decimal'),
+                (-0.01, 'neg_smallest'),
+                (1.23, 'normal_pos'),
+                (-1.23, 'normal_neg'),
+                (99.99, 'near_max'),
+                (-99.99, 'near_min'),
+            ]
+            for v, label in candidates:
+                if in_old_range(v):
+                    data.append((v, label))
+                else:
+                    # Scale down to fit old range — use Decimal for precision
+                    scaled = str(old_max_dec * Decimal('0.5')) if v > 0 else str(old_min_dec * Decimal('0.5'))
+                    data.append((scaled, f'{label}_scaled'))
     
     elif phase == 'post':
-        # ③ 新范围值
-        if new_max > old_max:
-            data.append((old_max + (1.0 if D == 0 else 0.01), 'new_range_low'))
-            data.append((new_max, 'new_max'))
-            data.append((new_max - (1.0 if D == 0 else 0.01), 'new_max_minus1'))
-        if new_min < old_min:
-            data.append((old_min - (1.0 if D == 0 else 0.01), 'new_range_neg'))
-            data.append((new_min, 'new_min'))
+        # ③ 新范围值 — use string/Decimal for precision
+        step_dec = decimal_step(D)
+        if new_max_dec > old_max_dec:
+            data.append((str(old_max_dec + step_dec), 'new_range_low'))
+            data.append((new_max_str, 'new_max'))
+            data.append((str(new_max_dec - step_dec), 'new_max_minus1'))
+        if new_min_dec < old_min_dec:
+            data.append((str(old_min_dec - step_dec), 'new_range_neg'))
+            data.append((new_min_str, 'new_min'))
         
         # 旧范围兼容
         data.append((0, 'zero_compat'))
-        data.append((old_max, 'old_max_compat'))
+        data.append((old_max_str, 'old_max_compat'))
         data.append((None, 'null_compat'))
         
         # ⑧ 超新范围（预期 FAIL）
-        data.append((new_max + (1.0 if D == 0 else 0.01), 'over_new_max_EXPECT_FAIL'))
+        data.append((str(new_max_dec + step_dec), 'over_new_max_EXPECT_FAIL'))
     
     return data
 

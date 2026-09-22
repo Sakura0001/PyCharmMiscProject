@@ -104,6 +104,9 @@ ENHANCED_TYPES = [
     ('DEC-102', 'decimal', 'DECIMAL(10,2)', 'DECIMAL(12,2)', None, None, 10, 12, 2),
     ('DEC-180', 'decimal', 'DECIMAL(18,0)', 'DECIMAL(20,0)', None, None, 18, 20, 0),
     ('DEC-6430', 'decimal', 'DECIMAL(64,30)', 'DECIMAL(65,30)', None, None, 64, 65, 30),
+    ('DEC-010', 'decimal', 'DECIMAL(1,0)', 'DECIMAL(2,0)', None, None, 1, 2, 0),
+    ('DEC-011', 'decimal', 'DECIMAL(1,1)', 'DECIMAL(2,1)', None, None, 1, 2, 1),
+    ('DEC-3130', 'decimal', 'DECIMAL(31,30)', 'DECIMAL(33,30)', None, None, 31, 33, 30),
     ('TEXT-T2T', 'text', 'TINYTEXT', 'TEXT', 'utf8mb4', None, None, None, None),
     ('TEXT-T2M', 'text', 'TEXT', 'MEDIUMTEXT', 'utf8mb4', None, None, None, None),
     ('TEXT-M2L', 'text', 'MEDIUMTEXT', 'LONGTEXT', 'utf8mb4', None, None, None, None),
@@ -129,11 +132,8 @@ def build_concurrent_dml_tests():
         
         # INPLACE 测试
         for algo in ['INPLACE', 'INSTANT']:
-            if algo == 'INSTANT' and category in ('binary', 'varbinary', 'decimal'):
-                # 增强类型 INSTANT 预期失败
-                expected = False
-            else:
-                expected = True
+            # BINARY/VARBINARY/DECIMAL INSTANT 均支持(阿里云已验证 BINARY/VARBINARY; 内网验证 DECIMAL)
+            expected = True
             
             test = build_single_concurrent_test(
                 f'CD-{prefix}-{algo}', category, old_type, new_type,
@@ -1737,16 +1737,25 @@ LARGE_TABLE_TYPES = [
     ('BIN10-20-IP', 'binary', 'BINARY(10)', 'BINARY(20)', 'binary', None, 'INPLACE', True, 1_000_000),
     ('BIN10-20-IT', 'binary', 'BINARY(10)', 'BINARY(20)', 'binary', None, 'INSTANT', True, 1_000_000),
     ('BIN40-80-IP', 'binary', 'BINARY(40)', 'BINARY(80)', 'binary', None, 'INPLACE', True, 500_000),
+    ('BIN40-80-IT', 'binary', 'BINARY(40)', 'BINARY(80)', 'binary', None, 'INSTANT', True, 500_000),
     # === VARBINARY === (Aliyun: INPLACE=OK, INSTANT=OK)
     ('VBIN20-40-IP', 'varbinary', 'VARBINARY(20)', 'VARBINARY(40)', 'binary', None, 'INPLACE', True, 1_000_000),
     ('VBIN20-40-IT', 'varbinary', 'VARBINARY(20)', 'VARBINARY(40)', 'binary', None, 'INSTANT', True, 1_000_000),
     ('VBIN100-200-IP', 'varbinary', 'VARBINARY(100)', 'VARBINARY(200)', 'binary', None, 'INPLACE', True, 500_000),
+    ('VBIN100-200-IT', 'varbinary', 'VARBINARY(100)', 'VARBINARY(200)', 'binary', None, 'INSTANT', True, 500_000),
     # === DECIMAL === (Aliyun: NOT supported; Internal: both OK)
     ('DEC10-12-IP', 'decimal', 'DECIMAL(10,2)', 'DECIMAL(12,2)', None, None, 'INPLACE', False, 200_000),
     ('DEC10-12-IT', 'decimal', 'DECIMAL(10,2)', 'DECIMAL(12,2)', None, None, 'INSTANT', False, 200_000),
     ('DEC18-20-IP', 'decimal', 'DECIMAL(18,0)', 'DECIMAL(20,0)', None, None, 'INPLACE', False, 200_000),
+    ('DEC18-20-IT', 'decimal', 'DECIMAL(18,0)', 'DECIMAL(20,0)', None, None, 'INSTANT', False, 200_000),
+    ('DEC1-2-IP', 'decimal', 'DECIMAL(1,0)', 'DECIMAL(2,0)', None, None, 'INPLACE', False, 200_000),
     ('DEC1-2-IT', 'decimal', 'DECIMAL(1,0)', 'DECIMAL(2,0)', None, None, 'INSTANT', False, 200_000),
+    ('DEC1-1-IP', 'decimal', 'DECIMAL(1,1)', 'DECIMAL(2,1)', None, None, 'INPLACE', False, 200_000),
+    ('DEC1-1-IT', 'decimal', 'DECIMAL(1,1)', 'DECIMAL(2,1)', None, None, 'INSTANT', False, 200_000),
     ('DEC6430-6530-IP', 'decimal', 'DECIMAL(64,30)', 'DECIMAL(65,30)', None, None, 'INPLACE', False, 200_000),
+    ('DEC6430-6530-IT', 'decimal', 'DECIMAL(64,30)', 'DECIMAL(65,30)', None, None, 'INSTANT', False, 200_000),
+    ('DEC3130-3330-IP', 'decimal', 'DECIMAL(31,30)', 'DECIMAL(33,30)', None, None, 'INPLACE', False, 200_000),
+    ('DEC3130-3330-IT', 'decimal', 'DECIMAL(31,30)', 'DECIMAL(33,30)', None, None, 'INSTANT', False, 200_000),
     # === TEXT === (Aliyun: NOT supported; Internal: both OK)
     ('TEXT-T-IP', 'text', 'TINYTEXT', 'TEXT', 'utf8mb4', None, 'INPLACE', False, 200_000),
     ('TEXT-T-IT', 'text', 'TINYTEXT', 'TEXT', 'utf8mb4', None, 'INSTANT', False, 200_000),
