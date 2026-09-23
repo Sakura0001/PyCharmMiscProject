@@ -15,7 +15,7 @@
 | 7 | P0-7 + P1-1 期望值机读化 + 列类型断言 | ✅ 已修复并验证 | pytest 80 + 反向对照 6/6 + **RDS 全量 5228/5228 PASS** |
 | 8 | 环境能力画像 + 内网 CHAR/VARCHAR 口径 | ✅ 机制已落地并验证（口径待确认） | pytest 85 + RDS 画像反向对照 |
 | 9 | P1-2/P1-3/P1-4 空表 + DDL 语句形态 + 索引完整性 | ✅ 已修复并验证 | pytest 90 + RDS 200/200 + 392/392 |
-| 10 | P1-5 在线 DDL 失败模式 | ⏳ 进行中 | — |
+| 10 | P1-5 在线 DDL 失败模式 | ✅ 已实现并验证 | RDS 43 PASS/0 FAIL/1 SKIP + 本机 S6 实测 1799 |
 | 11 | P1-6 主备复制与崩溃恢复 | ⏳ 待办 | — |
 | 12+ | P2 类型/因子矩阵、concurrent_dml、P3 文档 | ⏳ 待办 | — |
 
@@ -466,3 +466,51 @@ python3 run_tests.py --env aliyun --files 34_index_integrity.sql.gz 30_ddl_forms
 | VARCHAR(64)→(65) | 78 ms | 1,642 ms | 21.2× |
 
 这是套件里第一次有"秒级"的**可自动判定**证据：若服务器悄悄退化成重建表，比值会掉下来并被断言抓住。
+
+---
+
+## Step 10 — P1-5 在线 DDL 失败模式与中断恢复
+
+**问题**：纯 SQL 套件无法覆盖这类场景（需要多连接、并发、计时、KILL、权限降级），
+旧套件里 `innodb_online_alter_log_max_size`、MDL 阻塞、`lock_wait_timeout`、`KILL`、
+并发 DDL×DDL 全部 **0 覆盖**。
+
+**新增** `scenarios/online_ddl_failure_modes.py`（7 个场景 / 44 项检查），
+只建 `s_online_*` 前缀表、跑完自动清理、每个场景有硬超时、并发与行数都有上限。
+
+| 场景 | 验证内容 | 结果 |
+|---|---|---|
+| **S1** MDL 阻塞与连接堆积 | 长事务持 MDL → ALTER 排队 → **后续简单查询也被堵住**（连接池打满的真实成因） | 7/7 ✓ |
+| **S2** `lock_wait_timeout` 到期 | ALTER 干净失败、不无限等待、元数据未半改、校验和不变、表可用、无 `#sql-` 残留 | 6/6 ✓ |
+| **S3a** KILL 等待 MDL 中的 DDL | 确定性（不靠时序竞速）：errno 1317、类型未半改、表可用 | 7/7 ✓ |
+| **S3b** KILL **重建到一半**的 DDL | 4,194,304 行表在 `copy to tmp table` 阶段被杀：errno 1317、**行数不变**、校验和不变、类型未半改、无残留、之后仍能正常 DDL | 8/8 ✓ |
+| **S4** 并发 DDL × DDL | 同表两条 ALTER 竞争，都有确定结果、最终列集合确定、原数据校验和不变 | 6/6 ✓ |
+| **S5** DDL vs OPTIMIZE/ANALYZE | 并发都有确定结果、表可用、无残留 | 4/4 ✓ |
+| **S6** `innodb_online_alter_log_max_size` 溢出 | 需要 SUPER；RDS 上 **明确 SKIP 并给出 errno 1227**（不假装通过），本机社区版实测 **errno 1799** 且表完整 | RDS SKIP / 本机 2/2 ✓ |
+| **S7** 外键父子两侧并发 ALTER | 两侧都 3780、不出现"一侧改了一侧没改"、约束状态可查、父子表都可用 | 5/5 ✓ |
+
+**关键实测证据**
+```
+S1 metadata_locks: [('SHARED_UPGRADABLE','GRANTED'), ('EXCLUSIVE','PENDING'), ('SHARED_READ','GRANTED')]
+S1 processlist   : state='Waiting for table metadata lock'
+S1 连接堆积       : ALTER 之后发起的 SELECT COUNT(*) 同样被堵 4.0s（复现）
+S3b              : killed_at=('copy to tmp table', 0) -> errno 1317，行数 4,194,304 不变
+S6(本机 8.0.45)   : errno 1799 "Creating index 'idx_c2' required more than
+                   'innodb_online_alter_log_max_size' bytes of modification log"
+S7               : parent/child 并发 COPY 均 errno 3780（与 Step 7 的外键矩阵一致）
+```
+
+**过程中自查出的 3 个脚本缺陷（已修）**
+1. 跨线程共用同一条 pymysql 连接 → `Packet sequence number wrong` 协议错乱；改为每线程独立连接
+2. `information_schema` 列名大小写不固定（`TABLE_NAME` / `table_name`）→ 统一转小写
+3. `table_intact()` 的写入探针写死了 `c1/c2` 列名，在外键表(`cid/fk`)上误报"表不可用"；
+   父表探针还会删掉被子表引用的行触发 errno 1451（这是外键**正确生效**，不是缺陷）
+   → 探针改为可注入，父表写入/删除一个未被引用的键值
+4. S3 原先靠"轮询到 time>=1 再 KILL"，200k 行的 COPY 只要 1.12s，KILL 追不上导致 3 项假失败
+   → 拆成 S3a（MDL 等待中 KILL，确定性）+ S3b（放大到 400 万行 + 50ms 紧轮询）；
+   若 DDL 仍抢先跑完，如实报 FAIL 并给出实测耗时，不假装通过
+
+```bash
+python3 scenarios/online_ddl_failure_modes.py --env aliyun --rows 200000      # 43 PASS / 0 FAIL / 1 SKIP
+python3 scenarios/online_ddl_failure_modes.py --env local  --rows 2000000 --only S6   # 2 PASS（实测 1799）
+```
