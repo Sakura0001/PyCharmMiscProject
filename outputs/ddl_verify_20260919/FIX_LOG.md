@@ -16,7 +16,7 @@
 | 8 | 环境能力画像 + 内网 CHAR/VARCHAR 口径 | ✅ 机制已落地并验证（口径待确认） | pytest 85 + RDS 画像反向对照 |
 | 9 | P1-2/P1-3/P1-4 空表 + DDL 语句形态 + 索引完整性 | ✅ 已修复并验证 | pytest 90 + RDS 200/200 + 392/392 |
 | 10 | P1-5 在线 DDL 失败模式 | ✅ 已实现并验证 | RDS 43 PASS/0 FAIL/1 SKIP + 本机 S6 实测 1799 |
-| 11 | P1-6 主备复制与崩溃恢复 | ⏳ 待办 | — |
+| 11 | P1-6 binlog/备库一致性 + 崩溃恢复 | ✅ 已实现并验证 | R1 7/7 (RDS) + C1/C2 各 14/14 (SIGKILL 真实崩溃) |
 | 12+ | P2 类型/因子矩阵、concurrent_dml、P3 文档 | ⏳ 待办 | — |
 
 ---
@@ -513,4 +513,46 @@ S7               : parent/child 并发 COPY 均 errno 3780（与 Step 7 的外�
 ```bash
 python3 scenarios/online_ddl_failure_modes.py --env aliyun --rows 200000      # 43 PASS / 0 FAIL / 1 SKIP
 python3 scenarios/online_ddl_failure_modes.py --env local  --rows 2000000 --only S6   # 2 PASS（实测 1799）
+```
+
+---
+
+## Step 11 — P1-6 binlog / 备库一致性 + DDL 中途崩溃恢复
+
+**问题**：INSTANT 类型变更本质是元数据 + 行版本操作，最需要验证的两条路径 0 覆盖：
+binlog 如何记录、备库重放后是否一致；DDL 执行到一半实例崩溃后表是否可用。
+这是上线后最可能造成生产事故的路径（主备表定义漂移 → 复制中断或**静默数据错误**）。
+
+**新增** `scenarios/replication_and_crash.py`
+
+| 检查 | 内容 | 结果 |
+|---|---|---|
+| **R1** binlog 记录 | 5 条代表性 ALTER（INPLACE 整数加宽 / INPLACE VARCHAR 扩容 / `INPLACE,LOCK=NONE` 建索引 / 默认算法 / COPY）逐条比对 `SHOW MASTER STATUS` 前后位置 + `SHOW BINLOG EVENTS`。**双向断言**：成功的 DDL 必须进 binlog；失败的 DDL 必须**不**进 binlog（否则备库会重放一条主库没生效的变更 → 主备漂移） | RDS 7/7 ✓ |
+| **R2** 备库重放一致性 | `SHOW REPLICA STATUS` 无错误且追上、主备 `SHOW CREATE TABLE` 逐字一致、逐列 `column_type` 一致、数据 CRC 一致 | 未配置备库时**明确 SKIP** 并给出配置方法（不假装通过） |
+| **C1** 崩溃在 COPY 重建途中 | 2,097,152 行表，`copy to tmp table` 阶段 SIGKILL 整个实例 → 重启 | 14/14 ✓ |
+| **C2** 崩溃在 INPLACE 建索引途中 | 同规模表，`preparing for alter table`（online DDL + row log 路径）SIGKILL → 重启 | 14/14 ✓ |
+
+崩溃恢复的 14 项断言：实例能重启（InnoDB 恢复完成）、错误日志无 InnoDB 致命错误、
+列定义完整无半改、**行数与校验和与崩溃前完全一致**、`CHECK TABLE` = OK、
+无 `#sql-` 残留中间表、**崩溃的索引要么完整要么完全不存在（无半成品索引）**、
+恢复后仍可正常 DDL、恢复后可正常读写。
+
+**安全边界**：崩溃恢复在 `ThrowawayInstance` 上做 —— 临时 datadir + 自动分配端口 +
+独立 socket + `--initialize-insecure`，**绝不触碰任何已在运行的实例**；
+退出时 SIGTERM→SIGKILL 兜底并删除 datadir。
+
+**实测证据**
+```
+R1: info='use `ddl_test`; ALTER TABLE s_repl_crash MODIFY c1 BIGINT, ALGORITHM=INPLACE /* xid=6209577 */'
+    -> 5/5 条 DDL 均以 Query_event 落盘（备库可重放）；binlog_format=ROW, log_bin=1
+C1: state='copy to tmp table' -> SIGKILL -> 重启后 rows 2097152 不变、checksum 3351347884 不变、
+    c1 仍为 int（未半改）、CHECK TABLE OK、无 #sql- 残留、之后 DDL/读写正常
+C2: state='preparing for alter table' -> SIGKILL -> 同上全部通过，idx_crash 列数=0（索引完全回滚）
+```
+
+```bash
+python3 scenarios/replication_and_crash.py --env aliyun --only R1        # 7 PASS
+python3 scenarios/replication_and_crash.py --only C1 --crash-rows 2000000 --crash-ddl copy_rebuild
+python3 scenarios/replication_and_crash.py --only C1 --crash-rows 2000000 --crash-ddl inplace_add_index
+python3 scenarios/replication_and_crash.py --env aliyun --only R2 --replica-config replica.ini
 ```
