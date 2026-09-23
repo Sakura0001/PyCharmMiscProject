@@ -18,7 +18,7 @@
 | 10 | P1-5 在线 DDL 失败模式 | ✅ 已实现并验证 | RDS 43 PASS/0 FAIL/1 SKIP + 本机 S6 实测 1799 |
 | 11 | P1-6 binlog/备库一致性 + 崩溃恢复 | ✅ 已实现并验证 | R1 7/7 (RDS) + C1/C2 各 14/14 (SIGKILL 真实崩溃) |
 | 12 | P2 类型转换兼容矩阵（49 探针 × 4 算法） | ✅ 已实现并冻结基线 | 196/196 PASS + golden 回归 |
-| 13 | P2 因子矩阵（FULLTEXT/触发器/视图/GIPK/引擎/sql_mode…） | ⏳ 进行中 | — |
+| 13 | P2 因子矩阵（22 因子 × 3 转换 × 3 算法）+ 会话变量专项 | ✅ 已实现并冻结基线 | 198/198 PASS + 本机 14/14 + RDS 明确 SKIP |
 | 14 | P2 concurrent_dml 四项 | ⏳ 待办 | — |
 | 15 | P3 工程与文档口径统一 | ⏳ 待办 | — |
 
@@ -617,3 +617,75 @@ python3 generate_test_sql.py && python3 run_tests.py --env aliyun --files 40_con
 ```
 内网侧 `41_conversion_matrix_enhanced.sql` 同一套探针、golden 尚未冻结，
 拿到内网实例后第一轮以 MEASURE 模式跑，复核后 promote 即可。
+
+---
+
+## Step 13 — P2 因子矩阵 + 需要特权的会话变量专项
+
+**问题**：旧套件因子维度只有 10 个，且其中 **`dependencies=FOREIGN_KEY` 在
+`_build_create_table` 里根本没有对应实现**（既不建外键也不加索引）—— 因子声明了但没生效，
+是空壳覆盖。FULLTEXT / SPATIAL / 函数索引 / 降序索引 / 不可见索引 / 触发器 / 视图 /
+STORED 生成列 / GIPK / `sql_require_primary_key` / COMPRESSED / 页压缩 / 加密表 /
+非 InnoDB 引擎 / `PAD_CHAR_TO_FULL_LENGTH` 等全部 0 覆盖。
+
+**新增** `42_factor_matrix.sql`（阿里云）/ `43_factor_matrix_enhanced.sql`（内网）：
+22 个因子 × 3 条代表转换 × 3 种算法（instant / inplace / default）= **198 用例/环境**，
+沿用 Step 12 的"测量 → 冻结 golden → 回归比对"机制（`tools/factor_matrix_aliyun.json`，198 条）。
+
+**实测结论（阿里云 RDS MySQL 8.0.36，已冻结）**
+
+| 因子 | INSTANT | INPLACE | default | 说明 |
+|---|---|---|---|---|
+| 函数索引 `((CONCAT(target,'')))` | ✓ | ✓ | ✓ | 表达式索引不挡秒级 |
+| STORED 生成列引用目标列 + 其索引 | ✓ | ✓ | ✓ | |
+| VIRTUAL 生成列 + 生成列索引 | ✓ | ✓ | ✓ | |
+| 降序索引 / 不可见索引（在目标列上） | **✗ 1845** | ✓ | ✓ | 目标列上有索引即挡 INSTANT |
+| 表上有 FULLTEXT（非目标列） | ✗ | **INT/CHAR ✗ 1846、VARCHAR ✓** | ✓ | 1846 原因："InnoDB presently supports one FULLTEXT index…" |
+| 表上有 SPATIAL（非目标列） | ✓ | ✓ | ✓ | |
+| BEFORE INSERT 触发器引用目标列 | ✓ | ✓ | ✓ | |
+| 依赖目标列的视图 | ✓ | ✓ | ✓ | |
+| `ROW_FORMAT=COMPRESSED` | **✗ 1845** | ✓ | ✓ | 与 PRD 的排除项一致 |
+| `COMPRESSION='zlib'` 页压缩 | ✓ | ✓ | ✓ | 页压缩不影响 |
+| 显式表空间 / `STATS_PERSISTENT` | ✓ | ✓ | ✓ | |
+| `sql_mode` = PAD_CHAR_TO_FULL_LENGTH / TRADITIONAL / ANSI / NO_ZERO_DATE | ✓ | ✓ | ✓ | 4 档全部不改变可行性 |
+| 10,000 行中等规模 / 200 列宽表 | ✓ | ✓ | ✓ | |
+| `ENGINE=MyISAM` / `ENGINE=MEMORY` | **建表即失败 3161** | 同 | 同 | RDS 禁用了这两个引擎 |
+| `ENCRYPTION='Y'` | **建表即失败 3185** | 同 | 同 | 无 keyring（`Can't find master key`） |
+
+**新增** `scenarios/session_variables.py`：`sql_generate_invisible_primary_key` /
+`sql_require_primary_key` / `innodb_strict_mode` 这三个会话变量在 RDS 上 `SET SESSION`
+直接 **errno 1227**（需 SUPER / SYSTEM_VARIABLES_ADMIN / SESSION_VARIABLES_ADMIN）。
+放在纯 SQL 套件里 SET 失败后用例照样往下跑 —— **因子根本没生效却报告"通过"**，
+是典型的假覆盖。移到场景模块后先探权限：RDS 明确 **SKIP 3 项**，本机社区版真实执行 **14/14 PASS**：
+- GIPK 开启后无主键表自动生成 `my_row_id`（`auto_increment INVISIBLE`）并建 PRIMARY KEY；
+  改列类型的结果用**差分断言**（有 GIPK vs 无 GIPK 必须一致），避免把 RDS 增强特性当成通用期望
+- `sql_require_primary_key=ON` 时无主键建表被拒 **3750**，有主键正常，改列类型不受影响
+- `innodb_strict_mode=ON` + COMPACT + 内联约 40,800 字节 → **1118 "Row size too large (> 8126)"**；
+  `OFF` 时同一张表**建成功**（降级为告警）
+- **对照实测纠正**：server 级 65535 行宽上限在 `innodb_strict_mode` ON/OFF **两种模式下都报 1118**
+  —— 即 `innodb_strict_mode` 管的是 InnoDB 半页(8126B)限制，**不能**绕过 server 级行宽上限
+
+**过程中自查出的缺陷（已修）**
+1. 生成器 5 处 spec 写错：函数索引误用 `CAST(... AS ... ARRAY)`（JSON multi-valued 语法，
+   非 JSON 列实测 3141）；生成列引用自增列（实测 **3109**）；SPATIAL 列 NOT NULL 无默认值
+   （INSERT 实测 **1364**）
+2. MEASURE 模式下用"猜的期望"断言列类型 → 166 个假失败；改为占位 PASS 并注明原因，
+   golden 冻结后才做真断言
+3. `USABLE` 断言直接 `SELECT FROM t1`，建表失败时反而让用例记 ERROR → 去掉，
+   由 `BUILD_CHECK` 承担
+4. golden 里 `build=FAIL` 的因子（引擎禁用/无 keyring）原先仍发 ALTER，结果 ALTER 以
+   1146"表不存在"失败，**看起来像"类型变更被拒"，实际什么都没测** → 改为只断言表没被建出来
+5. **我把 `RE_FACTOR`（解析 `-- Factors:`）覆盖成了匹配 `Factor probe:`**，
+   导致所有用例的 factors 元数据丢失 —— 被 pytest 的 `test_split_cases_meta_and_statements`
+   当场抓住，已改名为 `RE_FACTOR_PROBE`
+
+**验证**
+```bash
+python3 run_tests.py --env aliyun --files 42_factor_matrix.sql.gz --workers 6   # MEASURE: 198/198
+python3 tools/promote_conversion_matrix.py --env aliyun --kind factor           # 冻结 198 条 golden
+python3 generate_test_sql.py && python3 run_tests.py --env aliyun --files 42_factor_matrix.sql --workers 6
+#   -> 198/198 PASS
+python3 scenarios/session_variables.py --env local      # 14 PASS / 0 FAIL
+python3 scenarios/session_variables.py --env aliyun     # 3 SKIP（errno 1227，如实报告）
+python3 -m pytest selfcheck/test_runner.py -q           # 90 passed
+```

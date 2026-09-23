@@ -3241,6 +3241,228 @@ def build_conversion_case(test_id: str, probe: tuple, algorithm: str, env: str) 
 
 
 # ============================================================
+# Section 7d: 因子矩阵（P2：索引形态 / 依赖对象 / 表选项 / 引擎 / sql_mode / 规模）
+# ============================================================
+# 旧套件的因子维度只有 10 个（row_format 3 值、primary_key 3 值、非目标索引 5 值、
+# 列位置 3 值、列属性 6 值、数据规模 3 值、分布 3 值、NULL 比例 4 值、依赖 5 值、
+# sql_mode 2 值），且其中 dependencies=FOREIGN_KEY 在 _build_create_table 里
+# **根本没有对应实现**（既不建外键也不加索引）—— 因子声明了但没生效，是空壳覆盖。
+#
+# 本节补齐的因子（每项都在真实实例上测量后冻结为 golden）：
+FACTOR_SPECS = [
+    # (id, 额外列, 额外索引, 表选项, 会话设置, 说明)
+    # 注意：函数索引不能用 CAST(... AS ... ARRAY)（那是 JSON multi-valued 索引，
+    # 对非 JSON 列实测 errno 3141）；生成列也不能引用自增列（实测 errno 3109）。
+    ("IDX_FUNCTIONAL", "", "INDEX idx_fn ((CONCAT(target, \'\')))", "", [],
+     "函数/表达式索引（引用目标列）"),
+    ("DEP_GEN_STORED", "gen_c VARCHAR(64) AS (CONCAT(\'v\', target)) STORED",
+     "INDEX idx_gen (gen_c)", "", [], "STORED 生成列引用目标列 + 其上的索引"),
+    ("IDX_DESC", "", "INDEX idx_desc (target DESC)", "", [], "降序索引"),
+    ("IDX_INVISIBLE", "", "INDEX idx_inv (target) INVISIBLE", "", [], "不可见索引"),
+    ("IDX_FULLTEXT_OTHER", "ft TEXT CHARACTER SET utf8mb4", "FULLTEXT INDEX ft_idx (ft)", "", [],
+     "表上有 FULLTEXT 索引（非目标列）—— 会改变 INPLACE 可行性"),
+    # SPATIAL 索引要求列 NOT NULL，而几何列不能有字面量默认值 => 用表达式默认值
+    # （否则 INSERT 实测 errno 1364 "Field 'g' doesn't have a default value"）
+    ("IDX_SPATIAL_OTHER", "g POINT NOT NULL SRID 0 DEFAULT (ST_PointFromText(\'POINT(0 0)\'))",
+     "SPATIAL INDEX sp_idx (g)", "", [], "表上有 SPATIAL 索引（非目标列）"),
+    ("DEP_TRIGGER", "", "", "", [],
+     "表上有 BEFORE INSERT 触发器引用目标列"),
+    ("DEP_VIEW", "", "", "", [], "存在依赖目标列的视图"),
+    ("DEP_GEN_VIRTUAL_IDX", "seed INT DEFAULT 1, vcol BIGINT AS (seed * 2) VIRTUAL",
+     "INDEX idx_v (vcol)", "", [], "VIRTUAL 生成列 + 生成列索引（生成列不得引用自增列）"),
+    ("OPT_ROW_COMPRESSED", "", "", "ROW_FORMAT=COMPRESSED KEY_BLOCK_SIZE=8", [],
+     "COMPRESSED 行格式（PRD 排除项，必须作为负向用例存在）"),
+    ("OPT_PAGE_COMPRESSION", "", "", "COMPRESSION='zlib'", [], "InnoDB 页压缩"),
+    ("OPT_ENCRYPTION", "", "", "ENCRYPTION='Y'", [], "表空间加密（无 keyring 时应建表失败）"),
+    ("OPT_TABLESPACE", "", "", "TABLESPACE innodb_file_per_table", [], "显式表空间"),
+    ("OPT_STATS_PERSISTENT", "", "", "STATS_PERSISTENT=1 STATS_AUTO_RECALC=0", [],
+     "统计信息持久化且关闭自动重算（DDL 后统计信息是否更新）"),
+    ("ENG_MYISAM", "", "", "ENGINE=MyISAM", [], "非 InnoDB 引擎（INSTANT/INPLACE 不适用）"),
+    ("ENG_MEMORY", "", "", "ENGINE=MEMORY", [], "MEMORY 引擎"),
+    # 说明：GIPK / sql_require_primary_key / innodb_strict_mode 这三个会话变量在
+    # 阿里云 RDS 上需要 SUPER / SYSTEM_VARIABLES_ADMIN / SESSION_VARIABLES_ADMIN，
+    # SET SESSION 实测 errno 1227，在纯 SQL 套件里静默不生效（等于没测）。
+    # 已移到 scenarios/session_variables.py：先探权限，无权限就明确 SKIP。
+    ("MODE_PAD_CHAR", "", "", "", ["SET SESSION sql_mode='STRICT_TRANS_TABLES,PAD_CHAR_TO_FULL_LENGTH'"],
+     "PAD_CHAR_TO_FULL_LENGTH：直接改变 CHAR 取值语义与对照结果"),
+    ("MODE_TRADITIONAL", "", "", "", ["SET SESSION sql_mode='TRADITIONAL'"], "TRADITIONAL 严格模式"),
+    ("MODE_ANSI", "", "", "", ["SET SESSION sql_mode='ANSI'"], "ANSI 模式（引号/除法语义变化）"),
+    ("MODE_NO_ZERO_DATE", "", "", "",
+     ["SET SESSION sql_mode='STRICT_TRANS_TABLES,NO_ZERO_DATE,NO_ZERO_IN_DATE'"],
+     "NO_ZERO_DATE / NO_ZERO_IN_DATE"),
+    ("SCALE_10K", "", "", "", [], "中等数据规模：10,000 行（旧套件只有 0/1/100 行）"),
+    ("WIDE_200_COLS", "", "", "", [], "宽表：200 列（行宽与字典压力）"),
+]
+
+# 触发器 / 视图需要在建表后单独创建，用占位符注入
+FACTOR_POST_CREATE = {
+    "DEP_TRIGGER": [
+        "CREATE TRIGGER {trg} BEFORE INSERT ON {t1} FOR EACH ROW SET NEW.pad = CONCAT('t', IFNULL(NEW.target,''))",
+    ],
+    "DEP_VIEW": [
+        "CREATE OR REPLACE VIEW {vw} AS SELECT id, target FROM {t1}",
+    ],
+}
+FACTOR_PRE_DROP = {
+    "DEP_TRIGGER": ["DROP TRIGGER IF EXISTS {trg}"],
+    "DEP_VIEW": ["DROP VIEW IF EXISTS {vw}"],
+}
+
+FACTOR_ALGORITHMS = ["instant", "inplace", "default"]
+FACTOR_SCALE = {"SCALE_10K": 10000, "WIDE_200_COLS": 20}
+
+
+def factor_golden(env: str) -> dict:
+    path = os.path.join(OUTPUT_DIR, "tools", "factor_matrix_%s.json" % env)
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return data.get("matrix", data) or {}
+    except Exception:
+        return {}
+
+
+FACTOR_GOLDEN_CACHE: Dict[str, dict] = {}
+
+
+def factor_golden_cached(env: str) -> dict:
+    if env not in FACTOR_GOLDEN_CACHE:
+        FACTOR_GOLDEN_CACHE[env] = factor_golden(env)
+    return FACTOR_GOLDEN_CACHE[env]
+
+
+def build_factor_case(test_id: str, transition: dict, spec: tuple, algorithm: str,
+                      env: str) -> str:
+    """生成一个因子矩阵用例（MEASURE / golden 两种模式）。"""
+    fid, extra_cols, extra_idx, tbl_opts, session, note = spec
+    golden = factor_golden_cached(env)
+    key = "%s|%s|%s" % (fid, transition["id"], algorithm)
+    g = golden.get(key)
+    exp_alter = (g or {}).get("alter", "MEASURE")
+    exp_build = (g or {}).get("build", "MEASURE")
+    errnos = (g or {}).get("errno") or []
+
+    suf = id_to_suffix(test_id)
+    t1, t2 = "t1_" + suf, "t2_" + suf
+    trg, vw = "trg_" + suf, "vw_" + suf
+    old_type, new_type = transition["old_type"], transition["new_type"]
+    old_def = _build_column_def(old_type, dict(BASELINE), transition)
+    new_def = _build_column_def(new_type, dict(BASELINE), transition)
+    scale = FACTOR_SCALE.get(fid, 3)
+
+    no_pk = False
+    wide = (fid == "WIDE_200_COLS")
+
+    def create_stmt(tbl, target_def):
+        cols = ["  id INT NOT NULL AUTO_INCREMENT"]
+        cols.append("  target %s" % target_def)
+        if extra_cols:
+            cols.append("  %s" % extra_cols)
+        if wide:
+            cols += ["  w%d INT" % i for i in range(200)]
+        cols.append("  pad VARCHAR(20) DEFAULT 'pad'")
+        if not no_pk:
+            cols.append("  PRIMARY KEY (id)")
+        else:
+            cols.append("  KEY idx_id (id)")
+        if extra_idx:
+            cols.append("  %s" % extra_idx)
+        engine = "InnoDB"
+        opts = tbl_opts
+        m = _re.match(r"ENGINE=(\w+)\s*(.*)", opts)
+        if m:
+            engine, opts = m.group(1), m.group(2).strip()
+        sql = "CREATE TABLE %s (\n%s,\n" % (tbl, ",\n".join(cols))
+        tail = (" " + opts) if opts else ""
+        sql += "  INDEX idx_pad (pad)\n) ENGINE=%s%s;" % (engine, tail)
+        return sql
+
+    lines = []
+    lines.append("-- Test Case: %s" % test_id)
+    lines.append("-- Factor probe: %s" % fid)
+    lines.append("-- Type: %s -> %s, Algorithm: %s, Expected: %s" % (old_type, new_type, algorithm, exp_alter))
+    lines.append("-- Transition ID: %s" % transition.get("id", ""))
+    lines.append("-- Factor note: %s" % note)
+    for st in session:
+        lines.append("%s;" % st)
+    for st in FACTOR_PRE_DROP.get(fid, []):
+        lines.append(st.format(trg=trg, vw=vw, t1=t1) + ";")
+    lines.append("DROP TABLE IF EXISTS %s, %s;" % (t1, t2))
+    tag = ("-- @expect alter=%s build=%s assertions=2 alter_sha=%%s factor=%s"
+           % (exp_alter, exp_build, fid))
+    if errnos:
+        tag += " errno=[%s]" % ",".join(str(e) for e in errnos)
+    lines.append("-- @factor_placeholder@")
+
+    lines.append(create_stmt(t1, old_def))
+    for st in FACTOR_POST_CREATE.get(fid, []):
+        lines.append(st.format(trg=trg, vw=vw, t1=t1) + ";")
+
+    if exp_build == "FAIL":
+        # golden 已确认该因子下建表本应失败（如 RDS 禁用 MyISAM/MEMORY 引擎 3161、
+        # 无 keyring 时 ENCRYPTION='Y' 报 3185）。此时**不发 ALTER**，
+        # 只断言表确实没被建出来 —— 否则 ALTER 会以 1146"表不存在"失败，
+        # 看起来像"类型变更被拒"，实际什么都没测。
+        lines.append(build_table_absent_assertion(
+            test_id, t1, "BUILD_REJECTED",
+            "table was created although factor %s is known to reject CREATE on this "
+            "instance (engine disabled / no keyring / etc.) - factor golden needs review" % fid))
+        for st in FACTOR_PRE_DROP.get(fid, []):
+            lines.append(st.format(trg=trg, vw=vw, t1=t1) + ";")
+        text = "\n".join(lines)
+        return text.replace("-- @factor_placeholder@",
+                            "-- @expect alter=N/A build=FAIL assertions=1 factor=%s" % fid)
+
+    vals = unique_values_for(transition, min(scale, 62)) if scale > 62 else \
+        [v for v in unique_values_for(transition, scale)]
+    if scale >= 1000:
+        lines.append("INSERT INTO %s (target) VALUES (%s);" % (t1, vals[0]))
+        need = 1
+        while need < scale:
+            lines.append("INSERT INTO %s (target) SELECT target FROM %s;" % (t1, t1))
+            need *= 2
+    else:
+        for v in vals:
+            lines.append("INSERT INTO %s (target) VALUES (%s);" % (t1, v))
+
+    if algorithm == "default":
+        alter_stmt = "ALTER TABLE %s MODIFY target %s;" % (t1, new_def)
+    else:
+        alter_stmt = "ALTER TABLE %s MODIFY target %s, ALGORITHM=%s;" % (t1, new_def, algorithm.upper())
+    lines.append("-- ALTER expected %s (build expected %s)" % (exp_alter, exp_build))
+    lines.append(alter_stmt)
+
+    # 断言 1: 建表是否成功（MEASURE 阶段用于记录，golden 阶段用于校验）
+    lines.append(
+        "SELECT '%s#BUILD_CHECK' AS test_id, 'PASS' AS result,\n"
+        "       CONCAT('table_exists=',COUNT(*)) AS mismatch\n"
+        "FROM information_schema.tables\n"
+        "WHERE table_schema=DATABASE() AND table_name=%s;" % (test_id, sql_quote(t1)))
+    # 断言 2: 列类型。MEASURE 阶段还不知道期望值 => 输出占位 PASS 并注明原因，
+    # 绝不用"猜的期望"制造假信号；golden 冻结后才做真断言。
+    final_type = new_type if exp_alter == "SUCCESS" else old_type
+    if exp_alter in ("SUCCESS", "FAIL") and exp_build != "FAIL":
+        lines.append(build_meta_assertion_full(
+            test_id, t1, "target",
+            expected_meta(transition, dict(BASELINE), strip_cs_clause(final_type),
+                          overrides={"ordinal_position": 2, "charset": DONT_CARE,
+                                     "collation": DONT_CARE, "is_nullable": "YES",
+                                     "has_default": 0, "extra": DONT_CARE}),
+            name="META_TYPE", check="type"))
+    else:
+        lines.append("SELECT '%s#META_TYPE' AS test_id, 'PASS' AS result, "
+                     "'MEASURE/build-FAIL mode: column_type not asserted' AS mismatch;"
+                     % test_id)
+    lines.append("-- 收尾：清掉触发器/视图（表按项目要求保留）")
+    for st in FACTOR_PRE_DROP.get(fid, []):
+        lines.append(st.format(trg=trg, vw=vw, t1=t1) + ";")
+
+    text = "\n".join(lines)
+    return text.replace("-- @factor_placeholder@", tag % alter_sha(alter_stmt))
+
+
+
+# ============================================================
 # Section 8: File Writers & Main Function
 # ============================================================
 
@@ -3552,6 +3774,21 @@ def _emit(dirpath: str, filename: str, header: str, title: str, build, registry:
     return stmts
 
 
+def _factor_representatives(trans: list, env: str) -> list:
+    """因子矩阵每个因子只跑代表性转换，避免组合爆炸。
+
+    选择原则：整数加宽（秒级主路径）、VARCHAR 同桶扩容、CHAR 扩容；
+    内网侧再加 BINARY 与 DECIMAL。
+    """
+    want = {"aliyun": ["INT-S-3-4", "VC-07", "CHAR-01"],
+            "internal": ["BIN-01", "DEC-01", "TEXT-02"]}
+    by_id = {t["id"]: t for t in trans}
+    picked = [by_id[i] for i in want.get(env, []) if i in by_id]
+    if not picked:
+        picked = trans[:3]
+    return picked
+
+
 def generate_all(profile_report: Optional[list] = None):
     """生成全部 SQL 测试文件，并做全局唯一性自检（P0-4）。"""
     global GENERATED_AT, SUITE_REVISION
@@ -3727,6 +3964,24 @@ def generate_all(profile_report: Optional[list] = None):
     _emit(I, "41_conversion_matrix_enhanced.sql", header_internal,
           "类型转换兼容矩阵 (增强类型侧同一套探针，用于内网实例)",
           conv_matrix("internal", internal_trans), registry)
+
+    def factor_matrix(env, trans):
+        def build(ids):
+            reps = _factor_representatives(trans, env)
+            out = []
+            for spec in FACTOR_SPECS:
+                for t in reps:
+                    for algo in FACTOR_ALGORITHMS:
+                        out.append(build_factor_case(ids.next("FCT", algo), t, spec, algo, env))
+            return out
+        return build
+
+    _emit(A, "42_factor_matrix.sql", header_aliyun,
+          "因子矩阵 (索引形态/依赖对象/表选项/引擎/会话与sql_mode/数据规模)",
+          factor_matrix("aliyun", aliyun_trans), registry)
+    _emit(I, "43_factor_matrix_enhanced.sql", header_internal,
+          "因子矩阵 (增强类型侧同一套因子探针)",
+          factor_matrix("internal", internal_trans), registry)
 
     # ---------------- .gitignore 同步（P0-1: 产物/跟踪一致） ----------------
     _sync_gitignore()

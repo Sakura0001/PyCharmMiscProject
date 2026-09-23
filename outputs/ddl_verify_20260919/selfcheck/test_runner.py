@@ -881,6 +881,11 @@ def test_list_partition_data_fits_partitions(all_cases):
     assert not bad, "LIST 分区插入了不在任何分组里的值: %d 处，示例 %s" % (len(bad), bad[:4])
 
 
+def _algo_of(test_id):
+    return {"IT": "instant", "IP": "inplace", "DF": "default", "CP": "copy",
+            "XX": None}.get(test_id.split("-")[-1])
+
+
 def _parse_factors(text):
     """从 `-- Factors: k=v, k=v` 行还原因子字典。"""
     m = _re.search(r"^-- Factors: (.*)$", text, _re.M)
@@ -902,7 +907,7 @@ def test_build_rejected_cases_are_justified(all_cases):
       (b) REG: 因子要求整列索引，但目标列超 InnoDB 3072 字节键上限
     """
     by_id = {t["id"]: t for t in G.ALL_TRANSITIONS}
-    n_part = n_reg = 0
+    n_part = n_reg = n_fac = 0
     bad = []
     for fname, c in all_cases:
         if "#BUILD_REJECTED" not in c.text:
@@ -923,6 +928,19 @@ def test_build_rejected_cases_are_justified(all_cases):
             if G.partition_is_buildable(trans["category"], strat) and len_ok:
                 bad.append((fname, c.test_id,
                             "%s/%s 实测可建却被判为不可建" % (trans["category"], strat)))
+        elif c.test_id.split("-")[2] == "FCT":
+            # 因子族：BUILD_REJECTED 的依据是冻结的因子 golden（build=FAIL）
+            n_fac += 1
+            tags = c.meta.get("expect_tags", {})
+            if (tags.get("build") or [""])[0] != "FAIL":
+                bad.append((fname, c.test_id, "FCT 的 BUILD_REJECTED 必须声明 build=FAIL"))
+            fid = (tags.get("factor") or [c.meta.get("factor") or ""])
+            fid = fid[0] if isinstance(fid, list) else fid
+            golden = G.factor_golden_cached("aliyun")
+            key = [k for k in golden if k.startswith("%s|" % fid)
+                   and k.endswith("|%s" % _algo_of(c.test_id))]
+            if not key or golden[key[0]].get("build") != "FAIL":
+                bad.append((fname, c.test_id, "因子 golden 未记录 build=FAIL: %s" % fid))
         else:
             n_reg += 1
             if "INFEASIBLE_COMBINATION" not in c.text:
@@ -932,6 +950,7 @@ def test_build_rejected_cases_are_justified(all_cases):
     assert not bad, "无依据的 BUILD_REJECTED: %d 处，示例 %s" % (len(bad), bad[:4])
     assert n_part > 100, "PTK 负向用例数异常: %d" % n_part
     assert n_reg > 0, "REG 负向用例数异常: %d" % n_reg
+    assert n_fac > 0, "FCT 负向用例数异常: %d" % n_fac
 
 
 # ================================================================
@@ -1175,23 +1194,26 @@ def test_every_regular_case_has_meta_assertion(all_cases):
     旧套件 238 条元数据断言里**没有一条**断言 column_type，
     因此"类型对了但 NOT NULL/DEFAULT/charset/collation/COMMENT 被改坏"发现不了。
     """
+    CORE_SCOPES = ("REG", "ATR", "PTK", "PNK", "SPE", "FK", "FRM", "TMG", "IDX")
     missing = []
     n = 0
+    core_total = core_rejected = 0
     for fname, c in all_cases:
         scope = c.test_id.split("-")[2]
-        if scope not in ("REG", "ATR", "PTK", "PNK", "SPE", "FK", "FRM", "TMG", "IDX"):
-            continue
+        if scope not in CORE_SCOPES:
+            continue            # CONV / FCT 是矩阵探针族，另有专门的守卫
+        core_total += 1
         # BUILD_REJECTED 类用例根本不建表、不 ALTER，没有列可断言
         if "#BUILD_REJECTED" in c.text:
+            core_rejected += 1
             continue
         n += 1
-        if "#META" not in c.text and "#TYPE_AFTER_ALTER" not in c.text:
+        if "#META" not in c.text:
             missing.append((fname, c.test_id))
-    total = _expected_total_cases()
-    n_rejected = sum(1 for _f, c in all_cases if "#BUILD_REJECTED" in c.text)
-    # 除"建表本应被拒绝"的负向用例外，其余每一个用例都必须有列元数据断言
-    assert n == total - n_rejected, \
-        "受检用例数 %d != 总数 %d - BUILD_REJECTED %d" % (n, total, n_rejected)
+    # 核心用例族里，除"建表本应被拒绝"的负向用例外，每一个都必须有列元数据断言
+    assert n == core_total - core_rejected, \
+        "受检 %d != 核心总数 %d - BUILD_REJECTED %d" % (n, core_total, core_rejected)
+    assert core_total > 8000, "核心用例数异常: %d" % core_total
     assert not missing, "缺少列元数据断言: %d 处，示例 %s" % (len(missing), missing[:4])
 
 
@@ -1203,8 +1225,11 @@ def test_meta_assertion_covers_all_properties(all_cases):
         m = _re.search(r"SELECT '[^']*#META' AS test_id,.*?;", c.text, _re.S)
         if not m:
             continue
-        n += 1
         body = m.group(0)
+        # type-only 与 MEASURE 占位断言不校验全部属性，跳过（它们各自的守卫在别处）
+        if "IF(COUNT(*)=1" not in body:
+            continue
+        n += 1
         for prop in META_PROPS:
             if prop not in body:
                 bad.append((fname, c.test_id, "缺 %s" % prop))

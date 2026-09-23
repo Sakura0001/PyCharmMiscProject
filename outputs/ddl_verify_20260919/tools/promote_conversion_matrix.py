@@ -25,13 +25,15 @@ ROOT = os.path.dirname(HERE)
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--env", default="aliyun")
+    ap.add_argument("--kind", choices=["conversion", "factor"], default="conversion")
     ap.add_argument("--src", default=None)
     ap.add_argument("--dst", default=None)
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
 
-    src = args.src or os.path.join(ROOT, "results", "conversion_matrix_%s.json" % args.env)
-    dst = args.dst or os.path.join(HERE, "conversion_matrix_%s.json" % args.env)
+    base = "conversion_matrix" if args.kind == "conversion" else "factor_matrix"
+    src = args.src or os.path.join(ROOT, "results", "%s_%s.json" % (base, args.env))
+    dst = args.dst or os.path.join(HERE, "%s_%s.json" % (base, args.env))
     if not os.path.exists(src):
         print("找不到实测矩阵 %s（先跑 --files 40_conversion_matrix.sql）" % src)
         return 2
@@ -40,10 +42,13 @@ def main():
     matrix = data.get("matrix", {})
     good, bad = {}, []
     for k, v in matrix.items():
-        if v.get("alter") == "INCONSISTENT":
+        if v.get("alter") == "INCONSISTENT" or v.get("build") == "INCONSISTENT":
             bad.append((k, v))
             continue
-        good[k] = {"alter": v["alter"], "errno": v.get("errnos") or []}
+        entry = {"alter": v["alter"], "errno": v.get("errnos") or []}
+        if "build" in v:
+            entry["build"] = v["build"]
+        good[k] = entry
     print("实测条目 %d，可冻结 %d，不一致需人工排查 %d" % (len(matrix), len(good), len(bad)))
     for k, v in bad:
         print("  !! %s -> %s" % (k, v))

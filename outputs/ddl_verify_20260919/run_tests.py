@@ -50,6 +50,9 @@ RE_TYPE = re.compile(r"^--\s*Type:\s*(.+?),\s*Algorithm:\s*(\w+)(?:,\s*Expected:
 RE_EXPECT_TAG = re.compile(r"^--\s*@expect\s+(.*)$")
 RE_FACTOR = re.compile(r"^--\s*Factors:\s*(.*)$")
 RE_PARTITION = re.compile(r"^--\s*Partition:\s*(.*)$")
+RE_TRANSITION = re.compile(r"^--\s*Transition ID:\s*(\S+)")
+RE_FACTOR_PROBE = re.compile(r"^--\s*Factor probe:\s*(\S+)")
+RE_CONVPROBE = re.compile(r"^--\s*Conversion probe:\s*(\S+)")
 RE_PARTKEY = re.compile(r"^--\s*Target is partition key:\s*(True|False)", re.I)
 # 判定行 ID：主判定就是用例 ID；子断言形如 <用例ID>#<断言名>
 RE_VERDICT_ID = re.compile(r"^(TC-[A-Za-z0-9_.\-]+(?:#[A-Za-z0-9_]+)?)$")
@@ -220,6 +223,7 @@ def parse_case_meta(text):
     meta = {
         "type": "", "algorithm": "", "expected": "", "expected_norm": "",
         "factors": "", "partition": "", "partition_key": "", "title": "",
+        "transition_id": "", "factor": "", "conv_probe": "",
     }
     for line in text.splitlines():
         if not line.startswith("--"):
@@ -243,6 +247,14 @@ def parse_case_meta(text):
         m = RE_PARTKEY.match(line)
         if m:
             meta["partition_key"] = m.group(1).lower() == "true"
+            continue
+        m = RE_TRANSITION.match(line)
+        if m:
+            meta["transition_id"] = m.group(1)
+            continue
+        m = RE_FACTOR_PROBE.match(line)
+        if m:
+            meta["factor"] = m.group(1)
             continue
         if line.startswith("-- ") and not meta["title"] and ":" not in line[:12]:
             meta["title"] = line[3:].strip()
@@ -811,6 +823,8 @@ class Runner(object):
             "assertions": assertions,
             "assertion_count": len(assertions),
             "conv_probe": (case.meta.get("expect_tags", {}).get("conv_probe") or [""])[0],
+            "factor": case.meta.get("factor", "") or (case.meta.get("expect_tags", {}).get("factor") or [""])[0],
+            "transition_id": case.meta.get("transition_id", ""),
             "conv_algo": (case.meta.get("expect_tags", {}).get("conv_algo") or [""])[0],
             "alter_expected": (case.meta.get("expect_tags", {}).get("alter") or [""])[0],
             "alter_actual": _alter_actual(case, errors),
@@ -976,6 +990,14 @@ def select_files(files_arg, all_files, sql_dir):
     return picked
 
 
+ALGO_FROM_SUFFIX = {"DF": "default", "IT": "instant", "IP": "inplace", "CP": "copy", "XX": None}
+
+
+def _algo_from_id(test_id):
+    parts = str(test_id).split("-")
+    return ALGO_FROM_SUFFIX.get(parts[-1]) if len(parts) >= 2 else None
+
+
 def write_measurement_matrix(runner, env, out_dir):
     """把 alter=MEASURE 的实测结果汇总成兼容矩阵，供人工复核后 promote 成 golden。
 
@@ -1002,6 +1024,46 @@ def write_measurement_matrix(runner, env, out_dir):
             slot["errnos"].append(measured["errno"])
         if slot["alter"] != measured["alter"]:
             slot["alter"] = "INCONSISTENT"
+    # 因子矩阵：key = <factor>|<transition_id>|<algorithm>，同时记录 build 与 alter 实测
+    fmatrix = {}
+    for r in runner.results:
+        if (r.get("alter_expected") or "").upper() != "MEASURE":
+            continue
+        fid = r.get("factor")
+        tid = r.get("transition_id")
+        algo = (r.get("expect_tags", {}).get("alter") and "MEASURE") and \
+            _algo_from_id(r["test_id"])
+        if not fid or not tid or not algo:
+            continue
+        build = None
+        for a in (r.get("assertions") or []):
+            if a["name"] == "BUILD_CHECK":
+                m = re.search(r"table_exists=(\d+)", a.get("mismatch") or "")
+                build = "SUCCESS" if (m and m.group(1) == "1") else "FAIL"
+        measured = next((a.get("measured") for a in (r.get("assertions") or [])
+                         if a.get("measured")), None)
+        key = "%s|%s|%s" % (fid, tid, algo)
+        slot = fmatrix.setdefault(key, {"factor": fid, "transition": tid, "algorithm": algo,
+                                        "build": build, "alter": None, "errnos": [], "cases": 0})
+        slot["cases"] += 1
+        if measured:
+            if slot["alter"] and slot["alter"] != measured["alter"]:
+                slot["alter"] = "INCONSISTENT"
+            else:
+                slot["alter"] = measured["alter"]
+            if measured.get("errno") is not None and measured["errno"] not in slot["errnos"]:
+                slot["errnos"].append(measured["errno"])
+        if build and slot["build"] and slot["build"] != build:
+            slot["build"] = "INCONSISTENT"
+    if fmatrix:
+        fpath = os.path.join(out_dir, "factor_matrix_%s.json" % env)
+        with open(fpath, "w", encoding="utf-8") as fh:
+            json.dump({"env": env, "generated_at": time.strftime("%Y-%m-%d %H:%M:%S"),
+                       "note": "MEASURE 模式实测；复核后 tools/promote_conversion_matrix.py "
+                               "--kind factor 冻结为 golden",
+                       "count": len(fmatrix), "matrix": fmatrix}, fh, ensure_ascii=False, indent=1)
+        print("  实测因子矩阵 %d 条 -> %s" % (len(fmatrix), fpath))
+
     if not matrix:
         return None
     path = os.path.join(out_dir, "conversion_matrix_%s.json" % env)

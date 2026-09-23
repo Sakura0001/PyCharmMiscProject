@@ -1,0 +1,1080 @@
+{
+ "env": "aliyun",
+ "source": "factor_matrix_aliyun.json",
+ "promoted_at": "2026-09-23 17:36:58",
+ "count": 198,
+ "matrix": {
+  "IDX_FUNCTIONAL|INT-S-3-4|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "IDX_FUNCTIONAL|INT-S-3-4|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "IDX_FUNCTIONAL|VC-07|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "IDX_FUNCTIONAL|INT-S-3-4|instant": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "IDX_FUNCTIONAL|VC-07|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "IDX_FUNCTIONAL|VC-07|instant": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "IDX_FUNCTIONAL|CHAR-01|instant": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "IDX_FUNCTIONAL|CHAR-01|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "IDX_FUNCTIONAL|CHAR-01|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "DEP_GEN_STORED|INT-S-3-4|instant": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "DEP_GEN_STORED|INT-S-3-4|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "DEP_GEN_STORED|INT-S-3-4|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "DEP_GEN_STORED|VC-07|instant": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "DEP_GEN_STORED|VC-07|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "DEP_GEN_STORED|VC-07|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "DEP_GEN_STORED|CHAR-01|instant": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "DEP_GEN_STORED|CHAR-01|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "DEP_GEN_STORED|CHAR-01|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "IDX_DESC|INT-S-3-4|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1845
+   ],
+   "build": "SUCCESS"
+  },
+  "IDX_DESC|INT-S-3-4|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "IDX_DESC|INT-S-3-4|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "IDX_DESC|CHAR-01|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1845
+   ],
+   "build": "SUCCESS"
+  },
+  "IDX_DESC|VC-07|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1845
+   ],
+   "build": "SUCCESS"
+  },
+  "IDX_DESC|VC-07|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "IDX_DESC|VC-07|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "IDX_DESC|CHAR-01|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "IDX_INVISIBLE|INT-S-3-4|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1845
+   ],
+   "build": "SUCCESS"
+  },
+  "IDX_DESC|CHAR-01|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "IDX_INVISIBLE|INT-S-3-4|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "IDX_INVISIBLE|INT-S-3-4|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "IDX_INVISIBLE|VC-07|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1845
+   ],
+   "build": "SUCCESS"
+  },
+  "IDX_INVISIBLE|VC-07|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "IDX_INVISIBLE|VC-07|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "IDX_INVISIBLE|CHAR-01|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1845
+   ],
+   "build": "SUCCESS"
+  },
+  "IDX_INVISIBLE|CHAR-01|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "IDX_INVISIBLE|CHAR-01|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "IDX_FULLTEXT_OTHER|INT-S-3-4|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ],
+   "build": "SUCCESS"
+  },
+  "IDX_FULLTEXT_OTHER|INT-S-3-4|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ],
+   "build": "SUCCESS"
+  },
+  "IDX_FULLTEXT_OTHER|INT-S-3-4|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "IDX_FULLTEXT_OTHER|VC-07|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1845
+   ],
+   "build": "SUCCESS"
+  },
+  "IDX_FULLTEXT_OTHER|VC-07|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "IDX_FULLTEXT_OTHER|VC-07|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "IDX_FULLTEXT_OTHER|CHAR-01|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ],
+   "build": "SUCCESS"
+  },
+  "IDX_FULLTEXT_OTHER|CHAR-01|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ],
+   "build": "SUCCESS"
+  },
+  "IDX_FULLTEXT_OTHER|CHAR-01|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "IDX_SPATIAL_OTHER|INT-S-3-4|instant": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "IDX_SPATIAL_OTHER|INT-S-3-4|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "IDX_SPATIAL_OTHER|INT-S-3-4|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "IDX_SPATIAL_OTHER|VC-07|instant": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "IDX_SPATIAL_OTHER|VC-07|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "IDX_SPATIAL_OTHER|VC-07|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "IDX_SPATIAL_OTHER|CHAR-01|instant": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "IDX_SPATIAL_OTHER|CHAR-01|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "IDX_SPATIAL_OTHER|CHAR-01|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "DEP_TRIGGER|INT-S-3-4|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "DEP_TRIGGER|INT-S-3-4|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "DEP_TRIGGER|INT-S-3-4|instant": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "DEP_TRIGGER|VC-07|instant": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "DEP_TRIGGER|VC-07|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "DEP_TRIGGER|VC-07|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "DEP_TRIGGER|CHAR-01|instant": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "DEP_TRIGGER|CHAR-01|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "DEP_TRIGGER|CHAR-01|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "DEP_VIEW|INT-S-3-4|instant": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "DEP_VIEW|VC-07|instant": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "DEP_VIEW|INT-S-3-4|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "DEP_VIEW|INT-S-3-4|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "DEP_VIEW|VC-07|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "DEP_VIEW|VC-07|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "DEP_VIEW|CHAR-01|instant": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "DEP_GEN_VIRTUAL_IDX|INT-S-3-4|instant": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "DEP_VIEW|CHAR-01|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "DEP_GEN_VIRTUAL_IDX|INT-S-3-4|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "DEP_VIEW|CHAR-01|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "DEP_GEN_VIRTUAL_IDX|VC-07|instant": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "DEP_GEN_VIRTUAL_IDX|INT-S-3-4|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "DEP_GEN_VIRTUAL_IDX|VC-07|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "DEP_GEN_VIRTUAL_IDX|VC-07|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "DEP_GEN_VIRTUAL_IDX|CHAR-01|instant": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "DEP_GEN_VIRTUAL_IDX|CHAR-01|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "OPT_ROW_COMPRESSED|INT-S-3-4|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "DEP_GEN_VIRTUAL_IDX|CHAR-01|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "OPT_ROW_COMPRESSED|INT-S-3-4|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1845
+   ],
+   "build": "SUCCESS"
+  },
+  "OPT_ROW_COMPRESSED|INT-S-3-4|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "OPT_ROW_COMPRESSED|VC-07|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1845
+   ],
+   "build": "SUCCESS"
+  },
+  "OPT_ROW_COMPRESSED|VC-07|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "OPT_ROW_COMPRESSED|VC-07|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "OPT_ROW_COMPRESSED|CHAR-01|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1845
+   ],
+   "build": "SUCCESS"
+  },
+  "OPT_ROW_COMPRESSED|CHAR-01|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "OPT_PAGE_COMPRESSION|INT-S-3-4|instant": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "OPT_ROW_COMPRESSED|CHAR-01|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "OPT_PAGE_COMPRESSION|INT-S-3-4|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "OPT_PAGE_COMPRESSION|INT-S-3-4|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "OPT_PAGE_COMPRESSION|VC-07|instant": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "OPT_PAGE_COMPRESSION|VC-07|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "OPT_PAGE_COMPRESSION|VC-07|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "OPT_PAGE_COMPRESSION|CHAR-01|instant": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "OPT_PAGE_COMPRESSION|CHAR-01|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "OPT_PAGE_COMPRESSION|CHAR-01|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "OPT_ENCRYPTION|INT-S-3-4|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1146
+   ],
+   "build": "FAIL"
+  },
+  "OPT_ENCRYPTION|INT-S-3-4|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1146
+   ],
+   "build": "FAIL"
+  },
+  "OPT_ENCRYPTION|VC-07|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1146
+   ],
+   "build": "FAIL"
+  },
+  "OPT_ENCRYPTION|VC-07|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1146
+   ],
+   "build": "FAIL"
+  },
+  "OPT_ENCRYPTION|INT-S-3-4|default": {
+   "alter": "FAIL",
+   "errno": [
+    1146
+   ],
+   "build": "FAIL"
+  },
+  "OPT_ENCRYPTION|VC-07|default": {
+   "alter": "FAIL",
+   "errno": [
+    1146
+   ],
+   "build": "FAIL"
+  },
+  "OPT_ENCRYPTION|CHAR-01|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1146
+   ],
+   "build": "FAIL"
+  },
+  "OPT_ENCRYPTION|CHAR-01|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1146
+   ],
+   "build": "FAIL"
+  },
+  "OPT_ENCRYPTION|CHAR-01|default": {
+   "alter": "FAIL",
+   "errno": [
+    1146
+   ],
+   "build": "FAIL"
+  },
+  "OPT_TABLESPACE|INT-S-3-4|instant": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "OPT_TABLESPACE|INT-S-3-4|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "OPT_TABLESPACE|INT-S-3-4|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "OPT_TABLESPACE|VC-07|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "OPT_TABLESPACE|VC-07|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "OPT_TABLESPACE|VC-07|instant": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "OPT_TABLESPACE|CHAR-01|instant": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "OPT_TABLESPACE|CHAR-01|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "OPT_STATS_PERSISTENT|INT-S-3-4|instant": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "OPT_STATS_PERSISTENT|INT-S-3-4|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "OPT_TABLESPACE|CHAR-01|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "OPT_STATS_PERSISTENT|INT-S-3-4|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "OPT_STATS_PERSISTENT|VC-07|instant": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "OPT_STATS_PERSISTENT|VC-07|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "OPT_STATS_PERSISTENT|VC-07|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "OPT_STATS_PERSISTENT|CHAR-01|instant": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "OPT_STATS_PERSISTENT|CHAR-01|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "OPT_STATS_PERSISTENT|CHAR-01|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "ENG_MYISAM|INT-S-3-4|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1146
+   ],
+   "build": "FAIL"
+  },
+  "ENG_MYISAM|INT-S-3-4|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1146
+   ],
+   "build": "FAIL"
+  },
+  "ENG_MYISAM|INT-S-3-4|default": {
+   "alter": "FAIL",
+   "errno": [
+    1146
+   ],
+   "build": "FAIL"
+  },
+  "ENG_MYISAM|VC-07|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1146
+   ],
+   "build": "FAIL"
+  },
+  "ENG_MYISAM|VC-07|default": {
+   "alter": "FAIL",
+   "errno": [
+    1146
+   ],
+   "build": "FAIL"
+  },
+  "ENG_MYISAM|VC-07|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1146
+   ],
+   "build": "FAIL"
+  },
+  "ENG_MYISAM|CHAR-01|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1146
+   ],
+   "build": "FAIL"
+  },
+  "ENG_MYISAM|CHAR-01|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1146
+   ],
+   "build": "FAIL"
+  },
+  "ENG_MEMORY|INT-S-3-4|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1146
+   ],
+   "build": "FAIL"
+  },
+  "ENG_MYISAM|CHAR-01|default": {
+   "alter": "FAIL",
+   "errno": [
+    1146
+   ],
+   "build": "FAIL"
+  },
+  "ENG_MEMORY|VC-07|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1146
+   ],
+   "build": "FAIL"
+  },
+  "ENG_MEMORY|INT-S-3-4|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1146
+   ],
+   "build": "FAIL"
+  },
+  "ENG_MEMORY|INT-S-3-4|default": {
+   "alter": "FAIL",
+   "errno": [
+    1146
+   ],
+   "build": "FAIL"
+  },
+  "ENG_MEMORY|VC-07|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1146
+   ],
+   "build": "FAIL"
+  },
+  "ENG_MEMORY|VC-07|default": {
+   "alter": "FAIL",
+   "errno": [
+    1146
+   ],
+   "build": "FAIL"
+  },
+  "ENG_MEMORY|CHAR-01|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1146
+   ],
+   "build": "FAIL"
+  },
+  "ENG_MEMORY|CHAR-01|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1146
+   ],
+   "build": "FAIL"
+  },
+  "ENG_MEMORY|CHAR-01|default": {
+   "alter": "FAIL",
+   "errno": [
+    1146
+   ],
+   "build": "FAIL"
+  },
+  "MODE_PAD_CHAR|INT-S-3-4|instant": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "MODE_PAD_CHAR|INT-S-3-4|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "MODE_PAD_CHAR|VC-07|instant": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "MODE_PAD_CHAR|INT-S-3-4|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "MODE_PAD_CHAR|VC-07|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "MODE_PAD_CHAR|VC-07|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "MODE_PAD_CHAR|CHAR-01|instant": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "MODE_PAD_CHAR|CHAR-01|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "MODE_PAD_CHAR|CHAR-01|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "MODE_TRADITIONAL|INT-S-3-4|instant": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "MODE_TRADITIONAL|INT-S-3-4|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "MODE_TRADITIONAL|INT-S-3-4|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "MODE_TRADITIONAL|VC-07|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "MODE_TRADITIONAL|VC-07|instant": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "MODE_TRADITIONAL|VC-07|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "MODE_TRADITIONAL|CHAR-01|instant": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "MODE_TRADITIONAL|CHAR-01|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "MODE_ANSI|INT-S-3-4|instant": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "MODE_TRADITIONAL|CHAR-01|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "MODE_ANSI|INT-S-3-4|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "MODE_ANSI|INT-S-3-4|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "MODE_ANSI|VC-07|instant": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "MODE_ANSI|VC-07|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "MODE_ANSI|VC-07|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "MODE_ANSI|CHAR-01|instant": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "MODE_ANSI|CHAR-01|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "MODE_ANSI|CHAR-01|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "MODE_NO_ZERO_DATE|INT-S-3-4|instant": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "MODE_NO_ZERO_DATE|INT-S-3-4|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "MODE_NO_ZERO_DATE|INT-S-3-4|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "MODE_NO_ZERO_DATE|VC-07|instant": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "MODE_NO_ZERO_DATE|VC-07|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "MODE_NO_ZERO_DATE|VC-07|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "MODE_NO_ZERO_DATE|CHAR-01|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "MODE_NO_ZERO_DATE|CHAR-01|instant": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "MODE_NO_ZERO_DATE|CHAR-01|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "SCALE_10K|VC-07|instant": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "SCALE_10K|INT-S-3-4|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "SCALE_10K|INT-S-3-4|instant": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "SCALE_10K|INT-S-3-4|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "SCALE_10K|VC-07|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "SCALE_10K|VC-07|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "SCALE_10K|CHAR-01|instant": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "SCALE_10K|CHAR-01|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "SCALE_10K|CHAR-01|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "WIDE_200_COLS|INT-S-3-4|instant": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "WIDE_200_COLS|INT-S-3-4|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "WIDE_200_COLS|INT-S-3-4|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "WIDE_200_COLS|VC-07|instant": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "WIDE_200_COLS|VC-07|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "WIDE_200_COLS|VC-07|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "WIDE_200_COLS|CHAR-01|instant": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "WIDE_200_COLS|CHAR-01|inplace": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  },
+  "WIDE_200_COLS|CHAR-01|default": {
+   "alter": "SUCCESS",
+   "errno": [],
+   "build": "SUCCESS"
+  }
+ }
+}
