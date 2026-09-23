@@ -251,7 +251,13 @@ def test_classify_manual_legacy_constant():
 
 # ---------------------------------------------------------------- real files
 
-PART_FILE = "12_partition_64.sql.gz"
+GEN_MANIFEST = os.path.join(ROOT, "results", "generation_manifest.json")
+
+
+def _expected_total_cases():
+    """用例总数以生成器清单为准，避免测试里写死数字（覆盖变化时会误报）。"""
+    with open(GEN_MANIFEST) as fh:
+        return json.load(fh)["total_cases"]
 
 
 def test_real_partition_file_ids_are_unique():
@@ -261,9 +267,9 @@ def test_real_partition_file_ids_are_unique():
     assert part, "分区文件不存在"
     man = R.build_manifest(part, use_cache=True)
     f = man["files"][0]
-    assert f["cases"] == 8192
     assert f["duplicate_case_ids"] == 0, "分区用例 ID 又出现重复（P0-4 回归）"
     assert f["unique_case_ids"] == f["cases"]
+    assert f["cases"] > 0
 
 
 @pytest.fixture(scope="session")
@@ -297,13 +303,14 @@ def test_all_case_ids_globally_unique(all_cases):
         assert len(parts) == 5 and parts[0] == "TC", c.test_id
         assert parts[4] in ("IT", "IP", "CP", "DF", "XX"), c.test_id
         assert parts[1] == fname[:2], (c.test_id, fname)
-    assert total == 18993, "用例总数变化，请确认是否为预期（当前 %d）" % total
+    assert total == _expected_total_cases(), \
+        "执行器解析出的用例数(%d) 与生成器清单(%d) 不一致" % (total, _expected_total_cases())
 
 
 def test_derived_table_names_unique(all_cases):
     """表名由 ID 派生 => 表名同样全局唯一，--workers>1 才安全。"""
     ids = {"t1_" + c.test_id.lower().replace("-", "_") for _f, c in all_cases}
-    assert len(ids) == 18993
+    assert len(ids) == _expected_total_cases()
     assert max(len(i) for i in ids) <= 64, "表名超出 MySQL 64 字符上限"
 
 
@@ -553,21 +560,23 @@ def test_build_rejected_branch_asserts_table_absent(all_cases):
             continue
         n += 1
         assert "information_schema.tables" in c.text, c.test_id
-        assert "PK_COMPAT needs correction" in c.text, c.test_id
-    assert n > 500, "BUILD_REJECTED 断言用例数异常: %d" % n
+        assert "needs correction" in c.text, c.test_id
+    assert n > 100, "BUILD_REJECTED 断言用例数异常: %d" % n
 
 
-def test_target_key_branch_asserts_type_unchanged(all_cases):
-    """P0-2：ALTER 预期失败的分支必须断言列类型仍是旧类型（否则无法证明 ALTER 被拒）。"""
+def test_target_key_branch_asserts_type_after_alter(all_cases):
+    """P0-2：PTK 分支必须断言 ALTER 后的列类型（预期失败=>仍是旧类型；
+    预期成功=>已是新类型）。没有这条断言就无法证明 ALTER 被拒/生效。"""
     n = 0
     for fname, c in all_cases:
-        if "-PTK-" not in c.test_id or "#TYPE_UNCHANGED" not in c.text:
+        if "-PTK-" not in c.test_id or "#TYPE_AFTER_ALTER" not in c.text:
             continue
         n += 1
         assert "information_schema.columns" in c.text
-        assert _re.search(r"column_type\)\s*,\s*'<missing>'\)=", c.text) or \
-               "IFNULL(MAX(column_type)" in c.text, c.test_id
-    assert n > 1000, "TYPE_UNCHANGED 断言用例数异常: %d" % n
+        assert "IFNULL(MAX(column_type)" in c.text, c.test_id
+        # 期望值必须写进断言里（column_type= 字面量）
+        assert _re.search(r"expect=', *'?[a-z]", c.text) or "expect=" in c.text
+    assert n > 1000, "TYPE_AFTER_ALTER 断言用例数异常: %d" % n
 
 
 def test_multi_assertion_cases_declare_count(all_cases):
@@ -640,3 +649,318 @@ def test_assertion_count_match_passes():
                          {"test_id": case.test_id + "#TYPE", "result": "PASS", "mismatch": ""}],
         "errors": [], "duration_ms": 5, "statement_count": 7})
     assert st == "PASS" and len(a) == 2
+
+
+# ================================================================
+# Step 4 (P0-5 / P0-9) 分区生成器：类型感知 + 真 SUBPARTITION + 实测矩阵
+# ================================================================
+
+sys.path.insert(0, ROOT)
+import generate_test_sql as G  # noqa: E402
+
+PROBE_JSON = os.path.join(ROOT, "tools", "partition_compat_aliyun.json")
+
+
+def test_24_partition_strategies_are_distinct():
+    """P0-5：必须是 24 种**互不相同**的策略（8 一级 + 16 组合），不是 64 种里的 8 种重复 8 次。"""
+    names = [n for n, _f, _s in G.PARTITION_STRATEGIES]
+    assert len(names) == len(set(names)) == 24
+    composite = [n for n, f, sb in G.PARTITION_STRATEGIES if sb]
+    assert len(composite) == 16, composite
+    # 组合分区只能是一级 RANGE*/LIST* + 二级 HASH/KEY 家族
+    for n, f, sb in G.PARTITION_STRATEGIES:
+        if sb:
+            assert f in ("RANGE", "RANGE COLUMNS", "LIST", "LIST COLUMNS"), n
+            assert sb in ("HASH", "LINEAR HASH", "KEY", "LINEAR KEY"), n
+
+
+def test_subpartition_really_generated(all_cases):
+    """P0-5：SUBPARTITION 必须真实出现在 SQL 里（旧实现出现 0 次）。"""
+    n_sub = sum(c.text.count("SUBPARTITION BY") for f, c in all_cases if "-PTK-" in c.test_id or "-PNK-" in c.test_id)
+    assert n_sub > 1000, "SUBPARTITION BY 只出现 %d 次" % n_sub
+
+
+def test_no_duplicated_partition_keyword(all_cases):
+    """回归守卫：曾生成 `PARTITION BY RANGE COLUMNS COLUMNS(target)`。"""
+    bad = []
+    for f, c in all_cases:
+        # 只看真正的 PARTITION BY 子句，不看 `-- Partition: RANGE COLUMNS (#01/24)` 这类注释
+        for clause in _re.findall(r"PARTITION BY [^\n]*", c.text):
+            if "COLUMNS COLUMNS" in clause or "COLUMNS (" in clause:
+                bad.append((f, c.test_id, clause))
+    assert not bad, "分区关键字拼接错误: %d 处，示例 %s" % (len(bad), bad[:3])
+
+
+def test_partition_bounds_match_column_type(all_cases):
+    """P0-9：字符串/二进制列的分区界必须是字符串/十六进制字面量，不能是裸整数。
+
+    旧实现对所有类型硬编码 `VALUES LESS THAN (100)/(200)/(300)`：
+    TINYINT 上限 127 -> 越界；VARCHAR -> 类型不符，实测 errno 1654/1697。
+    """
+    bad = []
+    for fname, c in all_cases:
+        if "-PTK-" not in c.test_id and "-PNK-" not in c.test_id:
+            continue
+        ttype = (c.meta.get("type") or "").split(" -> ")[0].strip().upper()
+        is_str = ttype.startswith(("CHAR", "VARCHAR", "BINARY", "VARBINARY",
+                                   "TEXT", "TINYTEXT", "MEDIUMTEXT", "LONGTEXT",
+                                   "BLOB", "TINYBLOB", "MEDIUMBLOB", "LONGBLOB"))
+        for m in _re.finditer(r"PARTITION BY (RANGE COLUMNS|LIST COLUMNS)\(target\)(.*?)(?:;|\n\n)",
+                              c.text, _re.S):
+            body = m.group(2)
+            lits = _re.findall(r"VALUES (?:LESS THAN )?\(([^)]*)\)", body)
+            for lit in lits:
+                if lit.strip() == "MAXVALUE":
+                    continue
+                for one in lit.split(","):
+                    one = one.strip()
+                    if not one:
+                        continue
+                    quoted = one.startswith(("'", "X'", "x'", "0x"))
+                    if is_str and not quoted:
+                        bad.append((fname, c.test_id, ttype, one))
+                    if (not is_str) and quoted and not one.startswith("X'"):
+                        bad.append((fname, c.test_id, ttype, one))
+    assert not bad, "分区界与列类型不匹配: %d 处，示例 %s" % (len(bad), bad[:5])
+
+
+def test_partition_compat_matrix_matches_measured_probe():
+    """生成器内嵌的 PARTITION_COMPAT 必须与实测探针结果一致（按 category 归并）。"""
+    if not os.path.exists(PROBE_JSON):
+        pytest.skip("未找到实测探针结果 tools/partition_compat_aliyun.json")
+    with open(PROBE_JSON) as fh:
+        probe = json.load(fh)
+    strategies = [n for n, _f, _s in G.PARTITION_STRATEGIES]
+    measured = {}
+    for typedef, info in probe["types"].items():
+        cat = info["category"]
+        ok = {s for s in strategies if probe["matrix"][typedef].get(s, {}).get("build")}
+        measured.setdefault(cat, set()).update(ok)
+        # 同一 category 内不同具体类型的可建策略集合必须一致，否则矩阵不能按 category 归并
+        assert measured[cat] == ok, "%s 内 %s 的可建策略与其它类型不一致" % (cat, typedef)
+    for cat, ok in measured.items():
+        embedded = set(G.PARTITION_COMPAT.get(cat, []))
+        assert embedded == ok, ("category=%s 内嵌矩阵与实测不符\n  内嵌: %s\n  实测: %s"
+                                % (cat, sorted(embedded), sorted(ok)))
+
+
+def test_list_partition_data_fits_partitions(all_cases):
+    """LIST/LIST COLUMNS 没有 MAXVALUE 兜底：插入值必须来自分组，否则 errno 1526 静默丢数据。"""
+    bad = []
+    for fname, c in all_cases:
+        if "-PTK-" not in c.test_id:
+            continue
+        if not _re.search(r"PARTITION BY LIST( COLUMNS)?\(target\)", c.text):
+            continue
+        groups = _re.findall(r"VALUES IN \(([^)]*)\)", c.text)
+        allowed = {v.strip() for g in groups for v in g.split(",")}
+        for ins in _re.findall(r"^INSERT INTO t1_\w+ \(target\) VALUES \((.+?)\);$",
+                               c.text, _re.M):
+            v = ins.strip()
+            if v == "NULL":
+                continue
+            if v not in allowed:
+                bad.append((fname, c.test_id, v, sorted(allowed)[:4]))
+    assert not bad, "LIST 分区插入了不在任何分组里的值: %d 处，示例 %s" % (len(bad), bad[:4])
+
+
+def _parse_factors(text):
+    """从 `-- Factors: k=v, k=v` 行还原因子字典。"""
+    m = _re.search(r"^-- Factors: (.*)$", text, _re.M)
+    if not m:
+        return {}
+    out = {}
+    for kv in m.group(1).split(", "):
+        if "=" in kv:
+            k, v = kv.split("=", 1)
+            out[k.strip()] = v.strip()
+    return out
+
+
+def test_build_rejected_cases_are_justified(all_cases):
+    """每个 BUILD_REJECTED 负向用例都必须有可核对的依据，不能凭空造负向覆盖。
+
+    依据只有两种：
+      (a) PTK: (category, strategy) 不在实测 PARTITION_COMPAT 里，或目标列超索引键上限
+      (b) REG: 因子要求整列索引，但目标列超 InnoDB 3072 字节键上限
+    """
+    by_id = {t["id"]: t for t in G.ALL_TRANSITIONS}
+    n_part = n_reg = 0
+    bad = []
+    for fname, c in all_cases:
+        if "#BUILD_REJECTED" not in c.text:
+            continue
+        m = _re.search(r"^-- Transition ID: (\S+)$", c.text, _re.M)
+        trans = by_id.get(m.group(1)) if m else None
+        if trans is None:
+            bad.append((fname, c.test_id, "缺少可追溯的 Transition ID"))
+            continue
+        if "-PTK-" in c.test_id:
+            n_part += 1
+            sm = _re.search(r"^-- Partition: (.+?) \(#", c.text, _re.M)
+            if not sm:
+                bad.append((fname, c.test_id, "缺少 Partition 策略标注"))
+                continue
+            strat = sm.group(1)
+            len_ok, _bytes = G.partition_key_len_ok(trans)
+            if G.partition_is_buildable(trans["category"], strat) and len_ok:
+                bad.append((fname, c.test_id,
+                            "%s/%s 实测可建却被判为不可建" % (trans["category"], strat)))
+        else:
+            n_reg += 1
+            if "INFEASIBLE_COMBINATION" not in c.text:
+                bad.append((fname, c.test_id, "非 PTK 的 BUILD_REJECTED 必须标 INFEASIBLE_COMBINATION"))
+            elif G.check_case_feasible(trans, _parse_factors(c.text)) is None:
+                bad.append((fname, c.test_id, "check_case_feasible 判可行，却生成了负向用例"))
+    assert not bad, "无依据的 BUILD_REJECTED: %d 处，示例 %s" % (len(bad), bad[:4])
+    assert n_part > 100, "PTK 负向用例数异常: %d" % n_part
+    assert n_reg > 0, "REG 负向用例数异常: %d" % n_reg
+
+
+# ================================================================
+# Step 5 (P0-8) 行宽/索引键上限：上限转换必须真的建得出来
+# ================================================================
+
+ROW_SIZE_LIMIT = 65535          # MySQL 服务器级行宽上限（不含 BLOB/TEXT）
+INDEX_KEY_LIMIT = 3072          # InnoDB 单索引键上限
+BIG_TYPE_RE = r"VARCHAR\(1638[123]\)|VARCHAR\(6552[789]\)|VARBINARY\(6552[789]\)"
+
+
+def _mb(transition):
+    cs = transition.get("charset")
+    return G.CHARSET_MBMAXLEN.get((cs or "latin1").lower(), 1)
+
+
+def _est_row_bytes(transition, minimal):
+    """按生成器的两种表结构估算行宽（与 MySQL 的 65535 计算口径一致）。"""
+    tb = G._type_max_bytes(transition["new_type"], transition.get("charset"))
+    if tb is None:
+        return 0                       # 整数/DECIMAL/BIT 远小于上限
+    total = 4                          # id INT
+    total += tb + (2 if tb > 255 else 1)
+    if not minimal:
+        pad = 20 * _mb(transition) if transition["category"] in ("char", "varchar", "text") else 20
+        total += 2 * (pad + 1)         # pad1 + pad2 VARCHAR(20)
+    return total
+
+
+def test_upper_limit_transitions_match_measured_maxima():
+    """P0-8：三条"转换到 MySQL 上限"的用例必须等于二分实测上界，而不是理论值。"""
+    by_id = {t["id"]: t for t in G.ALL_TRANSITIONS}
+    expect = {"VC-08": ("VARCHAR(16381)", "VARCHAR(16382)"),
+              "VC-09": ("VARCHAR(65527)", "VARCHAR(65528)"),
+              "VBIN-03": ("VARBINARY(65527)", "VARBINARY(65528)")}
+    for tid, (o, n) in expect.items():
+        t = by_id[tid]
+        assert (t["old_type"], t["new_type"]) == (o, n), \
+            "%s = %s->%s，二分实测上界应为 %s->%s" % (tid, t["old_type"], t["new_type"], o, n)
+        assert t.get("minimal_table") is True, tid
+
+
+def test_no_transition_exceeds_row_size_budget():
+    """P0-8 根因守卫：任何转换在其表结构下都不得超过 65535 行宽上限。
+
+    旧实现 VC-08 用 VARCHAR(16383) utf8mb4 = 65532 + 2 + id 4 = 65538 > 65535，
+    CREATE/ALTER 直接 errno 1118，200 个用例变成 ERROR。
+    """
+    bad = []
+    for t in G.ALL_TRANSITIONS:
+        minimal = bool(t.get("minimal_table"))
+        for shape in ({True, minimal} if not minimal else {True}):
+            n = _est_row_bytes(t, shape)
+            if n and n > ROW_SIZE_LIMIT:
+                bad.append((t["id"], "minimal" if shape else "normal", n))
+    assert not bad, "行宽超上限的转换: %s" % bad[:6]
+
+
+def test_infeasible_combinations_are_explicit_negative_cases(all_cases):
+    """超过 3072 字节的目标列若需要整列索引，必须走显式负向用例（BUILD_REJECTED）。"""
+    n = 0
+    for fname, c in all_cases:
+        if "INFEASIBLE_COMBINATION" not in c.text:
+            continue
+        n += 1
+        assert "#BUILD_REJECTED" in c.text, c.test_id
+        assert "build=FAIL" in c.text, c.test_id
+        assert "errno=[1071]" in c.text, c.test_id
+        assert "information_schema.tables" in c.text, c.test_id
+    assert n > 0, "没有任何 infeasible 负向用例"
+
+
+def test_minimal_table_composite_pk_is_not_marked_infeasible(all_cases):
+    """回归守卫：minimal_table 下 COMPOSITE_PK 被降级为 PRIMARY KEY(id)，
+    目标列上没有索引 => 组合可行，不能判 infeasible（曾误判 8 例）。"""
+    n = 0
+    for fname, c in all_cases:
+        if "primary_key=COMPOSITE_PK" not in c.text:
+            continue
+        if not _re.search(BIG_TYPE_RE, c.text):
+            continue
+        n += 1
+        assert "INFEASIBLE_COMBINATION" not in c.text, c.test_id
+        assert "PRIMARY KEY (id, target)" not in c.text, "%s COMPOSITE_PK 未降级" % c.test_id
+    assert n > 0
+
+
+def test_instant_expectation_accounts_for_minimal_pk_downgrade(all_cases):
+    """回归守卫：minimal_table + COMPOSITE_PK + INSTANT 的期望必须是 SUCCESS。
+
+    目标列不在任何索引里 => INSTANT 实际成功；旧期望模型判 FAIL、对照表按旧类型建，
+    结果 4 个 VC-08/VC-09 用例数据不一致报 FAIL。
+    """
+    n = 0
+    for fname, c in all_cases:
+        if not c.test_id.endswith("-IT") or "primary_key=COMPOSITE_PK" not in c.text:
+            continue
+        if not _re.search(BIG_TYPE_RE, c.text):
+            continue
+        if "INFEASIBLE_COMBINATION" in c.text:
+            continue
+        n += 1
+        assert ", Expected: SUCCESS" in c.text, \
+            "%s: minimal_table+COMPOSITE_PK+INSTANT 期望应为 SUCCESS" % c.test_id
+        assert _re.search(r"-- Oracle table: (VARCHAR\(16382\)|VARCHAR\(65528\)|VARBINARY\(65528\))",
+                          c.text), "%s: 对照表应按新类型建" % c.test_id
+    assert n > 0
+
+
+def test_atr_cases_respect_minimal_table(all_cases):
+    """P0-8：列属性保持用例也必须认 minimal_table，否则超大类型 + pad 列 errno 1118。"""
+    n = 0
+    for fname, c in all_cases:
+        if "-ATR-" not in c.test_id or not _re.search(BIG_TYPE_RE, c.text):
+            continue
+        n += 1
+        assert "pad VARCHAR(20)" not in c.text, "%s: minimal_table 用例不应有 pad 列" % c.test_id
+    assert n > 0, "未找到 minimal_table 的 ATR 用例"
+
+
+def test_charset_present_on_every_string_column(all_cases):
+    """P0-8：字符集必须在**所有**建表点显式写出。
+
+    漏写时列会按库默认字符集解析（utf8mb3）=> VARCHAR(65528) 直接 errno 1074
+    "max = 21845"；或 CREATE 不带而 ALTER 带 CHARACTER SET => 变成"改字符集"，
+    INPLACE 被拒(1846)，11 个分区用例因此误判 FAIL。
+    """
+    bad = []
+    for fname, c in all_cases:
+        if not _re.search(r"-- Type: (CHAR|VARCHAR)\(", c.text):
+            continue
+        for tname, create in _re.findall(r"CREATE TABLE (\w+) \((.*?)\) ENGINE[^;]*", c.text, _re.S):
+            tbl_cs = _re.search(r"DEFAULT CHARSET=(\w+)", create)
+            for col in _re.findall(r"^\s*(?:target|id)\s+((?:VAR)?CHAR\(\d+\)[^,\n]*)$",
+                                   create, _re.M):
+                if "CHARACTER SET" not in col.upper() and not tbl_cs:
+                    bad.append((fname, c.test_id, tname, "target 无字符集且表无 DEFAULT CHARSET"))
+    # ALTER 与 CREATE 的字符集必须一致，否则 ALTER 语义变成"改字符集"，INPLACE 会被拒(1846)
+    for fname, c in all_cases:
+        if not _re.search(r"-- Type: (?:CHAR|VARCHAR)", c.text):
+            continue
+        creates = _re.findall(r"target\s+((?:VAR)?CHAR\(\d+\)(?:\s+CHARACTER SET\s+\w+)?)", c.text)
+        alters = _re.findall(r"MODIFY (?:target|id) ((?:VAR)?CHAR\(\d+\)(?:\s+CHARACTER SET\s+\w+)?)", c.text)
+        cs_create = {x.split("CHARACTER SET")[-1].strip().lower() for x in creates if "CHARACTER SET" in x}
+        cs_alter = {x.split("CHARACTER SET")[-1].strip().lower() for x in alters if "CHARACTER SET" in x}
+        if cs_alter and cs_create and (cs_alter - cs_create):
+            bad.append((fname, c.test_id,
+                        "ALTER 字符集 %s 不在 CREATE 字符集 %s 中" % (sorted(cs_alter), sorted(cs_create))))
+    assert not bad, "字符集缺失/不一致: %d 处，示例 %s" % (len(bad), bad[:5])

@@ -147,8 +147,15 @@ CHAR_VARCHAR_TRANSITIONS = [
     {"id": "VC-06", "category": "varchar", "old_type": "VARCHAR(64)",  "new_type": "VARCHAR(65)",  "charset": "utf8mb4", "old_max_len": 64,  "new_max_len": 65,  "instant": "SUCCESS", "inplace": "SUCCESS", "env": "aliyun"},
     {"id": "VC-07", "category": "varchar", "old_type": "VARCHAR(100)", "new_type": "VARCHAR(200)", "charset": "utf8mb4", "old_max_len": 100, "new_max_len": 200, "instant": "SUCCESS", "inplace": "SUCCESS", "env": "aliyun"},
     # VARCHAR upper limits — convert to MySQL maximum
-    {"id": "VC-08", "category": "varchar", "old_type": "VARCHAR(16382)", "new_type": "VARCHAR(16383)", "charset": "utf8mb4", "old_max_len": 16382, "new_max_len": 16383, "instant": "SUCCESS", "inplace": "SUCCESS", "env": "aliyun", "minimal_table": True},
-    {"id": "VC-09", "category": "varchar", "old_type": "VARCHAR(65528)", "new_type": "VARCHAR(65529)", "charset": "latin1", "old_max_len": 65528, "new_max_len": 65529, "instant": "SUCCESS", "inplace": "SUCCESS", "env": "aliyun", "minimal_table": True},
+    # P0-8 修正：原值 VARCHAR(16382)->VARCHAR(16383) utf8mb4 / VARCHAR(65528)->VARCHAR(65529) latin1
+    # 在 RDS 8.0.36 与社区版 8.0.45 上都**建不出表**（errno 1118 Row size too large），
+    # 因为 minimal_table 里还有 id INT(4 字节)：16383*4+2+4 = 65538 > 65535。
+    # 二分实测（id INT AUTO_INCREMENT PRIMARY KEY + target 两列表）真实上界：
+    #   utf8mb4 VARCHAR = 16382、latin1 VARCHAR = 65528、VARBINARY = 65528
+    # 故"转换到 MySQL 上限"的正确用例是 16381->16382 / 65527->65528；
+    # 再 +1 就是超上限负向探针（应 errno 1118）。
+    {"id": "VC-08", "category": "varchar", "old_type": "VARCHAR(16381)", "new_type": "VARCHAR(16382)", "charset": "utf8mb4", "old_max_len": 16381, "new_max_len": 16382, "instant": "SUCCESS", "inplace": "SUCCESS", "env": "aliyun", "minimal_table": True},
+    {"id": "VC-09", "category": "varchar", "old_type": "VARCHAR(65527)", "new_type": "VARCHAR(65528)", "charset": "latin1", "old_max_len": 65527, "new_max_len": 65528, "instant": "SUCCESS", "inplace": "SUCCESS", "env": "aliyun", "minimal_table": True},
 ]
 
 INTERNAL_TRANSITIONS = [
@@ -159,7 +166,8 @@ INTERNAL_TRANSITIONS = [
     # VARBINARY
     {"id": "VBIN-01", "category": "varbinary", "old_type": "VARBINARY(20)",  "new_type": "VARBINARY(40)",  "charset": None, "old_max_len": 20,  "new_max_len": 40,  "instant": "SUCCESS", "inplace": "SUCCESS", "env": "internal"},
     {"id": "VBIN-02", "category": "varbinary", "old_type": "VARBINARY(100)", "new_type": "VARBINARY(200)", "charset": None, "old_max_len": 100, "new_max_len": 200, "instant": "SUCCESS", "inplace": "SUCCESS", "env": "internal"},
-    {"id": "VBIN-03", "category": "varbinary", "old_type": "VARBINARY(65528)", "new_type": "VARBINARY(65529)", "charset": None, "old_max_len": 65528, "new_max_len": 65529, "instant": "SUCCESS", "inplace": "SUCCESS", "env": "internal", "minimal_table": True},
+    # P0-8 修正：同上，VARBINARY(65529) 配 id INT 会超 65535 行宽上限（实测 errno 1118）
+    {"id": "VBIN-03", "category": "varbinary", "old_type": "VARBINARY(65527)", "new_type": "VARBINARY(65528)", "charset": None, "old_max_len": 65527, "new_max_len": 65528, "instant": "SUCCESS", "inplace": "SUCCESS", "env": "internal", "minimal_table": True},
     # DECIMAL
     {"id": "DEC-01", "category": "decimal", "old_type": "DECIMAL(10,2)",  "new_type": "DECIMAL(12,2)",  "charset": None, "instant": "SUCCESS", "inplace": "SUCCESS", "env": "internal"},
     {"id": "DEC-02", "category": "decimal", "old_type": "DECIMAL(1,0)",   "new_type": "DECIMAL(2,0)",   "charset": None, "instant": "SUCCESS", "inplace": "SUCCESS", "env": "internal"},
@@ -876,6 +884,77 @@ def _build_alter_stmt(table: str, target_col: str, col_def: str, algorithm: str)
     return f"ALTER TABLE {table} MODIFY {target_col} {col_def}, ALGORITHM={algorithm};"
 
 
+# InnoDB 单个索引键上限（8.0 默认 DYNAMIC/COMPRESSED 行格式 = 3072 字节）。
+# RDS 8.0.36 实测二分确认：latin1 VARCHAR 作分区键/索引列最大 3068 字节
+# （3068 + 4 字节 id = 3072），utf8mb4 最大 VARCHAR(767)；再大 1 字节即 errno 1071。
+INDEX_KEY_LIMIT_BYTES = 3072
+
+
+def factor_needs_full_target_index(factors: dict, transition: dict) -> bool:
+    """该因子组合是否要求在目标列上建**整列**索引（而非前缀索引）。
+
+    注意 minimal_table 的降级规则（见 _build_create_table）：
+      * dependencies=SECONDARY_INDEX/UNIQUE_INDEX -> `INDEX idx_target(target)`
+        **不受** minimal_table 影响，照样会建整列索引 => 超 3072 字节必 errno 1071
+      * primary_key=COMPOSITE_PK 在 minimal_table 下被降级成 `PRIMARY KEY (id)`，
+        目标列上并没有索引 => 建表可行，不能判为 infeasible
+    """
+    minimal = bool(transition.get("minimal_table"))
+    if factors.get("dependencies") in ("SECONDARY_INDEX", "UNIQUE_INDEX"):
+        return True
+    if factors.get("primary_key") == "COMPOSITE_PK" and not minimal:
+        return True
+    return False
+
+
+def target_index_bytes(transition: dict) -> Optional[int]:
+    """目标列（新旧类型取大者）的最大字节数；非字符/二进制类型返回 None。"""
+    vals = [v for v in (_type_max_bytes(transition["old_type"], transition.get("charset")),
+                        _type_max_bytes(transition["new_type"], transition.get("charset"))) if v]
+    return max(vals) if vals else None
+
+
+def check_case_feasible(transition: dict, factors: dict) -> Optional[str]:
+    """返回 None 表示该 (转换 × 因子) 组合可建表；否则返回不可行原因。
+
+    用途：把"物理上不可能建出来的表"从**静默 ERROR** 变成**显式负向用例**。
+    旧实现对这类组合照样生成 CREATE，跑出来是一片 errno 1071/1118，
+    被记成 NO_OUTPUT，既没验证任何东西，也污染了通过率统计。
+    """
+    idx_bytes = target_index_bytes(transition)
+    if (idx_bytes and idx_bytes > INDEX_KEY_LIMIT_BYTES
+            and factor_needs_full_target_index(factors, transition)):
+        return ("target %s->%s needs %d bytes but the InnoDB index key limit is %d bytes; "
+                "factor combination %s requires a FULL-column index on target "
+                "(expect CREATE to fail with errno 1071)"
+                % (transition["old_type"], transition["new_type"], idx_bytes,
+                   INDEX_KEY_LIMIT_BYTES, _format_factors(factors)))
+    return None
+
+
+def _build_infeasible_case(test_id: str, transition: dict, algorithm: str, factors: dict,
+                           reason: str, expect_errno: int = 1071) -> str:
+    """生成一个"建表本应被拒绝"的显式负向用例（带真断言）。"""
+    t1 = "t1_%s" % id_to_suffix(test_id)
+    lines = []
+    lines.append("-- Test Case: %s" % test_id)
+    lines.append("-- Type: %s -> %s, Algorithm: %s, Expected: BUILD_FAIL"
+                 % (transition["old_type"], transition["new_type"], algorithm))
+    lines.append("-- Transition ID: %s" % transition.get("id", ""))
+    lines.append("-- Varied factor: INFEASIBLE_COMBINATION")
+    lines.append("-- Factors: %s" % _format_factors(factors))
+    lines.append("-- @expect build=FAIL errno=[%d] alter=N/A assertions=1" % expect_errno)
+    lines.append("-- Infeasible: %s" % reason)
+    lines.append("DROP TABLE IF EXISTS %s;" % t1)
+    sql_mode = "STRICT_TRANS_TABLES" if factors.get("sql_mode", "STRICT") == "STRICT" else ""
+    lines.append("SET SESSION sql_mode = '%s';" % sql_mode)
+    lines.append(_build_create_table(t1, transition["old_type"], factors, transition))
+    lines.append(build_table_absent_assertion(
+        test_id, t1, "BUILD_REJECTED",
+        "table was created although the combination is physically infeasible: %s" % reason))
+    return "\n".join(lines)
+
+
 def _build_compare_sql(test_id: str, t1: str, t2: str, columns: list) -> str:
     """Build Oracle comparison SELECT using NULL-safe <=>."""
     col_cmp = " AND ".join(f"a.{c} <=> b.{c}" for c in columns)
@@ -919,9 +998,15 @@ def _build_test_case_sql(test_id: str, transition: dict, algorithm: str, factors
     
     # Adjust expected based on factor interactions
     # INSTANT fails when target is part of any index (PK, secondary, unique)
+    #
+    # P0-8: minimal_table 会把 COMPOSITE_PK **降级**成 PRIMARY KEY(id)
+    # （见 _build_create_table），此时目标列不在任何索引里 => INSTANT 实际会成功。
+    # 旧期望模型没考虑这个降级，一律判 FAIL，于是对照表按旧类型建，
+    # 而 t1 的 ALTER 真的成功了 => 数据不一致，4 个 VC-08/VC-09 用例报 FAIL。
+    minimal = bool(transition.get("minimal_table"))
     if algorithm.lower() == "instant":
         pk_type = factors.get("primary_key", "CLUSTERED")
-        if pk_type == "COMPOSITE_PK":
+        if pk_type == "COMPOSITE_PK" and not minimal:
             expected = "FAIL"  # target is part of PK index
         dep = factors.get("dependencies", "NONE")
         if dep in ("SECONDARY_INDEX", "UNIQUE_INDEX", "FOREIGN_KEY"):
@@ -936,6 +1021,11 @@ def _build_test_case_sql(test_id: str, transition: dict, algorithm: str, factors
             expected = "FAIL"
         # String/blob/bit types: expected stays SUCCESS
     
+    # P0-8: 物理不可行的 (转换 × 因子) 组合 => 显式负向用例，而不是静默 ERROR
+    infeasible = check_case_feasible(transition, factors)
+    if infeasible:
+        return _build_infeasible_case(test_id, transition, algorithm, factors, infeasible)
+
     data = gen_test_data(transition)
 
     # Adjust for NOT NULL columns
@@ -1089,235 +1179,370 @@ def _get_keypair_factors(baseline: dict, algorithm: str) -> list:
 
 
 # ============================================================
-# Section 5: Partition Strategy Generator (64 combos)
+# Section 5: Partition Strategy Generator（类型感知 + 真 SUBPARTITION）
 # ============================================================
+# P0-5 / P0-9 修复说明
+# ------------------------------------------------------------
+# 旧实现宣称"64 种分区组合"，但 _build_partition_def() 把二级分区类型直接丢弃
+# （`return first, True`），实测两个分区文件里 SUBPARTITION 出现 **0 次**，
+# PP-33(HASH+RANGE) 与 PP-37..PP-40 生成的 SQL 逐字相同 —— 64 组合实为 8 种、
+# 每种重复 8 次；同时 _build_single_partition() 的分区界是硬编码整数字面量
+# (100/200/300)：对 TINYINT(上限 127) 越界、对 VARCHAR 类型不符 -> errno 1654/1697，
+# 建表直接失败（RDS 实测 30/103 抽样用例中招）。
+#
+# 新实现：
+#   * 24 种**互不相同**的策略 = 8 种一级 + 16 种组合分区（真正的 SUBPARTITION BY）
+#   * 分区界 / LIST 取值按列类型分派（整数、字符串、二进制各用各自的字面量）
+#   * 兼容性矩阵 PARTITION_COMPAT 由 tools/probe_partition_compat.py 实测得出，
+#     不再靠猜（旧 PK_COMPAT 对 decimal/text/blob 的 KEY 分区判断是错的）
+#   * 目标列是分区键时，插入值必须落在分区定义内（LIST 用分组代表值）
+#   * MySQL 语法要求 SUBPARTITION BY 写在分区定义列表**之前**
 
-PARTITION_TYPES = ["RANGE", "RANGE COLUMNS", "LIST", "LIST COLUMNS",
-                   "HASH", "LINEAR HASH", "KEY", "LINEAR KEY"]
+PARTITION_STRATEGIES = [
+    ("RANGE", "RANGE", None),
+    ("RANGE+SUB HASH", "RANGE", "HASH"),
+    ("RANGE+SUB LINEAR HASH", "RANGE", "LINEAR HASH"),
+    ("RANGE+SUB KEY", "RANGE", "KEY"),
+    ("RANGE+SUB LINEAR KEY", "RANGE", "LINEAR KEY"),
+    ("RANGE COLUMNS", "RANGE COLUMNS", None),
+    ("RANGE COLUMNS+SUB HASH", "RANGE COLUMNS", "HASH"),
+    ("RANGE COLUMNS+SUB LINEAR HASH", "RANGE COLUMNS", "LINEAR HASH"),
+    ("RANGE COLUMNS+SUB KEY", "RANGE COLUMNS", "KEY"),
+    ("RANGE COLUMNS+SUB LINEAR KEY", "RANGE COLUMNS", "LINEAR KEY"),
+    ("LIST", "LIST", None),
+    ("LIST+SUB HASH", "LIST", "HASH"),
+    ("LIST+SUB LINEAR HASH", "LIST", "LINEAR HASH"),
+    ("LIST+SUB KEY", "LIST", "KEY"),
+    ("LIST+SUB LINEAR KEY", "LIST", "LINEAR KEY"),
+    ("LIST COLUMNS", "LIST COLUMNS", None),
+    ("LIST COLUMNS+SUB HASH", "LIST COLUMNS", "HASH"),
+    ("LIST COLUMNS+SUB LINEAR HASH", "LIST COLUMNS", "LINEAR HASH"),
+    ("LIST COLUMNS+SUB KEY", "LIST COLUMNS", "KEY"),
+    ("LIST COLUMNS+SUB LINEAR KEY", "LIST COLUMNS", "LINEAR KEY"),
+    ("HASH", "HASH", None),
+    ("LINEAR HASH", "LINEAR HASH", None),
+    ("KEY", "KEY", None),
+    ("LINEAR KEY", "LINEAR KEY", None),
+]
+STRATEGY_MAP = {name: (first, sub) for name, first, sub in PARTITION_STRATEGIES}
+ALL_STRATEGIES = [n for n, _f, _s in PARTITION_STRATEGIES]
 
-# Partition key compatibility matrix
-# (strategy, type_category) -> True if type can be used as partition key
-PK_COMPAT = {
-    ("RANGE", "integer"): True, ("RANGE", "char"): False, ("RANGE", "varchar"): False,
-    ("RANGE", "binary"): False, ("RANGE", "varbinary"): False, ("RANGE", "text"): False,
-    ("RANGE", "blob"): False, ("RANGE", "bit"): False, ("RANGE", "decimal"): False,
-    ("RANGE COLUMNS", "integer"): True, ("RANGE COLUMNS", "char"): True, ("RANGE COLUMNS", "varchar"): True,
-    ("RANGE COLUMNS", "binary"): False, ("RANGE COLUMNS", "varbinary"): False, ("RANGE COLUMNS", "text"): False,
-    ("RANGE COLUMNS", "blob"): False, ("RANGE COLUMNS", "bit"): False, ("RANGE COLUMNS", "decimal"): True,
-    ("LIST", "integer"): True, ("LIST", "char"): False, ("LIST", "varchar"): False,
-    ("LIST", "binary"): False, ("LIST", "varbinary"): False, ("LIST", "text"): False,
-    ("LIST", "blob"): False, ("LIST", "bit"): False, ("LIST", "decimal"): False,
-    ("LIST COLUMNS", "integer"): True, ("LIST COLUMNS", "char"): True, ("LIST COLUMNS", "varchar"): True,
-    ("LIST COLUMNS", "binary"): False, ("LIST COLUMNS", "varbinary"): False, ("LIST COLUMNS", "text"): False,
-    ("LIST COLUMNS", "blob"): False, ("LIST COLUMNS", "bit"): False, ("LIST COLUMNS", "decimal"): True,
-    ("HASH", "integer"): True, ("HASH", "char"): False, ("HASH", "varchar"): False,
-    ("HASH", "binary"): False, ("HASH", "varbinary"): False, ("HASH", "text"): False,
-    ("HASH", "blob"): False, ("HASH", "bit"): False, ("HASH", "decimal"): False,
-    ("LINEAR HASH", "integer"): True, ("LINEAR HASH", "char"): False, ("LINEAR HASH", "varchar"): False,
-    ("LINEAR HASH", "binary"): False, ("LINEAR HASH", "varbinary"): False, ("LINEAR HASH", "text"): False,
-    ("LINEAR HASH", "blob"): False, ("LINEAR HASH", "bit"): False, ("LINEAR HASH", "decimal"): False,
-    ("KEY", "integer"): True, ("KEY", "char"): True, ("KEY", "varchar"): True,
-    ("KEY", "binary"): True, ("KEY", "varbinary"): True, ("KEY", "text"): True,
-    ("KEY", "blob"): True, ("KEY", "bit"): True, ("KEY", "decimal"): True,
-    ("LINEAR KEY", "integer"): True, ("LINEAR KEY", "char"): True, ("LINEAR KEY", "varchar"): True,
-    ("LINEAR KEY", "binary"): True, ("LINEAR KEY", "varbinary"): True, ("LINEAR KEY", "text"): True,
-    ("LINEAR KEY", "blob"): True, ("LINEAR KEY", "bit"): True, ("LINEAR KEY", "decimal"): True,
+# 实测兼容性矩阵（阿里云 RDS MySQL 8.0.36，2026-09-23，tools/probe_partition_compat.py）
+PARTITION_COMPAT = {
+    "integer_signed": ALL_STRATEGIES,
+    "integer_unsigned": ALL_STRATEGIES,
+    "char": ["RANGE COLUMNS", "RANGE COLUMNS+SUB KEY", "RANGE COLUMNS+SUB LINEAR KEY",
+             "LIST COLUMNS", "LIST COLUMNS+SUB KEY", "LIST COLUMNS+SUB LINEAR KEY",
+             "KEY", "LINEAR KEY"],
+    "varchar": ["RANGE COLUMNS", "RANGE COLUMNS+SUB KEY", "RANGE COLUMNS+SUB LINEAR KEY",
+                "LIST COLUMNS", "LIST COLUMNS+SUB KEY", "LIST COLUMNS+SUB LINEAR KEY",
+                "KEY", "LINEAR KEY"],
+    "binary": ["RANGE COLUMNS", "RANGE COLUMNS+SUB KEY", "RANGE COLUMNS+SUB LINEAR KEY",
+               "LIST COLUMNS", "LIST COLUMNS+SUB KEY", "LIST COLUMNS+SUB LINEAR KEY",
+               "KEY", "LINEAR KEY"],
+    "varbinary": ["RANGE COLUMNS", "RANGE COLUMNS+SUB KEY", "RANGE COLUMNS+SUB LINEAR KEY",
+                  "LIST COLUMNS", "LIST COLUMNS+SUB KEY", "LIST COLUMNS+SUB LINEAR KEY",
+                  "KEY", "LINEAR KEY"],
+    "decimal": ["KEY", "LINEAR KEY"],
+    "bit": ["RANGE", "RANGE+SUB HASH", "RANGE+SUB LINEAR HASH", "RANGE+SUB KEY",
+            "RANGE+SUB LINEAR KEY", "LIST", "LIST+SUB HASH", "LIST+SUB LINEAR HASH",
+            "LIST+SUB KEY", "LIST+SUB LINEAR KEY", "HASH", "LINEAR HASH", "KEY", "LINEAR KEY"],
+    "text": [],
+    "blob": [],
 }
 
+# RANGE / RANGE COLUMNS 的界：必须与列类型匹配，且落在列值域内（TINYINT 上限 127！）
+PARTITION_BOUNDS = {
+    "integer_signed": ("0", "64"), "integer_unsigned": ("0", "64"),
+    "char": ("''", "'m'"), "varchar": ("''", "'m'"),
+    "binary": ("X'00'", "X'80'"), "varbinary": ("X'00'", "X'80'"),
+    "bit": ("0", "64"), "decimal": ("0", "64"),
+    # text/blob 实测对**任何**分区策略都不可作分区键(errno 1170 BLOB/TEXT used in key
+    # specification without a key length / 1697 VALUES must have type INT)。
+    # 这里仍给类型正确的字面量，让 BUILD_REJECTED 用例失败在**语义正确**的原因上。
+    "text": ("''", "'m'"), "blob": ("X'00'", "X'80'"),
+}
+# LIST / LIST COLUMNS 的取值分组
+PARTITION_LIST_GROUPS = {
+    "integer_signed": [("-1", "0", "1"), ("2", "3", "4"), ("5", "6", "7")],
+    "integer_unsigned": [("0", "1", "2"), ("3", "4", "5"), ("6", "7", "8")],
+    "char": [("''", "'a'", "'b'"), ("'c'", "'d'"), ("'e'", "'f'")],
+    "varchar": [("''", "'a'", "'b'"), ("'c'", "'d'"), ("'e'", "'f'")],
+    "binary": [("X'00'", "X'01'"), ("X'02'", "X'03'"), ("X'04'", "X'05'")],
+    "varbinary": [("X'00'", "X'01'"), ("X'02'", "X'03'"), ("X'04'", "X'05'")],
+    "bit": [("0", "1"), ("2", "3"), ("4", "5")],
+    "decimal": [("0", "1"), ("2", "3"), ("4", "5")],
+    "text": [("''", "'a'", "'b'"), ("'c'", "'d'"), ("'e'", "'f'")],
+    "blob": [("X'00'", "X'01'"), ("X'02'", "X'03'"), ("X'04'", "X'05'")],
+}
+# PNK 分支的分区键是自增 id：LIST 必须覆盖所有可能出现的 id（单用例 INSERT < 128 次）
+ID_BOUNDS = ("0", "64")
+ID_LIST_GROUPS = [tuple(str(i) for i in range(a, a + 32)) for a in (0, 32, 64, 96)]
+KIND_INT_ID = "int_id"
 
-def _normalize_category(cat: str) -> str:
-    """Normalize category names for PK_COMPAT lookup."""
-    if cat.startswith("integer"):
-        return "integer"
-    return cat
+CHARSET_MBMAXLEN = {"latin1": 1, "utf8mb3": 3, "utf8": 3, "utf8mb4": 4,
+                    "ascii": 1, "binary": 1}
 
 
-def _build_partition_def(first_type: str, second_type: str, pk_col: str = "id",
-                         is_subpartition: bool = True) -> tuple:
+def _bounds_and_groups(kind: str):
+    if kind == KIND_INT_ID:
+        return ID_BOUNDS, ID_LIST_GROUPS
+    return (PARTITION_BOUNDS.get(kind, ID_BOUNDS),
+            PARTITION_LIST_GROUPS.get(kind, ID_LIST_GROUPS))
+
+
+def build_partition_clause(strategy: str, kind: str) -> str:
+    """按策略与列类型构造**类型正确**的分区子句（含真 SUBPARTITION）。"""
+    first, sub = STRATEGY_MAP[strategy]
+    col = "id" if kind == KIND_INT_ID else "target"
+    bounds, groups = _bounds_and_groups(kind)
+
+    if first in ("HASH", "LINEAR HASH", "KEY", "LINEAR KEY"):
+        assert sub is None, "%s 不允许再带 SUBPARTITION" % first
+        return "PARTITION BY %s (%s) PARTITIONS 4;" % (first, col)
+
+    # 注意语法差异：RANGE/LIST 用 `PARTITION BY RANGE (col)`，
+    # 而 RANGE COLUMNS/LIST COLUMNS 用 `PARTITION BY RANGE COLUMNS(col)`。
+    # 之前统一拼成 "%s %s" 会生成 `RANGE COLUMNS COLUMNS(target)`（关键字重复）。
+    if " " in first:
+        head = "PARTITION BY %s(%s)" % (first, col)
+    else:
+        head = "PARTITION BY %s (%s)" % (first, col)
+    if first in ("RANGE", "RANGE COLUMNS"):
+        body = ("(\n  PARTITION p0 VALUES LESS THAN (%s),\n"
+                "  PARTITION p1 VALUES LESS THAN (%s),\n"
+                "  PARTITION p2 VALUES LESS THAN MAXVALUE)" % (bounds[0], bounds[1]))
+    else:  # LIST / LIST COLUMNS
+        parts = ["  PARTITION p%d VALUES IN (%s)" % (i, ", ".join(g))
+                 for i, g in enumerate(groups)]
+        body = "(\n%s)" % ",\n".join(parts)
+
+    if sub:
+        # MySQL: SUBPARTITION BY 必须写在分区定义列表之前
+        head += "\nSUBPARTITION BY %s (%s) SUBPARTITIONS 2" % (sub, col)
+    return head + "\n" + body + ";"
+
+
+# 分区键列会进入 PRIMARY KEY(id, target)，因此受 InnoDB 3072 字节索引键上限约束。
+# RDS 8.0.36 实测二分确认：latin1 VARCHAR 最大 3068、utf8mb4 VARCHAR 最大 767
+# （767*4 = 3068），3068 + 4(id INT) = 3072 恰好达上限；再大 1 字节即 errno 1071。
+PARTITION_KEY_MAX_BYTES = 3072
+PARTITION_PK_ID_BYTES = 4
+
+
+def partition_is_buildable(kind: str, strategy: str) -> bool:
+    """该 category 是否允许用此策略分区（类型维度，来自实测矩阵）。"""
+    return strategy in PARTITION_COMPAT.get(kind, [])
+
+
+def partition_key_len_ok(transition: dict) -> Tuple[bool, Optional[int]]:
+    """目标列长度是否允许进入分区键（长度维度）。返回 (是否可行, 目标列最大字节数)。"""
+    mb = _type_max_bytes(transition["old_type"], transition.get("charset"))
+    if mb is None:
+        return True, None          # 整数/DECIMAL/BIT 等定长小类型不受此限
+    return (mb + PARTITION_PK_ID_BYTES) <= PARTITION_KEY_MAX_BYTES, mb
+
+
+def _partition_col_def(type_def: str, transition: dict) -> str:
+    """分区表里目标列的定义 —— **必须带字符集**。
+
+    之前 PTK 分支直接写 `target VARCHAR(1)`，用的是库默认字符集(utf8mb3)，
+    而 ALTER 语句里写的是 `VARCHAR(2) CHARACTER SET latin1`：于是"改长度"
+    变成了"改长度 + 改字符集"，INPLACE 被拒(1846)，11 个用例的
+    TYPE_AFTER_ALTER 断言据此正确地判了 FAIL。
     """
-    Build PARTITION BY clause for a first×second partition type combo.
-    Returns (partition_sql, build_should_succeed).
+    return _build_column_def(type_def, dict(BASELINE), transition)
+
+
+def partition_fit_values(strategy: str, kind: str, data_values: list) -> list:
+    """LIST/LIST COLUMNS 没有 MAXVALUE 兜底，只能插入分组里列出的值。
+
+    旧实现对分区键列灌"类型边界值"（如 TINYINT 的 -128/127），在 LIST 分区上
+    必然 errno 1526 "Table has no partition for value" —— 插入静默失败，
+    用例退化成"空表对照"，什么也没验证。
     """
-    # First-level partition
-    first = _build_single_partition(first_type, pk_col, is_first=True)
-    if first is None:
-        return None, False
-
-    # Second-level (subpartition)
-    second = _build_single_partition(second_type, pk_col, is_first=False)
-    if second is None:
-        # No subpartition, just first level
-        return first, True
-
-    # Combine: first level with subpartition
-    combined = first.rstrip(";")
-    # Add subpartition definition
-    combined += "\nSUBPARTITION BY " + second.split("PARTITION BY ")[1].split("\n")[0] if "PARTITION BY" in second else combined
-    # Actually, let's be more careful
-    # For subpartitions, we need PARTITIONS ... SUBPARTITIONS ...
-    # Let's use a simpler approach: just first-level partitioning with PARTITIONS 4
-    return first, True
+    first, _sub = STRATEGY_MAP[strategy]
+    if first in ("LIST", "LIST COLUMNS"):
+        _bounds, groups = _bounds_and_groups(kind)
+        return [g[0] for g in groups]
+    return list(data_values)
 
 
-def _build_single_partition(ptype: str, pk_col: str, is_first: bool) -> str:
-    """Build a single PARTITION BY clause for one partition type."""
-    if ptype == "RANGE":
-        return f"""PARTITION BY RANGE ({pk_col}) (
-  PARTITION p0 VALUES LESS THAN (100),
-  PARTITION p1 VALUES LESS THAN (200),
-  PARTITION p2 VALUES LESS THAN (300),
-  PARTITION p3 VALUES LESS THAN MAXVALUE
-);"""
-    elif ptype == "RANGE COLUMNS":
-        return f"""PARTITION BY RANGE COLUMNS({pk_col}) (
-  PARTITION p0 VALUES LESS THAN (100),
-  PARTITION p1 VALUES LESS THAN (200),
-  PARTITION p2 VALUES LESS THAN (300),
-  PARTITION p3 VALUES LESS THAN MAXVALUE
-);"""
-    elif ptype == "LIST":
-        return f"""PARTITION BY LIST ({pk_col}) (
-  PARTITION p0 VALUES IN (0,1,2,3),
-  PARTITION p1 VALUES IN (4,5,6,7),
-  PARTITION p2 VALUES IN (8,9,10,11),
-  PARTITION p3 VALUES IN (12,13,14,15)
-);"""
-    elif ptype == "LIST COLUMNS":
-        return f"""PARTITION BY LIST COLUMNS({pk_col}) (
-  PARTITION p0 VALUES IN (0,1,2,3),
-  PARTITION p1 VALUES IN (4,5,6,7),
-  PARTITION p2 VALUES IN (8,9,10,11),
-  PARTITION p3 VALUES IN (12,13,14,15)
-);"""
-    elif ptype == "HASH":
-        return "PARTITION BY HASH(id) PARTITIONS 4;"
-    elif ptype == "LINEAR HASH":
-        return "PARTITION BY LINEAR HASH(id) PARTITIONS 4;"
-    elif ptype == "KEY":
-        return "PARTITION BY KEY(id) PARTITIONS 4;"
-    elif ptype == "LINEAR KEY":
-        return "PARTITION BY LINEAR KEY(id) PARTITIONS 4;"
+def _type_max_bytes(type_def: str, charset: Optional[str]) -> Optional[int]:
+    td = _re.sub(r"\s+", "", str(type_def).upper())
+    m = _re.match(r"^(VARBINARY|BINARY)\((\d+)\)$", td)
+    if m:
+        return int(m.group(2))
+    m = _re.match(r"^(VARCHAR|CHAR)\((\d+)\)$", td)
+    if m:
+        mb = CHARSET_MBMAXLEN.get((charset or "latin1").lower(), 1)
+        return int(m.group(2)) * mb
     return None
 
 
+def crosses_len_prefix(transition: dict) -> bool:
+    """VARCHAR/VARBINARY 扩容是否跨越 255 字节的长度前缀边界（1 字节 -> 2 字节）。
+
+    跨越就必须重写行 => INPLACE 不可用；不跨越则是纯元数据变更。
+    """
+    ob = _type_max_bytes(transition["old_type"], transition.get("charset"))
+    nb = _type_max_bytes(transition["new_type"], transition.get("charset"))
+    if ob is None or nb is None:
+        return False
+    return (ob <= 255) != (nb <= 255)
+
+
+def expected_partition_key_alter(transition: dict, algorithm: str) -> Tuple[str, list]:
+    """目标列**是**分区键时，ALTER 的预期结果。返回 (SUCCESS|FAIL, [允许的 errno])。
+
+    RDS MySQL 8.0.36 实测（tools/probe_partition_compat.py + 定向复核）：
+      * 绝大多数类型改分区键列 => INSTANT 与 INPLACE 均 errno 1846
+        （Cannot change column type INPLACE / Need to rebuild the table）
+      * 唯一例外：VARCHAR / VARBINARY 且**不跨** 255 字节长度前缀边界的扩容，
+        属纯元数据变更 => INPLACE 成功，INSTANT 仍被拒(1845)
+      * ALGORITHM=COPY 在分区键上**可以**成功改类型（另有 COPY 对照组专项覆盖）
+    旧实现一律假定"分区键不可改 => ALTER 预期失败"，与实测不符。
+    """
+    cat = transition.get("category", "")
+    if cat in ("varchar", "varbinary") and not crosses_len_prefix(transition):
+        if algorithm == "inplace":
+            return "SUCCESS", []
+        return "FAIL", [1845, 1846]
+    return "FAIL", [1846, 1845, 1659]
+
+
 def _build_partition_test(test_id: str, transition: dict, algorithm: str,
-                          pp_idx: int, first_type: str, second_type: str,
+                          pp_idx: int, strategy: str,
                           target_is_partition_key: bool) -> str:
-    """Build a partition table test case."""
+    """生成一个分区表用例。
+
+    target_is_partition_key=True  (PTK): 目标列是分区键
+    target_is_partition_key=False (PNK): 分区键是自增 id，目标列是普通列
+    """
     old_type = transition["old_type"]
     new_type = transition["new_type"]
-    expected = transition[algorithm.lower()]
     cat = transition["category"]
     data = gen_test_data(transition)
 
-    t1 = f"t1_{test_id.lower().replace(chr(45), chr(95))}"
-    t2 = f"t2_{test_id.lower().replace(chr(45), chr(95))}"
+    t1 = "t1_%s" % id_to_suffix(test_id)
+    t2 = "t2_%s" % id_to_suffix(test_id)
 
     lines = []
-    lines.append(f"-- Test Case: {test_id}")
-    lines.append(f"-- Type: {old_type} -> {new_type}, Algorithm: {algorithm}, Expected: {expected}")
-    lines.append(f"-- Partition: {first_type} + {second_type} (PP-{pp_idx:02d})")
-    lines.append(f"-- Target is partition key: {target_is_partition_key}")
-    lines.append(f"DROP TABLE IF EXISTS {t1}, {t2};")
+    lines.append("-- Test Case: %s" % test_id)
+    lines.append("-- Type: %s -> %s, Algorithm: %s" % (old_type, new_type, algorithm))
+    lines.append("-- Transition ID: %s" % transition.get("id", ""))
+    lines.append("-- Partition: %s (#%02d/%d)" % (strategy, pp_idx, len(PARTITION_STRATEGIES)))
+    lines.append("-- Target is partition key: %s" % target_is_partition_key)
+    lines.append("DROP TABLE IF EXISTS %s, %s;" % (t1, t2))
 
-    if target_is_partition_key:
-        # Check if this type can be used as partition key for this strategy
-        can_partition = PK_COMPAT.get((first_type, _normalize_category(cat)), False)
-        if not can_partition:
-            # CREATE TABLE will fail - record as BUILD_FAIL
-            # P0-3 修复：旧实现这里输出的是一条**常量** SELECT，与前面语句的成败
-            # 完全无关（永远 'BUILD_OR_ALTER_FAIL_EXPECTED' / 'CHECK_MANUALLY'），
-            # 640 个用例等于没有断言。现在改成对 information_schema 的真实检查。
-            lines.append(f"-- Factors: partition_target_key=True, partition_strategy={first_type}")
-            lines.append(f"-- Expected: BUILD FAIL (type {cat} not supported as partition key for {first_type})")
-            lines.append(f"-- @expect build=FAIL alter=N/A assertions=1")
-            lines.append(f"CREATE TABLE {t1} (id INT NOT NULL AUTO_INCREMENT, target {old_type}, pad VARCHAR(10), PRIMARY KEY(id)) ENGINE=InnoDB PARTITION BY {first_type}(target) PARTITIONS 2;")
-            lines.append(f"-- 若上面意外成功，则 ALTER 也必须失败（分区键列不可改类型）")
-            lines.append(f"ALTER TABLE {t1} MODIFY target {_build_column_def(new_type, dict(BASELINE), transition)}, ALGORITHM={algorithm};")
-            lines.append(build_table_absent_assertion(
-                test_id, t1, "BUILD_REJECTED",
-                "table was created although PK_COMPAT says %s cannot be a %s partition key "
-                "(%s) - PK_COMPAT needs correction" % (cat, first_type, old_type)))
-            return "\n".join(lines)
-        else:
-            # Can create partition table with target as partition key
-            # ALTER should FAIL (partition key column)
-            pk_col = "target"
-            part_def = _build_single_partition(first_type, pk_col, True)
-            lines.append(f"-- Factors: partition_target_key=True, partition_strategy={first_type}")
-            lines.append(f"-- @expect build=SUCCESS alter=FAIL assertions=2 "
-                         f"column_type={column_type_of(old_type)}")
-            lines.append(f"-- Expected: CREATE OK, ALTER FAIL (partition key cannot be modified)")
-            lines.append(f"CREATE TABLE {t1} (")
-            lines.append(f"  id INT NOT NULL AUTO_INCREMENT,")
-            lines.append(f"  target {old_type},")
-            lines.append(f"  pad VARCHAR(20) DEFAULT 'pad',")
-            lines.append(f"  PRIMARY KEY (id, target)")
-            lines.append(f") ENGINE=InnoDB")
-            lines.append(part_def)
-
-            # Insert some data
-            pre_vals = [v for v in data["pre_values"][:3] if v != "NULL"]
-            for v in pre_vals:
-                lines.append(_build_insert_stmt(t1, "target", v))
-
-            lines.append(f"-- ALTER expected to FAIL")
-            lines.append(_build_alter_stmt(t1, "target", _build_column_def(new_type, dict(BASELINE), transition), algorithm))
-
-            # P0-2 修复：t2 必须是 t1 的**结构克隆**（同列、同 PK、同分区定义）。
-            # 旧实现用 _build_create_table() 建出 (id, pad1, target, pad2)，
-            # 而对照 SQL 却引用 a.pad/b.pad -> ERROR 1054 Unknown column 'b.pad'，
-            # 3328(阿里云)+1216(内网) 个用例恒无判定输出，还被误归因为"建表失败"。
-            lines.append(f"-- Oracle table: 与 t1 结构一致（ALTER 预期失败，仍为旧类型）")
-            lines.append(f"CREATE TABLE {t2} (")
-            lines.append(f"  id INT NOT NULL AUTO_INCREMENT,")
-            lines.append(f"  target {old_type},")
-            lines.append(f"  pad VARCHAR(20) DEFAULT 'pad',")
-            lines.append(f"  PRIMARY KEY (id, target)")
-            lines.append(f") ENGINE=InnoDB")
-            lines.append(part_def)
-            for v in pre_vals:
-                lines.append(_build_insert_stmt(t2, "target", v))
-
-            # 断言 1: 数据一致
-            lines.append(_build_compare_sql(test_id, t1, t2, ["id", "target", "pad"]))
-            # 断言 2: 目标列类型**仍是旧类型** —— 直接证明 ALTER 被拒绝、没有半生效
-            lines.append(build_meta_assertion(test_id, t1, "target", old_type, "TYPE_UNCHANGED"))
-            return "\n".join(lines)
-    else:
-        # Target is NOT partition key - use id as partition key
-        # ALTER should succeed (or fail based on type/algorithm)
-        part_def = _build_single_partition(first_type, "id", True)
-
-        lines.append(f"-- Expected: CREATE OK, ALTER {expected}")
-        lines.append(_build_create_table(t1, old_type, dict(BASELINE), transition, partition_def=part_def))
-
-        pre_vals = [v for v in data["pre_values"][:5]]
+    if not target_is_partition_key:
+        # ---------------- PNK: 分区键是自增 id ----------------
+        part_def = build_partition_clause(strategy, KIND_INT_ID)
+        expected = transition[algorithm.lower()]
+        lines.append("-- Factors: partition_target_key=False, partition_strategy=%s" % strategy)
+        lines.append("-- @expect build=SUCCESS alter=%s assertions=2 column_type=%s"
+                     % (expected, column_type_of(new_type if expected == "SUCCESS" else old_type)))
+        lines.append("-- Expected: CREATE OK, ALTER %s" % expected)
+        lines.append(_build_create_table(t1, old_type, dict(BASELINE), transition,
+                                         partition_def=part_def))
+        pre_vals = list(data["pre_values"][:5])
         for v in pre_vals:
             lines.append(_build_insert_stmt(t1, "target", v))
-
-        if expected == "SUCCESS":
-            lines.append(f"-- ALTER expected SUCCESS")
-        else:
-            lines.append(f"-- ALTER expected FAIL")
-        lines.append(_build_alter_stmt(t1, "target", _build_column_def(new_type, dict(BASELINE), transition), algorithm))
-
-        # Post-data
-        post_new = [v for v in data["post_new_range"][:3]]
-        post_old = [v for v in data["post_old_range"][:2]]
+        lines.append("-- ALTER expected %s" % expected)
+        lines.append(_build_alter_stmt(t1, "target",
+                                       _build_column_def(new_type, dict(BASELINE), transition),
+                                       algorithm))
+        post_new = list(data["post_new_range"][:3])
+        post_old = list(data["post_old_range"][:2])
         for v in post_new + post_old:
             lines.append(_build_insert_stmt(t1, "target", v))
-
-        # Oracle table
         t2_type = new_type if expected == "SUCCESS" else old_type
+        lines.append("-- Oracle table (%s, 非分区): %s" % ("新类型" if expected == "SUCCESS" else "旧类型", t2_type))
         lines.append(_build_create_table(t2, t2_type, dict(BASELINE), transition))
-        all_vals = pre_vals + post_new + post_old
-        for v in all_vals:
+        for v in pre_vals + post_new + post_old:
+            lines.append(_build_insert_stmt(t2, "target", v))
+        cmp_cols = ["id", "target"] if transition.get("minimal_table") else ["id", "pad1", "target", "pad2"]
+        lines.append(_build_compare_sql(test_id, t1, t2, cmp_cols))
+        # 断言 2: ALTER 后列类型必须符合预期（成功=>新类型，失败=>仍是旧类型）
+        lines.append(build_meta_assertion(test_id, t1, "target", t2_type, "TYPE_AFTER_ALTER"))
+        return "\n".join(lines)
+
+    # ---------------- PTK: 目标列是分区键 ----------------
+    part_def = build_partition_clause(strategy, cat)
+    buildable = partition_is_buildable(cat, strategy)
+    len_ok, len_bytes = partition_key_len_ok(transition)
+
+    if not (buildable and len_ok):
+        # 建表本应被拒绝。用**类型正确**的分区定义去建，失败原因才是
+        # "该类型不能作此类分区键"（1659/1697/1170/1491），而不是语法错(1064/1654)。
+        lines.append("-- Factors: partition_target_key=True, partition_strategy=%s" % strategy)
+        if not len_ok:
+            reason = ("%s is %d bytes; partition key must fit the 3072-byte index limit "
+                      "(%d + %d for id) - expect errno 1071"
+                      % (old_type, len_bytes, len_bytes, PARTITION_PK_ID_BYTES))
+            why = "target too long for partition key"
+        else:
+            reason = ("%s is not a legal partition key column for %s "
+                      "(measured matrix: expect errno 1659/1697/1170/1491)" % (cat, strategy))
+            why = "category incompatible with strategy"
+        lines.append("-- @expect build=FAIL alter=N/A assertions=1")
+        lines.append("-- Expected: BUILD FAIL (%s)" % why)
+        lines.append("CREATE TABLE %s (\n  id INT NOT NULL AUTO_INCREMENT,\n  target %s,\n"
+                     "  pad VARCHAR(20) DEFAULT 'pad',\n  PRIMARY KEY (id, target)\n) ENGINE=InnoDB"
+                     % (t1, _partition_col_def(old_type, transition)))
+        lines.append(part_def)
+        lines.append(build_table_absent_assertion(
+            test_id, t1, "BUILD_REJECTED",
+            "table was created although %s - PARTITION_COMPAT/length rule needs correction"
+            % reason))
+        return "\n".join(lines)
+
+    exp_alter, exp_errnos = expected_partition_key_alter(transition, algorithm)
+    after_type = new_type if exp_alter == "SUCCESS" else old_type
+    lines.append("-- Factors: partition_target_key=True, partition_strategy=%s" % strategy)
+    lines.append("-- @expect build=SUCCESS alter=%s%s assertions=2 column_type=%s"
+                 % (exp_alter,
+                    (" errno=[%s]" % ",".join(str(e) for e in exp_errnos)) if exp_errnos else "",
+                    column_type_of(after_type)))
+    lines.append("-- Expected: CREATE OK, ALTER %s%s"
+                 % (exp_alter, " (errno %s)" % "/".join(str(e) for e in exp_errnos) if exp_errnos else ""))
+    create_body = ("CREATE TABLE %s (\n  id INT NOT NULL AUTO_INCREMENT,\n  target %s,\n"
+                   "  pad VARCHAR(20) DEFAULT 'pad',\n  PRIMARY KEY (id, target)\n) ENGINE=InnoDB"
+                   % (t1, _partition_col_def(old_type, transition)))
+    lines.append(create_body)
+    lines.append(part_def)
+
+    # LIST/LIST COLUMNS 没有 MAXVALUE 兜底：只插入分组代表值，保证一定落进某个分区
+    fit = partition_fit_values(strategy, cat, [v for v in data["pre_values"] if v != "NULL"])
+    pre_vals = fit[:3] if fit else [v for v in data["pre_values"][:3] if v != "NULL"]
+    for v in pre_vals:
+        lines.append(_build_insert_stmt(t1, "target", v))
+
+    lines.append("-- ALTER expected %s" % exp_alter)
+    lines.append(_build_alter_stmt(t1, "target",
+                                   _build_column_def(new_type, dict(BASELINE), transition),
+                                   algorithm))
+
+    # Oracle: t1 的**结构克隆**（同列/同 PK/同分区定义），类型为 after_type
+    lines.append("-- Oracle table: 与 t1 结构一致，类型 %s" % after_type)
+    lines.append("CREATE TABLE %s (\n  id INT NOT NULL AUTO_INCREMENT,\n  target %s,\n"
+                 "  pad VARCHAR(20) DEFAULT 'pad',\n  PRIMARY KEY (id, target)\n) ENGINE=InnoDB"
+                 % (t2, _partition_col_def(after_type, transition)))
+    lines.append(part_def)
+    for v in pre_vals:
+        lines.append(_build_insert_stmt(t2, "target", v))
+    if exp_alter == "SUCCESS":
+        # 分区键改类型成功（VARCHAR/VARBINARY 纯元数据扩容）=> 复验改后仍可写。
+        # 注意：LIST/LIST COLUMNS 没有 MAXVALUE 兜底，post_new_range 里的值
+        # （如 255 字符长串）不在任何分组里，插入必然 errno 1526；
+        # 所以这里继续用一定落在分组内的 pre_vals。
+        for v in pre_vals:
+            lines.append(_build_insert_stmt(t1, "target", v))
             lines.append(_build_insert_stmt(t2, "target", v))
 
-        _cmp_cols = ["id", "target"] if transition.get("minimal_table") else ["id", "pad1", "target", "pad2"]
-        lines.append(_build_compare_sql(test_id, t1, t2, _cmp_cols))
-        return "\n".join(lines)
+    lines.append(_build_compare_sql(test_id, t1, t2, ["id", "target", "pad"]))
+    lines.append(build_meta_assertion(test_id, t1, "target", after_type, "TYPE_AFTER_ALTER"))
+    return "\n".join(lines)
 
 
 # ============================================================
@@ -1702,15 +1927,19 @@ def _build_column_attribute_test(test_id: str, transition: dict, algorithm: str,
     lines.append(f"DROP TABLE IF EXISTS {t1}, {t2};")
 
     # Build column definition with specific attribute
+    # P0-8: 之前只有 CHARSET/COLLATE 分支带字符集，UNSIGNED/COMMENT 分支写的是裸
+    # `VARCHAR(65528)` -> 按库默认 utf8mb3 解析 -> errno 1074 "max = 21845"。
+    base_old = _build_column_def(old_type, dict(BASELINE), transition)
+    base_new = _build_column_def(new_type, dict(BASELINE), transition)
     if attr_type == "UNSIGNED":
-        old_def = old_type
-        new_def = new_type
+        old_def = base_old
+        new_def = base_new
     elif attr_type == "AUTO_INCREMENT":
         old_def = f"{old_type} NOT NULL AUTO_INCREMENT"
         new_def = f"{new_type} NOT NULL AUTO_INCREMENT"
     elif attr_type == "COMMENT":
-        old_def = f"{old_type} COMMENT 'test_comment'"
-        new_def = f"{new_type} COMMENT 'test_comment'"
+        old_def = f"{base_old} COMMENT 'test_comment'"
+        new_def = f"{base_new} COMMENT 'test_comment'"
     elif attr_type == "CHARSET":
         cs_str = cs if cs and cs != "utf8mb3" else "utf8" if cs == "utf8mb3" else None
         old_def = f"{old_type}" + (f" CHARACTER SET {cs_str}" if cs_str else "")
@@ -1721,20 +1950,32 @@ def _build_column_attribute_test(test_id: str, transition: dict, algorithm: str,
         old_def = f"{old_type}" + (f" CHARACTER SET {cs_str} COLLATE {collate}" if cs_str else "")
         new_def = f"{new_type}" + (f" CHARACTER SET {cs_str} COLLATE {collate}" if cs_str else "")
     else:
-        old_def = old_type
-        new_def = new_type
+        old_def = base_old
+        new_def = base_new
 
+    # minimal_table（VARCHAR(16381)+ / VARBINARY(65527)+ 这类逼近 65535 行宽上限的
+    # 类型）不能再带 pad 列，否则 CREATE 直接 errno 1118。
+    minimal = bool(transition.get("minimal_table"))
+    cs = transition.get("charset")
+    tbl_cs = ""
+    if cs and transition["category"] in ("char", "varchar", "text"):
+        tbl_cs = " DEFAULT CHARSET=%s" % ("utf8" if cs == "utf8mb3" else cs)
     if attr_type == "AUTO_INCREMENT":
         lines.append(f"CREATE TABLE {t1} (")
         lines.append(f"  id {old_def} PRIMARY KEY,")
         lines.append(f"  pad VARCHAR(20) DEFAULT 'pad'")
-        lines.append(f") ENGINE=InnoDB;")
+        lines.append(f") ENGINE=InnoDB{tbl_cs};")
+    elif minimal:
+        lines.append(f"CREATE TABLE {t1} (")
+        lines.append(f"  id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,")
+        lines.append(f"  target {old_def}")
+        lines.append(f") ENGINE=InnoDB{tbl_cs};")
     else:
         lines.append(f"CREATE TABLE {t1} (")
         lines.append(f"  id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,")
         lines.append(f"  target {old_def},")
         lines.append(f"  pad VARCHAR(20) DEFAULT 'pad'")
-        lines.append(f") ENGINE=InnoDB;")
+        lines.append(f") ENGINE=InnoDB{tbl_cs};")
 
     data = gen_test_data(transition)
     for v in data["pre_values"][:5]:
@@ -1755,7 +1996,7 @@ def _build_column_attribute_test(test_id: str, transition: dict, algorithm: str,
 
     # Verify attribute preserved
     if attr_type == "COMMENT":
-        lines.append(f"SELECT '{test_id}' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='{t1}' AND column_name='target' AND column_comment='test_comment';")
+        lines.append(f"SELECT '{test_id}' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='{t1}' AND column_name='target' AND column_comment='test_comment';")
     elif attr_type == "CHARSET":
         # MySQL 8.0 reports utf8mb3 in information_schema (utf8 is an alias)
         if cs == "utf8mb3":
@@ -1764,7 +2005,7 @@ def _build_column_attribute_test(test_id: str, transition: dict, algorithm: str,
             cs_str = "utf8mb4"
         else:
             cs_str = cs or "latin1"
-        lines.append(f"SELECT '{test_id}' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='{t1}' AND column_name='target' AND character_set_name='{cs_str}';")
+        lines.append(f"SELECT '{test_id}' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='{t1}' AND column_name='target' AND character_set_name='{cs_str}';")
     elif attr_type == "COLLATE":
         # MySQL 8.0 stores utf8 as utf8mb3 in information_schema
         if cs == "utf8mb3":
@@ -1773,20 +2014,24 @@ def _build_column_attribute_test(test_id: str, transition: dict, algorithm: str,
             cs_str = cs
         else:
             cs_str = "latin1"
-        lines.append(f"SELECT '{test_id}' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='{t1}' AND column_name='target' AND collation_name='{cs_str}_bin';")
+        lines.append(f"SELECT '{test_id}' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='{t1}' AND column_name='target' AND collation_name='{cs_str}_bin';")
     elif attr_type == "UNSIGNED":
-        lines.append(f"SELECT '{test_id}' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='{t1}' AND column_name='target' AND column_type LIKE '%unsigned%';")
+        lines.append(f"SELECT '{test_id}' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='{t1}' AND column_name='target' AND column_type LIKE '%unsigned%';")
     elif attr_type == "AUTO_INCREMENT":
-        lines.append(f"SELECT '{test_id}' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='{t1}' AND column_name='id' AND extra LIKE '%auto_increment%';")
+        lines.append(f"SELECT '{test_id}' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='{t1}' AND column_name='id' AND extra LIKE '%auto_increment%';")
     else:
         # Data comparison
-        lines.append(f"CREATE TABLE {t2} (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, target {new_def}, pad VARCHAR(20) DEFAULT 'pad') ENGINE=InnoDB;")
+        if minimal:
+            lines.append(f"CREATE TABLE {t2} (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, target {new_def}) ENGINE=InnoDB{tbl_cs};")
+        else:
+            lines.append(f"CREATE TABLE {t2} (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, target {new_def}, pad VARCHAR(20) DEFAULT 'pad') ENGINE=InnoDB{tbl_cs};")
         for v in data["pre_values"][:5]:
             lines.append(_build_insert_stmt(t2, "target", v))
         if data["post_new_range"]:
             for v in data["post_new_range"][:3]:
                 lines.append(_build_insert_stmt(t2, "target", v))
-        lines.append(_build_compare_sql(test_id, t1, t2, ["id", "target", "pad"]))
+        lines.append(_build_compare_sql(test_id, t1, t2,
+                                        ["id", "target"] if minimal else ["id", "target", "pad"]))
 
     return "\n".join(lines)
 
@@ -1829,10 +2074,32 @@ def _write_sql_file(filepath: str, header: str, statements: list) -> int:
 WRITTEN_GZ: List[str] = []
 WRITTEN_PLAIN: List[str] = []
 WRITTEN_FILES: List[tuple] = []
+STALE_PRUNED: List[str] = []
 
 GITIGNORE_BEGIN = "# BEGIN auto-generated: 以 .sql.gz 发布的文件，其明文 .sql 不入库"
 GITIGNORE_LEGACY_HEADER = "# Large SQL files (compressed versions tracked instead)"
 GITIGNORE_END = "# END auto-generated"
+
+
+def _prune_stale_sql(written: List[str]) -> List[str]:
+    """删除 SQL_ALIYUN / SQL_INTERNAL 里本轮没有产出的 .sql / .sql.gz。"""
+    keep = {os.path.abspath(p) for p in written}
+    removed: List[str] = []
+    for d in (SQL_ALIYUN, SQL_INTERNAL):
+        if not os.path.isdir(d):
+            continue
+        for name in sorted(os.listdir(d)):
+            if not (name.endswith(".sql") or name.endswith(".sql.gz")):
+                continue
+            path = os.path.abspath(os.path.join(d, name))
+            if path in keep:
+                continue
+            try:
+                os.remove(path)
+                removed.append(path)
+            except OSError:
+                pass
+    return removed
 
 
 def verify_git_tracking(paths: List[str]) -> List[str]:
@@ -1947,28 +2214,22 @@ def _gen_regular_table_tests(transitions: list, algorithm: str, env: str,
 
 def _gen_partition_tests(transitions: list, algorithm: str, env: str,
                          ids: CaseIdFactory) -> list:
-    """Generate all 64 partition combo tests for all transitions."""
+    """遍历 24 种真实分区策略 × 每个转换，生成 PTK / PNK 两类用例。
+
+    旧实现遍历 8×8=64 个"组合"，但二级分区类型被丢弃 -> 实际只有 8 种、
+    每种重复 8 次，且 SUBPARTITION 覆盖为 0。
+    """
     results = []
-    pp_idx = 0
-
-    for first_idx, first_type in enumerate(PARTITION_TYPES):
-        for second_idx, second_type in enumerate(PARTITION_TYPES):
-            pp_idx += 1
-            for trans in transitions:
-                if trans["env"] != env:
-                    continue
-                # Test 1: target IS partition key (expected FAIL)
-                test_id = ids.next(SCOPE_PART_KEY, algorithm)
-                sql = _build_partition_test(test_id, trans, algorithm, pp_idx,
-                                           first_type, second_type, True)
-                results.append(sql)
-
-                # Test 2: target is NOT partition key (expected per type)
-                test_id = ids.next(SCOPE_PART_NONKEY, algorithm)
-                sql = _build_partition_test(test_id, trans, algorithm, pp_idx,
-                                           first_type, second_type, False)
-                results.append(sql)
-
+    for pp_idx, (strategy, _first, _sub) in enumerate(PARTITION_STRATEGIES, start=1):
+        for trans in transitions:
+            if trans["env"] != env:
+                continue
+            results.append(_build_partition_test(
+                ids.next(SCOPE_PART_KEY, algorithm), trans, algorithm,
+                pp_idx, strategy, True))
+            results.append(_build_partition_test(
+                ids.next(SCOPE_PART_NONKEY, algorithm), trans, algorithm,
+                pp_idx, strategy, False))
     return results
 
 
@@ -2141,7 +2402,7 @@ def generate_all():
           lambda ids: _gen_special_tests("aliyun", ids), registry)
     _emit(A, "11_fk_table.sql", header_aliyun, "外键表测试",
           lambda ids: _gen_fk_tests_for_env("aliyun", ids), registry)
-    _emit(A, "12_partition_64.sql", header_aliyun, "分区策略 × 全类型",
+    _emit(A, "12_partition_strategies.sql", header_aliyun, "24 种分区策略(含 16 种组合分区) × 全类型",
           both_algos(lambda ids, algo: _gen_partition_tests(aliyun_trans, algo, "aliyun", ids)),
           registry)
 
@@ -2175,9 +2436,18 @@ def generate_all():
     _emit(I, "28_special_patterns_enhanced.sql", header_internal,
           "特殊模式 (连续ALTER + 多列ALTER)",
           lambda ids: _gen_special_tests("internal", ids), registry)
-    _emit(I, "29_partition_64_enhanced.sql", header_internal, "分区策略 × 增强类型",
+    _emit(I, "29_partition_strategies_enhanced.sql", header_internal, "24 种分区策略(含 16 种组合分区) × 增强类型",
           both_algos(lambda ids, algo: _gen_partition_tests(internal_trans, algo, "internal", ids)),
           registry)
+
+    # ---------------- 清理过期产物 ----------------
+    # 文件改名或数量变化后，旧产物若留在目录里会被执行器当成有效用例跑，
+    # 造成"跑了已经不存在的覆盖"。这里按本轮实际写入清单做差集清理。
+    stale = _prune_stale_sql([p for p, _c, _sz, _g in WRITTEN_FILES])
+    global STALE_PRUNED
+    STALE_PRUNED = stale
+    if stale:
+        print("清理过期产物    : %d 个 %s" % (len(stale), [os.path.basename(x) for x in stale]))
 
     # ---------------- .gitignore 同步（P0-1: 产物/跟踪一致） ----------------
     _sync_gitignore()
@@ -2201,6 +2471,7 @@ def generate_all():
         "suite_revision": SUITE_REVISION,
         "generator": os.path.basename(os.path.abspath(__file__)),
         "gz_threshold_bytes": GZ_THRESHOLD_BYTES,
+        "stale_pruned": [os.path.basename(x) for x in STALE_PRUNED],
         "total_cases": len(all_ids),
         "unique_case_ids": len(set(all_ids)),
         "transition_count": len(ALL_TRANSITIONS),

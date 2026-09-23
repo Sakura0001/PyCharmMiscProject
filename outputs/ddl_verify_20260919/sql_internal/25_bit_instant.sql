@@ -5,7 +5,7 @@
 -- 覆盖算法: INSTANT + INPLACE (增强类型 INSTANT 预期成功: BINARY/VARBINARY/DECIMAL 已确认支持)
 -- ============================================================
 -- 本文件由 generate_test_sql.py 自动生成, 请勿手动修改
--- Suite-Revision: 59f7773ee801   (生成器源码哈希; 时间戳见 results/generation_manifest.json)
+-- Suite-Revision: 77acedf440f2   (生成器源码哈希; 时间戳见 results/generation_manifest.json)
 -- 用例 ID 规则: TC-<文件号>-<作用域>-<序号>-<IT|IP>  —— 全局唯一
 --   作用域 REG=普通表 OFAT/二元组, ATR=列属性保持, SPE=特殊模式,
 --          FK=外键, PTK=分区(目标列是分区键), PNK=分区(目标列非分区键)
@@ -1653,7 +1653,7 @@ ALTER TABLE t1_tc_25_atr_0001_it MODIFY target BIT(8) COMMENT 'test_comment', AL
 INSERT INTO t1_tc_25_atr_0001_it (target) VALUES (b'11111111');
 INSERT INTO t1_tc_25_atr_0001_it (target) VALUES (b'11');
 INSERT INTO t1_tc_25_atr_0001_it (target) VALUES (b'1');
-SELECT 'TC-25-ATR-0001-IT' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_25_atr_0001_it' AND column_name='target' AND column_comment='test_comment';
+SELECT 'TC-25-ATR-0001-IT' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='t1_tc_25_atr_0001_it' AND column_name='target' AND column_comment='test_comment';
 
 -- Test Case: TC-25-REG-0029-IT
 -- Type: BIT(8) -> BIT(16), Algorithm: instant, Expected: SUCCESS
@@ -3381,7 +3381,7 @@ ALTER TABLE t1_tc_25_atr_0002_it MODIFY target BIT(16) COMMENT 'test_comment', A
 INSERT INTO t1_tc_25_atr_0002_it (target) VALUES (b'1111111111111111');
 INSERT INTO t1_tc_25_atr_0002_it (target) VALUES (b'111111111');
 INSERT INTO t1_tc_25_atr_0002_it (target) VALUES (b'1');
-SELECT 'TC-25-ATR-0002-IT' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_25_atr_0002_it' AND column_name='target' AND column_comment='test_comment';
+SELECT 'TC-25-ATR-0002-IT' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='t1_tc_25_atr_0002_it' AND column_name='target' AND column_comment='test_comment';
 
 -- Test Case: TC-25-REG-0057-IT
 -- Type: BIT(16) -> BIT(32), Algorithm: instant, Expected: SUCCESS
@@ -5109,7 +5109,7 @@ ALTER TABLE t1_tc_25_atr_0003_it MODIFY target BIT(32) COMMENT 'test_comment', A
 INSERT INTO t1_tc_25_atr_0003_it (target) VALUES (b'11111111111111111111111111111111');
 INSERT INTO t1_tc_25_atr_0003_it (target) VALUES (b'11111111111111111');
 INSERT INTO t1_tc_25_atr_0003_it (target) VALUES (b'1');
-SELECT 'TC-25-ATR-0003-IT' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_25_atr_0003_it' AND column_name='target' AND column_comment='test_comment';
+SELECT 'TC-25-ATR-0003-IT' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='t1_tc_25_atr_0003_it' AND column_name='target' AND column_comment='test_comment';
 
 -- Test Case: TC-25-REG-0085-IT
 -- Type: BIT(32) -> BIT(64), Algorithm: instant, Expected: SUCCESS
@@ -6837,5 +6837,5 @@ ALTER TABLE t1_tc_25_atr_0004_it MODIFY target BIT(64) COMMENT 'test_comment', A
 INSERT INTO t1_tc_25_atr_0004_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
 INSERT INTO t1_tc_25_atr_0004_it (target) VALUES (b'111111111111111111111111111111111');
 INSERT INTO t1_tc_25_atr_0004_it (target) VALUES (b'1');
-SELECT 'TC-25-ATR-0004-IT' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_25_atr_0004_it' AND column_name='target' AND column_comment='test_comment';
+SELECT 'TC-25-ATR-0004-IT' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='t1_tc_25_atr_0004_it' AND column_name='target' AND column_comment='test_comment';
 

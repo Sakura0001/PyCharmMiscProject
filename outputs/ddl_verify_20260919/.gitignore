@@ -12,7 +12,7 @@ sql_aliyun/05_char_instant.sql
 sql_aliyun/06_char_inplace.sql
 sql_aliyun/07_varchar_instant.sql
 sql_aliyun/08_varchar_inplace.sql
-sql_aliyun/12_partition_64.sql
+sql_aliyun/12_partition_strategies.sql
 sql_internal/15_binary_inplace.sql
 sql_internal/16_binary_instant.sql
 sql_internal/17_varbinary_inplace.sql
@@ -24,5 +24,5 @@ sql_internal/22_text_inplace.sql
 sql_internal/23_blob_instant.sql
 sql_internal/24_blob_inplace.sql
 sql_internal/26_bit_inplace.sql
-sql_internal/29_partition_64_enhanced.sql
+sql_internal/29_partition_strategies_enhanced.sql
 # END auto-generated

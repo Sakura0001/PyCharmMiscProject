@@ -9,12 +9,11 @@
 | 1 | P0-1 执行器跳过 .gz | ✅ 已修复并验证 | pytest 30 + RDS 实跑 |
 | 2 | P0-4 用例 ID 全局唯一 | ✅ 已修复并验证 | pytest 34+1xfail + RDS 并发实跑 |
 | 3 | P0-2 / P0-3 分区分支对照与空断言 | ✅ 已修复并验证 | pytest 45 + RDS 103 例实跑 |
-| 4 | P0-9 分区定义非类型感知(errno 1654) | ⏳ 进行中 | — |
-| 5 | P0-5 64 分区组合实为 8 种 / 无 SUBPARTITION | ⏳ 待办 | — |
-| 6 | P0-6 超上限负向 INSERT 被注释 | ⏳ 待办 | — |
+| 4 | P0-9 分区定义非类型感知 + P0-5 无 SUBPARTITION | ✅ 已修复并验证 | 实测探针 + pytest 52 + RDS 512 例 |
+| 5 | P0-8 VC-08/VC-09/VBIN-03 超行宽上限(errno 1118) | ✅ 已修复并验证 | pytest 59 + **RDS 全量 5220/5220 PASS** |
+| 6 | P0-6 超上限负向 INSERT 被注释 | ⏳ 进行中 | — |
 | 7 | P0-7 + P1-1 期望值机读化 + 列类型断言 | ⏳ 待办 | — |
-| 8 | P0-8 VC-08/VC-09/VBIN-03 超行宽上限(errno 1118) | ⏳ 待办 | — |
-| 9+ | P1-2 ~ P3 | ⏳ 待办 | — |
+| 8+ | P1-2 ~ P3 | ⏳ 待办 | — |
 
 ---
 
@@ -108,3 +107,108 @@ CREATE TABLE ... (target TINYINT, ... PRIMARY KEY (id, target))
 PARTITION BY RANGE COLUMNS(target) (p0 VALUES LESS THAN (100), p1 ... (200), p2 ... (300), ...)
 ```
 `_build_single_partition()` 的分区界是硬编码整数字面量：对 `TINYINT`（上限 127）而言 200/300 越界；对 `VARCHAR` 而言整数界类型不符。**分区定义不是类型感知的** —— 这正是 Step 3 的价值：旧套件把它藏成"静默无输出"，现在带 errno 暴露出来了。下一步（Step 4）修分区定义的类型感知，并与 P0-5（真 SUBPARTITION + 组合去重）一起做。
+
+---
+
+## Step 4 — P0-9 + P0-5 分区生成器重建（类型感知 + 真 SUBPARTITION + 实测矩阵）
+
+**问题 1（P0-9）**：`_build_single_partition()` 的分区界是硬编码整数字面量 `100/200/300`
+- 对 `TINYINT`（上限 127）越界、对 `VARCHAR` 类型不符 → 实测 **errno 1654 / 1697**，建表直接失败
+- RDS 抽样 103 例中 30 例中招（Step 3 的新断言把它们从"静默无输出"变成了带 errno 的可见失败）
+
+**问题 2（P0-5）**：`_build_partition_def()` 里有自我否定的死代码，最终 `return first, True`
+- 二级分区类型被完全丢弃：两个分区文件里 `SUBPARTITION` 出现 **0 次**
+- `PP-33 (HASH+RANGE)` 与 `PP-37..PP-40 (HASH+*)` 生成的 SQL 逐字相同 → "64 种组合"实为 8 种 × 8 份重复
+
+**问题 3**：`PK_COMPAT` 是猜的。实测证伪了多条：`("KEY","text")=True`、`("KEY","blob")=True`、
+`("RANGE COLUMNS","decimal")=True` 全部错误（TEXT/BLOB 不能作任何分区键；DECIMAL 只能用 KEY/LINEAR KEY）。
+
+**做法：先实测，再生成**
+- 新增 `tools/probe_partition_compat.py`：按类型构造**类型正确**的分区定义，逐个 CREATE + INSERT + ALTER 探测，
+  产出 `tools/partition_compat_<env>.json`（内网实例可直接复跑，得到自己的矩阵）
+- 探测脚本自身也抓出两个 bug 并修正：① MySQL 的 `SUBPARTITION BY` 必须写在分区定义列表**之前**
+  （写反 → 16 个组合策略全部误报 errno 1064）；② ALTER 探测原先用**同类型**（no-op），测不出真实 errno，
+  改为探测真实的加宽转换
+- 生成器内嵌 `PARTITION_COMPAT`（按 category 归并，附实测出处），并新增 pytest 守卫
+  `test_partition_compat_matrix_matches_measured_probe` 把内嵌矩阵与探针 JSON 逐 category 对齐
+
+**改动**
+- 24 种**互不相同**的策略 = 8 种一级 + 16 种组合分区（`RANGE*/LIST* × SUB HASH/LINEAR HASH/KEY/LINEAR KEY`）
+- `build_partition_clause()` 按列类型分派分区界与 LIST 取值（整数 / 字符串 / 二进制 / BIT / DECIMAL / TEXT / BLOB）
+- LIST/LIST COLUMNS 没有 MAXVALUE 兜底 → PTK 分支只插入分组代表值（`partition_fit_values`），
+  消除旧实现"灌边界值 → errno 1526 → 插入静默失败 → 用例退化成空表对照"的问题
+- 分区键可建性新增**长度维度**：`max_bytes(target) + 4(id) ≤ 3072`
+  （二分实测：latin1 VARCHAR 最大 3068、utf8mb4 最大 VARCHAR(767)，再大 1 字节即 errno 1071）
+- `expected_partition_key_alter()` 按实测建立期望：分区键改类型时 INSTANT/INPLACE 多为 **1846**；
+  唯一例外是 VARCHAR/VARBINARY **不跨 255 字节长度前缀边界**的扩容 → INPLACE 成功、INSTANT 仍 1845；
+  `ALGORITHM=COPY` 在分区键上**可以**成功改类型（另立 COPY 对照组专项）
+- 分区文件更名 `12_partition_64` → `12_partition_strategies`（"64"已不成立）
+- 生成器新增 `_prune_stale_sql()`：清理本轮未产出的旧 `.sql/.sql.gz`，防止执行器跑到过期产物
+
+**过程中自查出的缺陷（已修）**
+1. `PARTITION BY RANGE COLUMNS COLUMNS(target)` —— 关键字重复（`"%s %s"` 拼接对 `RANGE COLUMNS` 不成立），
+   静态守卫 `test_no_duplicated_partition_keyword` 抓到
+2. 改名后的旧产物 `12_partition_64.sql.gz` 残留在目录里，会被执行器当有效文件跑 → 加 `_prune_stale_sql`
+3. TEXT/BLOB 的分区界回退成了整数字面量，使 BUILD_REJECTED 用例失败在**错误的原因**上
+   （1697 而非语义正确的 1170）→ 补 text/blob 的字符串/十六进制界
+
+**验证**
+```bash
+python3 tools/probe_partition_compat.py --env aliyun      # 17 类型 × 24 策略 = 408 次探测
+python3 generate_test_sql.py                              # 9553 用例 / 9553 唯一 ID
+python3 -m pytest selfcheck/test_runner.py -q             # 52 passed
+python3 run_tests.py --env aliyun --files 12_partition_strategies.sql.gz --sample 6 --workers 8
+#   -> 512/512 PASS，0 FAIL / 0 ERROR / 0 MANUAL
+```
+分区用例数 15,104 → **5,664**：删掉的是 8 倍完全重复，新增的是 16 种真组合分区，
+**distinct 覆盖从 8 种策略提升到 24 种**。
+
+---
+
+## Step 5 — P0-8 上限转换超行宽 / 索引键上限
+
+**问题**：`upper_limit_coverage_report.md` 声称 VC-08 / VC-09 / VBIN-03 "INSTANT+INPLACE ✅SUCCESS、minimal_table 是"，
+但这三条从未被执行过（在 Step 1 修好 gz 之前）。实跑结果：
+- `VARCHAR(16383)` utf8mb4 = 65,532 + 2 前缀 + 4(id) = **65,538 > 65,535** → errno **1118**
+- `VARCHAR(65529)` / `VARBINARY(65529)` 同理 → errno **1118**
+- 完整阿里云套件 5,220 例中 **216 例非 PASS，全部集中在这三条转换**（1118×200、1071×6、PRIMARY FAIL×10）
+
+**二分实测真实上界**（`id INT AUTO_INCREMENT PRIMARY KEY + target` 两列表，RDS 8.0.36 与社区版 8.0.45 一致）：
+
+| 类型 | 实测最大 n | 说明 |
+|---|---|---|
+| `VARCHAR(n)` utf8mb4 | **16382** | 16382×4 + 2 + 4 = 65534 ≤ 65535 |
+| `VARCHAR(n)` latin1 | **65528** | 65528 + 2 + 4 = 65534 |
+| `VARBINARY(n)` | **65528** | 同上 |
+| `BINARY(n)` | 255 | 类型本身上限 |
+| `CHAR(n)` utf8mb4 | 255 | 类型本身上限 |
+
+顺带实测：`innodb_strict_mode` 在两台实例上不同（RDS=0 / 本机=1），会影响"无显式 PK"时的行宽预算
+（RDS 65524 vs 本机 65532），已作为环境快照维度记录。
+
+**改动**
+- 三条上限转换改为 **16381→16382 (utf8mb4) / 65527→65528 (latin1) / 65527→65528 (VARBINARY)**；
+  "再 +1" 变成真正的超上限负向探针（Step 6 落地）
+- 新增**因子可行性守卫** `check_case_feasible()`：目标列 > 3072 字节且因子要求整列索引时，
+  生成显式负向用例（`#BUILD_REJECTED` + `@expect build=FAIL errno=[1071]`），
+  而不是像以前那样照样生成 CREATE、跑出一片 1071/1118 然后被记成 NO_OUTPUT
+- `_build_column_attribute_test` 修两个缺陷：① 只有 CHARSET/COLLATE 分支带字符集，
+  UNSIGNED/COMMENT 分支写裸 `VARCHAR(65528)` → 按库默认 utf8mb3 解析 → errno **1074** "max = 21845"；
+  ② 完全不认 `minimal_table`，仍加 `pad VARCHAR(20)` → errno **1118**
+- 分区 PTK 分支补字符集（`_partition_col_def`）：CREATE 不带而 ALTER 带 `CHARACTER SET latin1`，
+  语义变成"改长度 + 改字符集" → INPLACE 被拒 1846，11 个用例的 `TYPE_AFTER_ALTER` 据此正确判 FAIL
+- 期望模型修正：`minimal_table` 下 `COMPOSITE_PK` 被 `_build_create_table` **降级为 `PRIMARY KEY(id)`**，
+  目标列不在任何索引里 → INSTANT 实际成功。旧模型一律判 FAIL、对照表按旧类型建 → 4 例数据不一致
+
+**验证**
+```bash
+python3 generate_test_sql.py                        # 9553 用例 / 9553 唯一 ID
+python3 -m pytest selfcheck/test_runner.py -q       # 59 passed
+python3 run_tests.py --env aliyun --files 07_varchar_instant.sql.gz 08_varchar_inplace.sql.gz --workers 8
+#   -> 603/603 PASS（修复前 120 ERROR + 20 FAIL）
+python3 run_tests.py --env aliyun --workers 8
+#   -> 5220/5220 PASS，0 FAIL / 0 ERROR / 0 MANUAL / 0 MISSING（10.6 分钟）
+```
+新增 7 项静态守卫：上限值等于实测上界、任何转换不得超 65535 行宽预算、
+infeasible 组合必须走显式负向用例、minimal_table 降级不得误判、
+INSTANT 期望必须认降级、ATR 用例必须认 minimal_table、字符集在所有建表点显式且与 ALTER 一致。
