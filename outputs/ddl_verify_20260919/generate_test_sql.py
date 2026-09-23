@@ -955,6 +955,69 @@ def _build_infeasible_case(test_id: str, transition: dict, algorithm: str, facto
     return "\n".join(lines)
 
 
+# 超上限值在 STRICT 模式下应被拒绝的错误码集合（实测 RDS 8.0.36）
+NEG_ERRNOS = [1406, 1264, 1265, 167, 1264]
+
+
+def _probe_sha1(stmt: str) -> str:
+    """探针语句文本的短哈希，供执行器把"声明的期望"与"实际报错的语句"精确对上。"""
+    return hashlib.sha1(stmt.encode("utf-8")).hexdigest()[:12]
+
+
+def build_negative_probes(test_id: str, t1: str, t2: str, values: list,
+                          strict: bool) -> Tuple[list, list, int]:
+    """P0-6：把"超出新类型上限的值"真正插进去，并断言其行为。
+
+    旧实现生成的是 `-- INSERT INTO ...`（整条被注释），全套件 2,623 条负向探针
+    从未执行，而 upper_limit_coverage_report.md 却写着"插入超上限值(预期FAIL)"。
+
+    新实现：
+      1. 同一个超限值**同时**插入 t1 与对照表 t2 —— 两表类型相同，
+         因此无论 STRICT(拒绝) 还是非 STRICT(截断+告警)，行为都必须完全一致；
+      2. 用会话变量记录插入前后行数，断言:
+           STRICT     -> t1_added = 0 且 t2_added = 0（超限值绝不能落库）
+           非 STRICT  -> t1_added = t2_added（截断行为必须与对照表一致）
+         两种模式都同时断言 t1 与 t2 完全对称；
+      3. 每条探针语句的 sha1 写进 `@expect neg_probe=<sha1>=<errno|ACCEPTED>`，
+         执行器据此把声明的期望与实际报错的语句精确对上（长字面量被截断也不受影响）。
+
+    返回 (SQL 行列表, neg_probe 标记列表, 探针条数)。
+    """
+    lines: List[str] = []
+    probes: List[str] = []
+    if not values:
+        return lines, probes, 0
+
+    lines.append("-- Negative probes: 超出新类型上限的值（STRICT 必须拒绝 / 非 STRICT 必须与对照表一致）")
+    lines.append("SET @neg_before_t1 = (SELECT COUNT(*) FROM %s);" % t1)
+    lines.append("SET @neg_before_t2 = (SELECT COUNT(*) FROM %s);" % t2)
+    n = 0
+    for v in values:
+        n += 1
+        for tbl in (t1, t2):
+            stmt = "INSERT INTO %s (target) VALUES (%s)" % (tbl, v)
+            lines.append("-- probe %d/%d -> %s" % (n, len(values), tbl))
+            lines.append(stmt + ";")
+            probes.append("%s=%s" % (_probe_sha1(stmt),
+                                     ("|".join(str(e) for e in sorted(set(NEG_ERRNOS)))
+                                      if strict else "ACCEPTED")))
+    added_t1 = "(SELECT COUNT(*) FROM %s) - @neg_before_t1" % t1
+    added_t2 = "(SELECT COUNT(*) FROM %s) - @neg_before_t2" % t2
+    if strict:
+        cond = "%s = 0 AND %s = 0" % (added_t1, added_t2)
+        expect_desc = "0 (STRICT: 超限值必须被拒绝)"
+    else:
+        cond = "%s = %s" % (added_t1, added_t2)
+        expect_desc = "t1_added = t2_added (非 STRICT: 截断行为必须与对照表一致)"
+    lines.append(
+        "SELECT '%s#NEG_REJECTED' AS test_id,\n"
+        "       IF(%s,'PASS','FAIL') AS result,\n"
+        "       CONCAT('t1_added=',%s,' t2_added=',%s,"
+        "' expect=%s sql_mode=',@@session.sql_mode) AS mismatch;"
+        % (test_id, cond, added_t1, added_t2, expect_desc.replace("'", "")))
+    return lines, probes, n
+
+
 def _build_compare_sql(test_id: str, t1: str, t2: str, columns: list) -> str:
     """Build Oracle comparison SELECT using NULL-safe <=>."""
     col_cmp = " AND ".join(f"a.{c} <=> b.{c}" for c in columns)
@@ -1065,6 +1128,7 @@ def _build_test_case_sql(test_id: str, transition: dict, algorithm: str, factors
         lines.append(f"-- Varied factor: {factor_name}")
     lines.append(f"-- Transition ID: {transition.get('id', '')}")
     lines.append(f"-- Factors: {_format_factors(factors)}")
+    lines.append(f"-- @header_placeholder@")
     lines.append(f"DROP TABLE IF EXISTS {t1}, {t2};")
 
     # Set SQL mode for this test case
@@ -1114,11 +1178,6 @@ def _build_test_case_sql(test_id: str, transition: dict, algorithm: str, factors
         for v in post_old:
             lines.append(_build_insert_stmt(t1, "target", v))
 
-    # Fail values (exceed even new type) - should fail on both tables
-    for v in data.get("post_fail", []):
-        lines.append(f"-- Insert value exceeding new type (expected FAIL on both tables)")
-        lines.append(f"-- INSERT INTO {t1} (target) VALUES ({v});")
-
     # Step 6: CREATE t2
     # Success path: t2 uses new_type (same as t1 after ALTER)
     # Fail path: t2 uses old_type (same as t1 which kept old type)
@@ -1138,11 +1197,24 @@ def _build_test_case_sql(test_id: str, transition: dict, algorithm: str, factors
     for v in all_vals:
         lines.append(_build_insert_stmt(t2, "target", v))
 
+    # Step 7b: 负向探针（P0-6）—— t2 建好之后才能同时探两边
+    neg_lines, neg_probes, neg_n = build_negative_probes(
+        test_id, t1, t2, data.get("post_fail", []),
+        strict=(sql_mode_factor == "STRICT"))
+    lines.extend(neg_lines)
+
     # Step 8: Compare — use minimal columns for minimal_table types
     compare_cols = ["id", "target"] if transition.get("minimal_table") else ["id", "pad1", "target", "pad2"]
     lines.append(_build_compare_sql(test_id, t1, t2, compare_cols))
 
-    return "\n".join(lines)
+    # P0-7: 机读期望头（占位符在 neg_probes 已知后回填）
+    n_assertions = 1 + (1 if neg_n else 0)      # PRIMARY 对照 + NEG_REJECTED
+    tag = ("-- @expect alter=%s build=SUCCESS assertions=%d neg_probes=%d"
+           % (alter_expected, n_assertions, neg_n))
+    for pr in neg_probes:
+        tag += " neg_probe=%s" % pr
+    text = "\n".join(lines)
+    return text.replace("-- @header_placeholder@", tag)
 
 
 def _format_factors(factors: dict) -> str:

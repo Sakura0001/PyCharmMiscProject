@@ -596,34 +596,112 @@ def test_multi_assertion_cases_declare_count(all_cases):
 # Step 3: runner 侧多断言聚合
 # ================================================================
 
+def _agg(rows):
+    """旧 API 适配：判定行 -> (status, result, mismatch, assertions)。"""
+    a = R.collect_sql_assertions(rows)
+    st, res, mis = R.aggregate(a)
+    return st, res, mis, a
+
+
 def test_aggregate_all_pass():
-    st, res, mis, a = R.aggregate_assertions([
+    st, res, mis, a = _agg([
         {"test_id": "TC-X", "result": "PASS", "mismatch": ""},
-        {"test_id": "TC-X#TYPE_UNCHANGED", "result": "PASS", "mismatch": ""}])
+        {"test_id": "TC-X#TYPE_AFTER_ALTER", "result": "PASS", "mismatch": ""}])
     assert st == "PASS" and len(a) == 2
-    assert a[1]["name"] == "TYPE_UNCHANGED"
+    assert a[1]["name"] == "TYPE_AFTER_ALTER"
+    assert all(x["source"] == "sql" for x in a)
 
 
 def test_aggregate_any_fail_wins_regardless_of_order():
     rows_pass_first = [{"test_id": "TC-X", "result": "PASS", "mismatch": ""},
-                       {"test_id": "TC-X#TYPE_UNCHANGED", "result": "FAIL",
+                       {"test_id": "TC-X#TYPE_AFTER_ALTER", "result": "FAIL",
                         "mismatch": "expect=tinyint actual=smallint"}]
-    rows_fail_first = list(reversed(rows_pass_first))
-    for rows in (rows_pass_first, rows_fail_first):
-        st, res, mis, a = R.aggregate_assertions(rows)
+    for rows in (rows_pass_first, list(reversed(rows_pass_first))):
+        st, res, mis, a = _agg(rows)
         assert st == "FAIL", "旧实现只看最后一行，先失败后通过会被掩盖"
-        assert "TYPE_UNCHANGED=FAIL" in mis
+        assert "TYPE_AFTER_ALTER=FAIL" in mis
         assert "actual=smallint" in mis
 
 
 def test_aggregate_manual_only_when_no_fail():
-    st, _r, _m, _a = R.aggregate_assertions([
-        {"test_id": "TC-X", "result": "BUILD_FAIL_EXPECTED", "mismatch": ""}])
+    st, _r, _m, _a = _agg([{"test_id": "TC-X", "result": "BUILD_FAIL_EXPECTED", "mismatch": ""}])
     assert st == "MANUAL"
-    st, _r, _m, _a = R.aggregate_assertions([
-        {"test_id": "TC-X", "result": "BUILD_FAIL_EXPECTED", "mismatch": ""},
-        {"test_id": "TC-X#A", "result": "FAIL", "mismatch": "x"}])
+    st, _r, _m, _a = _agg([{"test_id": "TC-X", "result": "BUILD_FAIL_EXPECTED", "mismatch": ""},
+                           {"test_id": "TC-X#A", "result": "FAIL", "mismatch": "x"}])
     assert st == "FAIL"
+
+
+def test_aggregate_empty():
+    assert R.aggregate([]) == (None, "", "")
+
+
+# ---------------- P0-6 负向探针的 errno 级校验 ----------------
+
+def _probe_case(specs, assertions_n=None):
+    tags = " ".join("neg_probe=%s" % sp for sp in specs)
+    head = ("-- @expect alter=SUCCESS assertions=%d %s" % (assertions_n or 1, tags))
+    text = SAMPLE_CASE.replace(
+        "-- @expect alter=SUCCESS column_type=smallint nullable=YES", head)
+    p = "/tmp/_probe.sql"
+    _write(p, text)
+    _pre, cases = R.split_cases(p, False)
+    return cases[0]
+
+
+def _err(sha, errno):
+    return {"stmt_index": 3, "errno": errno, "error": "Data too long",
+            "statement": "INSERT ...", "stmt_sha1": sha, "duration_ms": 1}
+
+
+def test_neg_probe_strict_must_fail_with_declared_errno():
+    c = _probe_case(["abc123=1406|1264"])
+    st, res, mis, a, e = R.classify_case(c, {
+        "verdict_rows": [{"test_id": c.test_id, "result": "PASS", "mismatch": ""}],
+        "errors": [_err("abc123", 1406)], "duration_ms": 1, "statement_count": 5})
+    assert st == "PASS"
+    assert [x["name"] for x in a] == ["PRIMARY", "NEG_ERRNO#1"]
+    assert a[1]["source"] == "runner"
+
+
+def test_neg_probe_silent_accept_is_fail():
+    """STRICT 下超限值被静默接受 = 数据正确性缺陷，必须判 FAIL。"""
+    c = _probe_case(["abc123=1406|1264"])
+    st, res, mis, a, e = R.classify_case(c, {
+        "verdict_rows": [{"test_id": c.test_id, "result": "PASS", "mismatch": ""}],
+        "errors": [], "duration_ms": 1, "statement_count": 5})
+    assert st == "FAIL"
+    assert "SILENTLY ACCEPTED" in mis
+
+
+def test_neg_probe_wrong_errno_is_fail():
+    c = _probe_case(["abc123=1406|1264"])
+    st, res, mis, a, e = R.classify_case(c, {
+        "verdict_rows": [{"test_id": c.test_id, "result": "PASS", "mismatch": ""}],
+        "errors": [_err("abc123", 1062)], "duration_ms": 1, "statement_count": 5})
+    assert st == "FAIL" and "not in declared" in mis
+
+
+def test_neg_probe_accepted_mode():
+    c = _probe_case(["abc123=ACCEPTED"])
+    st, _r, _m, a, _e = R.classify_case(c, {
+        "verdict_rows": [{"test_id": c.test_id, "result": "PASS", "mismatch": ""}],
+        "errors": [], "duration_ms": 1, "statement_count": 5})
+    assert st == "PASS"
+    st, _r, mis, _a, _e = R.classify_case(c, {
+        "verdict_rows": [{"test_id": c.test_id, "result": "PASS", "mismatch": ""}],
+        "errors": [_err("abc123", 1406)], "duration_ms": 1, "statement_count": 5})
+    assert st == "FAIL" and "should have been accepted" in mis
+
+
+def test_assertion_count_ignores_runner_synthesized():
+    """assertions=N 只数 SQL 判定行，runner 合成的负向探针校验不计入。"""
+    c = _probe_case(["abc123=1406"], assertions_n=1)
+    st, res, mis, a, e = R.classify_case(c, {
+        "verdict_rows": [{"test_id": c.test_id, "result": "PASS", "mismatch": ""}],
+        "errors": [_err("abc123", 1406)], "duration_ms": 1, "statement_count": 5})
+    assert st == "PASS", mis
+    assert len([x for x in a if x["source"] == "sql"]) == 1
+    assert len(a) == 2
 
 
 def test_assertion_count_mismatch_is_error():
@@ -964,3 +1042,79 @@ def test_charset_present_on_every_string_column(all_cases):
             bad.append((fname, c.test_id,
                         "ALTER 字符集 %s 不在 CREATE 字符集 %s 中" % (sorted(cs_alter), sorted(cs_create))))
     assert not bad, "字符集缺失/不一致: %d 处，示例 %s" % (len(bad), bad[:5])
+
+
+# ================================================================
+# Step 6 (P0-6) 负向探针真正执行
+# ================================================================
+
+def test_no_commented_out_inserts_remain(all_cases):
+    """P0-6：旧实现生成 `-- INSERT INTO ...`，2623 条超上限负向探针从未执行。"""
+    bad = [(f, c.test_id) for f, c in all_cases if "\n-- INSERT INTO" in c.text]
+    assert not bad, "仍有被注释掉的 INSERT: %d 处，示例 %s" % (len(bad), bad[:3])
+
+
+def test_negative_probes_are_real_and_symmetric(all_cases):
+    """每条超限值必须**同时**插入 t1 与对照表 t2，并配一条 NEG_REJECTED 断言。"""
+    n_cases = n_probes = 0
+    bad = []
+    for fname, c in all_cases:
+        if "#NEG_REJECTED" not in c.text:
+            continue
+        n_cases += 1
+        p1 = _re.findall(r"^-- probe \d+/\d+ -> (t1_\w+)$", c.text, _re.M)
+        p2 = _re.findall(r"^-- probe \d+/\d+ -> (t2_\w+)$", c.text, _re.M)
+        n_probes += len(p1)
+        if len(p1) != len(p2) or not p1:
+            bad.append((fname, c.test_id, len(p1), len(p2)))
+        # 声明的 neg_probe 数量必须与实际探针语句数一致
+        declared = c.meta.get("expect_tags", {}).get("neg_probe") or []
+        if len(declared) != len(p1) + len(p2):
+            bad.append((fname, c.test_id, "declared=%d actual=%d"
+                        % (len(declared), len(p1) + len(p2))))
+    assert n_cases > 2000, "带负向探针的用例数异常: %d" % n_cases
+    assert n_probes > 2000, "负向探针语句数异常: %d" % n_probes
+    assert not bad, "探针不成对/声明不符: %d 处，示例 %s" % (len(bad), bad[:3])
+
+
+def test_strict_and_nonstrict_expectations_differ(all_cases):
+    """STRICT 断言"必须 0 行落库"，非 STRICT 断言"t1 与 t2 行为对称"。"""
+    strict = nonstrict = 0
+    bad = []
+    for fname, c in all_cases:
+        if "#NEG_REJECTED" not in c.text:
+            continue
+        is_strict = "sql_mode=STRICT" in c.text or "sql_mode = 'STRICT_TRANS_TABLES'" in c.text
+        sel = _re.search(r"SELECT '[^']*#NEG_REJECTED'.*?;", c.text, _re.S)
+        body = sel.group(0) if sel else ""
+        if "= 0 AND" in body:
+            strict += 1
+            if not is_strict:
+                bad.append((fname, c.test_id, "非 STRICT 却断言 0 行"))
+        elif _re.search(r"- @neg_before_t1 = \(SELECT COUNT\(\*\) FROM \w+\) - @neg_before_t2", body):
+            nonstrict += 1
+        else:
+            bad.append((fname, c.test_id, "无法识别的 NEG 断言形态"))
+    # NON_STRICT 是 OFAT 的单因子变体：每个 (转换 × 算法) 各一条，
+    # 再扣掉没有 post_fail 值的类型（TEXT/BLOB/BIT），实测量级约 80 条
+    assert strict > 1000, "STRICT 负向断言数异常: %d" % strict
+    assert nonstrict > 50, "非 STRICT 负向断言数异常: %d" % nonstrict
+    assert not bad, "NEG 断言与 sql_mode 不匹配: %s" % bad[:3]
+
+
+def test_every_statement_has_balanced_quotes(all_cases):
+    """静态语法守卫：每条语句的单引号必须成对（不配对 => 语句被吞、分割错乱）。
+
+    这条守卫是为了抓住实际发生过的缺陷：NEG_REJECTED 的 CONCAT 里多写了一个 `'`，
+    导致 543 个用例报 errno 1064 且把后面的对照 SELECT 一起截断。
+    """
+    bad = []
+    for fname, c in all_cases:
+        for i, st in enumerate(c.statements):
+            # 去掉 '' 转义与反斜杠转义后，单引号必须成对
+            t = st.replace("''", "").replace("\\'", "")
+            if t.count("'") % 2 != 0:
+                bad.append((fname, c.test_id, i, st[:110]))
+            if st.count("(") != st.count(")"):
+                bad.append((fname, c.test_id, i, "括号不配对: " + st[:90]))
+    assert not bad, "语句引号/括号不配对: %d 处，示例 %s" % (len(bad), bad[:3])

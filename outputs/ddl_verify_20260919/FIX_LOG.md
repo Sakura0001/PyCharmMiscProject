@@ -11,7 +11,7 @@
 | 3 | P0-2 / P0-3 分区分支对照与空断言 | ✅ 已修复并验证 | pytest 45 + RDS 103 例实跑 |
 | 4 | P0-9 分区定义非类型感知 + P0-5 无 SUBPARTITION | ✅ 已修复并验证 | 实测探针 + pytest 52 + RDS 512 例 |
 | 5 | P0-8 VC-08/VC-09/VBIN-03 超行宽上限(errno 1118) | ✅ 已修复并验证 | pytest 59 + **RDS 全量 5220/5220 PASS** |
-| 6 | P0-6 超上限负向 INSERT 被注释 | ⏳ 进行中 | — |
+| 6 | P0-6 超上限负向 INSERT 被注释 | ✅ 已修复并验证 | pytest 69 + **RDS 全量 5220/5220 PASS** |
 | 7 | P0-7 + P1-1 期望值机读化 + 列类型断言 | ⏳ 待办 | — |
 | 8+ | P1-2 ~ P3 | ⏳ 待办 | — |
 
@@ -212,3 +212,45 @@ python3 run_tests.py --env aliyun --workers 8
 新增 7 项静态守卫：上限值等于实测上界、任何转换不得超 65535 行宽预算、
 infeasible 组合必须走显式负向用例、minimal_table 降级不得误判、
 INSTANT 期望必须认降级、ATR 用例必须认 minimal_table、字符集在所有建表点显式且与 ALTER 一致。
+
+---
+
+## Step 6 — P0-6 超上限负向探针真正执行
+
+**问题**：`_build_test_case_sql` 生成的是 `-- INSERT INTO ...`（整条被注释），
+全套件 **2,623 条**"超出新类型上限的值必须被拒绝"的探针从未执行；
+而 `upper_limit_coverage_report.md` §3.1/§3.2 明确写着"插入 256 字符(FAIL)"、
+"超上限值(预期FAIL): `REPEAT('q',16384)`"、"`0x41*65530`" —— 报告描述的验证没有发生。
+
+**改动（生成器）**
+- 新增 `build_negative_probes()`：超限值**同时**插入 t1 与对照表 t2（两表类型相同，
+  因此无论 STRICT 还是非 STRICT，行为都必须完全一致），并用会话变量记录插入前后行数：
+  - STRICT → 断言 `t1_added = 0 AND t2_added = 0`（超限值绝不能落库）
+  - 非 STRICT → 断言 `t1_added = t2_added`（截断行为必须与对照表对称）
+- 每条探针语句的 sha1 写进 `-- @expect neg_probe=<sha1>=<errno|ACCEPTED>`，
+  执行器据此把"声明的期望"与"实际报错的语句"精确对上
+  （65529 字节的长字面量在结果里被截断展示也不影响匹配）
+- `@expect` 头统一化：`alter= build= assertions= neg_probes=`
+
+**改动（执行器）**
+- 错误记录增加 `stmt_sha1`（完整语句哈希）
+- `collect_sql_assertions()` / `aggregate()` / `check_negative_probes()` 三段式：
+  SQL 判定行 + runner 合成的 errno 级校验一起参与"任一 FAIL ⇒ FAIL"聚合
+- `assertions=N` 只数 SQL 判定行，runner 合成断言另计（避免误判 ASSERTION_COUNT）
+
+**过程中自查出的缺陷（已修）**
+- `NEG_REJECTED` 的 `CONCAT` 里多写了一个单引号 → 语句被吞、后面的对照 SELECT 一起截断，
+  543 个用例报 errno 1064。**新增静态守卫 `test_every_statement_has_balanced_quotes`**
+  （每条语句单引号必须成对、括号必须配对），这类问题以后在生成阶段就会被拦住。
+
+**验证**
+```bash
+python3 generate_test_sql.py     # 被注释的 INSERT: 2623 -> 0；真实探针语句 5228 条；NEG_REJECTED 断言 2492 条
+python3 -m pytest selfcheck/test_runner.py -q    # 69 passed
+python3 run_tests.py --env aliyun --files 01_integer_signed_instant.sql.gz 05_char_instant.sql.gz 08_varchar_inplace.sql.gz --workers 8
+#   -> 707/707 PASS；断言 2458 条（SQL 1250 + runner 合成 1208），平均每用例 3.48 条
+#      NEG_ERRNO 1208 PASS / NEG_REJECTED 543 PASS / PRIMARY 701 PASS / BUILD_REJECTED 6 PASS
+python3 run_tests.py --env aliyun --workers 8
+#   -> 5220/5220 PASS，0 FAIL / 0 ERROR / 0 MANUAL / 0 MISSING
+```
+STRICT 与非 STRICT 两档均有用例覆盖并全部通过。

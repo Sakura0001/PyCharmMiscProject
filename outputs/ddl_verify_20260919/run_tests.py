@@ -467,6 +467,9 @@ def execute_case_pymysql(case, conn, per_stmt_timeout=None):
                     "errno": errno if isinstance(errno, int) else None,
                     "error": msg[:500],
                     "statement": stmt[:300],
+                    # 完整语句的短哈希：负向探针的期望值按哈希对账，
+                    # 因此 65529 字节的长字面量被截断展示也不影响匹配
+                    "stmt_sha1": hashlib.sha1(stmt.encode("utf-8")).hexdigest()[:12],
                     "duration_ms": int((time.time() - t0) * 1000),
                 })
                 try:
@@ -521,27 +524,58 @@ MANUAL_RESULTS = ("BUILD_OR_ALTER_FAIL_EXPECTED", "BUILD_FAIL_EXPECTED", "ALTER_
 KNOWN_RESULTS = ("PASS", "FAIL") + MANUAL_RESULTS
 
 
-def aggregate_assertions(verdict_rows):
-    """把用例内所有判定行收敛成 (status, result, mismatch, assertions)。
-
-    一个用例可以有多条断言（数据对照 / 类型未变 / 建表被拒 / 索引复验 ...），
-    聚合规则：任一 FAIL => FAIL；否则任一 MANUAL => MANUAL；否则任一未知 => UNKNOWN；
-    全部 PASS => PASS。旧实现只看最后一行，会出现"前面的断言失败被后面的通过掩盖"。
-    """
-    assertions = []
+def collect_sql_assertions(verdict_rows):
+    """把 SQL 判定行转成断言记录（<用例ID>#<断言名>）。"""
+    out = []
     for row in verdict_rows:
         vals = list(row.values())
         aid = str(vals[0]).strip() if vals else ""
         m = RE_SUB_ASSERT.match(aid)
         name = m.group(2) if m else "PRIMARY"
         result = str(vals[1]).strip() if len(vals) > 1 and vals[1] is not None else ""
-        mismatch = ""
-        if len(vals) > 2 and vals[2] is not None:
-            mismatch = str(vals[2]).strip()
-        assertions.append({"name": name, "assert_id": aid, "result": result,
-                           "mismatch": mismatch[:600]})
+        mismatch = str(vals[2]).strip() if len(vals) > 2 and vals[2] is not None else ""
+        out.append({"name": name, "assert_id": aid, "result": result,
+                    "mismatch": mismatch[:600], "source": "sql"})
+    return out
+
+
+def check_negative_probes(case, errors):
+    """P0-6：校验生成器声明的每条负向探针是否按预期被拒绝 / 被接受。
+
+    声明格式（写在用例头 `-- @expect` 里）:
+        neg_probe=<stmt_sha1>=1264|1406|167      STRICT: 该语句必须报错且 errno 在集合内
+        neg_probe=<stmt_sha1>=ACCEPTED           非 STRICT: 该语句必须**不**报错
+    """
+    specs = case.meta.get("expect_tags", {}).get("neg_probe") or []
+    out = []
+    for i, spec in enumerate(specs, start=1):
+        sha, _, want = spec.partition("=")
+        matched = [e for e in errors if e.get("stmt_sha1") == sha]
+        if want == "ACCEPTED":
+            ok = not matched
+            detail = ("probe should have been accepted (non-strict truncation) but errored: errno=%s %s"
+                      % (matched[0].get("errno"), matched[0].get("error"))) if matched else ""
+        else:
+            allowed = {int(x) for x in want.split("|") if x.strip().lstrip("-").isdigit()}
+            if not matched:
+                ok = False
+                detail = ("over-limit value was SILENTLY ACCEPTED in STRICT mode "
+                          "(no error for probe sha=%s)" % sha)
+            else:
+                got = matched[0].get("errno")
+                ok = got in allowed
+                detail = "" if ok else ("probe errno=%s not in declared %s" % (got, sorted(allowed)))
+        out.append({"name": "NEG_ERRNO#%d" % i,
+                    "assert_id": "%s#NEG_ERRNO%d" % (case.test_id, i),
+                    "result": "PASS" if ok else "FAIL",
+                    "mismatch": detail[:600], "source": "runner"})
+    return out
+
+
+def aggregate(assertions):
+    """聚合断言：任一 FAIL => FAIL；否则任一 MANUAL => MANUAL；否则任一未知 => UNKNOWN；全 PASS => PASS。"""
     if not assertions:
-        return None, "", "", []
+        return None, "", ""
     results = [a["result"] for a in assertions]
     if any(r == "FAIL" for r in results):
         status = "FAIL"
@@ -555,14 +589,14 @@ def aggregate_assertions(verdict_rows):
     mismatch = " | ".join("%s=%s%s" % (a["name"], a["result"],
                                        (": " + a["mismatch"]) if a["mismatch"] else "")
                           for a in failing)
-    return status, failing[0]["result"], mismatch, assertions
+    return status, failing[0]["result"], mismatch
 
 
 def classify_case(case, detail):
     """把一个用例的执行明细收敛成 status/result/assertions。
 
     v3 语义:
-      PASS     全部断言 PASS，且断言条数与用例声明一致
+      PASS     全部断言 PASS，且 SQL 断言条数与用例声明一致
       FAIL     任一断言 FAIL
       MANUAL   无断言 FAIL，但存在"需人工确认"的常量断言（P0-3 修复后应为 0）
       ERROR    有语句报错 / 断言缺失，没有可用判定
@@ -570,10 +604,9 @@ def classify_case(case, detail):
     """
     verdict_rows = detail.get("verdict_rows") or []
     errors = detail.get("errors") or []
-    status, result, mismatch, assertions = aggregate_assertions(verdict_rows)
+    assertions = collect_sql_assertions(verdict_rows)
 
-    # 断言条数完整性：生成器用 `@expect assertions=N` 声明应有几条判定行，
-    # 少一条就说明某条断言语句报错了 —— 不能当成 PASS。
+    # 断言条数完整性：只数 SQL 产出的判定行（runner 合成的负向探针校验另计）
     want = case.meta.get("expect_tags", {}).get("assertions")
     if want:
         try:
@@ -587,6 +620,8 @@ def classify_case(case, detail):
                     "通常是该断言语句本身报错）" % (want_n, len(assertions), got),
                     assertions, errors)
 
+    assertions += check_negative_probes(case, errors)
+    status, result, mismatch = aggregate(assertions)
     if status is not None:
         return status, result, mismatch, assertions, errors
     if errors:

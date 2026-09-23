@@ -5,7 +5,7 @@
 -- 覆盖算法: INSTANT + INPLACE (增强类型 INSTANT 预期成功: BINARY/VARBINARY/DECIMAL 已确认支持)
 -- ============================================================
 -- 本文件由 generate_test_sql.py 自动生成, 请勿手动修改
--- Suite-Revision: 77acedf440f2   (生成器源码哈希; 时间戳见 results/generation_manifest.json)
+-- Suite-Revision: 505d13b7cf36   (生成器源码哈希; 时间戳见 results/generation_manifest.json)
 -- 用例 ID 规则: TC-<文件号>-<作用域>-<序号>-<IT|IP>  —— 全局唯一
 --   作用域 REG=普通表 OFAT/二元组, ATR=列属性保持, SPE=特殊模式,
 --          FK=外键, PTK=分区(目标列是分区键), PNK=分区(目标列非分区键)
@@ -21,6 +21,7 @@ SET SESSION innodb_lock_wait_timeout = 50;
 -- Varied factor: BASELINE
 -- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0001_it, t2_tc_25_reg_0001_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0001_it (
@@ -84,6 +85,7 @@ FROM (
 -- Varied factor: row_format=COMPACT
 -- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=COMPACT, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0002_it, t2_tc_25_reg_0002_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0002_it (
@@ -147,6 +149,7 @@ FROM (
 -- Varied factor: row_format=REDUNDANT
 -- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=REDUNDANT, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0003_it, t2_tc_25_reg_0003_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0003_it (
@@ -210,6 +213,7 @@ FROM (
 -- Varied factor: primary_key=COMPOSITE_PK
 -- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=COMPOSITE_PK, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=FAIL build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0004_it, t2_tc_25_reg_0004_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0004_it (
@@ -269,6 +273,7 @@ FROM (
 -- Varied factor: primary_key=NO_EXPLICIT_PK
 -- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=NO_EXPLICIT_PK, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0005_it, t2_tc_25_reg_0005_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0005_it (
@@ -332,6 +337,7 @@ FROM (
 -- Varied factor: non_target_index=NONE
 -- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=NONE, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0006_it, t2_tc_25_reg_0006_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0006_it (
@@ -395,6 +401,7 @@ FROM (
 -- Varied factor: non_target_index=MULTIPLE_SECONDARY
 -- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=MULTIPLE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0007_it, t2_tc_25_reg_0007_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0007_it (
@@ -458,6 +465,7 @@ FROM (
 -- Varied factor: non_target_index=UNIQUE
 -- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=UNIQUE, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0008_it, t2_tc_25_reg_0008_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0008_it (
@@ -521,6 +529,7 @@ FROM (
 -- Varied factor: non_target_index=COMPOSITE_PREFIX
 -- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=COMPOSITE_PREFIX, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0009_it, t2_tc_25_reg_0009_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0009_it (
@@ -584,6 +593,7 @@ FROM (
 -- Varied factor: target_position=FIRST
 -- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=FIRST
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0010_it, t2_tc_25_reg_0010_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0010_it (
@@ -647,6 +657,7 @@ FROM (
 -- Varied factor: target_position=LAST
 -- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=LAST
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0011_it, t2_tc_25_reg_0011_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0011_it (
@@ -710,6 +721,7 @@ FROM (
 -- Varied factor: target_attributes=NOT_NULL_NO_DEFAULT
 -- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0012_it, t2_tc_25_reg_0012_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0012_it (
@@ -769,6 +781,7 @@ FROM (
 -- Varied factor: target_attributes=CONSTANT_DEFAULT
 -- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=CONSTANT_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0013_it, t2_tc_25_reg_0013_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0013_it (
@@ -832,6 +845,7 @@ FROM (
 -- Varied factor: target_attributes=NULL_DEFAULT
 -- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0014_it, t2_tc_25_reg_0014_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0014_it (
@@ -895,6 +909,7 @@ FROM (
 -- Varied factor: target_attributes=NOT_NULL_DEFAULT
 -- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0015_it, t2_tc_25_reg_0015_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0015_it (
@@ -954,6 +969,7 @@ FROM (
 -- Varied factor: target_attributes=INVISIBLE
 -- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=INVISIBLE, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0016_it, t2_tc_25_reg_0016_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0016_it (
@@ -1017,6 +1033,7 @@ FROM (
 -- Varied factor: data_scale=S0
 -- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0017_it, t2_tc_25_reg_0017_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0017_it (
@@ -1053,6 +1070,7 @@ FROM (
 -- Varied factor: data_scale=S1
 -- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S1, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0018_it, t2_tc_25_reg_0018_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0018_it (
@@ -1108,6 +1126,7 @@ FROM (
 -- Varied factor: data_distribution=UNIFORM
 -- Transition ID: BIT-01
 -- Factors: data_distribution=UNIFORM, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0019_it, t2_tc_25_reg_0019_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0019_it (
@@ -1171,6 +1190,7 @@ FROM (
 -- Varied factor: data_distribution=MONOTONIC
 -- Transition ID: BIT-01
 -- Factors: data_distribution=MONOTONIC, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0020_it, t2_tc_25_reg_0020_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0020_it (
@@ -1234,6 +1254,7 @@ FROM (
 -- Varied factor: null_ratio=ZERO
 -- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=ZERO, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0021_it, t2_tc_25_reg_0021_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0021_it (
@@ -1293,6 +1314,7 @@ FROM (
 -- Varied factor: null_ratio=SINGLE
 -- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=SINGLE, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0022_it, t2_tc_25_reg_0022_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0022_it (
@@ -1356,6 +1378,7 @@ FROM (
 -- Varied factor: null_ratio=ALL
 -- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=ALL, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0023_it, t2_tc_25_reg_0023_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0023_it (
@@ -1411,6 +1434,7 @@ FROM (
 -- Varied factor: sql_mode=NON_STRICT
 -- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=NON_STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0024_it, t2_tc_25_reg_0024_it;
 SET SESSION sql_mode = '';
 CREATE TABLE t1_tc_25_reg_0024_it (
@@ -1474,6 +1498,7 @@ FROM (
 -- Varied factor: KP-01
 -- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0025_it, t2_tc_25_reg_0025_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0025_it (
@@ -1510,6 +1535,7 @@ FROM (
 -- Varied factor: KP-03
 -- Transition ID: BIT-01
 -- Factors: data_distribution=UNIFORM, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0026_it, t2_tc_25_reg_0026_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0026_it (
@@ -1546,6 +1572,7 @@ FROM (
 -- Varied factor: KP-04
 -- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0027_it, t2_tc_25_reg_0027_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0027_it (
@@ -1582,6 +1609,7 @@ FROM (
 -- Varied factor: KP-05
 -- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=COMPOSITE_PK, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=FIRST
+-- @expect alter=FAIL build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0028_it, t2_tc_25_reg_0028_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0028_it (
@@ -1660,6 +1688,7 @@ SELECT 'TC-25-ATR-0001-IT' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FR
 -- Varied factor: BASELINE
 -- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0029_it, t2_tc_25_reg_0029_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0029_it (
@@ -1727,6 +1756,7 @@ FROM (
 -- Varied factor: row_format=COMPACT
 -- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=COMPACT, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0030_it, t2_tc_25_reg_0030_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0030_it (
@@ -1794,6 +1824,7 @@ FROM (
 -- Varied factor: row_format=REDUNDANT
 -- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=REDUNDANT, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0031_it, t2_tc_25_reg_0031_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0031_it (
@@ -1861,6 +1892,7 @@ FROM (
 -- Varied factor: primary_key=COMPOSITE_PK
 -- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=COMPOSITE_PK, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=FAIL build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0032_it, t2_tc_25_reg_0032_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0032_it (
@@ -1924,6 +1956,7 @@ FROM (
 -- Varied factor: primary_key=NO_EXPLICIT_PK
 -- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=NO_EXPLICIT_PK, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0033_it, t2_tc_25_reg_0033_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0033_it (
@@ -1991,6 +2024,7 @@ FROM (
 -- Varied factor: non_target_index=NONE
 -- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=NONE, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0034_it, t2_tc_25_reg_0034_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0034_it (
@@ -2058,6 +2092,7 @@ FROM (
 -- Varied factor: non_target_index=MULTIPLE_SECONDARY
 -- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=MULTIPLE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0035_it, t2_tc_25_reg_0035_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0035_it (
@@ -2125,6 +2160,7 @@ FROM (
 -- Varied factor: non_target_index=UNIQUE
 -- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=UNIQUE, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0036_it, t2_tc_25_reg_0036_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0036_it (
@@ -2192,6 +2228,7 @@ FROM (
 -- Varied factor: non_target_index=COMPOSITE_PREFIX
 -- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=COMPOSITE_PREFIX, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0037_it, t2_tc_25_reg_0037_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0037_it (
@@ -2259,6 +2296,7 @@ FROM (
 -- Varied factor: target_position=FIRST
 -- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=FIRST
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0038_it, t2_tc_25_reg_0038_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0038_it (
@@ -2326,6 +2364,7 @@ FROM (
 -- Varied factor: target_position=LAST
 -- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=LAST
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0039_it, t2_tc_25_reg_0039_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0039_it (
@@ -2393,6 +2432,7 @@ FROM (
 -- Varied factor: target_attributes=NOT_NULL_NO_DEFAULT
 -- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0040_it, t2_tc_25_reg_0040_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0040_it (
@@ -2456,6 +2496,7 @@ FROM (
 -- Varied factor: target_attributes=CONSTANT_DEFAULT
 -- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=CONSTANT_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0041_it, t2_tc_25_reg_0041_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0041_it (
@@ -2523,6 +2564,7 @@ FROM (
 -- Varied factor: target_attributes=NULL_DEFAULT
 -- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0042_it, t2_tc_25_reg_0042_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0042_it (
@@ -2590,6 +2632,7 @@ FROM (
 -- Varied factor: target_attributes=NOT_NULL_DEFAULT
 -- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0043_it, t2_tc_25_reg_0043_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0043_it (
@@ -2653,6 +2696,7 @@ FROM (
 -- Varied factor: target_attributes=INVISIBLE
 -- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=INVISIBLE, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0044_it, t2_tc_25_reg_0044_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0044_it (
@@ -2720,6 +2764,7 @@ FROM (
 -- Varied factor: data_scale=S0
 -- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0045_it, t2_tc_25_reg_0045_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0045_it (
@@ -2756,6 +2801,7 @@ FROM (
 -- Varied factor: data_scale=S1
 -- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S1, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0046_it, t2_tc_25_reg_0046_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0046_it (
@@ -2811,6 +2857,7 @@ FROM (
 -- Varied factor: data_distribution=UNIFORM
 -- Transition ID: BIT-02
 -- Factors: data_distribution=UNIFORM, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0047_it, t2_tc_25_reg_0047_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0047_it (
@@ -2878,6 +2925,7 @@ FROM (
 -- Varied factor: data_distribution=MONOTONIC
 -- Transition ID: BIT-02
 -- Factors: data_distribution=MONOTONIC, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0048_it, t2_tc_25_reg_0048_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0048_it (
@@ -2945,6 +2993,7 @@ FROM (
 -- Varied factor: null_ratio=ZERO
 -- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=ZERO, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0049_it, t2_tc_25_reg_0049_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0049_it (
@@ -3008,6 +3057,7 @@ FROM (
 -- Varied factor: null_ratio=SINGLE
 -- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=SINGLE, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0050_it, t2_tc_25_reg_0050_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0050_it (
@@ -3075,6 +3125,7 @@ FROM (
 -- Varied factor: null_ratio=ALL
 -- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=ALL, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0051_it, t2_tc_25_reg_0051_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0051_it (
@@ -3130,6 +3181,7 @@ FROM (
 -- Varied factor: sql_mode=NON_STRICT
 -- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=NON_STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0052_it, t2_tc_25_reg_0052_it;
 SET SESSION sql_mode = '';
 CREATE TABLE t1_tc_25_reg_0052_it (
@@ -3197,6 +3249,7 @@ FROM (
 -- Varied factor: KP-01
 -- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0053_it, t2_tc_25_reg_0053_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0053_it (
@@ -3233,6 +3286,7 @@ FROM (
 -- Varied factor: KP-03
 -- Transition ID: BIT-02
 -- Factors: data_distribution=UNIFORM, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0054_it, t2_tc_25_reg_0054_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0054_it (
@@ -3269,6 +3323,7 @@ FROM (
 -- Varied factor: KP-04
 -- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0055_it, t2_tc_25_reg_0055_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0055_it (
@@ -3305,6 +3360,7 @@ FROM (
 -- Varied factor: KP-05
 -- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=COMPOSITE_PK, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=FIRST
+-- @expect alter=FAIL build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0056_it, t2_tc_25_reg_0056_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0056_it (
@@ -3388,6 +3444,7 @@ SELECT 'TC-25-ATR-0002-IT' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FR
 -- Varied factor: BASELINE
 -- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0057_it, t2_tc_25_reg_0057_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0057_it (
@@ -3455,6 +3512,7 @@ FROM (
 -- Varied factor: row_format=COMPACT
 -- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=COMPACT, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0058_it, t2_tc_25_reg_0058_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0058_it (
@@ -3522,6 +3580,7 @@ FROM (
 -- Varied factor: row_format=REDUNDANT
 -- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=REDUNDANT, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0059_it, t2_tc_25_reg_0059_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0059_it (
@@ -3589,6 +3648,7 @@ FROM (
 -- Varied factor: primary_key=COMPOSITE_PK
 -- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=COMPOSITE_PK, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=FAIL build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0060_it, t2_tc_25_reg_0060_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0060_it (
@@ -3652,6 +3712,7 @@ FROM (
 -- Varied factor: primary_key=NO_EXPLICIT_PK
 -- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=NO_EXPLICIT_PK, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0061_it, t2_tc_25_reg_0061_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0061_it (
@@ -3719,6 +3780,7 @@ FROM (
 -- Varied factor: non_target_index=NONE
 -- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=NONE, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0062_it, t2_tc_25_reg_0062_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0062_it (
@@ -3786,6 +3848,7 @@ FROM (
 -- Varied factor: non_target_index=MULTIPLE_SECONDARY
 -- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=MULTIPLE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0063_it, t2_tc_25_reg_0063_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0063_it (
@@ -3853,6 +3916,7 @@ FROM (
 -- Varied factor: non_target_index=UNIQUE
 -- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=UNIQUE, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0064_it, t2_tc_25_reg_0064_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0064_it (
@@ -3920,6 +3984,7 @@ FROM (
 -- Varied factor: non_target_index=COMPOSITE_PREFIX
 -- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=COMPOSITE_PREFIX, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0065_it, t2_tc_25_reg_0065_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0065_it (
@@ -3987,6 +4052,7 @@ FROM (
 -- Varied factor: target_position=FIRST
 -- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=FIRST
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0066_it, t2_tc_25_reg_0066_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0066_it (
@@ -4054,6 +4120,7 @@ FROM (
 -- Varied factor: target_position=LAST
 -- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=LAST
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0067_it, t2_tc_25_reg_0067_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0067_it (
@@ -4121,6 +4188,7 @@ FROM (
 -- Varied factor: target_attributes=NOT_NULL_NO_DEFAULT
 -- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0068_it, t2_tc_25_reg_0068_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0068_it (
@@ -4184,6 +4252,7 @@ FROM (
 -- Varied factor: target_attributes=CONSTANT_DEFAULT
 -- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=CONSTANT_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0069_it, t2_tc_25_reg_0069_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0069_it (
@@ -4251,6 +4320,7 @@ FROM (
 -- Varied factor: target_attributes=NULL_DEFAULT
 -- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0070_it, t2_tc_25_reg_0070_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0070_it (
@@ -4318,6 +4388,7 @@ FROM (
 -- Varied factor: target_attributes=NOT_NULL_DEFAULT
 -- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0071_it, t2_tc_25_reg_0071_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0071_it (
@@ -4381,6 +4452,7 @@ FROM (
 -- Varied factor: target_attributes=INVISIBLE
 -- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=INVISIBLE, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0072_it, t2_tc_25_reg_0072_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0072_it (
@@ -4448,6 +4520,7 @@ FROM (
 -- Varied factor: data_scale=S0
 -- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0073_it, t2_tc_25_reg_0073_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0073_it (
@@ -4484,6 +4557,7 @@ FROM (
 -- Varied factor: data_scale=S1
 -- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S1, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0074_it, t2_tc_25_reg_0074_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0074_it (
@@ -4539,6 +4613,7 @@ FROM (
 -- Varied factor: data_distribution=UNIFORM
 -- Transition ID: BIT-03
 -- Factors: data_distribution=UNIFORM, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0075_it, t2_tc_25_reg_0075_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0075_it (
@@ -4606,6 +4681,7 @@ FROM (
 -- Varied factor: data_distribution=MONOTONIC
 -- Transition ID: BIT-03
 -- Factors: data_distribution=MONOTONIC, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0076_it, t2_tc_25_reg_0076_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0076_it (
@@ -4673,6 +4749,7 @@ FROM (
 -- Varied factor: null_ratio=ZERO
 -- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=ZERO, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0077_it, t2_tc_25_reg_0077_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0077_it (
@@ -4736,6 +4813,7 @@ FROM (
 -- Varied factor: null_ratio=SINGLE
 -- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=SINGLE, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0078_it, t2_tc_25_reg_0078_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0078_it (
@@ -4803,6 +4881,7 @@ FROM (
 -- Varied factor: null_ratio=ALL
 -- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=ALL, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0079_it, t2_tc_25_reg_0079_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0079_it (
@@ -4858,6 +4937,7 @@ FROM (
 -- Varied factor: sql_mode=NON_STRICT
 -- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=NON_STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0080_it, t2_tc_25_reg_0080_it;
 SET SESSION sql_mode = '';
 CREATE TABLE t1_tc_25_reg_0080_it (
@@ -4925,6 +5005,7 @@ FROM (
 -- Varied factor: KP-01
 -- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0081_it, t2_tc_25_reg_0081_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0081_it (
@@ -4961,6 +5042,7 @@ FROM (
 -- Varied factor: KP-03
 -- Transition ID: BIT-03
 -- Factors: data_distribution=UNIFORM, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0082_it, t2_tc_25_reg_0082_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0082_it (
@@ -4997,6 +5079,7 @@ FROM (
 -- Varied factor: KP-04
 -- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0083_it, t2_tc_25_reg_0083_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0083_it (
@@ -5033,6 +5116,7 @@ FROM (
 -- Varied factor: KP-05
 -- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=COMPOSITE_PK, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=FIRST
+-- @expect alter=FAIL build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0084_it, t2_tc_25_reg_0084_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0084_it (
@@ -5116,6 +5200,7 @@ SELECT 'TC-25-ATR-0003-IT' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FR
 -- Varied factor: BASELINE
 -- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0085_it, t2_tc_25_reg_0085_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0085_it (
@@ -5183,6 +5268,7 @@ FROM (
 -- Varied factor: row_format=COMPACT
 -- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=COMPACT, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0086_it, t2_tc_25_reg_0086_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0086_it (
@@ -5250,6 +5336,7 @@ FROM (
 -- Varied factor: row_format=REDUNDANT
 -- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=REDUNDANT, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0087_it, t2_tc_25_reg_0087_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0087_it (
@@ -5317,6 +5404,7 @@ FROM (
 -- Varied factor: primary_key=COMPOSITE_PK
 -- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=COMPOSITE_PK, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=FAIL build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0088_it, t2_tc_25_reg_0088_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0088_it (
@@ -5380,6 +5468,7 @@ FROM (
 -- Varied factor: primary_key=NO_EXPLICIT_PK
 -- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=NO_EXPLICIT_PK, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0089_it, t2_tc_25_reg_0089_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0089_it (
@@ -5447,6 +5536,7 @@ FROM (
 -- Varied factor: non_target_index=NONE
 -- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=NONE, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0090_it, t2_tc_25_reg_0090_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0090_it (
@@ -5514,6 +5604,7 @@ FROM (
 -- Varied factor: non_target_index=MULTIPLE_SECONDARY
 -- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=MULTIPLE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0091_it, t2_tc_25_reg_0091_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0091_it (
@@ -5581,6 +5672,7 @@ FROM (
 -- Varied factor: non_target_index=UNIQUE
 -- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=UNIQUE, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0092_it, t2_tc_25_reg_0092_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0092_it (
@@ -5648,6 +5740,7 @@ FROM (
 -- Varied factor: non_target_index=COMPOSITE_PREFIX
 -- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=COMPOSITE_PREFIX, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0093_it, t2_tc_25_reg_0093_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0093_it (
@@ -5715,6 +5808,7 @@ FROM (
 -- Varied factor: target_position=FIRST
 -- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=FIRST
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0094_it, t2_tc_25_reg_0094_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0094_it (
@@ -5782,6 +5876,7 @@ FROM (
 -- Varied factor: target_position=LAST
 -- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=LAST
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0095_it, t2_tc_25_reg_0095_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0095_it (
@@ -5849,6 +5944,7 @@ FROM (
 -- Varied factor: target_attributes=NOT_NULL_NO_DEFAULT
 -- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0096_it, t2_tc_25_reg_0096_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0096_it (
@@ -5912,6 +6008,7 @@ FROM (
 -- Varied factor: target_attributes=CONSTANT_DEFAULT
 -- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=CONSTANT_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0097_it, t2_tc_25_reg_0097_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0097_it (
@@ -5979,6 +6076,7 @@ FROM (
 -- Varied factor: target_attributes=NULL_DEFAULT
 -- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0098_it, t2_tc_25_reg_0098_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0098_it (
@@ -6046,6 +6144,7 @@ FROM (
 -- Varied factor: target_attributes=NOT_NULL_DEFAULT
 -- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0099_it, t2_tc_25_reg_0099_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0099_it (
@@ -6109,6 +6208,7 @@ FROM (
 -- Varied factor: target_attributes=INVISIBLE
 -- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=INVISIBLE, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0100_it, t2_tc_25_reg_0100_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0100_it (
@@ -6176,6 +6276,7 @@ FROM (
 -- Varied factor: data_scale=S0
 -- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0101_it, t2_tc_25_reg_0101_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0101_it (
@@ -6212,6 +6313,7 @@ FROM (
 -- Varied factor: data_scale=S1
 -- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S1, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0102_it, t2_tc_25_reg_0102_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0102_it (
@@ -6267,6 +6369,7 @@ FROM (
 -- Varied factor: data_distribution=UNIFORM
 -- Transition ID: BIT-04
 -- Factors: data_distribution=UNIFORM, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0103_it, t2_tc_25_reg_0103_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0103_it (
@@ -6334,6 +6437,7 @@ FROM (
 -- Varied factor: data_distribution=MONOTONIC
 -- Transition ID: BIT-04
 -- Factors: data_distribution=MONOTONIC, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0104_it, t2_tc_25_reg_0104_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0104_it (
@@ -6401,6 +6505,7 @@ FROM (
 -- Varied factor: null_ratio=ZERO
 -- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=ZERO, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0105_it, t2_tc_25_reg_0105_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0105_it (
@@ -6464,6 +6569,7 @@ FROM (
 -- Varied factor: null_ratio=SINGLE
 -- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=SINGLE, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0106_it, t2_tc_25_reg_0106_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0106_it (
@@ -6531,6 +6637,7 @@ FROM (
 -- Varied factor: null_ratio=ALL
 -- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=ALL, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0107_it, t2_tc_25_reg_0107_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0107_it (
@@ -6586,6 +6693,7 @@ FROM (
 -- Varied factor: sql_mode=NON_STRICT
 -- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=NON_STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0108_it, t2_tc_25_reg_0108_it;
 SET SESSION sql_mode = '';
 CREATE TABLE t1_tc_25_reg_0108_it (
@@ -6653,6 +6761,7 @@ FROM (
 -- Varied factor: KP-01
 -- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0109_it, t2_tc_25_reg_0109_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0109_it (
@@ -6689,6 +6798,7 @@ FROM (
 -- Varied factor: KP-03
 -- Transition ID: BIT-04
 -- Factors: data_distribution=UNIFORM, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0110_it, t2_tc_25_reg_0110_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0110_it (
@@ -6725,6 +6835,7 @@ FROM (
 -- Varied factor: KP-04
 -- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_DEFAULT, target_position=MIDDLE
+-- @expect alter=SUCCESS build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0111_it, t2_tc_25_reg_0111_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0111_it (
@@ -6761,6 +6872,7 @@ FROM (
 -- Varied factor: KP-05
 -- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=COMPOSITE_PK, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=FIRST
+-- @expect alter=FAIL build=SUCCESS assertions=1 neg_probes=0
 DROP TABLE IF EXISTS t1_tc_25_reg_0112_it, t2_tc_25_reg_0112_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
 CREATE TABLE t1_tc_25_reg_0112_it (
