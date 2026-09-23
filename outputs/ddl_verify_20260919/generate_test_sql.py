@@ -9,12 +9,66 @@ RDS MySQL DDL 秒级/在线修改列类型 — 纯 SQL 测试套件生成器
 """
 
 import os
+import re as _re
+import gzip
+import json
+import hashlib
 import textwrap
 from typing import List, Dict, Tuple, Optional, Any
 
 OUTPUT_DIR = os.path.dirname(os.path.abspath(__file__))
 SQL_ALIYUN = os.path.join(OUTPUT_DIR, "sql_aliyun")
 SQL_INTERNAL = os.path.join(OUTPUT_DIR, "sql_internal")
+
+# ============================================================
+# Section 0: 用例 ID 工厂（P0-4）
+# ============================================================
+# 旧方案的 ID 只在"单个文件 + 单个算法"内唯一：
+#   * TC-A0001 同时出现在 01/02/03/04/05/06/07/08 八个文件里（8 种不同转换）
+#   * 分区文件里 instant 与 inplace 复用同一个 TC-PA0001
+# 结果 18,993 个用例只有 8,500 个唯一 ID：结果无法归因、表名冲突（t1_a0001 被
+# 8 个文件共用）、并发执行互相污染、完整性核算低估未执行数。
+#
+# 新方案：TC-<文件号>-<作用域>-<序号>-<算法>，全局唯一且可追溯到文件/算法。
+#   例: TC-01-REG-0001-IT / TC-12-PTK-0002-IP / TC-05-ATR-0003-IP
+# ID 只由 (文件号, 作用域, 生成顺序, 算法) 决定，重复生成结果稳定。
+
+ALGO_CODE = {"instant": "IT", "inplace": "IP", "copy": "CP", "default": "DF", None: "XX"}
+
+# 作用域（scope）标识用例族，便于按族统计与筛选
+SCOPE_REGULAR = "REG"      # 普通表 OFAT + 关键二元组
+SCOPE_ATTRIBUTE = "ATR"    # 列属性保持 (UNSIGNED/COMMENT/CHARSET/COLLATE/AUTO_INCREMENT)
+SCOPE_SPECIAL = "SPE"      # 连续ALTER / 多列ALTER / 生成列 等特殊模式
+SCOPE_FK = "FK"            # 外键表
+SCOPE_PART_KEY = "PTK"     # 分区表，目标列**是**分区键
+SCOPE_PART_NONKEY = "PNK"  # 分区表，目标列**不是**分区键
+
+
+class CaseIdFactory:
+    """每个输出文件持有一个工厂实例（跨算法轮次共享计数器，避免 ID 复用）。"""
+
+    def __init__(self, file_no: int):
+        self.file_no = int(file_no)
+        self._counters: Dict[str, int] = {}
+
+    def next(self, scope: str, algorithm: Optional[str] = None) -> str:
+        self._counters[scope] = self._counters.get(scope, 0) + 1
+        code = ALGO_CODE.get(algorithm, str(algorithm)[:2].upper())
+        return "TC-%02d-%s-%04d-%s" % (self.file_no, scope, self._counters[scope], code)
+
+    @property
+    def issued(self) -> int:
+        return sum(self._counters.values())
+
+
+def id_to_suffix(test_id: str) -> str:
+    """由用例 ID 派生表名后缀，保证表名与 ID 一一同构（=> 表名也全局唯一）。"""
+    return test_id.lower().replace("-", "_")
+
+
+# 生成器写文件时，超过该阈值的文件直接产出 .sql.gz（并自动登记到 .gitignore）
+GZ_THRESHOLD_BYTES = 400_000
+
 
 # ============================================================
 # Section 1: Type Transition Matrix (50 transitions × 2 algorithms = 100)
@@ -796,7 +850,7 @@ FROM (
 
 
 def _build_test_case_sql(test_id: str, transition: dict, algorithm: str, factors: dict,
-                         table_suffix: str = "") -> str:
+                         table_suffix: str = "", factor_name: str = "") -> str:
     """
     Build a complete test case:
     1. DROP tables
@@ -808,8 +862,10 @@ def _build_test_case_sql(test_id: str, transition: dict, algorithm: str, factors
     7. INSERT all same data into t2
     8. SELECT comparison
     """
+    # P0-4: 表名一律由 test_id 派生，保证与用例一一对应且全局唯一
+    table_suffix = table_suffix or id_to_suffix(test_id)
     t1 = f"t1_{table_suffix}"
-    t2 = f"t2_{table_suffix}"  # suffix already has no hyphens
+    t2 = f"t2_{table_suffix}"
     old_type = transition["old_type"]
     new_type = transition["new_type"]
     expected = transition[algorithm.lower()]
@@ -868,6 +924,9 @@ def _build_test_case_sql(test_id: str, transition: dict, algorithm: str, factors
     lines = []
     lines.append(f"-- Test Case: {test_id}")
     lines.append(f"-- Type: {old_type} -> {new_type}, Algorithm: {algorithm}, Expected: {expected}")
+    if factor_name:
+        lines.append(f"-- Varied factor: {factor_name}")
+    lines.append(f"-- Transition ID: {transition.get('id', '')}")
     lines.append(f"-- Factors: {_format_factors(factors)}")
     lines.append(f"DROP TABLE IF EXISTS {t1}, {t2};")
 
@@ -1668,19 +1727,120 @@ def _build_column_attribute_test(test_id: str, transition: dict, algorithm: str,
 # ============================================================
 
 def _write_sql_file(filepath: str, header: str, statements: list) -> int:
-    """Write SQL statements to a file. Returns statement count."""
-    with open(filepath, "w", encoding="utf-8") as f:
-        f.write(header)
-        for stmt in statements:
-            f.write(stmt)
-            f.write("\n\n")
+    """Write SQL statements to a file. Returns statement count.
+
+    P0-1: 内容超过 GZ_THRESHOLD_BYTES 时直接产出 `<name>.sql.gz` 并删除明文版，
+    使"生成器产物 == 执行器发现的文件 == git 跟踪的文件"三者一致；
+    明文文件名登记到 WRITTEN_PLAIN_IGNORED，由 _sync_gitignore() 写回 .gitignore。
+    """
+    os.makedirs(os.path.dirname(filepath), exist_ok=True)
+    body = header + "".join(stmt + "\n\n" for stmt in statements)
+    raw = body.encode("utf-8")
+    if len(raw) >= GZ_THRESHOLD_BYTES:
+        gzpath = filepath + ".gz"
+        with gzip.open(gzpath, "wt", encoding="utf-8") as f:
+            f.write(body)
+        if os.path.exists(filepath):
+            os.remove(filepath)          # 明文版不再落盘，避免出现两份真源
+        # 注意：要忽略的是**明文 .sql**（有人 gunzip 出来看时不要把十几 MB 重复入库），
+        # 而 .sql.gz 本身必须入库 —— 之前写反了，导致产物全部被 git 忽略。
+        WRITTEN_GZ.append(os.path.relpath(filepath, OUTPUT_DIR))
+        WRITTEN_FILES.append((gzpath, len(statements), os.path.getsize(gzpath), True))
+    else:
+        if os.path.exists(filepath + ".gz"):
+            os.remove(filepath + ".gz")  # 变小了就把旧 gz 清掉，避免重复执行
+        with open(filepath, "w", encoding="utf-8") as f:
+            f.write(body)
+        WRITTEN_PLAIN.append(os.path.relpath(filepath, OUTPUT_DIR))
+        WRITTEN_FILES.append((filepath, len(statements), os.path.getsize(filepath), False))
     return len(statements)
 
 
-def _gen_regular_table_tests(transitions: list, algorithm: str, env: str) -> list:
+WRITTEN_GZ: List[str] = []
+WRITTEN_PLAIN: List[str] = []
+WRITTEN_FILES: List[tuple] = []
+
+GITIGNORE_BEGIN = "# BEGIN auto-generated: 以 .sql.gz 发布的文件，其明文 .sql 不入库"
+GITIGNORE_LEGACY_HEADER = "# Large SQL files (compressed versions tracked instead)"
+GITIGNORE_END = "# END auto-generated"
+
+
+def verify_git_tracking(paths: List[str]) -> List[str]:
+    """检查产物是否已被 git 跟踪（P0-1 复发防线）。
+
+    本仓库根 .gitignore 忽略了整个 outputs/，历史上所有 SQL 产物都是 `git add -f`
+    进去的。若重新生成后新增/改名的文件没有跟踪，就会出现"磁盘上有、仓库里没有"
+    —— 正是本次审计发现的 84.8% 用例被静默跳过的成因。这里显式检测并给出命令。
+    """
+    untracked: List[str] = []
+    try:
+        import subprocess
+        repo = subprocess.run(["git", "rev-parse", "--show-toplevel"],
+                              capture_output=True, text=True, cwd=OUTPUT_DIR)
+        if repo.returncode != 0:
+            return untracked
+        root = repo.stdout.strip()
+        for path in paths:
+            rel = os.path.relpath(os.path.abspath(path), root)
+            chk = subprocess.run(["git", "ls-files", "--error-unmatch", rel],
+                                 capture_output=True, text=True, cwd=root)
+            if chk.returncode != 0:
+                untracked.append(rel)
+    except Exception:
+        return untracked
+    if untracked:
+        print("")
+        print("!! 警告: %d 个 SQL 产物未被 git 跟踪（磁盘上有、仓库里没有）:" % len(untracked))
+        for u in untracked:
+            print("     %s" % u)
+        print("")
+        print("   修复命令:")
+        print("     git add -f %s" % " ".join(untracked))
+    return untracked
+
+
+def _sync_gitignore() -> None:
+    """把本次以 .gz 发布的文件对应的明文名写回 .gitignore 的自动生成区块。
+
+    单一真源原则：
+      * 任何 `# BEGIN auto-generated ... # END auto-generated` 区块一律整体重建
+        （按前缀匹配，改标题文字不会留下僵尸区块）；
+      * 区块外的 `sql_*/**.sql` 忽略项一律清除（旧手工列表已被本函数接管）。
+    """
+    path = os.path.join(OUTPUT_DIR, ".gitignore")
+    keep: List[str] = []
+    if os.path.exists(path):
+        with open(path, "r", encoding="utf-8") as f:
+            inside = False
+            for line in f:
+                st = line.rstrip("\n")
+                if st.strip().startswith("# BEGIN auto-generated"):
+                    inside = True
+                    continue
+                if st.strip().startswith("# END auto-generated"):
+                    inside = False
+                    continue
+                if inside:
+                    continue
+                if st.strip() == GITIGNORE_LEGACY_HEADER:
+                    continue
+                if _re.match(r"^sql_(aliyun|internal)/.+\.sql$", st.strip()):
+                    continue          # 旧手工/旧自动条目，交给下面的区块统一维护
+                keep.append(st)
+    while keep and not keep[-1].strip():
+        keep.pop()
+    block = ([GITIGNORE_BEGIN] + sorted(WRITTEN_GZ) + [GITIGNORE_END]) if WRITTEN_GZ else []
+    parts = ["\n".join(keep)]
+    if block:
+        parts.append("\n".join(block))
+    with open(path, "w", encoding="utf-8") as f:
+        f.write("\n\n".join(parts) + "\n")
+
+
+def _gen_regular_table_tests(transitions: list, algorithm: str, env: str,
+                             ids: CaseIdFactory) -> list:
     """Generate all regular table tests for a set of transitions."""
     results = []
-    seq = 0
     for trans in transitions:
         if trans["env"] != env:
             continue
@@ -1691,14 +1851,13 @@ def _gen_regular_table_tests(transitions: list, algorithm: str, env: str) -> lis
         all_sets = ofat_sets + keypair_sets
 
         for factor_name, factors in all_sets:
-            seq += 1
             # Adjust dependencies for INSTANT (no index on target)
             if algorithm == "instant":
                 factors["dependencies"] = "NONE"
 
-            test_id = f"TC-{env[0].upper()}{seq:04d}"
-            suffix = f"{env[0]}{seq:04d}"
-            sql = _build_test_case_sql(test_id, trans, algorithm, factors, suffix)
+            test_id = ids.next(SCOPE_REGULAR, algorithm)
+            sql = _build_test_case_sql(test_id, trans, algorithm, factors,
+                                       id_to_suffix(test_id), factor_name)
             results.append(sql)
 
         # Column attribute preservation tests (one per type)
@@ -1709,18 +1868,17 @@ def _gen_regular_table_tests(transitions: list, algorithm: str, env: str) -> lis
                 continue
             if attr == "AUTO_INCREMENT" and trans["category"] not in ("integer_signed", "integer_unsigned"):
                 continue
-            seq += 1
-            test_id = f"TC-{env[0].upper()}A{seq:04d}"
+            test_id = ids.next(SCOPE_ATTRIBUTE, algorithm)
             sql = _build_column_attribute_test(test_id, trans, algorithm, attr)
             results.append(sql)
 
     return results
 
 
-def _gen_partition_tests(transitions: list, algorithm: str, env: str) -> list:
+def _gen_partition_tests(transitions: list, algorithm: str, env: str,
+                         ids: CaseIdFactory) -> list:
     """Generate all 64 partition combo tests for all transitions."""
     results = []
-    seq = 0
     pp_idx = 0
 
     for first_idx, first_type in enumerate(PARTITION_TYPES):
@@ -1730,15 +1888,13 @@ def _gen_partition_tests(transitions: list, algorithm: str, env: str) -> list:
                 if trans["env"] != env:
                     continue
                 # Test 1: target IS partition key (expected FAIL)
-                seq += 1
-                test_id = f"TC-P{env[0].upper()}{seq:04d}"
+                test_id = ids.next(SCOPE_PART_KEY, algorithm)
                 sql = _build_partition_test(test_id, trans, algorithm, pp_idx,
                                            first_type, second_type, True)
                 results.append(sql)
 
                 # Test 2: target is NOT partition key (expected per type)
-                seq += 1
-                test_id = f"TC-Q{env[0].upper()}{seq:04d}"
+                test_id = ids.next(SCOPE_PART_NONKEY, algorithm)
                 sql = _build_partition_test(test_id, trans, algorithm, pp_idx,
                                            first_type, second_type, False)
                 results.append(sql)
@@ -1746,10 +1902,9 @@ def _gen_partition_tests(transitions: list, algorithm: str, env: str) -> list:
     return results
 
 
-def _gen_fk_tests_for_env(env: str) -> list:
+def _gen_fk_tests_for_env(env: str, ids: CaseIdFactory) -> list:
     """Generate FK tests for an environment."""
     results = []
-    seq = 0
 
     # Determine which FK transitions belong to this env
     if env == "aliyun":
@@ -1760,15 +1915,14 @@ def _gen_fk_tests_for_env(env: str) -> list:
     for fk_trans_item in fk_trans:
         for algorithm in ["instant", "inplace"]:
             for scenario in ["child", "parent", "both", "non_fk"]:
-                seq += 1
-                test_id = f"TC-F{env[0].upper()}{seq:04d}"
+                test_id = ids.next(SCOPE_FK, algorithm)
                 sql = _build_fk_test(test_id, fk_trans_item, algorithm, scenario)
                 results.append(sql)
 
     return results
 
 
-def _gen_special_tests(env: str) -> list:
+def _gen_special_tests(env: str, ids: CaseIdFactory) -> list:
     """Generate special pattern tests for an environment."""
     results = []
 
@@ -1777,246 +1931,253 @@ def _gen_special_tests(env: str) -> list:
         if env == "internal" and unsigned:
             continue  # Internal doesn't have unsigned integer transitions
         for algorithm in ["instant", "inplace"]:
-            test_id = f"TC-S{env[0].upper()}{len(results)+1:04d}"
+            test_id = ids.next(SCOPE_SPECIAL, algorithm)
             sql = _build_consecutive_alter(test_id, unsigned, algorithm)
             results.append(sql)
 
     # Multi-column ALTER
     for algorithm in ["instant", "inplace"]:
-        test_id = f"TC-S{env[0].upper()}{len(results)+1:04d}"
+        test_id = ids.next(SCOPE_SPECIAL, algorithm)
         sql = _build_multi_column_alter(test_id, algorithm, env)
         results.append(sql)
 
     # Virtual generated column (INPLACE only for basic types)
     if env == "aliyun":
         for algorithm in ["instant", "inplace"]:
-            test_id = f"TC-S{env[0].upper()}{len(results)+1:04d}"
+            test_id = ids.next(SCOPE_SPECIAL, algorithm)
             sql = _build_virtual_generated_test(test_id, algorithm)
             results.append(sql)
 
     return results
 
 
+GENERATED_AT = ""          # 运行期填充；仅写入 generation_manifest.json，不进 SQL（保证可复现）
+SUITE_REVISION = ""        # 生成器源码哈希前 12 位，写入 SQL 头，便于追溯"哪版生成器产出的"
+
+
+def _compute_suite_revision() -> str:
+    try:
+        with open(os.path.abspath(__file__), "rb") as f:
+            return hashlib.sha256(f.read()).hexdigest()[:12]
+    except Exception:
+        return "unknown"
+
+
+HEADER_TMPL = """-- ============================================================
+-- RDS MySQL DDL 秒级/在线修改列类型 测试套件 — {env_cn}环境
+-- 环境说明: 所有功能开关默认开启
+-- 覆盖类型: {types}
+-- 覆盖算法: {algos}
+-- ============================================================
+-- 本文件由 generate_test_sql.py 自动生成, 请勿手动修改
+-- Suite-Revision: {rev}   (生成器源码哈希; 时间戳见 results/generation_manifest.json)
+-- 用例 ID 规则: TC-<文件号>-<作用域>-<序号>-<IT|IP>  —— 全局唯一
+--   作用域 REG=普通表 OFAT/二元组, ATR=列属性保持, SPE=特殊模式,
+--          FK=外键, PTK=分区(目标列是分区键), PNK=分区(目标列非分区键)
+-- ============================================================
+
+SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
+SET SESSION innodb_lock_wait_timeout = 50;
+
+"""
+
+
+def _emit(dirpath: str, filename: str, header: str, title: str, build, registry: list) -> list:
+    """生成并写出一个 SQL 文件。
+
+    文件号取自文件名前缀数字，作为该文件所有用例 ID 的命名空间；
+    同一个文件内跨算法轮次**共享一个 CaseIdFactory**，避免 ID 复用（P0-4）。
+    """
+    file_no = int(_re.match(r"(\d+)", filename).group(1))
+    ids = CaseIdFactory(file_no)
+    stmts = build(ids)
+    _write_sql_file(os.path.join(dirpath, filename),
+                    header + "-- File %02d: %s\n\n" % (file_no, title), stmts)
+    blob = "\n".join(stmts)
+    case_ids = _re.findall(r"^-- Test Case: (\S+)", blob, _re.M)
+    registry.append({
+        "file_no": file_no,
+        "file": filename if not filename.endswith(".gz") else filename,
+        "dir": os.path.basename(dirpath),
+        "title": title,
+        "cases": len(case_ids),
+        "case_ids": case_ids,
+    })
+    return stmts
+
+
 def generate_all():
-    """Generate all SQL test files."""
+    """生成全部 SQL 测试文件，并做全局唯一性自检（P0-4）。"""
+    global GENERATED_AT, SUITE_REVISION
+    import time as _time
+    GENERATED_AT = _time.strftime("%Y-%m-%d %H:%M:%S")
+    SUITE_REVISION = _compute_suite_revision()
+
     aliyun_trans = [t for t in ALL_TRANSITIONS if t["env"] == "aliyun"]
     internal_trans = [t for t in ALL_TRANSITIONS if t["env"] == "internal"]
 
-    header_aliyun = """-- ============================================================
--- RDS MySQL DDL 秒级/在线修改列类型 测试套件 — 阿里云环境
--- 环境说明: 所有功能开关默认开启
--- 覆盖类型: 整数(SIGNED/UNSIGNED) + CHAR + VARCHAR
--- 覆盖算法: INSTANT + INPLACE
--- ============================================================
--- 本文件由 generate_test_sql.py 自动生成, 请勿手动修改
--- 生成时间: 2026-09-20
--- ============================================================
+    def cat(trans, c):
+        return [t for t in trans if t["category"] == c]
 
-SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-SET SESSION innodb_lock_wait_timeout = 50;
+    header_aliyun = HEADER_TMPL.format(
+        env_cn="阿里云", types="整数(SIGNED/UNSIGNED) + CHAR + VARCHAR",
+        algos="INSTANT + INPLACE", rev=SUITE_REVISION)
+    header_internal = HEADER_TMPL.format(
+        env_cn="内网", types="BINARY + VARBINARY + DECIMAL + TEXT + BLOB + BIT",
+        algos="INSTANT + INPLACE (增强类型 INSTANT 预期成功: BINARY/VARBINARY/DECIMAL 已确认支持)",
+        rev=SUITE_REVISION)
 
-"""
+    registry: List[dict] = []
+    A, I = SQL_ALIYUN, SQL_INTERNAL
 
-    header_internal = """-- ============================================================
--- RDS MySQL DDL 秒级/在线修改列类型 测试套件 — 内网环境
--- 环境说明: 所有功能开关默认开启
--- 覆盖类型: BINARY + VARBINARY + DECIMAL + TEXT + BLOB + BIT
--- 覆盖算法: INSTANT + INPLACE (增强类型 INSTANT 预期成功 (BINARY/VARBINARY/DECIMAL 已确认支持))
--- ============================================================
--- 本文件由 generate_test_sql.py 自动生成, 请勿手动修改
--- 生成时间: 2026-09-20
--- ============================================================
+    def regular(trans, algo, env):
+        return lambda ids: _gen_regular_table_tests(trans, algo, env, ids)
 
-SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-SET SESSION innodb_lock_wait_timeout = 50;
+    def both_algos(fn):
+        return lambda ids: fn(ids, "instant") + fn(ids, "inplace")
 
-"""
+    # ---------------- 阿里云 ----------------
+    _emit(A, "01_integer_signed_instant.sql", header_aliyun, "整数(有符号) INSTANT",
+          regular(cat(aliyun_trans, "integer_signed"), "instant", "aliyun"), registry)
+    _emit(A, "02_integer_signed_inplace.sql", header_aliyun, "整数(有符号) INPLACE",
+          regular(cat(aliyun_trans, "integer_signed"), "inplace", "aliyun"), registry)
+    _emit(A, "03_integer_unsigned_instant.sql", header_aliyun, "整数(无符号) INSTANT",
+          regular(cat(aliyun_trans, "integer_unsigned"), "instant", "aliyun"), registry)
+    _emit(A, "04_integer_unsigned_inplace.sql", header_aliyun, "整数(无符号) INPLACE",
+          regular(cat(aliyun_trans, "integer_unsigned"), "inplace", "aliyun"), registry)
+    _emit(A, "05_char_instant.sql", header_aliyun, "CHAR INSTANT",
+          regular(cat(aliyun_trans, "char"), "instant", "aliyun"), registry)
+    _emit(A, "06_char_inplace.sql", header_aliyun, "CHAR INPLACE",
+          regular(cat(aliyun_trans, "char"), "inplace", "aliyun"), registry)
+    _emit(A, "07_varchar_instant.sql", header_aliyun, "VARCHAR INSTANT",
+          regular(cat(aliyun_trans, "varchar"), "instant", "aliyun"), registry)
+    _emit(A, "08_varchar_inplace.sql", header_aliyun, "VARCHAR INPLACE",
+          regular(cat(aliyun_trans, "varchar"), "inplace", "aliyun"), registry)
 
-    # ============= Aliyun SQL files =============
-    # 01: Integer SIGNED INSTANT
-    int_s_trans = [t for t in aliyun_trans if t["category"] == "integer_signed"]
-    sql01 = _gen_regular_table_tests(int_s_trans, "instant", "aliyun")
-    _write_sql_file(os.path.join(SQL_ALIYUN, "01_integer_signed_instant.sql"),
-                    header_aliyun + "-- File 01: 整数(有符号) INSTANT\n\n", sql01)
+    int_trans_all = cat(aliyun_trans, "integer_signed") + cat(aliyun_trans, "integer_unsigned")
 
-    # 02: Integer SIGNED INPLACE
-    sql02 = _gen_regular_table_tests(int_s_trans, "inplace", "aliyun")
-    _write_sql_file(os.path.join(SQL_ALIYUN, "02_integer_signed_inplace.sql"),
-                    header_aliyun + "-- File 02: 整数(有符号) INPLACE\n\n", sql02)
+    def build_auto_inc(ids):
+        out = []
+        for trans in int_trans_all:
+            for algorithm in ["instant", "inplace"]:
+                out.append(_build_column_attribute_test(
+                    ids.next(SCOPE_ATTRIBUTE, algorithm), trans, algorithm, "AUTO_INCREMENT"))
+        return out
 
-    # 03: Integer UNSIGNED INSTANT
-    int_u_trans = [t for t in aliyun_trans if t["category"] == "integer_unsigned"]
-    sql03 = _gen_regular_table_tests(int_u_trans, "instant", "aliyun")
-    _write_sql_file(os.path.join(SQL_ALIYUN, "03_integer_unsigned_instant.sql"),
-                    header_aliyun + "-- File 03: 整数(无符号) INSTANT\n\n", sql03)
+    _emit(A, "09_auto_increment_pk.sql", header_aliyun, "AUTO_INCREMENT PK 扩容专项",
+          build_auto_inc, registry)
+    _emit(A, "10_special_patterns.sql", header_aliyun,
+          "特殊模式 (连续ALTER + 多列ALTER + 虚拟生成列)",
+          lambda ids: _gen_special_tests("aliyun", ids), registry)
+    _emit(A, "11_fk_table.sql", header_aliyun, "外键表测试",
+          lambda ids: _gen_fk_tests_for_env("aliyun", ids), registry)
+    _emit(A, "12_partition_64.sql", header_aliyun, "分区策略 × 全类型",
+          both_algos(lambda ids, algo: _gen_partition_tests(aliyun_trans, algo, "aliyun", ids)),
+          registry)
 
-    # 04: Integer UNSIGNED INPLACE
-    sql04 = _gen_regular_table_tests(int_u_trans, "inplace", "aliyun")
-    _write_sql_file(os.path.join(SQL_ALIYUN, "04_integer_unsigned_inplace.sql"),
-                    header_aliyun + "-- File 04: 整数(无符号) INPLACE\n\n", sql04)
+    # ---------------- 内网 ----------------
+    _emit(I, "15_binary_inplace.sql", header_internal, "BINARY INPLACE",
+          regular(cat(internal_trans, "binary"), "inplace", "internal"), registry)
+    _emit(I, "16_binary_instant.sql", header_internal, "BINARY INSTANT (预期成功)",
+          regular(cat(internal_trans, "binary"), "instant", "internal"), registry)
+    _emit(I, "17_varbinary_inplace.sql", header_internal, "VARBINARY INPLACE",
+          regular(cat(internal_trans, "varbinary"), "inplace", "internal"), registry)
+    _emit(I, "18_varbinary_instant.sql", header_internal, "VARBINARY INSTANT (预期成功)",
+          regular(cat(internal_trans, "varbinary"), "instant", "internal"), registry)
+    _emit(I, "19_decimal_inplace.sql", header_internal, "DECIMAL INPLACE",
+          regular(cat(internal_trans, "decimal"), "inplace", "internal"), registry)
+    _emit(I, "20_decimal_instant.sql", header_internal, "DECIMAL INSTANT (预期成功)",
+          regular(cat(internal_trans, "decimal"), "instant", "internal"), registry)
+    _emit(I, "21_text_instant.sql", header_internal, "TEXT INSTANT",
+          regular(cat(internal_trans, "text"), "instant", "internal"), registry)
+    _emit(I, "22_text_inplace.sql", header_internal, "TEXT INPLACE",
+          regular(cat(internal_trans, "text"), "inplace", "internal"), registry)
+    _emit(I, "23_blob_instant.sql", header_internal, "BLOB INSTANT",
+          regular(cat(internal_trans, "blob"), "instant", "internal"), registry)
+    _emit(I, "24_blob_inplace.sql", header_internal, "BLOB INPLACE",
+          regular(cat(internal_trans, "blob"), "inplace", "internal"), registry)
+    _emit(I, "25_bit_instant.sql", header_internal, "BIT INSTANT",
+          regular(cat(internal_trans, "bit"), "instant", "internal"), registry)
+    _emit(I, "26_bit_inplace.sql", header_internal, "BIT INPLACE",
+          regular(cat(internal_trans, "bit"), "inplace", "internal"), registry)
+    _emit(I, "27_fk_table_enhanced.sql", header_internal, "外键表测试(增强类型)",
+          lambda ids: _gen_fk_tests_for_env("internal", ids), registry)
+    _emit(I, "28_special_patterns_enhanced.sql", header_internal,
+          "特殊模式 (连续ALTER + 多列ALTER)",
+          lambda ids: _gen_special_tests("internal", ids), registry)
+    _emit(I, "29_partition_64_enhanced.sql", header_internal, "分区策略 × 增强类型",
+          both_algos(lambda ids, algo: _gen_partition_tests(internal_trans, algo, "internal", ids)),
+          registry)
 
-    # 05: CHAR INSTANT
-    char_trans = [t for t in aliyun_trans if t["category"] == "char"]
-    sql05 = _gen_regular_table_tests(char_trans, "instant", "aliyun")
-    _write_sql_file(os.path.join(SQL_ALIYUN, "05_char_instant.sql"),
-                    header_aliyun + "-- File 05: CHAR INSTANT\n\n", sql05)
+    # ---------------- .gitignore 同步（P0-1: 产物/跟踪一致） ----------------
+    _sync_gitignore()
 
-    # 06: CHAR INPLACE
-    sql06 = _gen_regular_table_tests(char_trans, "inplace", "aliyun")
-    _write_sql_file(os.path.join(SQL_ALIYUN, "06_char_inplace.sql"),
-                    header_aliyun + "-- File 06: CHAR INPLACE\n\n", sql06)
+    # ---------------- 全局唯一性自检（P0-4） ----------------
+    all_ids: List[str] = []
+    for entry in registry:
+        all_ids.extend(entry["case_ids"])
+    dup_ids = sorted({i for i in all_ids if all_ids.count(i) > 1})
+    if dup_ids:
+        raise SystemExit("!! 用例 ID 全局重复 %d 个（示例 %s）—— 结果无法归因，禁止发布"
+                         % (len(dup_ids), dup_ids[:5]))
+    # 表名由 ID 派生，ID 唯一 => 表名唯一（并发执行安全）
+    suffixes = [id_to_suffix(i) for i in all_ids]
+    if len(set(suffixes)) != len(suffixes):
+        raise SystemExit("!! 派生表名后缀重复，无法安全并发执行")
 
-    # 07: VARCHAR INSTANT
-    vc_trans = [t for t in aliyun_trans if t["category"] == "varchar"]
-    sql07 = _gen_regular_table_tests(vc_trans, "instant", "aliyun")
-    _write_sql_file(os.path.join(SQL_ALIYUN, "07_varchar_instant.sql"),
-                    header_aliyun + "-- File 07: VARCHAR INSTANT\n\n", sql07)
+    # ---------------- 生成清单 ----------------
+    manifest = {
+        "generated_at": GENERATED_AT,
+        "suite_revision": SUITE_REVISION,
+        "generator": os.path.basename(os.path.abspath(__file__)),
+        "gz_threshold_bytes": GZ_THRESHOLD_BYTES,
+        "total_cases": len(all_ids),
+        "unique_case_ids": len(set(all_ids)),
+        "transition_count": len(ALL_TRANSITIONS),
+        "files": [],
+    }
+    for entry, (path, cases, size, is_gz) in zip(registry, WRITTEN_FILES):
+        manifest["files"].append({
+            "file": os.path.basename(path),
+            "dir": entry["dir"],
+            "title": entry["title"],
+            "compressed": is_gz,
+            "cases": cases,
+            "bytes": size,
+            "id_prefix": "TC-%02d-" % entry["file_no"],
+            "id_first": entry["case_ids"][0] if entry["case_ids"] else "",
+            "id_last": entry["case_ids"][-1] if entry["case_ids"] else "",
+        })
+    os.makedirs(os.path.join(OUTPUT_DIR, "results"), exist_ok=True)
+    with open(os.path.join(OUTPUT_DIR, "results", "generation_manifest.json"), "w",
+              encoding="utf-8") as f:
+        json.dump(manifest, f, ensure_ascii=False, indent=2)
 
-    # 08: VARCHAR INPLACE
-    sql08 = _gen_regular_table_tests(vc_trans, "inplace", "aliyun")
-    _write_sql_file(os.path.join(SQL_ALIYUN, "08_varchar_inplace.sql"),
-                    header_aliyun + "-- File 08: VARCHAR INPLACE\n\n", sql08)
+    # ---------------- 摘要 ----------------
+    print("=" * 78)
+    print("SQL 生成完成  (suite_revision=%s, generated_at=%s)" % (SUITE_REVISION, GENERATED_AT))
+    print("=" * 78)
+    print("%-6s %-38s %-5s %7s %12s  %s" % ("文件号", "文件名", "压缩", "用例数", "字节", "ID 区间"))
+    for m in manifest["files"]:
+        print("%-6s %-38s %-5s %7d %12s  %s .. %s"
+              % (m["file"][:2], m["file"], "gz" if m["compressed"] else "-",
+                 m["cases"], "{:,}".format(m["bytes"]), m["id_first"], m["id_last"]))
+    print("-" * 78)
+    print("总用例数        : %d" % manifest["total_cases"])
+    print("唯一用例 ID     : %d  (全局唯一自检通过 ✅)" % manifest["unique_case_ids"])
+    print("类型转换数      : %d" % manifest["transition_count"])
+    print("产出 .gz 文件   : %d  (明文名已写入 .gitignore 自动区块)" % len(WRITTEN_GZ))
+    print("生成清单        : results/generation_manifest.json")
 
-    # 09: AUTO_INCREMENT PK special
-    sql09 = []
-    for trans in int_s_trans + int_u_trans:
-        for algorithm in ["instant", "inplace"]:
-            test_id = f"TC-AI{algorithm[0].upper()}{len(sql09)+1:03d}"
-            sql = _build_column_attribute_test(test_id, trans, algorithm, "AUTO_INCREMENT")
-            sql09.append(sql)
-    _write_sql_file(os.path.join(SQL_ALIYUN, "09_auto_increment_pk.sql"),
-                    header_aliyun + "-- File 09: AUTO_INCREMENT PK 扩容专项\n\n", sql09)
-
-    # 10: Consecutive ALTER
-    sql10 = _gen_special_tests("aliyun")
-    _write_sql_file(os.path.join(SQL_ALIYUN, "10_special_patterns.sql"),
-                    header_aliyun + "-- File 10: 特殊模式 (连续ALTER + 多列ALTER + 虚拟生成列)\n\n", sql10)
-
-    # 11: FK table
-    sql11 = _gen_fk_tests_for_env("aliyun")
-    _write_sql_file(os.path.join(SQL_ALIYUN, "11_fk_table.sql"),
-                    header_aliyun + "-- File 11: 外键表测试\n\n", sql11)
-
-    # 12: Partition 64
-    sql12 = _gen_partition_tests(aliyun_trans, "instant", "aliyun")
-    sql12 += _gen_partition_tests(aliyun_trans, "inplace", "aliyun")
-    _write_sql_file(os.path.join(SQL_ALIYUN, "12_partition_64.sql"),
-                    header_aliyun + "-- File 12: 64种分区策略 × 全类型\n\n", sql12)
-
-    # ============= Internal SQL files =============
-    # 15: BINARY INPLACE
-    bin_trans = [t for t in internal_trans if t["category"] == "binary"]
-    sql15 = _gen_regular_table_tests(bin_trans, "inplace", "internal")
-    _write_sql_file(os.path.join(SQL_INTERNAL, "15_binary_inplace.sql"),
-                    header_internal + "-- File 15: BINARY INPLACE\n\n", sql15)
-
-    # 16: BINARY INSTANT (expected SUCCESS)
-    sql16 = _gen_regular_table_tests(bin_trans, "instant", "internal")
-    _write_sql_file(os.path.join(SQL_INTERNAL, "16_binary_instant.sql"),
-                    header_internal + "-- File 16: BINARY INSTANT (预期成功)\n\n", sql16)
-
-    # 17: VARBINARY INPLACE
-    vbin_trans = [t for t in internal_trans if t["category"] == "varbinary"]
-    sql17 = _gen_regular_table_tests(vbin_trans, "inplace", "internal")
-    _write_sql_file(os.path.join(SQL_INTERNAL, "17_varbinary_inplace.sql"),
-                    header_internal + "-- File 17: VARBINARY INPLACE\n\n", sql17)
-
-    # 18: VARBINARY INSTANT (expected SUCCESS)
-    sql18 = _gen_regular_table_tests(vbin_trans, "instant", "internal")
-    _write_sql_file(os.path.join(SQL_INTERNAL, "18_varbinary_instant.sql"),
-                    header_internal + "-- File 18: VARBINARY INSTANT (预期成功)\n\n", sql18)
-
-    # 19: DECIMAL INPLACE
-    dec_trans = [t for t in internal_trans if t["category"] == "decimal"]
-    sql19 = _gen_regular_table_tests(dec_trans, "inplace", "internal")
-    _write_sql_file(os.path.join(SQL_INTERNAL, "19_decimal_inplace.sql"),
-                    header_internal + "-- File 19: DECIMAL INPLACE\n\n", sql19)
-
-    # 20: DECIMAL INSTANT (expected SUCCESS)
-    sql20 = _gen_regular_table_tests(dec_trans, "instant", "internal")
-    _write_sql_file(os.path.join(SQL_INTERNAL, "20_decimal_instant.sql"),
-                    header_internal + "-- File 20: DECIMAL INSTANT (预期成功)\n\n", sql20)
-
-    # 21: TEXT INSTANT
-    text_trans = [t for t in internal_trans if t["category"] == "text"]
-    sql21 = _gen_regular_table_tests(text_trans, "instant", "internal")
-    _write_sql_file(os.path.join(SQL_INTERNAL, "21_text_instant.sql"),
-                    header_internal + "-- File 21: TEXT INSTANT\n\n", sql21)
-
-    # 22: TEXT INPLACE
-    sql22 = _gen_regular_table_tests(text_trans, "inplace", "internal")
-    _write_sql_file(os.path.join(SQL_INTERNAL, "22_text_inplace.sql"),
-                    header_internal + "-- File 22: TEXT INPLACE\n\n", sql22)
-
-    # 23: BLOB INSTANT
-    blob_trans = [t for t in internal_trans if t["category"] == "blob"]
-    sql23 = _gen_regular_table_tests(blob_trans, "instant", "internal")
-    _write_sql_file(os.path.join(SQL_INTERNAL, "23_blob_instant.sql"),
-                    header_internal + "-- File 23: BLOB INSTANT\n\n", sql23)
-
-    # 24: BLOB INPLACE
-    sql24 = _gen_regular_table_tests(blob_trans, "inplace", "internal")
-    _write_sql_file(os.path.join(SQL_INTERNAL, "24_blob_inplace.sql"),
-                    header_internal + "-- File 24: BLOB INPLACE\n\n", sql24)
-
-    # 25: BIT INSTANT
-    bit_trans = [t for t in internal_trans if t["category"] == "bit"]
-    sql25 = _gen_regular_table_tests(bit_trans, "instant", "internal")
-    _write_sql_file(os.path.join(SQL_INTERNAL, "25_bit_instant.sql"),
-                    header_internal + "-- File 25: BIT INSTANT\n\n", sql25)
-
-    # 26: BIT INPLACE
-    sql26 = _gen_regular_table_tests(bit_trans, "inplace", "internal")
-    _write_sql_file(os.path.join(SQL_INTERNAL, "26_bit_inplace.sql"),
-                    header_internal + "-- File 26: BIT INPLACE\n\n", sql26)
-
-    # 27: FK table enhanced
-    sql27 = _gen_fk_tests_for_env("internal")
-    _write_sql_file(os.path.join(SQL_INTERNAL, "27_fk_table_enhanced.sql"),
-                    header_internal + "-- File 27: 外键表测试(增强类型)\n\n", sql27)
-
-    # 28: Special patterns enhanced
-    sql28 = _gen_special_tests("internal")
-    _write_sql_file(os.path.join(SQL_INTERNAL, "28_special_patterns_enhanced.sql"),
-                    header_internal + "-- File 28: 特殊模式 (连续ALTER + 多列ALTER)\n\n", sql28)
-
-    # 29: Partition 64 enhanced
-    sql29 = _gen_partition_tests(internal_trans, "instant", "internal")
-    sql29 += _gen_partition_tests(internal_trans, "inplace", "internal")
-    _write_sql_file(os.path.join(SQL_INTERNAL, "29_partition_64_enhanced.sql"),
-                    header_internal + "-- File 29: 64种分区策略 × 增强类型\n\n", sql29)
-
-    # Print summary
-    aliyun_files = sorted(os.listdir(SQL_ALIYUN)) if os.path.exists(SQL_ALIYUN) else []
-    internal_files = sorted(os.listdir(SQL_INTERNAL)) if os.path.exists(SQL_INTERNAL) else []
-
-    print("=" * 60)
-    print("SQL 生成完成!")
-    print("=" * 60)
-    print(f"\n阿里云环境 (sql_aliyun/): {len(aliyun_files)} files")
-    for f in aliyun_files:
-        fp = os.path.join(SQL_ALIYUN, f)
-        size = os.path.getsize(fp)
-        with open(fp, "r") as fh:
-            lines = sum(1 for _ in fh)
-        print(f"  {f}: {lines} lines, {size:,} bytes")
-
-    print(f"\n内网环境 (sql_internal/): {len(internal_files)} files")
-    for f in internal_files:
-        fp = os.path.join(SQL_INTERNAL, f)
-        size = os.path.getsize(fp)
-        with open(fp, "r") as fh:
-            lines = sum(1 for _ in fh)
-        print(f"  {f}: {lines} lines, {size:,} bytes")
-
-    total_cases = 0
-    for d in [SQL_ALIYUN, SQL_INTERNAL]:
-        for f in os.listdir(d):
-            with open(os.path.join(d, f)) as fh:
-                total_cases += fh.read().count("Test Case:")
-    print(f"\n总测试用例数: {total_cases}")
-    print(f"类型转换数: {len(ALL_TRANSITIONS)}")
-    print(f"分区策略数: {len(PARTITION_TYPES)**2} (8×8)")
+    manifest["untracked_in_git"] = verify_git_tracking([p for p, _c, _s, _g in WRITTEN_FILES])
+    if manifest["untracked_in_git"]:
+        manifest["git_tracking_ok"] = False
+        with open(os.path.join(OUTPUT_DIR, "results", "generation_manifest.json"), "w",
+                  encoding="utf-8") as f:
+            json.dump(manifest, f, ensure_ascii=False, indent=2)
+    else:
+        manifest["git_tracking_ok"] = True
+        print("git 跟踪自检    : 全部产物已入库 ✅")
 
 
 if __name__ == "__main__":

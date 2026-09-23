@@ -2,10 +2,13 @@
 -- RDS MySQL DDL 秒级/在线修改列类型 测试套件 — 内网环境
 -- 环境说明: 所有功能开关默认开启
 -- 覆盖类型: BINARY + VARBINARY + DECIMAL + TEXT + BLOB + BIT
--- 覆盖算法: INSTANT + INPLACE (增强类型 INSTANT 预期成功 (BINARY/VARBINARY/DECIMAL 已确认支持))
+-- 覆盖算法: INSTANT + INPLACE (增强类型 INSTANT 预期成功: BINARY/VARBINARY/DECIMAL 已确认支持)
 -- ============================================================
 -- 本文件由 generate_test_sql.py 自动生成, 请勿手动修改
--- 生成时间: 2026-09-20
+-- Suite-Revision: 4dfbe1e59c0b   (生成器源码哈希; 时间戳见 results/generation_manifest.json)
+-- 用例 ID 规则: TC-<文件号>-<作用域>-<序号>-<IT|IP>  —— 全局唯一
+--   作用域 REG=普通表 OFAT/二元组, ATR=列属性保持, SPE=特殊模式,
+--          FK=外键, PTK=分区(目标列是分区键), PNK=分区(目标列非分区键)
 -- ============================================================
 
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -13,6602 +16,6826 @@ SET SESSION innodb_lock_wait_timeout = 50;
 
 -- File 25: BIT INSTANT
 
--- Test Case: TC-I0001
+-- Test Case: TC-25-REG-0001-IT
 -- Type: BIT(1) -> BIT(8), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: BASELINE
+-- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0001, t2_i0001;
+DROP TABLE IF EXISTS t1_tc_25_reg_0001_it, t2_tc_25_reg_0001_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0001 (
+CREATE TABLE t1_tc_25_reg_0001_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(1),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0001 (target) VALUES (b'0');
-INSERT INTO t1_i0001 (target) VALUES (b'1');
-INSERT INTO t1_i0001 (target) VALUES (b'1');
-INSERT INTO t1_i0001 (target) VALUES (b'0');
-INSERT INTO t1_i0001 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0001_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0001_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0001_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0001_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0001_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0001 MODIFY target BIT(8), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0001_it MODIFY target BIT(8), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0001 (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0001_it (target) VALUES (b'11111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0001 (target) VALUES (b'11');
+INSERT INTO t1_tc_25_reg_0001_it (target) VALUES (b'11');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0001 (target) VALUES (b'1');
-INSERT INTO t1_i0001 (target) VALUES (b'0');
-INSERT INTO t1_i0001 (target) VALUES (b'1');
-INSERT INTO t1_i0001 (target) VALUES (b'1010');
-INSERT INTO t1_i0001 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0001_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0001_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0001_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0001_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0001_it (target) VALUES (NULL);
 -- Oracle table: BIT(8)
-CREATE TABLE t2_i0001 (
+CREATE TABLE t2_tc_25_reg_0001_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0001 (target) VALUES (b'0');
-INSERT INTO t2_i0001 (target) VALUES (b'1');
-INSERT INTO t2_i0001 (target) VALUES (b'1');
-INSERT INTO t2_i0001 (target) VALUES (b'0');
-INSERT INTO t2_i0001 (target) VALUES (NULL);
-INSERT INTO t2_i0001 (target) VALUES (b'11111111');
-INSERT INTO t2_i0001 (target) VALUES (b'11');
-INSERT INTO t2_i0001 (target) VALUES (b'1');
-INSERT INTO t2_i0001 (target) VALUES (b'0');
-INSERT INTO t2_i0001 (target) VALUES (b'1');
-INSERT INTO t2_i0001 (target) VALUES (b'1010');
-INSERT INTO t2_i0001 (target) VALUES (NULL);
-SELECT 'TC-I0001' AS test_id,
+INSERT INTO t2_tc_25_reg_0001_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0001_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0001_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0001_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0001_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0001_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0001_it (target) VALUES (b'11');
+INSERT INTO t2_tc_25_reg_0001_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0001_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0001_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0001_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0001_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0001-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0001
-   WHERE id NOT IN (SELECT id FROM t2_i0001)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0001_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0001_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0001
-   WHERE id NOT IN (SELECT id FROM t1_i0001)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0001_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0001_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0001 a JOIN t2_i0001 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0001_it a JOIN t2_tc_25_reg_0001_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0002
+-- Test Case: TC-25-REG-0002-IT
 -- Type: BIT(1) -> BIT(8), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: row_format=COMPACT
+-- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=COMPACT, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0002, t2_i0002;
+DROP TABLE IF EXISTS t1_tc_25_reg_0002_it, t2_tc_25_reg_0002_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0002 (
+CREATE TABLE t1_tc_25_reg_0002_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(1),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=COMPACT;
-INSERT INTO t1_i0002 (target) VALUES (b'0');
-INSERT INTO t1_i0002 (target) VALUES (b'1');
-INSERT INTO t1_i0002 (target) VALUES (b'1');
-INSERT INTO t1_i0002 (target) VALUES (b'0');
-INSERT INTO t1_i0002 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0002_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0002_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0002_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0002_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0002_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0002 MODIFY target BIT(8), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0002_it MODIFY target BIT(8), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0002 (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0002_it (target) VALUES (b'11111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0002 (target) VALUES (b'11');
+INSERT INTO t1_tc_25_reg_0002_it (target) VALUES (b'11');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0002 (target) VALUES (b'1');
-INSERT INTO t1_i0002 (target) VALUES (b'0');
-INSERT INTO t1_i0002 (target) VALUES (b'1');
-INSERT INTO t1_i0002 (target) VALUES (b'1010');
-INSERT INTO t1_i0002 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0002_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0002_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0002_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0002_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0002_it (target) VALUES (NULL);
 -- Oracle table: BIT(8)
-CREATE TABLE t2_i0002 (
+CREATE TABLE t2_tc_25_reg_0002_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=COMPACT;
-INSERT INTO t2_i0002 (target) VALUES (b'0');
-INSERT INTO t2_i0002 (target) VALUES (b'1');
-INSERT INTO t2_i0002 (target) VALUES (b'1');
-INSERT INTO t2_i0002 (target) VALUES (b'0');
-INSERT INTO t2_i0002 (target) VALUES (NULL);
-INSERT INTO t2_i0002 (target) VALUES (b'11111111');
-INSERT INTO t2_i0002 (target) VALUES (b'11');
-INSERT INTO t2_i0002 (target) VALUES (b'1');
-INSERT INTO t2_i0002 (target) VALUES (b'0');
-INSERT INTO t2_i0002 (target) VALUES (b'1');
-INSERT INTO t2_i0002 (target) VALUES (b'1010');
-INSERT INTO t2_i0002 (target) VALUES (NULL);
-SELECT 'TC-I0002' AS test_id,
+INSERT INTO t2_tc_25_reg_0002_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0002_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0002_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0002_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0002_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0002_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0002_it (target) VALUES (b'11');
+INSERT INTO t2_tc_25_reg_0002_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0002_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0002_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0002_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0002_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0002-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0002
-   WHERE id NOT IN (SELECT id FROM t2_i0002)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0002_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0002_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0002
-   WHERE id NOT IN (SELECT id FROM t1_i0002)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0002_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0002_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0002 a JOIN t2_i0002 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0002_it a JOIN t2_tc_25_reg_0002_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0003
+-- Test Case: TC-25-REG-0003-IT
 -- Type: BIT(1) -> BIT(8), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: row_format=REDUNDANT
+-- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=REDUNDANT, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0003, t2_i0003;
+DROP TABLE IF EXISTS t1_tc_25_reg_0003_it, t2_tc_25_reg_0003_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0003 (
+CREATE TABLE t1_tc_25_reg_0003_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(1),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=REDUNDANT;
-INSERT INTO t1_i0003 (target) VALUES (b'0');
-INSERT INTO t1_i0003 (target) VALUES (b'1');
-INSERT INTO t1_i0003 (target) VALUES (b'1');
-INSERT INTO t1_i0003 (target) VALUES (b'0');
-INSERT INTO t1_i0003 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0003_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0003_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0003_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0003_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0003_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0003 MODIFY target BIT(8), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0003_it MODIFY target BIT(8), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0003 (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0003_it (target) VALUES (b'11111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0003 (target) VALUES (b'11');
+INSERT INTO t1_tc_25_reg_0003_it (target) VALUES (b'11');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0003 (target) VALUES (b'1');
-INSERT INTO t1_i0003 (target) VALUES (b'0');
-INSERT INTO t1_i0003 (target) VALUES (b'1');
-INSERT INTO t1_i0003 (target) VALUES (b'1010');
-INSERT INTO t1_i0003 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0003_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0003_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0003_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0003_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0003_it (target) VALUES (NULL);
 -- Oracle table: BIT(8)
-CREATE TABLE t2_i0003 (
+CREATE TABLE t2_tc_25_reg_0003_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=REDUNDANT;
-INSERT INTO t2_i0003 (target) VALUES (b'0');
-INSERT INTO t2_i0003 (target) VALUES (b'1');
-INSERT INTO t2_i0003 (target) VALUES (b'1');
-INSERT INTO t2_i0003 (target) VALUES (b'0');
-INSERT INTO t2_i0003 (target) VALUES (NULL);
-INSERT INTO t2_i0003 (target) VALUES (b'11111111');
-INSERT INTO t2_i0003 (target) VALUES (b'11');
-INSERT INTO t2_i0003 (target) VALUES (b'1');
-INSERT INTO t2_i0003 (target) VALUES (b'0');
-INSERT INTO t2_i0003 (target) VALUES (b'1');
-INSERT INTO t2_i0003 (target) VALUES (b'1010');
-INSERT INTO t2_i0003 (target) VALUES (NULL);
-SELECT 'TC-I0003' AS test_id,
+INSERT INTO t2_tc_25_reg_0003_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0003_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0003_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0003_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0003_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0003_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0003_it (target) VALUES (b'11');
+INSERT INTO t2_tc_25_reg_0003_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0003_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0003_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0003_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0003_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0003-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0003
-   WHERE id NOT IN (SELECT id FROM t2_i0003)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0003_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0003_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0003
-   WHERE id NOT IN (SELECT id FROM t1_i0003)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0003_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0003_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0003 a JOIN t2_i0003 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0003_it a JOIN t2_tc_25_reg_0003_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0004
+-- Test Case: TC-25-REG-0004-IT
 -- Type: BIT(1) -> BIT(8), Algorithm: instant, Expected: FAIL
+-- Varied factor: primary_key=COMPOSITE_PK
+-- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=COMPOSITE_PK, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0004, t2_i0004;
+DROP TABLE IF EXISTS t1_tc_25_reg_0004_it, t2_tc_25_reg_0004_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0004 (
+CREATE TABLE t1_tc_25_reg_0004_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(1),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id, target), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0004 (target) VALUES (b'0');
-INSERT INTO t1_i0004 (target) VALUES (b'1');
-INSERT INTO t1_i0004 (target) VALUES (b'1');
-INSERT INTO t1_i0004 (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0004_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0004_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0004_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0004_it (target) VALUES (b'0');
 -- Expected: ALTER FAILS (table keeps old type)
-ALTER TABLE t1_i0004 MODIFY target BIT(8), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0004_it MODIFY target BIT(8), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0004 (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0004_it (target) VALUES (b'11111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0004 (target) VALUES (b'11');
+INSERT INTO t1_tc_25_reg_0004_it (target) VALUES (b'11');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0004 (target) VALUES (b'1');
-INSERT INTO t1_i0004 (target) VALUES (b'0');
-INSERT INTO t1_i0004 (target) VALUES (b'1');
-INSERT INTO t1_i0004 (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0004_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0004_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0004_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0004_it (target) VALUES (b'1010');
 -- Oracle table: BIT(1)
-CREATE TABLE t2_i0004 (
+CREATE TABLE t2_tc_25_reg_0004_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(1),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id, target), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0004 (target) VALUES (b'0');
-INSERT INTO t2_i0004 (target) VALUES (b'1');
-INSERT INTO t2_i0004 (target) VALUES (b'1');
-INSERT INTO t2_i0004 (target) VALUES (b'0');
-INSERT INTO t2_i0004 (target) VALUES (b'11111111');
-INSERT INTO t2_i0004 (target) VALUES (b'11');
-INSERT INTO t2_i0004 (target) VALUES (b'1');
-INSERT INTO t2_i0004 (target) VALUES (b'0');
-INSERT INTO t2_i0004 (target) VALUES (b'1');
-INSERT INTO t2_i0004 (target) VALUES (b'1010');
-SELECT 'TC-I0004' AS test_id,
+INSERT INTO t2_tc_25_reg_0004_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0004_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0004_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0004_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0004_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0004_it (target) VALUES (b'11');
+INSERT INTO t2_tc_25_reg_0004_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0004_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0004_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0004_it (target) VALUES (b'1010');
+SELECT 'TC-25-REG-0004-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0004
-   WHERE id NOT IN (SELECT id FROM t2_i0004)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0004_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0004_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0004
-   WHERE id NOT IN (SELECT id FROM t1_i0004)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0004_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0004_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0004 a JOIN t2_i0004 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0004_it a JOIN t2_tc_25_reg_0004_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0005
+-- Test Case: TC-25-REG-0005-IT
 -- Type: BIT(1) -> BIT(8), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: primary_key=NO_EXPLICIT_PK
+-- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=NO_EXPLICIT_PK, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0005, t2_i0005;
+DROP TABLE IF EXISTS t1_tc_25_reg_0005_it, t2_tc_25_reg_0005_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0005 (
+CREATE TABLE t1_tc_25_reg_0005_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(1),
   pad2 VARCHAR(20) DEFAULT 'pad2', INDEX idx_id (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0005 (target) VALUES (b'0');
-INSERT INTO t1_i0005 (target) VALUES (b'1');
-INSERT INTO t1_i0005 (target) VALUES (b'1');
-INSERT INTO t1_i0005 (target) VALUES (b'0');
-INSERT INTO t1_i0005 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0005_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0005_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0005_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0005_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0005_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0005 MODIFY target BIT(8), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0005_it MODIFY target BIT(8), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0005 (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0005_it (target) VALUES (b'11111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0005 (target) VALUES (b'11');
+INSERT INTO t1_tc_25_reg_0005_it (target) VALUES (b'11');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0005 (target) VALUES (b'1');
-INSERT INTO t1_i0005 (target) VALUES (b'0');
-INSERT INTO t1_i0005 (target) VALUES (b'1');
-INSERT INTO t1_i0005 (target) VALUES (b'1010');
-INSERT INTO t1_i0005 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0005_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0005_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0005_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0005_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0005_it (target) VALUES (NULL);
 -- Oracle table: BIT(8)
-CREATE TABLE t2_i0005 (
+CREATE TABLE t2_tc_25_reg_0005_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8),
   pad2 VARCHAR(20) DEFAULT 'pad2', INDEX idx_id (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0005 (target) VALUES (b'0');
-INSERT INTO t2_i0005 (target) VALUES (b'1');
-INSERT INTO t2_i0005 (target) VALUES (b'1');
-INSERT INTO t2_i0005 (target) VALUES (b'0');
-INSERT INTO t2_i0005 (target) VALUES (NULL);
-INSERT INTO t2_i0005 (target) VALUES (b'11111111');
-INSERT INTO t2_i0005 (target) VALUES (b'11');
-INSERT INTO t2_i0005 (target) VALUES (b'1');
-INSERT INTO t2_i0005 (target) VALUES (b'0');
-INSERT INTO t2_i0005 (target) VALUES (b'1');
-INSERT INTO t2_i0005 (target) VALUES (b'1010');
-INSERT INTO t2_i0005 (target) VALUES (NULL);
-SELECT 'TC-I0005' AS test_id,
+INSERT INTO t2_tc_25_reg_0005_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0005_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0005_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0005_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0005_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0005_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0005_it (target) VALUES (b'11');
+INSERT INTO t2_tc_25_reg_0005_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0005_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0005_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0005_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0005_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0005-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0005
-   WHERE id NOT IN (SELECT id FROM t2_i0005)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0005_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0005_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0005
-   WHERE id NOT IN (SELECT id FROM t1_i0005)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0005_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0005_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0005 a JOIN t2_i0005 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0005_it a JOIN t2_tc_25_reg_0005_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0006
+-- Test Case: TC-25-REG-0006-IT
 -- Type: BIT(1) -> BIT(8), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: non_target_index=NONE
+-- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=NONE, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0006, t2_i0006;
+DROP TABLE IF EXISTS t1_tc_25_reg_0006_it, t2_tc_25_reg_0006_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0006 (
+CREATE TABLE t1_tc_25_reg_0006_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(1),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0006 (target) VALUES (b'0');
-INSERT INTO t1_i0006 (target) VALUES (b'1');
-INSERT INTO t1_i0006 (target) VALUES (b'1');
-INSERT INTO t1_i0006 (target) VALUES (b'0');
-INSERT INTO t1_i0006 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0006_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0006_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0006_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0006_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0006_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0006 MODIFY target BIT(8), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0006_it MODIFY target BIT(8), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0006 (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0006_it (target) VALUES (b'11111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0006 (target) VALUES (b'11');
+INSERT INTO t1_tc_25_reg_0006_it (target) VALUES (b'11');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0006 (target) VALUES (b'1');
-INSERT INTO t1_i0006 (target) VALUES (b'0');
-INSERT INTO t1_i0006 (target) VALUES (b'1');
-INSERT INTO t1_i0006 (target) VALUES (b'1010');
-INSERT INTO t1_i0006 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0006_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0006_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0006_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0006_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0006_it (target) VALUES (NULL);
 -- Oracle table: BIT(8)
-CREATE TABLE t2_i0006 (
+CREATE TABLE t2_tc_25_reg_0006_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0006 (target) VALUES (b'0');
-INSERT INTO t2_i0006 (target) VALUES (b'1');
-INSERT INTO t2_i0006 (target) VALUES (b'1');
-INSERT INTO t2_i0006 (target) VALUES (b'0');
-INSERT INTO t2_i0006 (target) VALUES (NULL);
-INSERT INTO t2_i0006 (target) VALUES (b'11111111');
-INSERT INTO t2_i0006 (target) VALUES (b'11');
-INSERT INTO t2_i0006 (target) VALUES (b'1');
-INSERT INTO t2_i0006 (target) VALUES (b'0');
-INSERT INTO t2_i0006 (target) VALUES (b'1');
-INSERT INTO t2_i0006 (target) VALUES (b'1010');
-INSERT INTO t2_i0006 (target) VALUES (NULL);
-SELECT 'TC-I0006' AS test_id,
+INSERT INTO t2_tc_25_reg_0006_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0006_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0006_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0006_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0006_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0006_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0006_it (target) VALUES (b'11');
+INSERT INTO t2_tc_25_reg_0006_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0006_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0006_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0006_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0006_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0006-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0006
-   WHERE id NOT IN (SELECT id FROM t2_i0006)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0006_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0006_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0006
-   WHERE id NOT IN (SELECT id FROM t1_i0006)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0006_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0006_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0006 a JOIN t2_i0006 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0006_it a JOIN t2_tc_25_reg_0006_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0007
+-- Test Case: TC-25-REG-0007-IT
 -- Type: BIT(1) -> BIT(8), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: non_target_index=MULTIPLE_SECONDARY
+-- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=MULTIPLE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0007, t2_i0007;
+DROP TABLE IF EXISTS t1_tc_25_reg_0007_it, t2_tc_25_reg_0007_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0007 (
+CREATE TABLE t1_tc_25_reg_0007_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(1),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1), INDEX idx_pad2 (pad2)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0007 (target) VALUES (b'0');
-INSERT INTO t1_i0007 (target) VALUES (b'1');
-INSERT INTO t1_i0007 (target) VALUES (b'1');
-INSERT INTO t1_i0007 (target) VALUES (b'0');
-INSERT INTO t1_i0007 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0007_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0007_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0007_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0007_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0007_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0007 MODIFY target BIT(8), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0007_it MODIFY target BIT(8), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0007 (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0007_it (target) VALUES (b'11111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0007 (target) VALUES (b'11');
+INSERT INTO t1_tc_25_reg_0007_it (target) VALUES (b'11');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0007 (target) VALUES (b'1');
-INSERT INTO t1_i0007 (target) VALUES (b'0');
-INSERT INTO t1_i0007 (target) VALUES (b'1');
-INSERT INTO t1_i0007 (target) VALUES (b'1010');
-INSERT INTO t1_i0007 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0007_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0007_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0007_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0007_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0007_it (target) VALUES (NULL);
 -- Oracle table: BIT(8)
-CREATE TABLE t2_i0007 (
+CREATE TABLE t2_tc_25_reg_0007_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1), INDEX idx_pad2 (pad2)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0007 (target) VALUES (b'0');
-INSERT INTO t2_i0007 (target) VALUES (b'1');
-INSERT INTO t2_i0007 (target) VALUES (b'1');
-INSERT INTO t2_i0007 (target) VALUES (b'0');
-INSERT INTO t2_i0007 (target) VALUES (NULL);
-INSERT INTO t2_i0007 (target) VALUES (b'11111111');
-INSERT INTO t2_i0007 (target) VALUES (b'11');
-INSERT INTO t2_i0007 (target) VALUES (b'1');
-INSERT INTO t2_i0007 (target) VALUES (b'0');
-INSERT INTO t2_i0007 (target) VALUES (b'1');
-INSERT INTO t2_i0007 (target) VALUES (b'1010');
-INSERT INTO t2_i0007 (target) VALUES (NULL);
-SELECT 'TC-I0007' AS test_id,
+INSERT INTO t2_tc_25_reg_0007_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0007_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0007_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0007_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0007_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0007_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0007_it (target) VALUES (b'11');
+INSERT INTO t2_tc_25_reg_0007_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0007_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0007_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0007_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0007_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0007-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0007
-   WHERE id NOT IN (SELECT id FROM t2_i0007)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0007_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0007_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0007
-   WHERE id NOT IN (SELECT id FROM t1_i0007)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0007_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0007_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0007 a JOIN t2_i0007 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0007_it a JOIN t2_tc_25_reg_0007_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0008
+-- Test Case: TC-25-REG-0008-IT
 -- Type: BIT(1) -> BIT(8), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: non_target_index=UNIQUE
+-- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=UNIQUE, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0008, t2_i0008;
+DROP TABLE IF EXISTS t1_tc_25_reg_0008_it, t2_tc_25_reg_0008_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0008 (
+CREATE TABLE t1_tc_25_reg_0008_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(1),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), UNIQUE INDEX uq_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0008 (target) VALUES (b'0');
-INSERT INTO t1_i0008 (target) VALUES (b'1');
-INSERT INTO t1_i0008 (target) VALUES (b'1');
-INSERT INTO t1_i0008 (target) VALUES (b'0');
-INSERT INTO t1_i0008 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0008_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0008_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0008_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0008_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0008_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0008 MODIFY target BIT(8), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0008_it MODIFY target BIT(8), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0008 (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0008_it (target) VALUES (b'11111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0008 (target) VALUES (b'11');
+INSERT INTO t1_tc_25_reg_0008_it (target) VALUES (b'11');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0008 (target) VALUES (b'1');
-INSERT INTO t1_i0008 (target) VALUES (b'0');
-INSERT INTO t1_i0008 (target) VALUES (b'1');
-INSERT INTO t1_i0008 (target) VALUES (b'1010');
-INSERT INTO t1_i0008 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0008_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0008_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0008_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0008_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0008_it (target) VALUES (NULL);
 -- Oracle table: BIT(8)
-CREATE TABLE t2_i0008 (
+CREATE TABLE t2_tc_25_reg_0008_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), UNIQUE INDEX uq_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0008 (target) VALUES (b'0');
-INSERT INTO t2_i0008 (target) VALUES (b'1');
-INSERT INTO t2_i0008 (target) VALUES (b'1');
-INSERT INTO t2_i0008 (target) VALUES (b'0');
-INSERT INTO t2_i0008 (target) VALUES (NULL);
-INSERT INTO t2_i0008 (target) VALUES (b'11111111');
-INSERT INTO t2_i0008 (target) VALUES (b'11');
-INSERT INTO t2_i0008 (target) VALUES (b'1');
-INSERT INTO t2_i0008 (target) VALUES (b'0');
-INSERT INTO t2_i0008 (target) VALUES (b'1');
-INSERT INTO t2_i0008 (target) VALUES (b'1010');
-INSERT INTO t2_i0008 (target) VALUES (NULL);
-SELECT 'TC-I0008' AS test_id,
+INSERT INTO t2_tc_25_reg_0008_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0008_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0008_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0008_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0008_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0008_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0008_it (target) VALUES (b'11');
+INSERT INTO t2_tc_25_reg_0008_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0008_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0008_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0008_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0008_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0008-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0008
-   WHERE id NOT IN (SELECT id FROM t2_i0008)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0008_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0008_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0008
-   WHERE id NOT IN (SELECT id FROM t1_i0008)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0008_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0008_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0008 a JOIN t2_i0008 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0008_it a JOIN t2_tc_25_reg_0008_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0009
+-- Test Case: TC-25-REG-0009-IT
 -- Type: BIT(1) -> BIT(8), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: non_target_index=COMPOSITE_PREFIX
+-- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=COMPOSITE_PREFIX, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0009, t2_i0009;
+DROP TABLE IF EXISTS t1_tc_25_reg_0009_it, t2_tc_25_reg_0009_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0009 (
+CREATE TABLE t1_tc_25_reg_0009_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(1),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_composite (pad1(10), pad2(10))
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0009 (target) VALUES (b'0');
-INSERT INTO t1_i0009 (target) VALUES (b'1');
-INSERT INTO t1_i0009 (target) VALUES (b'1');
-INSERT INTO t1_i0009 (target) VALUES (b'0');
-INSERT INTO t1_i0009 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0009_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0009_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0009_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0009_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0009_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0009 MODIFY target BIT(8), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0009_it MODIFY target BIT(8), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0009 (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0009_it (target) VALUES (b'11111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0009 (target) VALUES (b'11');
+INSERT INTO t1_tc_25_reg_0009_it (target) VALUES (b'11');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0009 (target) VALUES (b'1');
-INSERT INTO t1_i0009 (target) VALUES (b'0');
-INSERT INTO t1_i0009 (target) VALUES (b'1');
-INSERT INTO t1_i0009 (target) VALUES (b'1010');
-INSERT INTO t1_i0009 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0009_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0009_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0009_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0009_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0009_it (target) VALUES (NULL);
 -- Oracle table: BIT(8)
-CREATE TABLE t2_i0009 (
+CREATE TABLE t2_tc_25_reg_0009_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_composite (pad1(10), pad2(10))
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0009 (target) VALUES (b'0');
-INSERT INTO t2_i0009 (target) VALUES (b'1');
-INSERT INTO t2_i0009 (target) VALUES (b'1');
-INSERT INTO t2_i0009 (target) VALUES (b'0');
-INSERT INTO t2_i0009 (target) VALUES (NULL);
-INSERT INTO t2_i0009 (target) VALUES (b'11111111');
-INSERT INTO t2_i0009 (target) VALUES (b'11');
-INSERT INTO t2_i0009 (target) VALUES (b'1');
-INSERT INTO t2_i0009 (target) VALUES (b'0');
-INSERT INTO t2_i0009 (target) VALUES (b'1');
-INSERT INTO t2_i0009 (target) VALUES (b'1010');
-INSERT INTO t2_i0009 (target) VALUES (NULL);
-SELECT 'TC-I0009' AS test_id,
+INSERT INTO t2_tc_25_reg_0009_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0009_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0009_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0009_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0009_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0009_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0009_it (target) VALUES (b'11');
+INSERT INTO t2_tc_25_reg_0009_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0009_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0009_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0009_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0009_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0009-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0009
-   WHERE id NOT IN (SELECT id FROM t2_i0009)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0009_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0009_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0009
-   WHERE id NOT IN (SELECT id FROM t1_i0009)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0009_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0009_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0009 a JOIN t2_i0009 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0009_it a JOIN t2_tc_25_reg_0009_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0010
+-- Test Case: TC-25-REG-0010-IT
 -- Type: BIT(1) -> BIT(8), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: target_position=FIRST
+-- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=FIRST
-DROP TABLE IF EXISTS t1_i0010, t2_i0010;
+DROP TABLE IF EXISTS t1_tc_25_reg_0010_it, t2_tc_25_reg_0010_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0010 (
+CREATE TABLE t1_tc_25_reg_0010_it (
   target BIT(1),
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0010 (target) VALUES (b'0');
-INSERT INTO t1_i0010 (target) VALUES (b'1');
-INSERT INTO t1_i0010 (target) VALUES (b'1');
-INSERT INTO t1_i0010 (target) VALUES (b'0');
-INSERT INTO t1_i0010 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0010_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0010_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0010_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0010_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0010_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0010 MODIFY target BIT(8), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0010_it MODIFY target BIT(8), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0010 (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0010_it (target) VALUES (b'11111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0010 (target) VALUES (b'11');
+INSERT INTO t1_tc_25_reg_0010_it (target) VALUES (b'11');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0010 (target) VALUES (b'1');
-INSERT INTO t1_i0010 (target) VALUES (b'0');
-INSERT INTO t1_i0010 (target) VALUES (b'1');
-INSERT INTO t1_i0010 (target) VALUES (b'1010');
-INSERT INTO t1_i0010 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0010_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0010_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0010_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0010_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0010_it (target) VALUES (NULL);
 -- Oracle table: BIT(8)
-CREATE TABLE t2_i0010 (
+CREATE TABLE t2_tc_25_reg_0010_it (
   target BIT(8),
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0010 (target) VALUES (b'0');
-INSERT INTO t2_i0010 (target) VALUES (b'1');
-INSERT INTO t2_i0010 (target) VALUES (b'1');
-INSERT INTO t2_i0010 (target) VALUES (b'0');
-INSERT INTO t2_i0010 (target) VALUES (NULL);
-INSERT INTO t2_i0010 (target) VALUES (b'11111111');
-INSERT INTO t2_i0010 (target) VALUES (b'11');
-INSERT INTO t2_i0010 (target) VALUES (b'1');
-INSERT INTO t2_i0010 (target) VALUES (b'0');
-INSERT INTO t2_i0010 (target) VALUES (b'1');
-INSERT INTO t2_i0010 (target) VALUES (b'1010');
-INSERT INTO t2_i0010 (target) VALUES (NULL);
-SELECT 'TC-I0010' AS test_id,
+INSERT INTO t2_tc_25_reg_0010_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0010_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0010_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0010_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0010_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0010_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0010_it (target) VALUES (b'11');
+INSERT INTO t2_tc_25_reg_0010_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0010_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0010_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0010_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0010_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0010-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0010
-   WHERE id NOT IN (SELECT id FROM t2_i0010)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0010_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0010_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0010
-   WHERE id NOT IN (SELECT id FROM t1_i0010)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0010_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0010_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0010 a JOIN t2_i0010 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0010_it a JOIN t2_tc_25_reg_0010_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0011
+-- Test Case: TC-25-REG-0011-IT
 -- Type: BIT(1) -> BIT(8), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: target_position=LAST
+-- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=LAST
-DROP TABLE IF EXISTS t1_i0011, t2_i0011;
+DROP TABLE IF EXISTS t1_tc_25_reg_0011_it, t2_tc_25_reg_0011_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0011 (
+CREATE TABLE t1_tc_25_reg_0011_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   pad2 VARCHAR(20) DEFAULT 'pad2',
   target BIT(1), PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0011 (target) VALUES (b'0');
-INSERT INTO t1_i0011 (target) VALUES (b'1');
-INSERT INTO t1_i0011 (target) VALUES (b'1');
-INSERT INTO t1_i0011 (target) VALUES (b'0');
-INSERT INTO t1_i0011 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0011_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0011_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0011_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0011_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0011_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0011 MODIFY target BIT(8), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0011_it MODIFY target BIT(8), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0011 (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0011_it (target) VALUES (b'11111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0011 (target) VALUES (b'11');
+INSERT INTO t1_tc_25_reg_0011_it (target) VALUES (b'11');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0011 (target) VALUES (b'1');
-INSERT INTO t1_i0011 (target) VALUES (b'0');
-INSERT INTO t1_i0011 (target) VALUES (b'1');
-INSERT INTO t1_i0011 (target) VALUES (b'1010');
-INSERT INTO t1_i0011 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0011_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0011_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0011_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0011_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0011_it (target) VALUES (NULL);
 -- Oracle table: BIT(8)
-CREATE TABLE t2_i0011 (
+CREATE TABLE t2_tc_25_reg_0011_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   pad2 VARCHAR(20) DEFAULT 'pad2',
   target BIT(8), PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0011 (target) VALUES (b'0');
-INSERT INTO t2_i0011 (target) VALUES (b'1');
-INSERT INTO t2_i0011 (target) VALUES (b'1');
-INSERT INTO t2_i0011 (target) VALUES (b'0');
-INSERT INTO t2_i0011 (target) VALUES (NULL);
-INSERT INTO t2_i0011 (target) VALUES (b'11111111');
-INSERT INTO t2_i0011 (target) VALUES (b'11');
-INSERT INTO t2_i0011 (target) VALUES (b'1');
-INSERT INTO t2_i0011 (target) VALUES (b'0');
-INSERT INTO t2_i0011 (target) VALUES (b'1');
-INSERT INTO t2_i0011 (target) VALUES (b'1010');
-INSERT INTO t2_i0011 (target) VALUES (NULL);
-SELECT 'TC-I0011' AS test_id,
+INSERT INTO t2_tc_25_reg_0011_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0011_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0011_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0011_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0011_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0011_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0011_it (target) VALUES (b'11');
+INSERT INTO t2_tc_25_reg_0011_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0011_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0011_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0011_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0011_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0011-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0011
-   WHERE id NOT IN (SELECT id FROM t2_i0011)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0011_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0011_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0011
-   WHERE id NOT IN (SELECT id FROM t1_i0011)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0011_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0011_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0011 a JOIN t2_i0011 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0011_it a JOIN t2_tc_25_reg_0011_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0012
+-- Test Case: TC-25-REG-0012-IT
 -- Type: BIT(1) -> BIT(8), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: target_attributes=NOT_NULL_NO_DEFAULT
+-- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0012, t2_i0012;
+DROP TABLE IF EXISTS t1_tc_25_reg_0012_it, t2_tc_25_reg_0012_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0012 (
+CREATE TABLE t1_tc_25_reg_0012_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(1) NOT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0012 (target) VALUES (b'0');
-INSERT INTO t1_i0012 (target) VALUES (b'1');
-INSERT INTO t1_i0012 (target) VALUES (b'1');
-INSERT INTO t1_i0012 (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0012_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0012_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0012_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0012_it (target) VALUES (b'0');
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0012 MODIFY target BIT(8) NOT NULL, ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0012_it MODIFY target BIT(8) NOT NULL, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0012 (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0012_it (target) VALUES (b'11111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0012 (target) VALUES (b'11');
+INSERT INTO t1_tc_25_reg_0012_it (target) VALUES (b'11');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0012 (target) VALUES (b'1');
-INSERT INTO t1_i0012 (target) VALUES (b'0');
-INSERT INTO t1_i0012 (target) VALUES (b'1');
-INSERT INTO t1_i0012 (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0012_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0012_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0012_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0012_it (target) VALUES (b'1010');
 -- Oracle table: BIT(8)
-CREATE TABLE t2_i0012 (
+CREATE TABLE t2_tc_25_reg_0012_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8) NOT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0012 (target) VALUES (b'0');
-INSERT INTO t2_i0012 (target) VALUES (b'1');
-INSERT INTO t2_i0012 (target) VALUES (b'1');
-INSERT INTO t2_i0012 (target) VALUES (b'0');
-INSERT INTO t2_i0012 (target) VALUES (b'11111111');
-INSERT INTO t2_i0012 (target) VALUES (b'11');
-INSERT INTO t2_i0012 (target) VALUES (b'1');
-INSERT INTO t2_i0012 (target) VALUES (b'0');
-INSERT INTO t2_i0012 (target) VALUES (b'1');
-INSERT INTO t2_i0012 (target) VALUES (b'1010');
-SELECT 'TC-I0012' AS test_id,
+INSERT INTO t2_tc_25_reg_0012_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0012_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0012_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0012_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0012_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0012_it (target) VALUES (b'11');
+INSERT INTO t2_tc_25_reg_0012_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0012_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0012_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0012_it (target) VALUES (b'1010');
+SELECT 'TC-25-REG-0012-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0012
-   WHERE id NOT IN (SELECT id FROM t2_i0012)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0012_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0012_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0012
-   WHERE id NOT IN (SELECT id FROM t1_i0012)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0012_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0012_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0012 a JOIN t2_i0012 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0012_it a JOIN t2_tc_25_reg_0012_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0013
+-- Test Case: TC-25-REG-0013-IT
 -- Type: BIT(1) -> BIT(8), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: target_attributes=CONSTANT_DEFAULT
+-- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=CONSTANT_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0013, t2_i0013;
+DROP TABLE IF EXISTS t1_tc_25_reg_0013_it, t2_tc_25_reg_0013_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0013 (
+CREATE TABLE t1_tc_25_reg_0013_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(1) DEFAULT b'0',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0013 (target) VALUES (b'0');
-INSERT INTO t1_i0013 (target) VALUES (b'1');
-INSERT INTO t1_i0013 (target) VALUES (b'1');
-INSERT INTO t1_i0013 (target) VALUES (b'0');
-INSERT INTO t1_i0013 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0013_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0013_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0013_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0013_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0013_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0013 MODIFY target BIT(8) DEFAULT b'0', ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0013_it MODIFY target BIT(8) DEFAULT b'0', ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0013 (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0013_it (target) VALUES (b'11111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0013 (target) VALUES (b'11');
+INSERT INTO t1_tc_25_reg_0013_it (target) VALUES (b'11');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0013 (target) VALUES (b'1');
-INSERT INTO t1_i0013 (target) VALUES (b'0');
-INSERT INTO t1_i0013 (target) VALUES (b'1');
-INSERT INTO t1_i0013 (target) VALUES (b'1010');
-INSERT INTO t1_i0013 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0013_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0013_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0013_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0013_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0013_it (target) VALUES (NULL);
 -- Oracle table: BIT(8)
-CREATE TABLE t2_i0013 (
+CREATE TABLE t2_tc_25_reg_0013_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8) DEFAULT b'0',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0013 (target) VALUES (b'0');
-INSERT INTO t2_i0013 (target) VALUES (b'1');
-INSERT INTO t2_i0013 (target) VALUES (b'1');
-INSERT INTO t2_i0013 (target) VALUES (b'0');
-INSERT INTO t2_i0013 (target) VALUES (NULL);
-INSERT INTO t2_i0013 (target) VALUES (b'11111111');
-INSERT INTO t2_i0013 (target) VALUES (b'11');
-INSERT INTO t2_i0013 (target) VALUES (b'1');
-INSERT INTO t2_i0013 (target) VALUES (b'0');
-INSERT INTO t2_i0013 (target) VALUES (b'1');
-INSERT INTO t2_i0013 (target) VALUES (b'1010');
-INSERT INTO t2_i0013 (target) VALUES (NULL);
-SELECT 'TC-I0013' AS test_id,
+INSERT INTO t2_tc_25_reg_0013_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0013_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0013_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0013_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0013_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0013_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0013_it (target) VALUES (b'11');
+INSERT INTO t2_tc_25_reg_0013_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0013_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0013_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0013_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0013_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0013-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0013
-   WHERE id NOT IN (SELECT id FROM t2_i0013)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0013_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0013_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0013
-   WHERE id NOT IN (SELECT id FROM t1_i0013)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0013_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0013_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0013 a JOIN t2_i0013 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0013_it a JOIN t2_tc_25_reg_0013_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0014
+-- Test Case: TC-25-REG-0014-IT
 -- Type: BIT(1) -> BIT(8), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: target_attributes=NULL_DEFAULT
+-- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0014, t2_i0014;
+DROP TABLE IF EXISTS t1_tc_25_reg_0014_it, t2_tc_25_reg_0014_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0014 (
+CREATE TABLE t1_tc_25_reg_0014_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(1) DEFAULT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0014 (target) VALUES (b'0');
-INSERT INTO t1_i0014 (target) VALUES (b'1');
-INSERT INTO t1_i0014 (target) VALUES (b'1');
-INSERT INTO t1_i0014 (target) VALUES (b'0');
-INSERT INTO t1_i0014 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0014_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0014_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0014_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0014_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0014_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0014 MODIFY target BIT(8) DEFAULT NULL, ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0014_it MODIFY target BIT(8) DEFAULT NULL, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0014 (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0014_it (target) VALUES (b'11111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0014 (target) VALUES (b'11');
+INSERT INTO t1_tc_25_reg_0014_it (target) VALUES (b'11');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0014 (target) VALUES (b'1');
-INSERT INTO t1_i0014 (target) VALUES (b'0');
-INSERT INTO t1_i0014 (target) VALUES (b'1');
-INSERT INTO t1_i0014 (target) VALUES (b'1010');
-INSERT INTO t1_i0014 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0014_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0014_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0014_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0014_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0014_it (target) VALUES (NULL);
 -- Oracle table: BIT(8)
-CREATE TABLE t2_i0014 (
+CREATE TABLE t2_tc_25_reg_0014_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8) DEFAULT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0014 (target) VALUES (b'0');
-INSERT INTO t2_i0014 (target) VALUES (b'1');
-INSERT INTO t2_i0014 (target) VALUES (b'1');
-INSERT INTO t2_i0014 (target) VALUES (b'0');
-INSERT INTO t2_i0014 (target) VALUES (NULL);
-INSERT INTO t2_i0014 (target) VALUES (b'11111111');
-INSERT INTO t2_i0014 (target) VALUES (b'11');
-INSERT INTO t2_i0014 (target) VALUES (b'1');
-INSERT INTO t2_i0014 (target) VALUES (b'0');
-INSERT INTO t2_i0014 (target) VALUES (b'1');
-INSERT INTO t2_i0014 (target) VALUES (b'1010');
-INSERT INTO t2_i0014 (target) VALUES (NULL);
-SELECT 'TC-I0014' AS test_id,
+INSERT INTO t2_tc_25_reg_0014_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0014_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0014_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0014_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0014_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0014_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0014_it (target) VALUES (b'11');
+INSERT INTO t2_tc_25_reg_0014_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0014_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0014_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0014_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0014_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0014-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0014
-   WHERE id NOT IN (SELECT id FROM t2_i0014)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0014_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0014_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0014
-   WHERE id NOT IN (SELECT id FROM t1_i0014)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0014_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0014_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0014 a JOIN t2_i0014 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0014_it a JOIN t2_tc_25_reg_0014_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0015
+-- Test Case: TC-25-REG-0015-IT
 -- Type: BIT(1) -> BIT(8), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: target_attributes=NOT_NULL_DEFAULT
+-- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0015, t2_i0015;
+DROP TABLE IF EXISTS t1_tc_25_reg_0015_it, t2_tc_25_reg_0015_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0015 (
+CREATE TABLE t1_tc_25_reg_0015_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(1) NOT NULL DEFAULT b'0',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0015 (target) VALUES (b'0');
-INSERT INTO t1_i0015 (target) VALUES (b'1');
-INSERT INTO t1_i0015 (target) VALUES (b'1');
-INSERT INTO t1_i0015 (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0015_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0015_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0015_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0015_it (target) VALUES (b'0');
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0015 MODIFY target BIT(8) NOT NULL DEFAULT b'0', ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0015_it MODIFY target BIT(8) NOT NULL DEFAULT b'0', ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0015 (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0015_it (target) VALUES (b'11111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0015 (target) VALUES (b'11');
+INSERT INTO t1_tc_25_reg_0015_it (target) VALUES (b'11');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0015 (target) VALUES (b'1');
-INSERT INTO t1_i0015 (target) VALUES (b'0');
-INSERT INTO t1_i0015 (target) VALUES (b'1');
-INSERT INTO t1_i0015 (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0015_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0015_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0015_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0015_it (target) VALUES (b'1010');
 -- Oracle table: BIT(8)
-CREATE TABLE t2_i0015 (
+CREATE TABLE t2_tc_25_reg_0015_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8) NOT NULL DEFAULT b'0',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0015 (target) VALUES (b'0');
-INSERT INTO t2_i0015 (target) VALUES (b'1');
-INSERT INTO t2_i0015 (target) VALUES (b'1');
-INSERT INTO t2_i0015 (target) VALUES (b'0');
-INSERT INTO t2_i0015 (target) VALUES (b'11111111');
-INSERT INTO t2_i0015 (target) VALUES (b'11');
-INSERT INTO t2_i0015 (target) VALUES (b'1');
-INSERT INTO t2_i0015 (target) VALUES (b'0');
-INSERT INTO t2_i0015 (target) VALUES (b'1');
-INSERT INTO t2_i0015 (target) VALUES (b'1010');
-SELECT 'TC-I0015' AS test_id,
+INSERT INTO t2_tc_25_reg_0015_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0015_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0015_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0015_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0015_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0015_it (target) VALUES (b'11');
+INSERT INTO t2_tc_25_reg_0015_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0015_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0015_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0015_it (target) VALUES (b'1010');
+SELECT 'TC-25-REG-0015-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0015
-   WHERE id NOT IN (SELECT id FROM t2_i0015)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0015_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0015_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0015
-   WHERE id NOT IN (SELECT id FROM t1_i0015)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0015_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0015_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0015 a JOIN t2_i0015 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0015_it a JOIN t2_tc_25_reg_0015_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0016
+-- Test Case: TC-25-REG-0016-IT
 -- Type: BIT(1) -> BIT(8), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: target_attributes=INVISIBLE
+-- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=INVISIBLE, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0016, t2_i0016;
+DROP TABLE IF EXISTS t1_tc_25_reg_0016_it, t2_tc_25_reg_0016_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0016 (
+CREATE TABLE t1_tc_25_reg_0016_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(1) INVISIBLE,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0016 (target) VALUES (b'0');
-INSERT INTO t1_i0016 (target) VALUES (b'1');
-INSERT INTO t1_i0016 (target) VALUES (b'1');
-INSERT INTO t1_i0016 (target) VALUES (b'0');
-INSERT INTO t1_i0016 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0016_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0016_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0016_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0016_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0016_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0016 MODIFY target BIT(8) INVISIBLE, ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0016_it MODIFY target BIT(8) INVISIBLE, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0016 (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0016_it (target) VALUES (b'11111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0016 (target) VALUES (b'11');
+INSERT INTO t1_tc_25_reg_0016_it (target) VALUES (b'11');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0016 (target) VALUES (b'1');
-INSERT INTO t1_i0016 (target) VALUES (b'0');
-INSERT INTO t1_i0016 (target) VALUES (b'1');
-INSERT INTO t1_i0016 (target) VALUES (b'1010');
-INSERT INTO t1_i0016 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0016_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0016_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0016_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0016_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0016_it (target) VALUES (NULL);
 -- Oracle table: BIT(8)
-CREATE TABLE t2_i0016 (
+CREATE TABLE t2_tc_25_reg_0016_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8) INVISIBLE,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0016 (target) VALUES (b'0');
-INSERT INTO t2_i0016 (target) VALUES (b'1');
-INSERT INTO t2_i0016 (target) VALUES (b'1');
-INSERT INTO t2_i0016 (target) VALUES (b'0');
-INSERT INTO t2_i0016 (target) VALUES (NULL);
-INSERT INTO t2_i0016 (target) VALUES (b'11111111');
-INSERT INTO t2_i0016 (target) VALUES (b'11');
-INSERT INTO t2_i0016 (target) VALUES (b'1');
-INSERT INTO t2_i0016 (target) VALUES (b'0');
-INSERT INTO t2_i0016 (target) VALUES (b'1');
-INSERT INTO t2_i0016 (target) VALUES (b'1010');
-INSERT INTO t2_i0016 (target) VALUES (NULL);
-SELECT 'TC-I0016' AS test_id,
+INSERT INTO t2_tc_25_reg_0016_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0016_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0016_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0016_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0016_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0016_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0016_it (target) VALUES (b'11');
+INSERT INTO t2_tc_25_reg_0016_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0016_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0016_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0016_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0016_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0016-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0016
-   WHERE id NOT IN (SELECT id FROM t2_i0016)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0016_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0016_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0016
-   WHERE id NOT IN (SELECT id FROM t1_i0016)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0016_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0016_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0016 a JOIN t2_i0016 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0016_it a JOIN t2_tc_25_reg_0016_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0017
+-- Test Case: TC-25-REG-0017-IT
 -- Type: BIT(1) -> BIT(8), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: data_scale=S0
+-- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0017, t2_i0017;
+DROP TABLE IF EXISTS t1_tc_25_reg_0017_it, t2_tc_25_reg_0017_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0017 (
+CREATE TABLE t1_tc_25_reg_0017_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(1),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0017 MODIFY target BIT(8), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0017_it MODIFY target BIT(8), ALGORITHM=instant;
 -- Oracle table: BIT(8)
-CREATE TABLE t2_i0017 (
+CREATE TABLE t2_tc_25_reg_0017_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-SELECT 'TC-I0017' AS test_id,
+SELECT 'TC-25-REG-0017-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0017
-   WHERE id NOT IN (SELECT id FROM t2_i0017)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0017_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0017_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0017
-   WHERE id NOT IN (SELECT id FROM t1_i0017)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0017_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0017_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0017 a JOIN t2_i0017 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0017_it a JOIN t2_tc_25_reg_0017_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0018
+-- Test Case: TC-25-REG-0018-IT
 -- Type: BIT(1) -> BIT(8), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: data_scale=S1
+-- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S1, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0018, t2_i0018;
+DROP TABLE IF EXISTS t1_tc_25_reg_0018_it, t2_tc_25_reg_0018_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0018 (
+CREATE TABLE t1_tc_25_reg_0018_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(1),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0018 (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0018_it (target) VALUES (b'0');
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0018 MODIFY target BIT(8), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0018_it MODIFY target BIT(8), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0018 (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0018_it (target) VALUES (b'11111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0018 (target) VALUES (b'11');
+INSERT INTO t1_tc_25_reg_0018_it (target) VALUES (b'11');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0018 (target) VALUES (b'1');
-INSERT INTO t1_i0018 (target) VALUES (b'0');
-INSERT INTO t1_i0018 (target) VALUES (b'1');
-INSERT INTO t1_i0018 (target) VALUES (b'1010');
-INSERT INTO t1_i0018 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0018_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0018_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0018_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0018_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0018_it (target) VALUES (NULL);
 -- Oracle table: BIT(8)
-CREATE TABLE t2_i0018 (
+CREATE TABLE t2_tc_25_reg_0018_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0018 (target) VALUES (b'0');
-INSERT INTO t2_i0018 (target) VALUES (b'11111111');
-INSERT INTO t2_i0018 (target) VALUES (b'11');
-INSERT INTO t2_i0018 (target) VALUES (b'1');
-INSERT INTO t2_i0018 (target) VALUES (b'0');
-INSERT INTO t2_i0018 (target) VALUES (b'1');
-INSERT INTO t2_i0018 (target) VALUES (b'1010');
-INSERT INTO t2_i0018 (target) VALUES (NULL);
-SELECT 'TC-I0018' AS test_id,
+INSERT INTO t2_tc_25_reg_0018_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0018_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0018_it (target) VALUES (b'11');
+INSERT INTO t2_tc_25_reg_0018_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0018_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0018_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0018_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0018_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0018-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0018
-   WHERE id NOT IN (SELECT id FROM t2_i0018)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0018_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0018_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0018
-   WHERE id NOT IN (SELECT id FROM t1_i0018)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0018_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0018_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0018 a JOIN t2_i0018 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0018_it a JOIN t2_tc_25_reg_0018_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0019
+-- Test Case: TC-25-REG-0019-IT
 -- Type: BIT(1) -> BIT(8), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: data_distribution=UNIFORM
+-- Transition ID: BIT-01
 -- Factors: data_distribution=UNIFORM, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0019, t2_i0019;
+DROP TABLE IF EXISTS t1_tc_25_reg_0019_it, t2_tc_25_reg_0019_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0019 (
+CREATE TABLE t1_tc_25_reg_0019_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(1),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0019 (target) VALUES (b'0');
-INSERT INTO t1_i0019 (target) VALUES (b'1');
-INSERT INTO t1_i0019 (target) VALUES (b'1');
-INSERT INTO t1_i0019 (target) VALUES (b'0');
-INSERT INTO t1_i0019 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0019_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0019_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0019_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0019_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0019_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0019 MODIFY target BIT(8), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0019_it MODIFY target BIT(8), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0019 (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0019_it (target) VALUES (b'11111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0019 (target) VALUES (b'11');
+INSERT INTO t1_tc_25_reg_0019_it (target) VALUES (b'11');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0019 (target) VALUES (b'1');
-INSERT INTO t1_i0019 (target) VALUES (b'0');
-INSERT INTO t1_i0019 (target) VALUES (b'1');
-INSERT INTO t1_i0019 (target) VALUES (b'1010');
-INSERT INTO t1_i0019 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0019_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0019_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0019_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0019_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0019_it (target) VALUES (NULL);
 -- Oracle table: BIT(8)
-CREATE TABLE t2_i0019 (
+CREATE TABLE t2_tc_25_reg_0019_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0019 (target) VALUES (b'0');
-INSERT INTO t2_i0019 (target) VALUES (b'1');
-INSERT INTO t2_i0019 (target) VALUES (b'1');
-INSERT INTO t2_i0019 (target) VALUES (b'0');
-INSERT INTO t2_i0019 (target) VALUES (NULL);
-INSERT INTO t2_i0019 (target) VALUES (b'11111111');
-INSERT INTO t2_i0019 (target) VALUES (b'11');
-INSERT INTO t2_i0019 (target) VALUES (b'1');
-INSERT INTO t2_i0019 (target) VALUES (b'0');
-INSERT INTO t2_i0019 (target) VALUES (b'1');
-INSERT INTO t2_i0019 (target) VALUES (b'1010');
-INSERT INTO t2_i0019 (target) VALUES (NULL);
-SELECT 'TC-I0019' AS test_id,
+INSERT INTO t2_tc_25_reg_0019_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0019_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0019_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0019_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0019_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0019_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0019_it (target) VALUES (b'11');
+INSERT INTO t2_tc_25_reg_0019_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0019_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0019_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0019_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0019_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0019-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0019
-   WHERE id NOT IN (SELECT id FROM t2_i0019)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0019_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0019_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0019
-   WHERE id NOT IN (SELECT id FROM t1_i0019)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0019_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0019_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0019 a JOIN t2_i0019 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0019_it a JOIN t2_tc_25_reg_0019_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0020
+-- Test Case: TC-25-REG-0020-IT
 -- Type: BIT(1) -> BIT(8), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: data_distribution=MONOTONIC
+-- Transition ID: BIT-01
 -- Factors: data_distribution=MONOTONIC, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0020, t2_i0020;
+DROP TABLE IF EXISTS t1_tc_25_reg_0020_it, t2_tc_25_reg_0020_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0020 (
+CREATE TABLE t1_tc_25_reg_0020_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(1),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0020 (target) VALUES (b'0');
-INSERT INTO t1_i0020 (target) VALUES (b'1');
-INSERT INTO t1_i0020 (target) VALUES (b'1');
-INSERT INTO t1_i0020 (target) VALUES (b'0');
-INSERT INTO t1_i0020 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0020_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0020_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0020_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0020_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0020_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0020 MODIFY target BIT(8), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0020_it MODIFY target BIT(8), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0020 (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0020_it (target) VALUES (b'11111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0020 (target) VALUES (b'11');
+INSERT INTO t1_tc_25_reg_0020_it (target) VALUES (b'11');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0020 (target) VALUES (b'1');
-INSERT INTO t1_i0020 (target) VALUES (b'0');
-INSERT INTO t1_i0020 (target) VALUES (b'1');
-INSERT INTO t1_i0020 (target) VALUES (b'1010');
-INSERT INTO t1_i0020 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0020_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0020_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0020_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0020_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0020_it (target) VALUES (NULL);
 -- Oracle table: BIT(8)
-CREATE TABLE t2_i0020 (
+CREATE TABLE t2_tc_25_reg_0020_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0020 (target) VALUES (b'0');
-INSERT INTO t2_i0020 (target) VALUES (b'1');
-INSERT INTO t2_i0020 (target) VALUES (b'1');
-INSERT INTO t2_i0020 (target) VALUES (b'0');
-INSERT INTO t2_i0020 (target) VALUES (NULL);
-INSERT INTO t2_i0020 (target) VALUES (b'11111111');
-INSERT INTO t2_i0020 (target) VALUES (b'11');
-INSERT INTO t2_i0020 (target) VALUES (b'1');
-INSERT INTO t2_i0020 (target) VALUES (b'0');
-INSERT INTO t2_i0020 (target) VALUES (b'1');
-INSERT INTO t2_i0020 (target) VALUES (b'1010');
-INSERT INTO t2_i0020 (target) VALUES (NULL);
-SELECT 'TC-I0020' AS test_id,
+INSERT INTO t2_tc_25_reg_0020_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0020_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0020_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0020_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0020_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0020_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0020_it (target) VALUES (b'11');
+INSERT INTO t2_tc_25_reg_0020_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0020_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0020_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0020_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0020_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0020-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0020
-   WHERE id NOT IN (SELECT id FROM t2_i0020)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0020_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0020_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0020
-   WHERE id NOT IN (SELECT id FROM t1_i0020)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0020_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0020_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0020 a JOIN t2_i0020 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0020_it a JOIN t2_tc_25_reg_0020_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0021
+-- Test Case: TC-25-REG-0021-IT
 -- Type: BIT(1) -> BIT(8), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: null_ratio=ZERO
+-- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=ZERO, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0021, t2_i0021;
+DROP TABLE IF EXISTS t1_tc_25_reg_0021_it, t2_tc_25_reg_0021_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0021 (
+CREATE TABLE t1_tc_25_reg_0021_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(1),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0021 (target) VALUES (b'0');
-INSERT INTO t1_i0021 (target) VALUES (b'1');
-INSERT INTO t1_i0021 (target) VALUES (b'1');
-INSERT INTO t1_i0021 (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0021_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0021_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0021_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0021_it (target) VALUES (b'0');
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0021 MODIFY target BIT(8), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0021_it MODIFY target BIT(8), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0021 (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0021_it (target) VALUES (b'11111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0021 (target) VALUES (b'11');
+INSERT INTO t1_tc_25_reg_0021_it (target) VALUES (b'11');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0021 (target) VALUES (b'1');
-INSERT INTO t1_i0021 (target) VALUES (b'0');
-INSERT INTO t1_i0021 (target) VALUES (b'1');
-INSERT INTO t1_i0021 (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0021_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0021_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0021_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0021_it (target) VALUES (b'1010');
 -- Oracle table: BIT(8)
-CREATE TABLE t2_i0021 (
+CREATE TABLE t2_tc_25_reg_0021_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0021 (target) VALUES (b'0');
-INSERT INTO t2_i0021 (target) VALUES (b'1');
-INSERT INTO t2_i0021 (target) VALUES (b'1');
-INSERT INTO t2_i0021 (target) VALUES (b'0');
-INSERT INTO t2_i0021 (target) VALUES (b'11111111');
-INSERT INTO t2_i0021 (target) VALUES (b'11');
-INSERT INTO t2_i0021 (target) VALUES (b'1');
-INSERT INTO t2_i0021 (target) VALUES (b'0');
-INSERT INTO t2_i0021 (target) VALUES (b'1');
-INSERT INTO t2_i0021 (target) VALUES (b'1010');
-SELECT 'TC-I0021' AS test_id,
+INSERT INTO t2_tc_25_reg_0021_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0021_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0021_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0021_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0021_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0021_it (target) VALUES (b'11');
+INSERT INTO t2_tc_25_reg_0021_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0021_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0021_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0021_it (target) VALUES (b'1010');
+SELECT 'TC-25-REG-0021-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0021
-   WHERE id NOT IN (SELECT id FROM t2_i0021)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0021_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0021_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0021
-   WHERE id NOT IN (SELECT id FROM t1_i0021)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0021_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0021_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0021 a JOIN t2_i0021 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0021_it a JOIN t2_tc_25_reg_0021_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0022
+-- Test Case: TC-25-REG-0022-IT
 -- Type: BIT(1) -> BIT(8), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: null_ratio=SINGLE
+-- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=SINGLE, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0022, t2_i0022;
+DROP TABLE IF EXISTS t1_tc_25_reg_0022_it, t2_tc_25_reg_0022_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0022 (
+CREATE TABLE t1_tc_25_reg_0022_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(1),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0022 (target) VALUES (b'0');
-INSERT INTO t1_i0022 (target) VALUES (b'1');
-INSERT INTO t1_i0022 (target) VALUES (b'1');
-INSERT INTO t1_i0022 (target) VALUES (b'0');
-INSERT INTO t1_i0022 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0022_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0022_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0022_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0022_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0022_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0022 MODIFY target BIT(8), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0022_it MODIFY target BIT(8), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0022 (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0022_it (target) VALUES (b'11111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0022 (target) VALUES (b'11');
+INSERT INTO t1_tc_25_reg_0022_it (target) VALUES (b'11');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0022 (target) VALUES (b'1');
-INSERT INTO t1_i0022 (target) VALUES (b'0');
-INSERT INTO t1_i0022 (target) VALUES (b'1');
-INSERT INTO t1_i0022 (target) VALUES (b'1010');
-INSERT INTO t1_i0022 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0022_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0022_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0022_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0022_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0022_it (target) VALUES (NULL);
 -- Oracle table: BIT(8)
-CREATE TABLE t2_i0022 (
+CREATE TABLE t2_tc_25_reg_0022_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0022 (target) VALUES (b'0');
-INSERT INTO t2_i0022 (target) VALUES (b'1');
-INSERT INTO t2_i0022 (target) VALUES (b'1');
-INSERT INTO t2_i0022 (target) VALUES (b'0');
-INSERT INTO t2_i0022 (target) VALUES (NULL);
-INSERT INTO t2_i0022 (target) VALUES (b'11111111');
-INSERT INTO t2_i0022 (target) VALUES (b'11');
-INSERT INTO t2_i0022 (target) VALUES (b'1');
-INSERT INTO t2_i0022 (target) VALUES (b'0');
-INSERT INTO t2_i0022 (target) VALUES (b'1');
-INSERT INTO t2_i0022 (target) VALUES (b'1010');
-INSERT INTO t2_i0022 (target) VALUES (NULL);
-SELECT 'TC-I0022' AS test_id,
+INSERT INTO t2_tc_25_reg_0022_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0022_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0022_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0022_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0022_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0022_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0022_it (target) VALUES (b'11');
+INSERT INTO t2_tc_25_reg_0022_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0022_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0022_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0022_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0022_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0022-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0022
-   WHERE id NOT IN (SELECT id FROM t2_i0022)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0022_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0022_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0022
-   WHERE id NOT IN (SELECT id FROM t1_i0022)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0022_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0022_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0022 a JOIN t2_i0022 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0022_it a JOIN t2_tc_25_reg_0022_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0023
+-- Test Case: TC-25-REG-0023-IT
 -- Type: BIT(1) -> BIT(8), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: null_ratio=ALL
+-- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=ALL, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0023, t2_i0023;
+DROP TABLE IF EXISTS t1_tc_25_reg_0023_it, t2_tc_25_reg_0023_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0023 (
+CREATE TABLE t1_tc_25_reg_0023_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(1),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0023 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0023_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0023 MODIFY target BIT(8), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0023_it MODIFY target BIT(8), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0023 (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0023_it (target) VALUES (b'11111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0023 (target) VALUES (b'11');
+INSERT INTO t1_tc_25_reg_0023_it (target) VALUES (b'11');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0023 (target) VALUES (b'1');
-INSERT INTO t1_i0023 (target) VALUES (b'0');
-INSERT INTO t1_i0023 (target) VALUES (b'1');
-INSERT INTO t1_i0023 (target) VALUES (b'1010');
-INSERT INTO t1_i0023 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0023_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0023_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0023_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0023_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0023_it (target) VALUES (NULL);
 -- Oracle table: BIT(8)
-CREATE TABLE t2_i0023 (
+CREATE TABLE t2_tc_25_reg_0023_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0023 (target) VALUES (NULL);
-INSERT INTO t2_i0023 (target) VALUES (b'11111111');
-INSERT INTO t2_i0023 (target) VALUES (b'11');
-INSERT INTO t2_i0023 (target) VALUES (b'1');
-INSERT INTO t2_i0023 (target) VALUES (b'0');
-INSERT INTO t2_i0023 (target) VALUES (b'1');
-INSERT INTO t2_i0023 (target) VALUES (b'1010');
-INSERT INTO t2_i0023 (target) VALUES (NULL);
-SELECT 'TC-I0023' AS test_id,
+INSERT INTO t2_tc_25_reg_0023_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0023_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0023_it (target) VALUES (b'11');
+INSERT INTO t2_tc_25_reg_0023_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0023_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0023_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0023_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0023_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0023-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0023
-   WHERE id NOT IN (SELECT id FROM t2_i0023)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0023_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0023_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0023
-   WHERE id NOT IN (SELECT id FROM t1_i0023)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0023_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0023_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0023 a JOIN t2_i0023 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0023_it a JOIN t2_tc_25_reg_0023_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0024
+-- Test Case: TC-25-REG-0024-IT
 -- Type: BIT(1) -> BIT(8), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: sql_mode=NON_STRICT
+-- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=NON_STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0024, t2_i0024;
+DROP TABLE IF EXISTS t1_tc_25_reg_0024_it, t2_tc_25_reg_0024_it;
 SET SESSION sql_mode = '';
-CREATE TABLE t1_i0024 (
+CREATE TABLE t1_tc_25_reg_0024_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(1),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0024 (target) VALUES (b'0');
-INSERT INTO t1_i0024 (target) VALUES (b'1');
-INSERT INTO t1_i0024 (target) VALUES (b'1');
-INSERT INTO t1_i0024 (target) VALUES (b'0');
-INSERT INTO t1_i0024 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0024_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0024_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0024_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0024_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0024_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0024 MODIFY target BIT(8), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0024_it MODIFY target BIT(8), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0024 (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0024_it (target) VALUES (b'11111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0024 (target) VALUES (b'11');
+INSERT INTO t1_tc_25_reg_0024_it (target) VALUES (b'11');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0024 (target) VALUES (b'1');
-INSERT INTO t1_i0024 (target) VALUES (b'0');
-INSERT INTO t1_i0024 (target) VALUES (b'1');
-INSERT INTO t1_i0024 (target) VALUES (b'1010');
-INSERT INTO t1_i0024 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0024_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0024_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0024_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0024_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0024_it (target) VALUES (NULL);
 -- Oracle table: BIT(8)
-CREATE TABLE t2_i0024 (
+CREATE TABLE t2_tc_25_reg_0024_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0024 (target) VALUES (b'0');
-INSERT INTO t2_i0024 (target) VALUES (b'1');
-INSERT INTO t2_i0024 (target) VALUES (b'1');
-INSERT INTO t2_i0024 (target) VALUES (b'0');
-INSERT INTO t2_i0024 (target) VALUES (NULL);
-INSERT INTO t2_i0024 (target) VALUES (b'11111111');
-INSERT INTO t2_i0024 (target) VALUES (b'11');
-INSERT INTO t2_i0024 (target) VALUES (b'1');
-INSERT INTO t2_i0024 (target) VALUES (b'0');
-INSERT INTO t2_i0024 (target) VALUES (b'1');
-INSERT INTO t2_i0024 (target) VALUES (b'1010');
-INSERT INTO t2_i0024 (target) VALUES (NULL);
-SELECT 'TC-I0024' AS test_id,
+INSERT INTO t2_tc_25_reg_0024_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0024_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0024_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0024_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0024_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0024_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0024_it (target) VALUES (b'11');
+INSERT INTO t2_tc_25_reg_0024_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0024_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0024_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0024_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0024_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0024-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0024
-   WHERE id NOT IN (SELECT id FROM t2_i0024)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0024_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0024_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0024
-   WHERE id NOT IN (SELECT id FROM t1_i0024)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0024_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0024_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0024 a JOIN t2_i0024 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0024_it a JOIN t2_tc_25_reg_0024_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0025
+-- Test Case: TC-25-REG-0025-IT
 -- Type: BIT(1) -> BIT(8), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: KP-01
+-- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0025, t2_i0025;
+DROP TABLE IF EXISTS t1_tc_25_reg_0025_it, t2_tc_25_reg_0025_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0025 (
+CREATE TABLE t1_tc_25_reg_0025_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(1) NOT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0025 MODIFY target BIT(8) NOT NULL, ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0025_it MODIFY target BIT(8) NOT NULL, ALGORITHM=instant;
 -- Oracle table: BIT(8)
-CREATE TABLE t2_i0025 (
+CREATE TABLE t2_tc_25_reg_0025_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8) NOT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-SELECT 'TC-I0025' AS test_id,
+SELECT 'TC-25-REG-0025-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0025
-   WHERE id NOT IN (SELECT id FROM t2_i0025)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0025_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0025_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0025
-   WHERE id NOT IN (SELECT id FROM t1_i0025)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0025_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0025_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0025 a JOIN t2_i0025 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0025_it a JOIN t2_tc_25_reg_0025_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0026
+-- Test Case: TC-25-REG-0026-IT
 -- Type: BIT(1) -> BIT(8), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: KP-03
+-- Transition ID: BIT-01
 -- Factors: data_distribution=UNIFORM, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0026, t2_i0026;
+DROP TABLE IF EXISTS t1_tc_25_reg_0026_it, t2_tc_25_reg_0026_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0026 (
+CREATE TABLE t1_tc_25_reg_0026_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(1),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0026 MODIFY target BIT(8), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0026_it MODIFY target BIT(8), ALGORITHM=instant;
 -- Oracle table: BIT(8)
-CREATE TABLE t2_i0026 (
+CREATE TABLE t2_tc_25_reg_0026_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-SELECT 'TC-I0026' AS test_id,
+SELECT 'TC-25-REG-0026-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0026
-   WHERE id NOT IN (SELECT id FROM t2_i0026)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0026_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0026_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0026
-   WHERE id NOT IN (SELECT id FROM t1_i0026)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0026_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0026_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0026 a JOIN t2_i0026 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0026_it a JOIN t2_tc_25_reg_0026_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0027
+-- Test Case: TC-25-REG-0027-IT
 -- Type: BIT(1) -> BIT(8), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: KP-04
+-- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0027, t2_i0027;
+DROP TABLE IF EXISTS t1_tc_25_reg_0027_it, t2_tc_25_reg_0027_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0027 (
+CREATE TABLE t1_tc_25_reg_0027_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(1) NOT NULL DEFAULT b'0',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0027 MODIFY target BIT(8) NOT NULL DEFAULT b'0', ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0027_it MODIFY target BIT(8) NOT NULL DEFAULT b'0', ALGORITHM=instant;
 -- Oracle table: BIT(8)
-CREATE TABLE t2_i0027 (
+CREATE TABLE t2_tc_25_reg_0027_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8) NOT NULL DEFAULT b'0',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-SELECT 'TC-I0027' AS test_id,
+SELECT 'TC-25-REG-0027-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0027
-   WHERE id NOT IN (SELECT id FROM t2_i0027)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0027_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0027_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0027
-   WHERE id NOT IN (SELECT id FROM t1_i0027)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0027_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0027_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0027 a JOIN t2_i0027 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0027_it a JOIN t2_tc_25_reg_0027_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0028
+-- Test Case: TC-25-REG-0028-IT
 -- Type: BIT(1) -> BIT(8), Algorithm: instant, Expected: FAIL
+-- Varied factor: KP-05
+-- Transition ID: BIT-01
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=COMPOSITE_PK, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=FIRST
-DROP TABLE IF EXISTS t1_i0028, t2_i0028;
+DROP TABLE IF EXISTS t1_tc_25_reg_0028_it, t2_tc_25_reg_0028_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0028 (
+CREATE TABLE t1_tc_25_reg_0028_it (
   target BIT(1),
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id, target), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0028 (target) VALUES (b'0');
-INSERT INTO t1_i0028 (target) VALUES (b'1');
-INSERT INTO t1_i0028 (target) VALUES (b'1');
-INSERT INTO t1_i0028 (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0028_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0028_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0028_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0028_it (target) VALUES (b'0');
 -- Expected: ALTER FAILS (table keeps old type)
-ALTER TABLE t1_i0028 MODIFY target BIT(8), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0028_it MODIFY target BIT(8), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0028 (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0028_it (target) VALUES (b'11111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0028 (target) VALUES (b'11');
+INSERT INTO t1_tc_25_reg_0028_it (target) VALUES (b'11');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0028 (target) VALUES (b'1');
-INSERT INTO t1_i0028 (target) VALUES (b'0');
-INSERT INTO t1_i0028 (target) VALUES (b'1');
-INSERT INTO t1_i0028 (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0028_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0028_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0028_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0028_it (target) VALUES (b'1010');
 -- Oracle table: BIT(1)
-CREATE TABLE t2_i0028 (
+CREATE TABLE t2_tc_25_reg_0028_it (
   target BIT(1),
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id, target), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0028 (target) VALUES (b'0');
-INSERT INTO t2_i0028 (target) VALUES (b'1');
-INSERT INTO t2_i0028 (target) VALUES (b'1');
-INSERT INTO t2_i0028 (target) VALUES (b'0');
-INSERT INTO t2_i0028 (target) VALUES (b'11111111');
-INSERT INTO t2_i0028 (target) VALUES (b'11');
-INSERT INTO t2_i0028 (target) VALUES (b'1');
-INSERT INTO t2_i0028 (target) VALUES (b'0');
-INSERT INTO t2_i0028 (target) VALUES (b'1');
-INSERT INTO t2_i0028 (target) VALUES (b'1010');
-SELECT 'TC-I0028' AS test_id,
+INSERT INTO t2_tc_25_reg_0028_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0028_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0028_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0028_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0028_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0028_it (target) VALUES (b'11');
+INSERT INTO t2_tc_25_reg_0028_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0028_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0028_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0028_it (target) VALUES (b'1010');
+SELECT 'TC-25-REG-0028-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0028
-   WHERE id NOT IN (SELECT id FROM t2_i0028)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0028_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0028_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0028
-   WHERE id NOT IN (SELECT id FROM t1_i0028)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0028_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0028_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0028 a JOIN t2_i0028 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0028_it a JOIN t2_tc_25_reg_0028_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-IA0029
+-- Test Case: TC-25-ATR-0001-IT
 -- Column attribute preservation: COMMENT
 -- Type: BIT(1) -> BIT(8), Algorithm: instant
-DROP TABLE IF EXISTS t1_tc_ia0029, t2_tc_ia0029;
-CREATE TABLE t1_tc_ia0029 (
+DROP TABLE IF EXISTS t1_tc_25_atr_0001_it, t2_tc_25_atr_0001_it;
+CREATE TABLE t1_tc_25_atr_0001_it (
   id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   target BIT(1) COMMENT 'test_comment',
   pad VARCHAR(20) DEFAULT 'pad'
 ) ENGINE=InnoDB;
-INSERT INTO t1_tc_ia0029 (target) VALUES (b'0');
-INSERT INTO t1_tc_ia0029 (target) VALUES (b'1');
-INSERT INTO t1_tc_ia0029 (target) VALUES (b'1');
-INSERT INTO t1_tc_ia0029 (target) VALUES (b'0');
-ALTER TABLE t1_tc_ia0029 MODIFY target BIT(8) COMMENT 'test_comment', ALGORITHM=instant;
-INSERT INTO t1_tc_ia0029 (target) VALUES (b'11111111');
-INSERT INTO t1_tc_ia0029 (target) VALUES (b'11');
-INSERT INTO t1_tc_ia0029 (target) VALUES (b'1');
-SELECT 'TC-IA0029' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_ia0029' AND column_name='target' AND column_comment='test_comment';
+INSERT INTO t1_tc_25_atr_0001_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_atr_0001_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_atr_0001_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_atr_0001_it (target) VALUES (b'0');
+ALTER TABLE t1_tc_25_atr_0001_it MODIFY target BIT(8) COMMENT 'test_comment', ALGORITHM=instant;
+INSERT INTO t1_tc_25_atr_0001_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_atr_0001_it (target) VALUES (b'11');
+INSERT INTO t1_tc_25_atr_0001_it (target) VALUES (b'1');
+SELECT 'TC-25-ATR-0001-IT' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_25_atr_0001_it' AND column_name='target' AND column_comment='test_comment';
 
--- Test Case: TC-I0030
+-- Test Case: TC-25-REG-0029-IT
 -- Type: BIT(8) -> BIT(16), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: BASELINE
+-- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0030, t2_i0030;
+DROP TABLE IF EXISTS t1_tc_25_reg_0029_it, t2_tc_25_reg_0029_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0030 (
+CREATE TABLE t1_tc_25_reg_0029_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0030 (target) VALUES (b'0');
-INSERT INTO t1_i0030 (target) VALUES (b'11111111');
-INSERT INTO t1_i0030 (target) VALUES (b'1');
-INSERT INTO t1_i0030 (target) VALUES (b'0');
-INSERT INTO t1_i0030 (target) VALUES (b'1010');
-INSERT INTO t1_i0030 (target) VALUES (b'11111111');
-INSERT INTO t1_i0030 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0029_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0029_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0029_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0029_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0029_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0029_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0029_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0030 MODIFY target BIT(16), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0029_it MODIFY target BIT(16), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0030 (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0029_it (target) VALUES (b'1111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0030 (target) VALUES (b'111111111');
+INSERT INTO t1_tc_25_reg_0029_it (target) VALUES (b'111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0030 (target) VALUES (b'1');
-INSERT INTO t1_i0030 (target) VALUES (b'0');
-INSERT INTO t1_i0030 (target) VALUES (b'11111111');
-INSERT INTO t1_i0030 (target) VALUES (b'1010');
-INSERT INTO t1_i0030 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0029_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0029_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0029_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0029_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0029_it (target) VALUES (NULL);
 -- Oracle table: BIT(16)
-CREATE TABLE t2_i0030 (
+CREATE TABLE t2_tc_25_reg_0029_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0030 (target) VALUES (b'0');
-INSERT INTO t2_i0030 (target) VALUES (b'11111111');
-INSERT INTO t2_i0030 (target) VALUES (b'1');
-INSERT INTO t2_i0030 (target) VALUES (b'0');
-INSERT INTO t2_i0030 (target) VALUES (b'1010');
-INSERT INTO t2_i0030 (target) VALUES (b'11111111');
-INSERT INTO t2_i0030 (target) VALUES (NULL);
-INSERT INTO t2_i0030 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0030 (target) VALUES (b'111111111');
-INSERT INTO t2_i0030 (target) VALUES (b'1');
-INSERT INTO t2_i0030 (target) VALUES (b'0');
-INSERT INTO t2_i0030 (target) VALUES (b'11111111');
-INSERT INTO t2_i0030 (target) VALUES (b'1010');
-INSERT INTO t2_i0030 (target) VALUES (NULL);
-SELECT 'TC-I0030' AS test_id,
+INSERT INTO t2_tc_25_reg_0029_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0029_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0029_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0029_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0029_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0029_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0029_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0029_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0029_it (target) VALUES (b'111111111');
+INSERT INTO t2_tc_25_reg_0029_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0029_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0029_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0029_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0029_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0029-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0030
-   WHERE id NOT IN (SELECT id FROM t2_i0030)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0029_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0029_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0030
-   WHERE id NOT IN (SELECT id FROM t1_i0030)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0029_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0029_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0030 a JOIN t2_i0030 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0029_it a JOIN t2_tc_25_reg_0029_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0031
+-- Test Case: TC-25-REG-0030-IT
 -- Type: BIT(8) -> BIT(16), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: row_format=COMPACT
+-- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=COMPACT, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0031, t2_i0031;
+DROP TABLE IF EXISTS t1_tc_25_reg_0030_it, t2_tc_25_reg_0030_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0031 (
+CREATE TABLE t1_tc_25_reg_0030_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=COMPACT;
-INSERT INTO t1_i0031 (target) VALUES (b'0');
-INSERT INTO t1_i0031 (target) VALUES (b'11111111');
-INSERT INTO t1_i0031 (target) VALUES (b'1');
-INSERT INTO t1_i0031 (target) VALUES (b'0');
-INSERT INTO t1_i0031 (target) VALUES (b'1010');
-INSERT INTO t1_i0031 (target) VALUES (b'11111111');
-INSERT INTO t1_i0031 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0030_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0030_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0030_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0030_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0030_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0030_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0030_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0031 MODIFY target BIT(16), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0030_it MODIFY target BIT(16), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0031 (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0030_it (target) VALUES (b'1111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0031 (target) VALUES (b'111111111');
+INSERT INTO t1_tc_25_reg_0030_it (target) VALUES (b'111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0031 (target) VALUES (b'1');
-INSERT INTO t1_i0031 (target) VALUES (b'0');
-INSERT INTO t1_i0031 (target) VALUES (b'11111111');
-INSERT INTO t1_i0031 (target) VALUES (b'1010');
-INSERT INTO t1_i0031 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0030_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0030_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0030_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0030_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0030_it (target) VALUES (NULL);
 -- Oracle table: BIT(16)
-CREATE TABLE t2_i0031 (
+CREATE TABLE t2_tc_25_reg_0030_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=COMPACT;
-INSERT INTO t2_i0031 (target) VALUES (b'0');
-INSERT INTO t2_i0031 (target) VALUES (b'11111111');
-INSERT INTO t2_i0031 (target) VALUES (b'1');
-INSERT INTO t2_i0031 (target) VALUES (b'0');
-INSERT INTO t2_i0031 (target) VALUES (b'1010');
-INSERT INTO t2_i0031 (target) VALUES (b'11111111');
-INSERT INTO t2_i0031 (target) VALUES (NULL);
-INSERT INTO t2_i0031 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0031 (target) VALUES (b'111111111');
-INSERT INTO t2_i0031 (target) VALUES (b'1');
-INSERT INTO t2_i0031 (target) VALUES (b'0');
-INSERT INTO t2_i0031 (target) VALUES (b'11111111');
-INSERT INTO t2_i0031 (target) VALUES (b'1010');
-INSERT INTO t2_i0031 (target) VALUES (NULL);
-SELECT 'TC-I0031' AS test_id,
+INSERT INTO t2_tc_25_reg_0030_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0030_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0030_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0030_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0030_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0030_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0030_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0030_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0030_it (target) VALUES (b'111111111');
+INSERT INTO t2_tc_25_reg_0030_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0030_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0030_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0030_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0030_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0030-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0031
-   WHERE id NOT IN (SELECT id FROM t2_i0031)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0030_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0030_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0031
-   WHERE id NOT IN (SELECT id FROM t1_i0031)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0030_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0030_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0031 a JOIN t2_i0031 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0030_it a JOIN t2_tc_25_reg_0030_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0032
+-- Test Case: TC-25-REG-0031-IT
 -- Type: BIT(8) -> BIT(16), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: row_format=REDUNDANT
+-- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=REDUNDANT, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0032, t2_i0032;
+DROP TABLE IF EXISTS t1_tc_25_reg_0031_it, t2_tc_25_reg_0031_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0032 (
+CREATE TABLE t1_tc_25_reg_0031_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=REDUNDANT;
-INSERT INTO t1_i0032 (target) VALUES (b'0');
-INSERT INTO t1_i0032 (target) VALUES (b'11111111');
-INSERT INTO t1_i0032 (target) VALUES (b'1');
-INSERT INTO t1_i0032 (target) VALUES (b'0');
-INSERT INTO t1_i0032 (target) VALUES (b'1010');
-INSERT INTO t1_i0032 (target) VALUES (b'11111111');
-INSERT INTO t1_i0032 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0031_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0031_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0031_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0031_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0031_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0031_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0031_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0032 MODIFY target BIT(16), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0031_it MODIFY target BIT(16), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0032 (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0031_it (target) VALUES (b'1111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0032 (target) VALUES (b'111111111');
+INSERT INTO t1_tc_25_reg_0031_it (target) VALUES (b'111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0032 (target) VALUES (b'1');
-INSERT INTO t1_i0032 (target) VALUES (b'0');
-INSERT INTO t1_i0032 (target) VALUES (b'11111111');
-INSERT INTO t1_i0032 (target) VALUES (b'1010');
-INSERT INTO t1_i0032 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0031_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0031_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0031_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0031_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0031_it (target) VALUES (NULL);
 -- Oracle table: BIT(16)
-CREATE TABLE t2_i0032 (
+CREATE TABLE t2_tc_25_reg_0031_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=REDUNDANT;
-INSERT INTO t2_i0032 (target) VALUES (b'0');
-INSERT INTO t2_i0032 (target) VALUES (b'11111111');
-INSERT INTO t2_i0032 (target) VALUES (b'1');
-INSERT INTO t2_i0032 (target) VALUES (b'0');
-INSERT INTO t2_i0032 (target) VALUES (b'1010');
-INSERT INTO t2_i0032 (target) VALUES (b'11111111');
-INSERT INTO t2_i0032 (target) VALUES (NULL);
-INSERT INTO t2_i0032 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0032 (target) VALUES (b'111111111');
-INSERT INTO t2_i0032 (target) VALUES (b'1');
-INSERT INTO t2_i0032 (target) VALUES (b'0');
-INSERT INTO t2_i0032 (target) VALUES (b'11111111');
-INSERT INTO t2_i0032 (target) VALUES (b'1010');
-INSERT INTO t2_i0032 (target) VALUES (NULL);
-SELECT 'TC-I0032' AS test_id,
+INSERT INTO t2_tc_25_reg_0031_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0031_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0031_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0031_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0031_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0031_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0031_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0031_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0031_it (target) VALUES (b'111111111');
+INSERT INTO t2_tc_25_reg_0031_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0031_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0031_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0031_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0031_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0031-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0032
-   WHERE id NOT IN (SELECT id FROM t2_i0032)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0031_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0031_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0032
-   WHERE id NOT IN (SELECT id FROM t1_i0032)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0031_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0031_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0032 a JOIN t2_i0032 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0031_it a JOIN t2_tc_25_reg_0031_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0033
+-- Test Case: TC-25-REG-0032-IT
 -- Type: BIT(8) -> BIT(16), Algorithm: instant, Expected: FAIL
+-- Varied factor: primary_key=COMPOSITE_PK
+-- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=COMPOSITE_PK, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0033, t2_i0033;
+DROP TABLE IF EXISTS t1_tc_25_reg_0032_it, t2_tc_25_reg_0032_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0033 (
+CREATE TABLE t1_tc_25_reg_0032_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id, target), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0033 (target) VALUES (b'0');
-INSERT INTO t1_i0033 (target) VALUES (b'11111111');
-INSERT INTO t1_i0033 (target) VALUES (b'1');
-INSERT INTO t1_i0033 (target) VALUES (b'0');
-INSERT INTO t1_i0033 (target) VALUES (b'1010');
-INSERT INTO t1_i0033 (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0032_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0032_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0032_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0032_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0032_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0032_it (target) VALUES (b'11111111');
 -- Expected: ALTER FAILS (table keeps old type)
-ALTER TABLE t1_i0033 MODIFY target BIT(16), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0032_it MODIFY target BIT(16), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0033 (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0032_it (target) VALUES (b'1111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0033 (target) VALUES (b'111111111');
+INSERT INTO t1_tc_25_reg_0032_it (target) VALUES (b'111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0033 (target) VALUES (b'1');
-INSERT INTO t1_i0033 (target) VALUES (b'0');
-INSERT INTO t1_i0033 (target) VALUES (b'11111111');
-INSERT INTO t1_i0033 (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0032_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0032_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0032_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0032_it (target) VALUES (b'1010');
 -- Oracle table: BIT(8)
-CREATE TABLE t2_i0033 (
+CREATE TABLE t2_tc_25_reg_0032_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id, target), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0033 (target) VALUES (b'0');
-INSERT INTO t2_i0033 (target) VALUES (b'11111111');
-INSERT INTO t2_i0033 (target) VALUES (b'1');
-INSERT INTO t2_i0033 (target) VALUES (b'0');
-INSERT INTO t2_i0033 (target) VALUES (b'1010');
-INSERT INTO t2_i0033 (target) VALUES (b'11111111');
-INSERT INTO t2_i0033 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0033 (target) VALUES (b'111111111');
-INSERT INTO t2_i0033 (target) VALUES (b'1');
-INSERT INTO t2_i0033 (target) VALUES (b'0');
-INSERT INTO t2_i0033 (target) VALUES (b'11111111');
-INSERT INTO t2_i0033 (target) VALUES (b'1010');
-SELECT 'TC-I0033' AS test_id,
+INSERT INTO t2_tc_25_reg_0032_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0032_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0032_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0032_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0032_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0032_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0032_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0032_it (target) VALUES (b'111111111');
+INSERT INTO t2_tc_25_reg_0032_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0032_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0032_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0032_it (target) VALUES (b'1010');
+SELECT 'TC-25-REG-0032-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0033
-   WHERE id NOT IN (SELECT id FROM t2_i0033)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0032_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0032_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0033
-   WHERE id NOT IN (SELECT id FROM t1_i0033)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0032_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0032_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0033 a JOIN t2_i0033 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0032_it a JOIN t2_tc_25_reg_0032_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0034
+-- Test Case: TC-25-REG-0033-IT
 -- Type: BIT(8) -> BIT(16), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: primary_key=NO_EXPLICIT_PK
+-- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=NO_EXPLICIT_PK, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0034, t2_i0034;
+DROP TABLE IF EXISTS t1_tc_25_reg_0033_it, t2_tc_25_reg_0033_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0034 (
+CREATE TABLE t1_tc_25_reg_0033_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8),
   pad2 VARCHAR(20) DEFAULT 'pad2', INDEX idx_id (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0034 (target) VALUES (b'0');
-INSERT INTO t1_i0034 (target) VALUES (b'11111111');
-INSERT INTO t1_i0034 (target) VALUES (b'1');
-INSERT INTO t1_i0034 (target) VALUES (b'0');
-INSERT INTO t1_i0034 (target) VALUES (b'1010');
-INSERT INTO t1_i0034 (target) VALUES (b'11111111');
-INSERT INTO t1_i0034 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0033_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0033_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0033_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0033_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0033_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0033_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0033_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0034 MODIFY target BIT(16), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0033_it MODIFY target BIT(16), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0034 (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0033_it (target) VALUES (b'1111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0034 (target) VALUES (b'111111111');
+INSERT INTO t1_tc_25_reg_0033_it (target) VALUES (b'111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0034 (target) VALUES (b'1');
-INSERT INTO t1_i0034 (target) VALUES (b'0');
-INSERT INTO t1_i0034 (target) VALUES (b'11111111');
-INSERT INTO t1_i0034 (target) VALUES (b'1010');
-INSERT INTO t1_i0034 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0033_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0033_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0033_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0033_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0033_it (target) VALUES (NULL);
 -- Oracle table: BIT(16)
-CREATE TABLE t2_i0034 (
+CREATE TABLE t2_tc_25_reg_0033_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16),
   pad2 VARCHAR(20) DEFAULT 'pad2', INDEX idx_id (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0034 (target) VALUES (b'0');
-INSERT INTO t2_i0034 (target) VALUES (b'11111111');
-INSERT INTO t2_i0034 (target) VALUES (b'1');
-INSERT INTO t2_i0034 (target) VALUES (b'0');
-INSERT INTO t2_i0034 (target) VALUES (b'1010');
-INSERT INTO t2_i0034 (target) VALUES (b'11111111');
-INSERT INTO t2_i0034 (target) VALUES (NULL);
-INSERT INTO t2_i0034 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0034 (target) VALUES (b'111111111');
-INSERT INTO t2_i0034 (target) VALUES (b'1');
-INSERT INTO t2_i0034 (target) VALUES (b'0');
-INSERT INTO t2_i0034 (target) VALUES (b'11111111');
-INSERT INTO t2_i0034 (target) VALUES (b'1010');
-INSERT INTO t2_i0034 (target) VALUES (NULL);
-SELECT 'TC-I0034' AS test_id,
+INSERT INTO t2_tc_25_reg_0033_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0033_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0033_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0033_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0033_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0033_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0033_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0033_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0033_it (target) VALUES (b'111111111');
+INSERT INTO t2_tc_25_reg_0033_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0033_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0033_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0033_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0033_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0033-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0034
-   WHERE id NOT IN (SELECT id FROM t2_i0034)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0033_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0033_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0034
-   WHERE id NOT IN (SELECT id FROM t1_i0034)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0033_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0033_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0034 a JOIN t2_i0034 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0033_it a JOIN t2_tc_25_reg_0033_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0035
+-- Test Case: TC-25-REG-0034-IT
 -- Type: BIT(8) -> BIT(16), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: non_target_index=NONE
+-- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=NONE, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0035, t2_i0035;
+DROP TABLE IF EXISTS t1_tc_25_reg_0034_it, t2_tc_25_reg_0034_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0035 (
+CREATE TABLE t1_tc_25_reg_0034_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0035 (target) VALUES (b'0');
-INSERT INTO t1_i0035 (target) VALUES (b'11111111');
-INSERT INTO t1_i0035 (target) VALUES (b'1');
-INSERT INTO t1_i0035 (target) VALUES (b'0');
-INSERT INTO t1_i0035 (target) VALUES (b'1010');
-INSERT INTO t1_i0035 (target) VALUES (b'11111111');
-INSERT INTO t1_i0035 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0034_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0034_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0034_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0034_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0034_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0034_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0034_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0035 MODIFY target BIT(16), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0034_it MODIFY target BIT(16), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0035 (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0034_it (target) VALUES (b'1111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0035 (target) VALUES (b'111111111');
+INSERT INTO t1_tc_25_reg_0034_it (target) VALUES (b'111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0035 (target) VALUES (b'1');
-INSERT INTO t1_i0035 (target) VALUES (b'0');
-INSERT INTO t1_i0035 (target) VALUES (b'11111111');
-INSERT INTO t1_i0035 (target) VALUES (b'1010');
-INSERT INTO t1_i0035 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0034_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0034_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0034_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0034_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0034_it (target) VALUES (NULL);
 -- Oracle table: BIT(16)
-CREATE TABLE t2_i0035 (
+CREATE TABLE t2_tc_25_reg_0034_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0035 (target) VALUES (b'0');
-INSERT INTO t2_i0035 (target) VALUES (b'11111111');
-INSERT INTO t2_i0035 (target) VALUES (b'1');
-INSERT INTO t2_i0035 (target) VALUES (b'0');
-INSERT INTO t2_i0035 (target) VALUES (b'1010');
-INSERT INTO t2_i0035 (target) VALUES (b'11111111');
-INSERT INTO t2_i0035 (target) VALUES (NULL);
-INSERT INTO t2_i0035 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0035 (target) VALUES (b'111111111');
-INSERT INTO t2_i0035 (target) VALUES (b'1');
-INSERT INTO t2_i0035 (target) VALUES (b'0');
-INSERT INTO t2_i0035 (target) VALUES (b'11111111');
-INSERT INTO t2_i0035 (target) VALUES (b'1010');
-INSERT INTO t2_i0035 (target) VALUES (NULL);
-SELECT 'TC-I0035' AS test_id,
+INSERT INTO t2_tc_25_reg_0034_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0034_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0034_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0034_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0034_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0034_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0034_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0034_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0034_it (target) VALUES (b'111111111');
+INSERT INTO t2_tc_25_reg_0034_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0034_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0034_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0034_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0034_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0034-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0035
-   WHERE id NOT IN (SELECT id FROM t2_i0035)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0034_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0034_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0035
-   WHERE id NOT IN (SELECT id FROM t1_i0035)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0034_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0034_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0035 a JOIN t2_i0035 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0034_it a JOIN t2_tc_25_reg_0034_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0036
+-- Test Case: TC-25-REG-0035-IT
 -- Type: BIT(8) -> BIT(16), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: non_target_index=MULTIPLE_SECONDARY
+-- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=MULTIPLE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0036, t2_i0036;
+DROP TABLE IF EXISTS t1_tc_25_reg_0035_it, t2_tc_25_reg_0035_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0036 (
+CREATE TABLE t1_tc_25_reg_0035_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1), INDEX idx_pad2 (pad2)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0036 (target) VALUES (b'0');
-INSERT INTO t1_i0036 (target) VALUES (b'11111111');
-INSERT INTO t1_i0036 (target) VALUES (b'1');
-INSERT INTO t1_i0036 (target) VALUES (b'0');
-INSERT INTO t1_i0036 (target) VALUES (b'1010');
-INSERT INTO t1_i0036 (target) VALUES (b'11111111');
-INSERT INTO t1_i0036 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0035_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0035_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0035_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0035_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0035_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0035_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0035_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0036 MODIFY target BIT(16), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0035_it MODIFY target BIT(16), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0036 (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0035_it (target) VALUES (b'1111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0036 (target) VALUES (b'111111111');
+INSERT INTO t1_tc_25_reg_0035_it (target) VALUES (b'111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0036 (target) VALUES (b'1');
-INSERT INTO t1_i0036 (target) VALUES (b'0');
-INSERT INTO t1_i0036 (target) VALUES (b'11111111');
-INSERT INTO t1_i0036 (target) VALUES (b'1010');
-INSERT INTO t1_i0036 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0035_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0035_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0035_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0035_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0035_it (target) VALUES (NULL);
 -- Oracle table: BIT(16)
-CREATE TABLE t2_i0036 (
+CREATE TABLE t2_tc_25_reg_0035_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1), INDEX idx_pad2 (pad2)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0036 (target) VALUES (b'0');
-INSERT INTO t2_i0036 (target) VALUES (b'11111111');
-INSERT INTO t2_i0036 (target) VALUES (b'1');
-INSERT INTO t2_i0036 (target) VALUES (b'0');
-INSERT INTO t2_i0036 (target) VALUES (b'1010');
-INSERT INTO t2_i0036 (target) VALUES (b'11111111');
-INSERT INTO t2_i0036 (target) VALUES (NULL);
-INSERT INTO t2_i0036 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0036 (target) VALUES (b'111111111');
-INSERT INTO t2_i0036 (target) VALUES (b'1');
-INSERT INTO t2_i0036 (target) VALUES (b'0');
-INSERT INTO t2_i0036 (target) VALUES (b'11111111');
-INSERT INTO t2_i0036 (target) VALUES (b'1010');
-INSERT INTO t2_i0036 (target) VALUES (NULL);
-SELECT 'TC-I0036' AS test_id,
+INSERT INTO t2_tc_25_reg_0035_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0035_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0035_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0035_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0035_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0035_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0035_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0035_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0035_it (target) VALUES (b'111111111');
+INSERT INTO t2_tc_25_reg_0035_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0035_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0035_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0035_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0035_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0035-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0036
-   WHERE id NOT IN (SELECT id FROM t2_i0036)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0035_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0035_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0036
-   WHERE id NOT IN (SELECT id FROM t1_i0036)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0035_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0035_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0036 a JOIN t2_i0036 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0035_it a JOIN t2_tc_25_reg_0035_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0037
+-- Test Case: TC-25-REG-0036-IT
 -- Type: BIT(8) -> BIT(16), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: non_target_index=UNIQUE
+-- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=UNIQUE, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0037, t2_i0037;
+DROP TABLE IF EXISTS t1_tc_25_reg_0036_it, t2_tc_25_reg_0036_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0037 (
+CREATE TABLE t1_tc_25_reg_0036_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), UNIQUE INDEX uq_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0037 (target) VALUES (b'0');
-INSERT INTO t1_i0037 (target) VALUES (b'11111111');
-INSERT INTO t1_i0037 (target) VALUES (b'1');
-INSERT INTO t1_i0037 (target) VALUES (b'0');
-INSERT INTO t1_i0037 (target) VALUES (b'1010');
-INSERT INTO t1_i0037 (target) VALUES (b'11111111');
-INSERT INTO t1_i0037 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0036_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0036_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0036_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0036_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0036_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0036_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0036_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0037 MODIFY target BIT(16), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0036_it MODIFY target BIT(16), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0037 (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0036_it (target) VALUES (b'1111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0037 (target) VALUES (b'111111111');
+INSERT INTO t1_tc_25_reg_0036_it (target) VALUES (b'111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0037 (target) VALUES (b'1');
-INSERT INTO t1_i0037 (target) VALUES (b'0');
-INSERT INTO t1_i0037 (target) VALUES (b'11111111');
-INSERT INTO t1_i0037 (target) VALUES (b'1010');
-INSERT INTO t1_i0037 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0036_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0036_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0036_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0036_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0036_it (target) VALUES (NULL);
 -- Oracle table: BIT(16)
-CREATE TABLE t2_i0037 (
+CREATE TABLE t2_tc_25_reg_0036_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), UNIQUE INDEX uq_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0037 (target) VALUES (b'0');
-INSERT INTO t2_i0037 (target) VALUES (b'11111111');
-INSERT INTO t2_i0037 (target) VALUES (b'1');
-INSERT INTO t2_i0037 (target) VALUES (b'0');
-INSERT INTO t2_i0037 (target) VALUES (b'1010');
-INSERT INTO t2_i0037 (target) VALUES (b'11111111');
-INSERT INTO t2_i0037 (target) VALUES (NULL);
-INSERT INTO t2_i0037 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0037 (target) VALUES (b'111111111');
-INSERT INTO t2_i0037 (target) VALUES (b'1');
-INSERT INTO t2_i0037 (target) VALUES (b'0');
-INSERT INTO t2_i0037 (target) VALUES (b'11111111');
-INSERT INTO t2_i0037 (target) VALUES (b'1010');
-INSERT INTO t2_i0037 (target) VALUES (NULL);
-SELECT 'TC-I0037' AS test_id,
+INSERT INTO t2_tc_25_reg_0036_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0036_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0036_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0036_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0036_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0036_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0036_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0036_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0036_it (target) VALUES (b'111111111');
+INSERT INTO t2_tc_25_reg_0036_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0036_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0036_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0036_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0036_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0036-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0037
-   WHERE id NOT IN (SELECT id FROM t2_i0037)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0036_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0036_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0037
-   WHERE id NOT IN (SELECT id FROM t1_i0037)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0036_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0036_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0037 a JOIN t2_i0037 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0036_it a JOIN t2_tc_25_reg_0036_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0038
+-- Test Case: TC-25-REG-0037-IT
 -- Type: BIT(8) -> BIT(16), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: non_target_index=COMPOSITE_PREFIX
+-- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=COMPOSITE_PREFIX, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0038, t2_i0038;
+DROP TABLE IF EXISTS t1_tc_25_reg_0037_it, t2_tc_25_reg_0037_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0038 (
+CREATE TABLE t1_tc_25_reg_0037_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_composite (pad1(10), pad2(10))
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0038 (target) VALUES (b'0');
-INSERT INTO t1_i0038 (target) VALUES (b'11111111');
-INSERT INTO t1_i0038 (target) VALUES (b'1');
-INSERT INTO t1_i0038 (target) VALUES (b'0');
-INSERT INTO t1_i0038 (target) VALUES (b'1010');
-INSERT INTO t1_i0038 (target) VALUES (b'11111111');
-INSERT INTO t1_i0038 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0037_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0037_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0037_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0037_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0037_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0037_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0037_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0038 MODIFY target BIT(16), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0037_it MODIFY target BIT(16), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0038 (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0037_it (target) VALUES (b'1111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0038 (target) VALUES (b'111111111');
+INSERT INTO t1_tc_25_reg_0037_it (target) VALUES (b'111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0038 (target) VALUES (b'1');
-INSERT INTO t1_i0038 (target) VALUES (b'0');
-INSERT INTO t1_i0038 (target) VALUES (b'11111111');
-INSERT INTO t1_i0038 (target) VALUES (b'1010');
-INSERT INTO t1_i0038 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0037_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0037_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0037_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0037_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0037_it (target) VALUES (NULL);
 -- Oracle table: BIT(16)
-CREATE TABLE t2_i0038 (
+CREATE TABLE t2_tc_25_reg_0037_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_composite (pad1(10), pad2(10))
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0038 (target) VALUES (b'0');
-INSERT INTO t2_i0038 (target) VALUES (b'11111111');
-INSERT INTO t2_i0038 (target) VALUES (b'1');
-INSERT INTO t2_i0038 (target) VALUES (b'0');
-INSERT INTO t2_i0038 (target) VALUES (b'1010');
-INSERT INTO t2_i0038 (target) VALUES (b'11111111');
-INSERT INTO t2_i0038 (target) VALUES (NULL);
-INSERT INTO t2_i0038 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0038 (target) VALUES (b'111111111');
-INSERT INTO t2_i0038 (target) VALUES (b'1');
-INSERT INTO t2_i0038 (target) VALUES (b'0');
-INSERT INTO t2_i0038 (target) VALUES (b'11111111');
-INSERT INTO t2_i0038 (target) VALUES (b'1010');
-INSERT INTO t2_i0038 (target) VALUES (NULL);
-SELECT 'TC-I0038' AS test_id,
+INSERT INTO t2_tc_25_reg_0037_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0037_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0037_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0037_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0037_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0037_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0037_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0037_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0037_it (target) VALUES (b'111111111');
+INSERT INTO t2_tc_25_reg_0037_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0037_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0037_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0037_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0037_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0037-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0038
-   WHERE id NOT IN (SELECT id FROM t2_i0038)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0037_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0037_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0038
-   WHERE id NOT IN (SELECT id FROM t1_i0038)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0037_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0037_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0038 a JOIN t2_i0038 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0037_it a JOIN t2_tc_25_reg_0037_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0039
+-- Test Case: TC-25-REG-0038-IT
 -- Type: BIT(8) -> BIT(16), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: target_position=FIRST
+-- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=FIRST
-DROP TABLE IF EXISTS t1_i0039, t2_i0039;
+DROP TABLE IF EXISTS t1_tc_25_reg_0038_it, t2_tc_25_reg_0038_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0039 (
+CREATE TABLE t1_tc_25_reg_0038_it (
   target BIT(8),
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0039 (target) VALUES (b'0');
-INSERT INTO t1_i0039 (target) VALUES (b'11111111');
-INSERT INTO t1_i0039 (target) VALUES (b'1');
-INSERT INTO t1_i0039 (target) VALUES (b'0');
-INSERT INTO t1_i0039 (target) VALUES (b'1010');
-INSERT INTO t1_i0039 (target) VALUES (b'11111111');
-INSERT INTO t1_i0039 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0038_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0038_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0038_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0038_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0038_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0038_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0038_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0039 MODIFY target BIT(16), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0038_it MODIFY target BIT(16), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0039 (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0038_it (target) VALUES (b'1111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0039 (target) VALUES (b'111111111');
+INSERT INTO t1_tc_25_reg_0038_it (target) VALUES (b'111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0039 (target) VALUES (b'1');
-INSERT INTO t1_i0039 (target) VALUES (b'0');
-INSERT INTO t1_i0039 (target) VALUES (b'11111111');
-INSERT INTO t1_i0039 (target) VALUES (b'1010');
-INSERT INTO t1_i0039 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0038_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0038_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0038_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0038_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0038_it (target) VALUES (NULL);
 -- Oracle table: BIT(16)
-CREATE TABLE t2_i0039 (
+CREATE TABLE t2_tc_25_reg_0038_it (
   target BIT(16),
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0039 (target) VALUES (b'0');
-INSERT INTO t2_i0039 (target) VALUES (b'11111111');
-INSERT INTO t2_i0039 (target) VALUES (b'1');
-INSERT INTO t2_i0039 (target) VALUES (b'0');
-INSERT INTO t2_i0039 (target) VALUES (b'1010');
-INSERT INTO t2_i0039 (target) VALUES (b'11111111');
-INSERT INTO t2_i0039 (target) VALUES (NULL);
-INSERT INTO t2_i0039 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0039 (target) VALUES (b'111111111');
-INSERT INTO t2_i0039 (target) VALUES (b'1');
-INSERT INTO t2_i0039 (target) VALUES (b'0');
-INSERT INTO t2_i0039 (target) VALUES (b'11111111');
-INSERT INTO t2_i0039 (target) VALUES (b'1010');
-INSERT INTO t2_i0039 (target) VALUES (NULL);
-SELECT 'TC-I0039' AS test_id,
+INSERT INTO t2_tc_25_reg_0038_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0038_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0038_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0038_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0038_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0038_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0038_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0038_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0038_it (target) VALUES (b'111111111');
+INSERT INTO t2_tc_25_reg_0038_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0038_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0038_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0038_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0038_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0038-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0039
-   WHERE id NOT IN (SELECT id FROM t2_i0039)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0038_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0038_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0039
-   WHERE id NOT IN (SELECT id FROM t1_i0039)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0038_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0038_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0039 a JOIN t2_i0039 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0038_it a JOIN t2_tc_25_reg_0038_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0040
+-- Test Case: TC-25-REG-0039-IT
 -- Type: BIT(8) -> BIT(16), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: target_position=LAST
+-- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=LAST
-DROP TABLE IF EXISTS t1_i0040, t2_i0040;
+DROP TABLE IF EXISTS t1_tc_25_reg_0039_it, t2_tc_25_reg_0039_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0040 (
+CREATE TABLE t1_tc_25_reg_0039_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   pad2 VARCHAR(20) DEFAULT 'pad2',
   target BIT(8), PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0040 (target) VALUES (b'0');
-INSERT INTO t1_i0040 (target) VALUES (b'11111111');
-INSERT INTO t1_i0040 (target) VALUES (b'1');
-INSERT INTO t1_i0040 (target) VALUES (b'0');
-INSERT INTO t1_i0040 (target) VALUES (b'1010');
-INSERT INTO t1_i0040 (target) VALUES (b'11111111');
-INSERT INTO t1_i0040 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0039_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0039_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0039_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0039_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0039_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0039_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0039_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0040 MODIFY target BIT(16), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0039_it MODIFY target BIT(16), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0040 (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0039_it (target) VALUES (b'1111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0040 (target) VALUES (b'111111111');
+INSERT INTO t1_tc_25_reg_0039_it (target) VALUES (b'111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0040 (target) VALUES (b'1');
-INSERT INTO t1_i0040 (target) VALUES (b'0');
-INSERT INTO t1_i0040 (target) VALUES (b'11111111');
-INSERT INTO t1_i0040 (target) VALUES (b'1010');
-INSERT INTO t1_i0040 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0039_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0039_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0039_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0039_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0039_it (target) VALUES (NULL);
 -- Oracle table: BIT(16)
-CREATE TABLE t2_i0040 (
+CREATE TABLE t2_tc_25_reg_0039_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   pad2 VARCHAR(20) DEFAULT 'pad2',
   target BIT(16), PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0040 (target) VALUES (b'0');
-INSERT INTO t2_i0040 (target) VALUES (b'11111111');
-INSERT INTO t2_i0040 (target) VALUES (b'1');
-INSERT INTO t2_i0040 (target) VALUES (b'0');
-INSERT INTO t2_i0040 (target) VALUES (b'1010');
-INSERT INTO t2_i0040 (target) VALUES (b'11111111');
-INSERT INTO t2_i0040 (target) VALUES (NULL);
-INSERT INTO t2_i0040 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0040 (target) VALUES (b'111111111');
-INSERT INTO t2_i0040 (target) VALUES (b'1');
-INSERT INTO t2_i0040 (target) VALUES (b'0');
-INSERT INTO t2_i0040 (target) VALUES (b'11111111');
-INSERT INTO t2_i0040 (target) VALUES (b'1010');
-INSERT INTO t2_i0040 (target) VALUES (NULL);
-SELECT 'TC-I0040' AS test_id,
+INSERT INTO t2_tc_25_reg_0039_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0039_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0039_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0039_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0039_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0039_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0039_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0039_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0039_it (target) VALUES (b'111111111');
+INSERT INTO t2_tc_25_reg_0039_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0039_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0039_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0039_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0039_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0039-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0040
-   WHERE id NOT IN (SELECT id FROM t2_i0040)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0039_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0039_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0040
-   WHERE id NOT IN (SELECT id FROM t1_i0040)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0039_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0039_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0040 a JOIN t2_i0040 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0039_it a JOIN t2_tc_25_reg_0039_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0041
+-- Test Case: TC-25-REG-0040-IT
 -- Type: BIT(8) -> BIT(16), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: target_attributes=NOT_NULL_NO_DEFAULT
+-- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0041, t2_i0041;
+DROP TABLE IF EXISTS t1_tc_25_reg_0040_it, t2_tc_25_reg_0040_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0041 (
+CREATE TABLE t1_tc_25_reg_0040_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8) NOT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0041 (target) VALUES (b'0');
-INSERT INTO t1_i0041 (target) VALUES (b'11111111');
-INSERT INTO t1_i0041 (target) VALUES (b'1');
-INSERT INTO t1_i0041 (target) VALUES (b'0');
-INSERT INTO t1_i0041 (target) VALUES (b'1010');
-INSERT INTO t1_i0041 (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0040_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0040_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0040_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0040_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0040_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0040_it (target) VALUES (b'11111111');
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0041 MODIFY target BIT(16) NOT NULL, ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0040_it MODIFY target BIT(16) NOT NULL, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0041 (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0040_it (target) VALUES (b'1111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0041 (target) VALUES (b'111111111');
+INSERT INTO t1_tc_25_reg_0040_it (target) VALUES (b'111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0041 (target) VALUES (b'1');
-INSERT INTO t1_i0041 (target) VALUES (b'0');
-INSERT INTO t1_i0041 (target) VALUES (b'11111111');
-INSERT INTO t1_i0041 (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0040_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0040_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0040_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0040_it (target) VALUES (b'1010');
 -- Oracle table: BIT(16)
-CREATE TABLE t2_i0041 (
+CREATE TABLE t2_tc_25_reg_0040_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16) NOT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0041 (target) VALUES (b'0');
-INSERT INTO t2_i0041 (target) VALUES (b'11111111');
-INSERT INTO t2_i0041 (target) VALUES (b'1');
-INSERT INTO t2_i0041 (target) VALUES (b'0');
-INSERT INTO t2_i0041 (target) VALUES (b'1010');
-INSERT INTO t2_i0041 (target) VALUES (b'11111111');
-INSERT INTO t2_i0041 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0041 (target) VALUES (b'111111111');
-INSERT INTO t2_i0041 (target) VALUES (b'1');
-INSERT INTO t2_i0041 (target) VALUES (b'0');
-INSERT INTO t2_i0041 (target) VALUES (b'11111111');
-INSERT INTO t2_i0041 (target) VALUES (b'1010');
-SELECT 'TC-I0041' AS test_id,
+INSERT INTO t2_tc_25_reg_0040_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0040_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0040_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0040_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0040_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0040_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0040_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0040_it (target) VALUES (b'111111111');
+INSERT INTO t2_tc_25_reg_0040_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0040_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0040_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0040_it (target) VALUES (b'1010');
+SELECT 'TC-25-REG-0040-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0041
-   WHERE id NOT IN (SELECT id FROM t2_i0041)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0040_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0040_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0041
-   WHERE id NOT IN (SELECT id FROM t1_i0041)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0040_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0040_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0041 a JOIN t2_i0041 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0040_it a JOIN t2_tc_25_reg_0040_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0042
+-- Test Case: TC-25-REG-0041-IT
 -- Type: BIT(8) -> BIT(16), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: target_attributes=CONSTANT_DEFAULT
+-- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=CONSTANT_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0042, t2_i0042;
+DROP TABLE IF EXISTS t1_tc_25_reg_0041_it, t2_tc_25_reg_0041_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0042 (
+CREATE TABLE t1_tc_25_reg_0041_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8) DEFAULT b'0',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0042 (target) VALUES (b'0');
-INSERT INTO t1_i0042 (target) VALUES (b'11111111');
-INSERT INTO t1_i0042 (target) VALUES (b'1');
-INSERT INTO t1_i0042 (target) VALUES (b'0');
-INSERT INTO t1_i0042 (target) VALUES (b'1010');
-INSERT INTO t1_i0042 (target) VALUES (b'11111111');
-INSERT INTO t1_i0042 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0041_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0041_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0041_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0041_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0041_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0041_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0041_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0042 MODIFY target BIT(16) DEFAULT b'0', ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0041_it MODIFY target BIT(16) DEFAULT b'0', ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0042 (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0041_it (target) VALUES (b'1111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0042 (target) VALUES (b'111111111');
+INSERT INTO t1_tc_25_reg_0041_it (target) VALUES (b'111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0042 (target) VALUES (b'1');
-INSERT INTO t1_i0042 (target) VALUES (b'0');
-INSERT INTO t1_i0042 (target) VALUES (b'11111111');
-INSERT INTO t1_i0042 (target) VALUES (b'1010');
-INSERT INTO t1_i0042 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0041_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0041_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0041_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0041_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0041_it (target) VALUES (NULL);
 -- Oracle table: BIT(16)
-CREATE TABLE t2_i0042 (
+CREATE TABLE t2_tc_25_reg_0041_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16) DEFAULT b'0',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0042 (target) VALUES (b'0');
-INSERT INTO t2_i0042 (target) VALUES (b'11111111');
-INSERT INTO t2_i0042 (target) VALUES (b'1');
-INSERT INTO t2_i0042 (target) VALUES (b'0');
-INSERT INTO t2_i0042 (target) VALUES (b'1010');
-INSERT INTO t2_i0042 (target) VALUES (b'11111111');
-INSERT INTO t2_i0042 (target) VALUES (NULL);
-INSERT INTO t2_i0042 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0042 (target) VALUES (b'111111111');
-INSERT INTO t2_i0042 (target) VALUES (b'1');
-INSERT INTO t2_i0042 (target) VALUES (b'0');
-INSERT INTO t2_i0042 (target) VALUES (b'11111111');
-INSERT INTO t2_i0042 (target) VALUES (b'1010');
-INSERT INTO t2_i0042 (target) VALUES (NULL);
-SELECT 'TC-I0042' AS test_id,
+INSERT INTO t2_tc_25_reg_0041_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0041_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0041_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0041_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0041_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0041_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0041_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0041_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0041_it (target) VALUES (b'111111111');
+INSERT INTO t2_tc_25_reg_0041_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0041_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0041_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0041_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0041_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0041-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0042
-   WHERE id NOT IN (SELECT id FROM t2_i0042)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0041_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0041_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0042
-   WHERE id NOT IN (SELECT id FROM t1_i0042)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0041_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0041_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0042 a JOIN t2_i0042 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0041_it a JOIN t2_tc_25_reg_0041_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0043
+-- Test Case: TC-25-REG-0042-IT
 -- Type: BIT(8) -> BIT(16), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: target_attributes=NULL_DEFAULT
+-- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0043, t2_i0043;
+DROP TABLE IF EXISTS t1_tc_25_reg_0042_it, t2_tc_25_reg_0042_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0043 (
+CREATE TABLE t1_tc_25_reg_0042_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8) DEFAULT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0043 (target) VALUES (b'0');
-INSERT INTO t1_i0043 (target) VALUES (b'11111111');
-INSERT INTO t1_i0043 (target) VALUES (b'1');
-INSERT INTO t1_i0043 (target) VALUES (b'0');
-INSERT INTO t1_i0043 (target) VALUES (b'1010');
-INSERT INTO t1_i0043 (target) VALUES (b'11111111');
-INSERT INTO t1_i0043 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0042_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0042_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0042_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0042_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0042_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0042_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0042_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0043 MODIFY target BIT(16) DEFAULT NULL, ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0042_it MODIFY target BIT(16) DEFAULT NULL, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0043 (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0042_it (target) VALUES (b'1111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0043 (target) VALUES (b'111111111');
+INSERT INTO t1_tc_25_reg_0042_it (target) VALUES (b'111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0043 (target) VALUES (b'1');
-INSERT INTO t1_i0043 (target) VALUES (b'0');
-INSERT INTO t1_i0043 (target) VALUES (b'11111111');
-INSERT INTO t1_i0043 (target) VALUES (b'1010');
-INSERT INTO t1_i0043 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0042_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0042_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0042_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0042_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0042_it (target) VALUES (NULL);
 -- Oracle table: BIT(16)
-CREATE TABLE t2_i0043 (
+CREATE TABLE t2_tc_25_reg_0042_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16) DEFAULT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0043 (target) VALUES (b'0');
-INSERT INTO t2_i0043 (target) VALUES (b'11111111');
-INSERT INTO t2_i0043 (target) VALUES (b'1');
-INSERT INTO t2_i0043 (target) VALUES (b'0');
-INSERT INTO t2_i0043 (target) VALUES (b'1010');
-INSERT INTO t2_i0043 (target) VALUES (b'11111111');
-INSERT INTO t2_i0043 (target) VALUES (NULL);
-INSERT INTO t2_i0043 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0043 (target) VALUES (b'111111111');
-INSERT INTO t2_i0043 (target) VALUES (b'1');
-INSERT INTO t2_i0043 (target) VALUES (b'0');
-INSERT INTO t2_i0043 (target) VALUES (b'11111111');
-INSERT INTO t2_i0043 (target) VALUES (b'1010');
-INSERT INTO t2_i0043 (target) VALUES (NULL);
-SELECT 'TC-I0043' AS test_id,
+INSERT INTO t2_tc_25_reg_0042_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0042_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0042_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0042_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0042_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0042_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0042_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0042_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0042_it (target) VALUES (b'111111111');
+INSERT INTO t2_tc_25_reg_0042_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0042_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0042_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0042_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0042_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0042-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0043
-   WHERE id NOT IN (SELECT id FROM t2_i0043)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0042_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0042_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0043
-   WHERE id NOT IN (SELECT id FROM t1_i0043)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0042_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0042_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0043 a JOIN t2_i0043 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0042_it a JOIN t2_tc_25_reg_0042_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0044
+-- Test Case: TC-25-REG-0043-IT
 -- Type: BIT(8) -> BIT(16), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: target_attributes=NOT_NULL_DEFAULT
+-- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0044, t2_i0044;
+DROP TABLE IF EXISTS t1_tc_25_reg_0043_it, t2_tc_25_reg_0043_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0044 (
+CREATE TABLE t1_tc_25_reg_0043_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8) NOT NULL DEFAULT b'0',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0044 (target) VALUES (b'0');
-INSERT INTO t1_i0044 (target) VALUES (b'11111111');
-INSERT INTO t1_i0044 (target) VALUES (b'1');
-INSERT INTO t1_i0044 (target) VALUES (b'0');
-INSERT INTO t1_i0044 (target) VALUES (b'1010');
-INSERT INTO t1_i0044 (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0043_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0043_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0043_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0043_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0043_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0043_it (target) VALUES (b'11111111');
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0044 MODIFY target BIT(16) NOT NULL DEFAULT b'0', ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0043_it MODIFY target BIT(16) NOT NULL DEFAULT b'0', ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0044 (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0043_it (target) VALUES (b'1111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0044 (target) VALUES (b'111111111');
+INSERT INTO t1_tc_25_reg_0043_it (target) VALUES (b'111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0044 (target) VALUES (b'1');
-INSERT INTO t1_i0044 (target) VALUES (b'0');
-INSERT INTO t1_i0044 (target) VALUES (b'11111111');
-INSERT INTO t1_i0044 (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0043_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0043_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0043_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0043_it (target) VALUES (b'1010');
 -- Oracle table: BIT(16)
-CREATE TABLE t2_i0044 (
+CREATE TABLE t2_tc_25_reg_0043_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16) NOT NULL DEFAULT b'0',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0044 (target) VALUES (b'0');
-INSERT INTO t2_i0044 (target) VALUES (b'11111111');
-INSERT INTO t2_i0044 (target) VALUES (b'1');
-INSERT INTO t2_i0044 (target) VALUES (b'0');
-INSERT INTO t2_i0044 (target) VALUES (b'1010');
-INSERT INTO t2_i0044 (target) VALUES (b'11111111');
-INSERT INTO t2_i0044 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0044 (target) VALUES (b'111111111');
-INSERT INTO t2_i0044 (target) VALUES (b'1');
-INSERT INTO t2_i0044 (target) VALUES (b'0');
-INSERT INTO t2_i0044 (target) VALUES (b'11111111');
-INSERT INTO t2_i0044 (target) VALUES (b'1010');
-SELECT 'TC-I0044' AS test_id,
+INSERT INTO t2_tc_25_reg_0043_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0043_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0043_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0043_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0043_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0043_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0043_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0043_it (target) VALUES (b'111111111');
+INSERT INTO t2_tc_25_reg_0043_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0043_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0043_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0043_it (target) VALUES (b'1010');
+SELECT 'TC-25-REG-0043-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0044
-   WHERE id NOT IN (SELECT id FROM t2_i0044)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0043_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0043_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0044
-   WHERE id NOT IN (SELECT id FROM t1_i0044)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0043_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0043_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0044 a JOIN t2_i0044 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0043_it a JOIN t2_tc_25_reg_0043_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0045
+-- Test Case: TC-25-REG-0044-IT
 -- Type: BIT(8) -> BIT(16), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: target_attributes=INVISIBLE
+-- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=INVISIBLE, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0045, t2_i0045;
+DROP TABLE IF EXISTS t1_tc_25_reg_0044_it, t2_tc_25_reg_0044_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0045 (
+CREATE TABLE t1_tc_25_reg_0044_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8) INVISIBLE,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0045 (target) VALUES (b'0');
-INSERT INTO t1_i0045 (target) VALUES (b'11111111');
-INSERT INTO t1_i0045 (target) VALUES (b'1');
-INSERT INTO t1_i0045 (target) VALUES (b'0');
-INSERT INTO t1_i0045 (target) VALUES (b'1010');
-INSERT INTO t1_i0045 (target) VALUES (b'11111111');
-INSERT INTO t1_i0045 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0044_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0044_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0044_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0044_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0044_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0044_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0044_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0045 MODIFY target BIT(16) INVISIBLE, ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0044_it MODIFY target BIT(16) INVISIBLE, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0045 (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0044_it (target) VALUES (b'1111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0045 (target) VALUES (b'111111111');
+INSERT INTO t1_tc_25_reg_0044_it (target) VALUES (b'111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0045 (target) VALUES (b'1');
-INSERT INTO t1_i0045 (target) VALUES (b'0');
-INSERT INTO t1_i0045 (target) VALUES (b'11111111');
-INSERT INTO t1_i0045 (target) VALUES (b'1010');
-INSERT INTO t1_i0045 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0044_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0044_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0044_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0044_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0044_it (target) VALUES (NULL);
 -- Oracle table: BIT(16)
-CREATE TABLE t2_i0045 (
+CREATE TABLE t2_tc_25_reg_0044_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16) INVISIBLE,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0045 (target) VALUES (b'0');
-INSERT INTO t2_i0045 (target) VALUES (b'11111111');
-INSERT INTO t2_i0045 (target) VALUES (b'1');
-INSERT INTO t2_i0045 (target) VALUES (b'0');
-INSERT INTO t2_i0045 (target) VALUES (b'1010');
-INSERT INTO t2_i0045 (target) VALUES (b'11111111');
-INSERT INTO t2_i0045 (target) VALUES (NULL);
-INSERT INTO t2_i0045 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0045 (target) VALUES (b'111111111');
-INSERT INTO t2_i0045 (target) VALUES (b'1');
-INSERT INTO t2_i0045 (target) VALUES (b'0');
-INSERT INTO t2_i0045 (target) VALUES (b'11111111');
-INSERT INTO t2_i0045 (target) VALUES (b'1010');
-INSERT INTO t2_i0045 (target) VALUES (NULL);
-SELECT 'TC-I0045' AS test_id,
+INSERT INTO t2_tc_25_reg_0044_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0044_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0044_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0044_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0044_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0044_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0044_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0044_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0044_it (target) VALUES (b'111111111');
+INSERT INTO t2_tc_25_reg_0044_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0044_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0044_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0044_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0044_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0044-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0045
-   WHERE id NOT IN (SELECT id FROM t2_i0045)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0044_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0044_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0045
-   WHERE id NOT IN (SELECT id FROM t1_i0045)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0044_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0044_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0045 a JOIN t2_i0045 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0044_it a JOIN t2_tc_25_reg_0044_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0046
+-- Test Case: TC-25-REG-0045-IT
 -- Type: BIT(8) -> BIT(16), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: data_scale=S0
+-- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0046, t2_i0046;
+DROP TABLE IF EXISTS t1_tc_25_reg_0045_it, t2_tc_25_reg_0045_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0046 (
+CREATE TABLE t1_tc_25_reg_0045_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0046 MODIFY target BIT(16), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0045_it MODIFY target BIT(16), ALGORITHM=instant;
 -- Oracle table: BIT(16)
-CREATE TABLE t2_i0046 (
+CREATE TABLE t2_tc_25_reg_0045_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-SELECT 'TC-I0046' AS test_id,
+SELECT 'TC-25-REG-0045-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0046
-   WHERE id NOT IN (SELECT id FROM t2_i0046)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0045_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0045_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0046
-   WHERE id NOT IN (SELECT id FROM t1_i0046)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0045_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0045_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0046 a JOIN t2_i0046 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0045_it a JOIN t2_tc_25_reg_0045_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0047
+-- Test Case: TC-25-REG-0046-IT
 -- Type: BIT(8) -> BIT(16), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: data_scale=S1
+-- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S1, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0047, t2_i0047;
+DROP TABLE IF EXISTS t1_tc_25_reg_0046_it, t2_tc_25_reg_0046_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0047 (
+CREATE TABLE t1_tc_25_reg_0046_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0047 (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0046_it (target) VALUES (b'0');
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0047 MODIFY target BIT(16), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0046_it MODIFY target BIT(16), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0047 (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0046_it (target) VALUES (b'1111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0047 (target) VALUES (b'111111111');
+INSERT INTO t1_tc_25_reg_0046_it (target) VALUES (b'111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0047 (target) VALUES (b'1');
-INSERT INTO t1_i0047 (target) VALUES (b'0');
-INSERT INTO t1_i0047 (target) VALUES (b'11111111');
-INSERT INTO t1_i0047 (target) VALUES (b'1010');
-INSERT INTO t1_i0047 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0046_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0046_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0046_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0046_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0046_it (target) VALUES (NULL);
 -- Oracle table: BIT(16)
-CREATE TABLE t2_i0047 (
+CREATE TABLE t2_tc_25_reg_0046_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0047 (target) VALUES (b'0');
-INSERT INTO t2_i0047 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0047 (target) VALUES (b'111111111');
-INSERT INTO t2_i0047 (target) VALUES (b'1');
-INSERT INTO t2_i0047 (target) VALUES (b'0');
-INSERT INTO t2_i0047 (target) VALUES (b'11111111');
-INSERT INTO t2_i0047 (target) VALUES (b'1010');
-INSERT INTO t2_i0047 (target) VALUES (NULL);
-SELECT 'TC-I0047' AS test_id,
+INSERT INTO t2_tc_25_reg_0046_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0046_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0046_it (target) VALUES (b'111111111');
+INSERT INTO t2_tc_25_reg_0046_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0046_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0046_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0046_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0046_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0046-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0047
-   WHERE id NOT IN (SELECT id FROM t2_i0047)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0046_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0046_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0047
-   WHERE id NOT IN (SELECT id FROM t1_i0047)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0046_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0046_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0047 a JOIN t2_i0047 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0046_it a JOIN t2_tc_25_reg_0046_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0048
+-- Test Case: TC-25-REG-0047-IT
 -- Type: BIT(8) -> BIT(16), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: data_distribution=UNIFORM
+-- Transition ID: BIT-02
 -- Factors: data_distribution=UNIFORM, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0048, t2_i0048;
+DROP TABLE IF EXISTS t1_tc_25_reg_0047_it, t2_tc_25_reg_0047_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0048 (
+CREATE TABLE t1_tc_25_reg_0047_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0048 (target) VALUES (b'0');
-INSERT INTO t1_i0048 (target) VALUES (b'11111111');
-INSERT INTO t1_i0048 (target) VALUES (b'1');
-INSERT INTO t1_i0048 (target) VALUES (b'0');
-INSERT INTO t1_i0048 (target) VALUES (b'1010');
-INSERT INTO t1_i0048 (target) VALUES (b'11111111');
-INSERT INTO t1_i0048 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0047_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0047_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0047_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0047_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0047_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0047_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0047_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0048 MODIFY target BIT(16), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0047_it MODIFY target BIT(16), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0048 (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0047_it (target) VALUES (b'1111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0048 (target) VALUES (b'111111111');
+INSERT INTO t1_tc_25_reg_0047_it (target) VALUES (b'111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0048 (target) VALUES (b'1');
-INSERT INTO t1_i0048 (target) VALUES (b'0');
-INSERT INTO t1_i0048 (target) VALUES (b'11111111');
-INSERT INTO t1_i0048 (target) VALUES (b'1010');
-INSERT INTO t1_i0048 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0047_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0047_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0047_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0047_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0047_it (target) VALUES (NULL);
 -- Oracle table: BIT(16)
-CREATE TABLE t2_i0048 (
+CREATE TABLE t2_tc_25_reg_0047_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0048 (target) VALUES (b'0');
-INSERT INTO t2_i0048 (target) VALUES (b'11111111');
-INSERT INTO t2_i0048 (target) VALUES (b'1');
-INSERT INTO t2_i0048 (target) VALUES (b'0');
-INSERT INTO t2_i0048 (target) VALUES (b'1010');
-INSERT INTO t2_i0048 (target) VALUES (b'11111111');
-INSERT INTO t2_i0048 (target) VALUES (NULL);
-INSERT INTO t2_i0048 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0048 (target) VALUES (b'111111111');
-INSERT INTO t2_i0048 (target) VALUES (b'1');
-INSERT INTO t2_i0048 (target) VALUES (b'0');
-INSERT INTO t2_i0048 (target) VALUES (b'11111111');
-INSERT INTO t2_i0048 (target) VALUES (b'1010');
-INSERT INTO t2_i0048 (target) VALUES (NULL);
-SELECT 'TC-I0048' AS test_id,
+INSERT INTO t2_tc_25_reg_0047_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0047_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0047_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0047_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0047_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0047_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0047_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0047_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0047_it (target) VALUES (b'111111111');
+INSERT INTO t2_tc_25_reg_0047_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0047_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0047_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0047_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0047_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0047-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0048
-   WHERE id NOT IN (SELECT id FROM t2_i0048)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0047_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0047_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0048
-   WHERE id NOT IN (SELECT id FROM t1_i0048)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0047_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0047_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0048 a JOIN t2_i0048 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0047_it a JOIN t2_tc_25_reg_0047_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0049
+-- Test Case: TC-25-REG-0048-IT
 -- Type: BIT(8) -> BIT(16), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: data_distribution=MONOTONIC
+-- Transition ID: BIT-02
 -- Factors: data_distribution=MONOTONIC, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0049, t2_i0049;
+DROP TABLE IF EXISTS t1_tc_25_reg_0048_it, t2_tc_25_reg_0048_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0049 (
+CREATE TABLE t1_tc_25_reg_0048_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0049 (target) VALUES (b'0');
-INSERT INTO t1_i0049 (target) VALUES (b'11111111');
-INSERT INTO t1_i0049 (target) VALUES (b'1');
-INSERT INTO t1_i0049 (target) VALUES (b'0');
-INSERT INTO t1_i0049 (target) VALUES (b'1010');
-INSERT INTO t1_i0049 (target) VALUES (b'11111111');
-INSERT INTO t1_i0049 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0048_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0048_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0048_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0048_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0048_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0048_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0048_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0049 MODIFY target BIT(16), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0048_it MODIFY target BIT(16), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0049 (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0048_it (target) VALUES (b'1111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0049 (target) VALUES (b'111111111');
+INSERT INTO t1_tc_25_reg_0048_it (target) VALUES (b'111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0049 (target) VALUES (b'1');
-INSERT INTO t1_i0049 (target) VALUES (b'0');
-INSERT INTO t1_i0049 (target) VALUES (b'11111111');
-INSERT INTO t1_i0049 (target) VALUES (b'1010');
-INSERT INTO t1_i0049 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0048_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0048_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0048_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0048_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0048_it (target) VALUES (NULL);
 -- Oracle table: BIT(16)
-CREATE TABLE t2_i0049 (
+CREATE TABLE t2_tc_25_reg_0048_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0049 (target) VALUES (b'0');
-INSERT INTO t2_i0049 (target) VALUES (b'11111111');
-INSERT INTO t2_i0049 (target) VALUES (b'1');
-INSERT INTO t2_i0049 (target) VALUES (b'0');
-INSERT INTO t2_i0049 (target) VALUES (b'1010');
-INSERT INTO t2_i0049 (target) VALUES (b'11111111');
-INSERT INTO t2_i0049 (target) VALUES (NULL);
-INSERT INTO t2_i0049 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0049 (target) VALUES (b'111111111');
-INSERT INTO t2_i0049 (target) VALUES (b'1');
-INSERT INTO t2_i0049 (target) VALUES (b'0');
-INSERT INTO t2_i0049 (target) VALUES (b'11111111');
-INSERT INTO t2_i0049 (target) VALUES (b'1010');
-INSERT INTO t2_i0049 (target) VALUES (NULL);
-SELECT 'TC-I0049' AS test_id,
+INSERT INTO t2_tc_25_reg_0048_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0048_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0048_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0048_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0048_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0048_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0048_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0048_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0048_it (target) VALUES (b'111111111');
+INSERT INTO t2_tc_25_reg_0048_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0048_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0048_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0048_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0048_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0048-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0049
-   WHERE id NOT IN (SELECT id FROM t2_i0049)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0048_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0048_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0049
-   WHERE id NOT IN (SELECT id FROM t1_i0049)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0048_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0048_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0049 a JOIN t2_i0049 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0048_it a JOIN t2_tc_25_reg_0048_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0050
+-- Test Case: TC-25-REG-0049-IT
 -- Type: BIT(8) -> BIT(16), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: null_ratio=ZERO
+-- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=ZERO, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0050, t2_i0050;
+DROP TABLE IF EXISTS t1_tc_25_reg_0049_it, t2_tc_25_reg_0049_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0050 (
+CREATE TABLE t1_tc_25_reg_0049_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0050 (target) VALUES (b'0');
-INSERT INTO t1_i0050 (target) VALUES (b'11111111');
-INSERT INTO t1_i0050 (target) VALUES (b'1');
-INSERT INTO t1_i0050 (target) VALUES (b'0');
-INSERT INTO t1_i0050 (target) VALUES (b'1010');
-INSERT INTO t1_i0050 (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0049_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0049_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0049_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0049_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0049_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0049_it (target) VALUES (b'11111111');
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0050 MODIFY target BIT(16), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0049_it MODIFY target BIT(16), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0050 (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0049_it (target) VALUES (b'1111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0050 (target) VALUES (b'111111111');
+INSERT INTO t1_tc_25_reg_0049_it (target) VALUES (b'111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0050 (target) VALUES (b'1');
-INSERT INTO t1_i0050 (target) VALUES (b'0');
-INSERT INTO t1_i0050 (target) VALUES (b'11111111');
-INSERT INTO t1_i0050 (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0049_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0049_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0049_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0049_it (target) VALUES (b'1010');
 -- Oracle table: BIT(16)
-CREATE TABLE t2_i0050 (
+CREATE TABLE t2_tc_25_reg_0049_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0050 (target) VALUES (b'0');
-INSERT INTO t2_i0050 (target) VALUES (b'11111111');
-INSERT INTO t2_i0050 (target) VALUES (b'1');
-INSERT INTO t2_i0050 (target) VALUES (b'0');
-INSERT INTO t2_i0050 (target) VALUES (b'1010');
-INSERT INTO t2_i0050 (target) VALUES (b'11111111');
-INSERT INTO t2_i0050 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0050 (target) VALUES (b'111111111');
-INSERT INTO t2_i0050 (target) VALUES (b'1');
-INSERT INTO t2_i0050 (target) VALUES (b'0');
-INSERT INTO t2_i0050 (target) VALUES (b'11111111');
-INSERT INTO t2_i0050 (target) VALUES (b'1010');
-SELECT 'TC-I0050' AS test_id,
+INSERT INTO t2_tc_25_reg_0049_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0049_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0049_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0049_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0049_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0049_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0049_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0049_it (target) VALUES (b'111111111');
+INSERT INTO t2_tc_25_reg_0049_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0049_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0049_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0049_it (target) VALUES (b'1010');
+SELECT 'TC-25-REG-0049-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0050
-   WHERE id NOT IN (SELECT id FROM t2_i0050)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0049_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0049_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0050
-   WHERE id NOT IN (SELECT id FROM t1_i0050)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0049_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0049_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0050 a JOIN t2_i0050 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0049_it a JOIN t2_tc_25_reg_0049_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0051
+-- Test Case: TC-25-REG-0050-IT
 -- Type: BIT(8) -> BIT(16), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: null_ratio=SINGLE
+-- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=SINGLE, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0051, t2_i0051;
+DROP TABLE IF EXISTS t1_tc_25_reg_0050_it, t2_tc_25_reg_0050_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0051 (
+CREATE TABLE t1_tc_25_reg_0050_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0051 (target) VALUES (b'0');
-INSERT INTO t1_i0051 (target) VALUES (b'11111111');
-INSERT INTO t1_i0051 (target) VALUES (b'1');
-INSERT INTO t1_i0051 (target) VALUES (b'0');
-INSERT INTO t1_i0051 (target) VALUES (b'1010');
-INSERT INTO t1_i0051 (target) VALUES (b'11111111');
-INSERT INTO t1_i0051 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0050_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0050_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0050_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0050_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0050_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0050_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0050_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0051 MODIFY target BIT(16), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0050_it MODIFY target BIT(16), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0051 (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0050_it (target) VALUES (b'1111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0051 (target) VALUES (b'111111111');
+INSERT INTO t1_tc_25_reg_0050_it (target) VALUES (b'111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0051 (target) VALUES (b'1');
-INSERT INTO t1_i0051 (target) VALUES (b'0');
-INSERT INTO t1_i0051 (target) VALUES (b'11111111');
-INSERT INTO t1_i0051 (target) VALUES (b'1010');
-INSERT INTO t1_i0051 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0050_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0050_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0050_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0050_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0050_it (target) VALUES (NULL);
 -- Oracle table: BIT(16)
-CREATE TABLE t2_i0051 (
+CREATE TABLE t2_tc_25_reg_0050_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0051 (target) VALUES (b'0');
-INSERT INTO t2_i0051 (target) VALUES (b'11111111');
-INSERT INTO t2_i0051 (target) VALUES (b'1');
-INSERT INTO t2_i0051 (target) VALUES (b'0');
-INSERT INTO t2_i0051 (target) VALUES (b'1010');
-INSERT INTO t2_i0051 (target) VALUES (b'11111111');
-INSERT INTO t2_i0051 (target) VALUES (NULL);
-INSERT INTO t2_i0051 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0051 (target) VALUES (b'111111111');
-INSERT INTO t2_i0051 (target) VALUES (b'1');
-INSERT INTO t2_i0051 (target) VALUES (b'0');
-INSERT INTO t2_i0051 (target) VALUES (b'11111111');
-INSERT INTO t2_i0051 (target) VALUES (b'1010');
-INSERT INTO t2_i0051 (target) VALUES (NULL);
-SELECT 'TC-I0051' AS test_id,
+INSERT INTO t2_tc_25_reg_0050_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0050_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0050_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0050_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0050_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0050_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0050_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0050_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0050_it (target) VALUES (b'111111111');
+INSERT INTO t2_tc_25_reg_0050_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0050_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0050_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0050_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0050_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0050-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0051
-   WHERE id NOT IN (SELECT id FROM t2_i0051)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0050_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0050_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0051
-   WHERE id NOT IN (SELECT id FROM t1_i0051)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0050_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0050_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0051 a JOIN t2_i0051 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0050_it a JOIN t2_tc_25_reg_0050_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0052
+-- Test Case: TC-25-REG-0051-IT
 -- Type: BIT(8) -> BIT(16), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: null_ratio=ALL
+-- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=ALL, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0052, t2_i0052;
+DROP TABLE IF EXISTS t1_tc_25_reg_0051_it, t2_tc_25_reg_0051_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0052 (
+CREATE TABLE t1_tc_25_reg_0051_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0052 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0051_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0052 MODIFY target BIT(16), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0051_it MODIFY target BIT(16), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0052 (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0051_it (target) VALUES (b'1111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0052 (target) VALUES (b'111111111');
+INSERT INTO t1_tc_25_reg_0051_it (target) VALUES (b'111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0052 (target) VALUES (b'1');
-INSERT INTO t1_i0052 (target) VALUES (b'0');
-INSERT INTO t1_i0052 (target) VALUES (b'11111111');
-INSERT INTO t1_i0052 (target) VALUES (b'1010');
-INSERT INTO t1_i0052 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0051_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0051_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0051_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0051_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0051_it (target) VALUES (NULL);
 -- Oracle table: BIT(16)
-CREATE TABLE t2_i0052 (
+CREATE TABLE t2_tc_25_reg_0051_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0052 (target) VALUES (NULL);
-INSERT INTO t2_i0052 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0052 (target) VALUES (b'111111111');
-INSERT INTO t2_i0052 (target) VALUES (b'1');
-INSERT INTO t2_i0052 (target) VALUES (b'0');
-INSERT INTO t2_i0052 (target) VALUES (b'11111111');
-INSERT INTO t2_i0052 (target) VALUES (b'1010');
-INSERT INTO t2_i0052 (target) VALUES (NULL);
-SELECT 'TC-I0052' AS test_id,
+INSERT INTO t2_tc_25_reg_0051_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0051_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0051_it (target) VALUES (b'111111111');
+INSERT INTO t2_tc_25_reg_0051_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0051_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0051_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0051_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0051_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0051-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0052
-   WHERE id NOT IN (SELECT id FROM t2_i0052)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0051_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0051_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0052
-   WHERE id NOT IN (SELECT id FROM t1_i0052)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0051_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0051_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0052 a JOIN t2_i0052 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0051_it a JOIN t2_tc_25_reg_0051_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0053
+-- Test Case: TC-25-REG-0052-IT
 -- Type: BIT(8) -> BIT(16), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: sql_mode=NON_STRICT
+-- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=NON_STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0053, t2_i0053;
+DROP TABLE IF EXISTS t1_tc_25_reg_0052_it, t2_tc_25_reg_0052_it;
 SET SESSION sql_mode = '';
-CREATE TABLE t1_i0053 (
+CREATE TABLE t1_tc_25_reg_0052_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0053 (target) VALUES (b'0');
-INSERT INTO t1_i0053 (target) VALUES (b'11111111');
-INSERT INTO t1_i0053 (target) VALUES (b'1');
-INSERT INTO t1_i0053 (target) VALUES (b'0');
-INSERT INTO t1_i0053 (target) VALUES (b'1010');
-INSERT INTO t1_i0053 (target) VALUES (b'11111111');
-INSERT INTO t1_i0053 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0052_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0052_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0052_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0052_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0052_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0052_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0052_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0053 MODIFY target BIT(16), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0052_it MODIFY target BIT(16), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0053 (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0052_it (target) VALUES (b'1111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0053 (target) VALUES (b'111111111');
+INSERT INTO t1_tc_25_reg_0052_it (target) VALUES (b'111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0053 (target) VALUES (b'1');
-INSERT INTO t1_i0053 (target) VALUES (b'0');
-INSERT INTO t1_i0053 (target) VALUES (b'11111111');
-INSERT INTO t1_i0053 (target) VALUES (b'1010');
-INSERT INTO t1_i0053 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0052_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0052_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0052_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0052_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0052_it (target) VALUES (NULL);
 -- Oracle table: BIT(16)
-CREATE TABLE t2_i0053 (
+CREATE TABLE t2_tc_25_reg_0052_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0053 (target) VALUES (b'0');
-INSERT INTO t2_i0053 (target) VALUES (b'11111111');
-INSERT INTO t2_i0053 (target) VALUES (b'1');
-INSERT INTO t2_i0053 (target) VALUES (b'0');
-INSERT INTO t2_i0053 (target) VALUES (b'1010');
-INSERT INTO t2_i0053 (target) VALUES (b'11111111');
-INSERT INTO t2_i0053 (target) VALUES (NULL);
-INSERT INTO t2_i0053 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0053 (target) VALUES (b'111111111');
-INSERT INTO t2_i0053 (target) VALUES (b'1');
-INSERT INTO t2_i0053 (target) VALUES (b'0');
-INSERT INTO t2_i0053 (target) VALUES (b'11111111');
-INSERT INTO t2_i0053 (target) VALUES (b'1010');
-INSERT INTO t2_i0053 (target) VALUES (NULL);
-SELECT 'TC-I0053' AS test_id,
+INSERT INTO t2_tc_25_reg_0052_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0052_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0052_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0052_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0052_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0052_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0052_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0052_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0052_it (target) VALUES (b'111111111');
+INSERT INTO t2_tc_25_reg_0052_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0052_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0052_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0052_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0052_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0052-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0053
-   WHERE id NOT IN (SELECT id FROM t2_i0053)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0052_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0052_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0053
-   WHERE id NOT IN (SELECT id FROM t1_i0053)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0052_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0052_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0053 a JOIN t2_i0053 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0052_it a JOIN t2_tc_25_reg_0052_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0054
+-- Test Case: TC-25-REG-0053-IT
 -- Type: BIT(8) -> BIT(16), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: KP-01
+-- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0054, t2_i0054;
+DROP TABLE IF EXISTS t1_tc_25_reg_0053_it, t2_tc_25_reg_0053_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0054 (
+CREATE TABLE t1_tc_25_reg_0053_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8) NOT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0054 MODIFY target BIT(16) NOT NULL, ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0053_it MODIFY target BIT(16) NOT NULL, ALGORITHM=instant;
 -- Oracle table: BIT(16)
-CREATE TABLE t2_i0054 (
+CREATE TABLE t2_tc_25_reg_0053_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16) NOT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-SELECT 'TC-I0054' AS test_id,
+SELECT 'TC-25-REG-0053-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0054
-   WHERE id NOT IN (SELECT id FROM t2_i0054)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0053_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0053_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0054
-   WHERE id NOT IN (SELECT id FROM t1_i0054)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0053_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0053_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0054 a JOIN t2_i0054 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0053_it a JOIN t2_tc_25_reg_0053_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0055
+-- Test Case: TC-25-REG-0054-IT
 -- Type: BIT(8) -> BIT(16), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: KP-03
+-- Transition ID: BIT-02
 -- Factors: data_distribution=UNIFORM, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0055, t2_i0055;
+DROP TABLE IF EXISTS t1_tc_25_reg_0054_it, t2_tc_25_reg_0054_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0055 (
+CREATE TABLE t1_tc_25_reg_0054_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0055 MODIFY target BIT(16), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0054_it MODIFY target BIT(16), ALGORITHM=instant;
 -- Oracle table: BIT(16)
-CREATE TABLE t2_i0055 (
+CREATE TABLE t2_tc_25_reg_0054_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-SELECT 'TC-I0055' AS test_id,
+SELECT 'TC-25-REG-0054-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0055
-   WHERE id NOT IN (SELECT id FROM t2_i0055)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0054_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0054_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0055
-   WHERE id NOT IN (SELECT id FROM t1_i0055)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0054_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0054_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0055 a JOIN t2_i0055 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0054_it a JOIN t2_tc_25_reg_0054_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0056
+-- Test Case: TC-25-REG-0055-IT
 -- Type: BIT(8) -> BIT(16), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: KP-04
+-- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0056, t2_i0056;
+DROP TABLE IF EXISTS t1_tc_25_reg_0055_it, t2_tc_25_reg_0055_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0056 (
+CREATE TABLE t1_tc_25_reg_0055_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(8) NOT NULL DEFAULT b'0',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0056 MODIFY target BIT(16) NOT NULL DEFAULT b'0', ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0055_it MODIFY target BIT(16) NOT NULL DEFAULT b'0', ALGORITHM=instant;
 -- Oracle table: BIT(16)
-CREATE TABLE t2_i0056 (
+CREATE TABLE t2_tc_25_reg_0055_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16) NOT NULL DEFAULT b'0',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-SELECT 'TC-I0056' AS test_id,
+SELECT 'TC-25-REG-0055-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0056
-   WHERE id NOT IN (SELECT id FROM t2_i0056)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0055_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0055_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0056
-   WHERE id NOT IN (SELECT id FROM t1_i0056)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0055_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0055_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0056 a JOIN t2_i0056 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0055_it a JOIN t2_tc_25_reg_0055_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0057
+-- Test Case: TC-25-REG-0056-IT
 -- Type: BIT(8) -> BIT(16), Algorithm: instant, Expected: FAIL
+-- Varied factor: KP-05
+-- Transition ID: BIT-02
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=COMPOSITE_PK, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=FIRST
-DROP TABLE IF EXISTS t1_i0057, t2_i0057;
+DROP TABLE IF EXISTS t1_tc_25_reg_0056_it, t2_tc_25_reg_0056_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0057 (
+CREATE TABLE t1_tc_25_reg_0056_it (
   target BIT(8),
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id, target), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0057 (target) VALUES (b'0');
-INSERT INTO t1_i0057 (target) VALUES (b'11111111');
-INSERT INTO t1_i0057 (target) VALUES (b'1');
-INSERT INTO t1_i0057 (target) VALUES (b'0');
-INSERT INTO t1_i0057 (target) VALUES (b'1010');
-INSERT INTO t1_i0057 (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0056_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0056_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0056_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0056_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0056_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0056_it (target) VALUES (b'11111111');
 -- Expected: ALTER FAILS (table keeps old type)
-ALTER TABLE t1_i0057 MODIFY target BIT(16), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0056_it MODIFY target BIT(16), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0057 (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0056_it (target) VALUES (b'1111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0057 (target) VALUES (b'111111111');
+INSERT INTO t1_tc_25_reg_0056_it (target) VALUES (b'111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0057 (target) VALUES (b'1');
-INSERT INTO t1_i0057 (target) VALUES (b'0');
-INSERT INTO t1_i0057 (target) VALUES (b'11111111');
-INSERT INTO t1_i0057 (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0056_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0056_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0056_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0056_it (target) VALUES (b'1010');
 -- Oracle table: BIT(8)
-CREATE TABLE t2_i0057 (
+CREATE TABLE t2_tc_25_reg_0056_it (
   target BIT(8),
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id, target), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0057 (target) VALUES (b'0');
-INSERT INTO t2_i0057 (target) VALUES (b'11111111');
-INSERT INTO t2_i0057 (target) VALUES (b'1');
-INSERT INTO t2_i0057 (target) VALUES (b'0');
-INSERT INTO t2_i0057 (target) VALUES (b'1010');
-INSERT INTO t2_i0057 (target) VALUES (b'11111111');
-INSERT INTO t2_i0057 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0057 (target) VALUES (b'111111111');
-INSERT INTO t2_i0057 (target) VALUES (b'1');
-INSERT INTO t2_i0057 (target) VALUES (b'0');
-INSERT INTO t2_i0057 (target) VALUES (b'11111111');
-INSERT INTO t2_i0057 (target) VALUES (b'1010');
-SELECT 'TC-I0057' AS test_id,
+INSERT INTO t2_tc_25_reg_0056_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0056_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0056_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0056_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0056_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0056_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0056_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0056_it (target) VALUES (b'111111111');
+INSERT INTO t2_tc_25_reg_0056_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0056_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0056_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0056_it (target) VALUES (b'1010');
+SELECT 'TC-25-REG-0056-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0057
-   WHERE id NOT IN (SELECT id FROM t2_i0057)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0056_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0056_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0057
-   WHERE id NOT IN (SELECT id FROM t1_i0057)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0056_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0056_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0057 a JOIN t2_i0057 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0056_it a JOIN t2_tc_25_reg_0056_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-IA0058
+-- Test Case: TC-25-ATR-0002-IT
 -- Column attribute preservation: COMMENT
 -- Type: BIT(8) -> BIT(16), Algorithm: instant
-DROP TABLE IF EXISTS t1_tc_ia0058, t2_tc_ia0058;
-CREATE TABLE t1_tc_ia0058 (
+DROP TABLE IF EXISTS t1_tc_25_atr_0002_it, t2_tc_25_atr_0002_it;
+CREATE TABLE t1_tc_25_atr_0002_it (
   id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   target BIT(8) COMMENT 'test_comment',
   pad VARCHAR(20) DEFAULT 'pad'
 ) ENGINE=InnoDB;
-INSERT INTO t1_tc_ia0058 (target) VALUES (b'0');
-INSERT INTO t1_tc_ia0058 (target) VALUES (b'11111111');
-INSERT INTO t1_tc_ia0058 (target) VALUES (b'1');
-INSERT INTO t1_tc_ia0058 (target) VALUES (b'0');
-INSERT INTO t1_tc_ia0058 (target) VALUES (b'1010');
-ALTER TABLE t1_tc_ia0058 MODIFY target BIT(16) COMMENT 'test_comment', ALGORITHM=instant;
-INSERT INTO t1_tc_ia0058 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_tc_ia0058 (target) VALUES (b'111111111');
-INSERT INTO t1_tc_ia0058 (target) VALUES (b'1');
-SELECT 'TC-IA0058' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_ia0058' AND column_name='target' AND column_comment='test_comment';
+INSERT INTO t1_tc_25_atr_0002_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_atr_0002_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_atr_0002_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_atr_0002_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_atr_0002_it (target) VALUES (b'1010');
+ALTER TABLE t1_tc_25_atr_0002_it MODIFY target BIT(16) COMMENT 'test_comment', ALGORITHM=instant;
+INSERT INTO t1_tc_25_atr_0002_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_atr_0002_it (target) VALUES (b'111111111');
+INSERT INTO t1_tc_25_atr_0002_it (target) VALUES (b'1');
+SELECT 'TC-25-ATR-0002-IT' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_25_atr_0002_it' AND column_name='target' AND column_comment='test_comment';
 
--- Test Case: TC-I0059
+-- Test Case: TC-25-REG-0057-IT
 -- Type: BIT(16) -> BIT(32), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: BASELINE
+-- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0059, t2_i0059;
+DROP TABLE IF EXISTS t1_tc_25_reg_0057_it, t2_tc_25_reg_0057_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0059 (
+CREATE TABLE t1_tc_25_reg_0057_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0059 (target) VALUES (b'0');
-INSERT INTO t1_i0059 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0059 (target) VALUES (b'1');
-INSERT INTO t1_i0059 (target) VALUES (b'0');
-INSERT INTO t1_i0059 (target) VALUES (b'1010');
-INSERT INTO t1_i0059 (target) VALUES (b'11111111');
-INSERT INTO t1_i0059 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0057_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0057_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0057_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0057_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0057_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0057_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0057_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0059 MODIFY target BIT(32), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0057_it MODIFY target BIT(32), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0059 (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0057_it (target) VALUES (b'11111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0059 (target) VALUES (b'11111111111111111');
+INSERT INTO t1_tc_25_reg_0057_it (target) VALUES (b'11111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0059 (target) VALUES (b'1');
-INSERT INTO t1_i0059 (target) VALUES (b'0');
-INSERT INTO t1_i0059 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0059 (target) VALUES (b'1010');
-INSERT INTO t1_i0059 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0057_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0057_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0057_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0057_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0057_it (target) VALUES (NULL);
 -- Oracle table: BIT(32)
-CREATE TABLE t2_i0059 (
+CREATE TABLE t2_tc_25_reg_0057_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0059 (target) VALUES (b'0');
-INSERT INTO t2_i0059 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0059 (target) VALUES (b'1');
-INSERT INTO t2_i0059 (target) VALUES (b'0');
-INSERT INTO t2_i0059 (target) VALUES (b'1010');
-INSERT INTO t2_i0059 (target) VALUES (b'11111111');
-INSERT INTO t2_i0059 (target) VALUES (NULL);
-INSERT INTO t2_i0059 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0059 (target) VALUES (b'11111111111111111');
-INSERT INTO t2_i0059 (target) VALUES (b'1');
-INSERT INTO t2_i0059 (target) VALUES (b'0');
-INSERT INTO t2_i0059 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0059 (target) VALUES (b'1010');
-INSERT INTO t2_i0059 (target) VALUES (NULL);
-SELECT 'TC-I0059' AS test_id,
+INSERT INTO t2_tc_25_reg_0057_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0057_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0057_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0057_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0057_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0057_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0057_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0057_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0057_it (target) VALUES (b'11111111111111111');
+INSERT INTO t2_tc_25_reg_0057_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0057_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0057_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0057_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0057_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0057-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0059
-   WHERE id NOT IN (SELECT id FROM t2_i0059)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0057_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0057_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0059
-   WHERE id NOT IN (SELECT id FROM t1_i0059)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0057_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0057_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0059 a JOIN t2_i0059 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0057_it a JOIN t2_tc_25_reg_0057_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0060
+-- Test Case: TC-25-REG-0058-IT
 -- Type: BIT(16) -> BIT(32), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: row_format=COMPACT
+-- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=COMPACT, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0060, t2_i0060;
+DROP TABLE IF EXISTS t1_tc_25_reg_0058_it, t2_tc_25_reg_0058_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0060 (
+CREATE TABLE t1_tc_25_reg_0058_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=COMPACT;
-INSERT INTO t1_i0060 (target) VALUES (b'0');
-INSERT INTO t1_i0060 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0060 (target) VALUES (b'1');
-INSERT INTO t1_i0060 (target) VALUES (b'0');
-INSERT INTO t1_i0060 (target) VALUES (b'1010');
-INSERT INTO t1_i0060 (target) VALUES (b'11111111');
-INSERT INTO t1_i0060 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0058_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0058_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0058_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0058_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0058_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0058_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0058_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0060 MODIFY target BIT(32), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0058_it MODIFY target BIT(32), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0060 (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0058_it (target) VALUES (b'11111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0060 (target) VALUES (b'11111111111111111');
+INSERT INTO t1_tc_25_reg_0058_it (target) VALUES (b'11111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0060 (target) VALUES (b'1');
-INSERT INTO t1_i0060 (target) VALUES (b'0');
-INSERT INTO t1_i0060 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0060 (target) VALUES (b'1010');
-INSERT INTO t1_i0060 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0058_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0058_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0058_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0058_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0058_it (target) VALUES (NULL);
 -- Oracle table: BIT(32)
-CREATE TABLE t2_i0060 (
+CREATE TABLE t2_tc_25_reg_0058_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=COMPACT;
-INSERT INTO t2_i0060 (target) VALUES (b'0');
-INSERT INTO t2_i0060 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0060 (target) VALUES (b'1');
-INSERT INTO t2_i0060 (target) VALUES (b'0');
-INSERT INTO t2_i0060 (target) VALUES (b'1010');
-INSERT INTO t2_i0060 (target) VALUES (b'11111111');
-INSERT INTO t2_i0060 (target) VALUES (NULL);
-INSERT INTO t2_i0060 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0060 (target) VALUES (b'11111111111111111');
-INSERT INTO t2_i0060 (target) VALUES (b'1');
-INSERT INTO t2_i0060 (target) VALUES (b'0');
-INSERT INTO t2_i0060 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0060 (target) VALUES (b'1010');
-INSERT INTO t2_i0060 (target) VALUES (NULL);
-SELECT 'TC-I0060' AS test_id,
+INSERT INTO t2_tc_25_reg_0058_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0058_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0058_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0058_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0058_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0058_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0058_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0058_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0058_it (target) VALUES (b'11111111111111111');
+INSERT INTO t2_tc_25_reg_0058_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0058_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0058_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0058_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0058_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0058-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0060
-   WHERE id NOT IN (SELECT id FROM t2_i0060)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0058_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0058_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0060
-   WHERE id NOT IN (SELECT id FROM t1_i0060)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0058_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0058_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0060 a JOIN t2_i0060 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0058_it a JOIN t2_tc_25_reg_0058_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0061
+-- Test Case: TC-25-REG-0059-IT
 -- Type: BIT(16) -> BIT(32), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: row_format=REDUNDANT
+-- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=REDUNDANT, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0061, t2_i0061;
+DROP TABLE IF EXISTS t1_tc_25_reg_0059_it, t2_tc_25_reg_0059_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0061 (
+CREATE TABLE t1_tc_25_reg_0059_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=REDUNDANT;
-INSERT INTO t1_i0061 (target) VALUES (b'0');
-INSERT INTO t1_i0061 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0061 (target) VALUES (b'1');
-INSERT INTO t1_i0061 (target) VALUES (b'0');
-INSERT INTO t1_i0061 (target) VALUES (b'1010');
-INSERT INTO t1_i0061 (target) VALUES (b'11111111');
-INSERT INTO t1_i0061 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0059_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0059_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0059_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0059_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0059_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0059_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0059_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0061 MODIFY target BIT(32), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0059_it MODIFY target BIT(32), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0061 (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0059_it (target) VALUES (b'11111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0061 (target) VALUES (b'11111111111111111');
+INSERT INTO t1_tc_25_reg_0059_it (target) VALUES (b'11111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0061 (target) VALUES (b'1');
-INSERT INTO t1_i0061 (target) VALUES (b'0');
-INSERT INTO t1_i0061 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0061 (target) VALUES (b'1010');
-INSERT INTO t1_i0061 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0059_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0059_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0059_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0059_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0059_it (target) VALUES (NULL);
 -- Oracle table: BIT(32)
-CREATE TABLE t2_i0061 (
+CREATE TABLE t2_tc_25_reg_0059_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=REDUNDANT;
-INSERT INTO t2_i0061 (target) VALUES (b'0');
-INSERT INTO t2_i0061 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0061 (target) VALUES (b'1');
-INSERT INTO t2_i0061 (target) VALUES (b'0');
-INSERT INTO t2_i0061 (target) VALUES (b'1010');
-INSERT INTO t2_i0061 (target) VALUES (b'11111111');
-INSERT INTO t2_i0061 (target) VALUES (NULL);
-INSERT INTO t2_i0061 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0061 (target) VALUES (b'11111111111111111');
-INSERT INTO t2_i0061 (target) VALUES (b'1');
-INSERT INTO t2_i0061 (target) VALUES (b'0');
-INSERT INTO t2_i0061 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0061 (target) VALUES (b'1010');
-INSERT INTO t2_i0061 (target) VALUES (NULL);
-SELECT 'TC-I0061' AS test_id,
+INSERT INTO t2_tc_25_reg_0059_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0059_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0059_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0059_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0059_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0059_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0059_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0059_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0059_it (target) VALUES (b'11111111111111111');
+INSERT INTO t2_tc_25_reg_0059_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0059_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0059_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0059_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0059_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0059-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0061
-   WHERE id NOT IN (SELECT id FROM t2_i0061)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0059_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0059_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0061
-   WHERE id NOT IN (SELECT id FROM t1_i0061)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0059_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0059_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0061 a JOIN t2_i0061 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0059_it a JOIN t2_tc_25_reg_0059_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0062
+-- Test Case: TC-25-REG-0060-IT
 -- Type: BIT(16) -> BIT(32), Algorithm: instant, Expected: FAIL
+-- Varied factor: primary_key=COMPOSITE_PK
+-- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=COMPOSITE_PK, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0062, t2_i0062;
+DROP TABLE IF EXISTS t1_tc_25_reg_0060_it, t2_tc_25_reg_0060_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0062 (
+CREATE TABLE t1_tc_25_reg_0060_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id, target), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0062 (target) VALUES (b'0');
-INSERT INTO t1_i0062 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0062 (target) VALUES (b'1');
-INSERT INTO t1_i0062 (target) VALUES (b'0');
-INSERT INTO t1_i0062 (target) VALUES (b'1010');
-INSERT INTO t1_i0062 (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0060_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0060_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0060_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0060_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0060_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0060_it (target) VALUES (b'11111111');
 -- Expected: ALTER FAILS (table keeps old type)
-ALTER TABLE t1_i0062 MODIFY target BIT(32), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0060_it MODIFY target BIT(32), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0062 (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0060_it (target) VALUES (b'11111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0062 (target) VALUES (b'11111111111111111');
+INSERT INTO t1_tc_25_reg_0060_it (target) VALUES (b'11111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0062 (target) VALUES (b'1');
-INSERT INTO t1_i0062 (target) VALUES (b'0');
-INSERT INTO t1_i0062 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0062 (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0060_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0060_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0060_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0060_it (target) VALUES (b'1010');
 -- Oracle table: BIT(16)
-CREATE TABLE t2_i0062 (
+CREATE TABLE t2_tc_25_reg_0060_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id, target), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0062 (target) VALUES (b'0');
-INSERT INTO t2_i0062 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0062 (target) VALUES (b'1');
-INSERT INTO t2_i0062 (target) VALUES (b'0');
-INSERT INTO t2_i0062 (target) VALUES (b'1010');
-INSERT INTO t2_i0062 (target) VALUES (b'11111111');
-INSERT INTO t2_i0062 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0062 (target) VALUES (b'11111111111111111');
-INSERT INTO t2_i0062 (target) VALUES (b'1');
-INSERT INTO t2_i0062 (target) VALUES (b'0');
-INSERT INTO t2_i0062 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0062 (target) VALUES (b'1010');
-SELECT 'TC-I0062' AS test_id,
+INSERT INTO t2_tc_25_reg_0060_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0060_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0060_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0060_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0060_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0060_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0060_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0060_it (target) VALUES (b'11111111111111111');
+INSERT INTO t2_tc_25_reg_0060_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0060_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0060_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0060_it (target) VALUES (b'1010');
+SELECT 'TC-25-REG-0060-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0062
-   WHERE id NOT IN (SELECT id FROM t2_i0062)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0060_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0060_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0062
-   WHERE id NOT IN (SELECT id FROM t1_i0062)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0060_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0060_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0062 a JOIN t2_i0062 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0060_it a JOIN t2_tc_25_reg_0060_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0063
+-- Test Case: TC-25-REG-0061-IT
 -- Type: BIT(16) -> BIT(32), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: primary_key=NO_EXPLICIT_PK
+-- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=NO_EXPLICIT_PK, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0063, t2_i0063;
+DROP TABLE IF EXISTS t1_tc_25_reg_0061_it, t2_tc_25_reg_0061_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0063 (
+CREATE TABLE t1_tc_25_reg_0061_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16),
   pad2 VARCHAR(20) DEFAULT 'pad2', INDEX idx_id (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0063 (target) VALUES (b'0');
-INSERT INTO t1_i0063 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0063 (target) VALUES (b'1');
-INSERT INTO t1_i0063 (target) VALUES (b'0');
-INSERT INTO t1_i0063 (target) VALUES (b'1010');
-INSERT INTO t1_i0063 (target) VALUES (b'11111111');
-INSERT INTO t1_i0063 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0061_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0061_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0061_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0061_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0061_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0061_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0061_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0063 MODIFY target BIT(32), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0061_it MODIFY target BIT(32), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0063 (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0061_it (target) VALUES (b'11111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0063 (target) VALUES (b'11111111111111111');
+INSERT INTO t1_tc_25_reg_0061_it (target) VALUES (b'11111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0063 (target) VALUES (b'1');
-INSERT INTO t1_i0063 (target) VALUES (b'0');
-INSERT INTO t1_i0063 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0063 (target) VALUES (b'1010');
-INSERT INTO t1_i0063 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0061_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0061_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0061_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0061_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0061_it (target) VALUES (NULL);
 -- Oracle table: BIT(32)
-CREATE TABLE t2_i0063 (
+CREATE TABLE t2_tc_25_reg_0061_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32),
   pad2 VARCHAR(20) DEFAULT 'pad2', INDEX idx_id (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0063 (target) VALUES (b'0');
-INSERT INTO t2_i0063 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0063 (target) VALUES (b'1');
-INSERT INTO t2_i0063 (target) VALUES (b'0');
-INSERT INTO t2_i0063 (target) VALUES (b'1010');
-INSERT INTO t2_i0063 (target) VALUES (b'11111111');
-INSERT INTO t2_i0063 (target) VALUES (NULL);
-INSERT INTO t2_i0063 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0063 (target) VALUES (b'11111111111111111');
-INSERT INTO t2_i0063 (target) VALUES (b'1');
-INSERT INTO t2_i0063 (target) VALUES (b'0');
-INSERT INTO t2_i0063 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0063 (target) VALUES (b'1010');
-INSERT INTO t2_i0063 (target) VALUES (NULL);
-SELECT 'TC-I0063' AS test_id,
+INSERT INTO t2_tc_25_reg_0061_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0061_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0061_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0061_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0061_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0061_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0061_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0061_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0061_it (target) VALUES (b'11111111111111111');
+INSERT INTO t2_tc_25_reg_0061_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0061_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0061_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0061_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0061_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0061-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0063
-   WHERE id NOT IN (SELECT id FROM t2_i0063)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0061_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0061_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0063
-   WHERE id NOT IN (SELECT id FROM t1_i0063)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0061_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0061_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0063 a JOIN t2_i0063 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0061_it a JOIN t2_tc_25_reg_0061_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0064
+-- Test Case: TC-25-REG-0062-IT
 -- Type: BIT(16) -> BIT(32), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: non_target_index=NONE
+-- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=NONE, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0064, t2_i0064;
+DROP TABLE IF EXISTS t1_tc_25_reg_0062_it, t2_tc_25_reg_0062_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0064 (
+CREATE TABLE t1_tc_25_reg_0062_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0064 (target) VALUES (b'0');
-INSERT INTO t1_i0064 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0064 (target) VALUES (b'1');
-INSERT INTO t1_i0064 (target) VALUES (b'0');
-INSERT INTO t1_i0064 (target) VALUES (b'1010');
-INSERT INTO t1_i0064 (target) VALUES (b'11111111');
-INSERT INTO t1_i0064 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0062_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0062_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0062_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0062_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0062_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0062_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0062_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0064 MODIFY target BIT(32), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0062_it MODIFY target BIT(32), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0064 (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0062_it (target) VALUES (b'11111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0064 (target) VALUES (b'11111111111111111');
+INSERT INTO t1_tc_25_reg_0062_it (target) VALUES (b'11111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0064 (target) VALUES (b'1');
-INSERT INTO t1_i0064 (target) VALUES (b'0');
-INSERT INTO t1_i0064 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0064 (target) VALUES (b'1010');
-INSERT INTO t1_i0064 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0062_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0062_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0062_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0062_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0062_it (target) VALUES (NULL);
 -- Oracle table: BIT(32)
-CREATE TABLE t2_i0064 (
+CREATE TABLE t2_tc_25_reg_0062_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0064 (target) VALUES (b'0');
-INSERT INTO t2_i0064 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0064 (target) VALUES (b'1');
-INSERT INTO t2_i0064 (target) VALUES (b'0');
-INSERT INTO t2_i0064 (target) VALUES (b'1010');
-INSERT INTO t2_i0064 (target) VALUES (b'11111111');
-INSERT INTO t2_i0064 (target) VALUES (NULL);
-INSERT INTO t2_i0064 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0064 (target) VALUES (b'11111111111111111');
-INSERT INTO t2_i0064 (target) VALUES (b'1');
-INSERT INTO t2_i0064 (target) VALUES (b'0');
-INSERT INTO t2_i0064 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0064 (target) VALUES (b'1010');
-INSERT INTO t2_i0064 (target) VALUES (NULL);
-SELECT 'TC-I0064' AS test_id,
+INSERT INTO t2_tc_25_reg_0062_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0062_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0062_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0062_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0062_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0062_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0062_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0062_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0062_it (target) VALUES (b'11111111111111111');
+INSERT INTO t2_tc_25_reg_0062_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0062_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0062_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0062_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0062_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0062-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0064
-   WHERE id NOT IN (SELECT id FROM t2_i0064)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0062_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0062_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0064
-   WHERE id NOT IN (SELECT id FROM t1_i0064)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0062_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0062_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0064 a JOIN t2_i0064 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0062_it a JOIN t2_tc_25_reg_0062_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0065
+-- Test Case: TC-25-REG-0063-IT
 -- Type: BIT(16) -> BIT(32), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: non_target_index=MULTIPLE_SECONDARY
+-- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=MULTIPLE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0065, t2_i0065;
+DROP TABLE IF EXISTS t1_tc_25_reg_0063_it, t2_tc_25_reg_0063_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0065 (
+CREATE TABLE t1_tc_25_reg_0063_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1), INDEX idx_pad2 (pad2)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0065 (target) VALUES (b'0');
-INSERT INTO t1_i0065 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0065 (target) VALUES (b'1');
-INSERT INTO t1_i0065 (target) VALUES (b'0');
-INSERT INTO t1_i0065 (target) VALUES (b'1010');
-INSERT INTO t1_i0065 (target) VALUES (b'11111111');
-INSERT INTO t1_i0065 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0063_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0063_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0063_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0063_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0063_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0063_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0063_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0065 MODIFY target BIT(32), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0063_it MODIFY target BIT(32), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0065 (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0063_it (target) VALUES (b'11111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0065 (target) VALUES (b'11111111111111111');
+INSERT INTO t1_tc_25_reg_0063_it (target) VALUES (b'11111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0065 (target) VALUES (b'1');
-INSERT INTO t1_i0065 (target) VALUES (b'0');
-INSERT INTO t1_i0065 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0065 (target) VALUES (b'1010');
-INSERT INTO t1_i0065 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0063_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0063_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0063_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0063_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0063_it (target) VALUES (NULL);
 -- Oracle table: BIT(32)
-CREATE TABLE t2_i0065 (
+CREATE TABLE t2_tc_25_reg_0063_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1), INDEX idx_pad2 (pad2)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0065 (target) VALUES (b'0');
-INSERT INTO t2_i0065 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0065 (target) VALUES (b'1');
-INSERT INTO t2_i0065 (target) VALUES (b'0');
-INSERT INTO t2_i0065 (target) VALUES (b'1010');
-INSERT INTO t2_i0065 (target) VALUES (b'11111111');
-INSERT INTO t2_i0065 (target) VALUES (NULL);
-INSERT INTO t2_i0065 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0065 (target) VALUES (b'11111111111111111');
-INSERT INTO t2_i0065 (target) VALUES (b'1');
-INSERT INTO t2_i0065 (target) VALUES (b'0');
-INSERT INTO t2_i0065 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0065 (target) VALUES (b'1010');
-INSERT INTO t2_i0065 (target) VALUES (NULL);
-SELECT 'TC-I0065' AS test_id,
+INSERT INTO t2_tc_25_reg_0063_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0063_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0063_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0063_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0063_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0063_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0063_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0063_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0063_it (target) VALUES (b'11111111111111111');
+INSERT INTO t2_tc_25_reg_0063_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0063_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0063_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0063_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0063_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0063-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0065
-   WHERE id NOT IN (SELECT id FROM t2_i0065)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0063_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0063_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0065
-   WHERE id NOT IN (SELECT id FROM t1_i0065)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0063_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0063_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0065 a JOIN t2_i0065 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0063_it a JOIN t2_tc_25_reg_0063_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0066
+-- Test Case: TC-25-REG-0064-IT
 -- Type: BIT(16) -> BIT(32), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: non_target_index=UNIQUE
+-- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=UNIQUE, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0066, t2_i0066;
+DROP TABLE IF EXISTS t1_tc_25_reg_0064_it, t2_tc_25_reg_0064_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0066 (
+CREATE TABLE t1_tc_25_reg_0064_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), UNIQUE INDEX uq_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0066 (target) VALUES (b'0');
-INSERT INTO t1_i0066 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0066 (target) VALUES (b'1');
-INSERT INTO t1_i0066 (target) VALUES (b'0');
-INSERT INTO t1_i0066 (target) VALUES (b'1010');
-INSERT INTO t1_i0066 (target) VALUES (b'11111111');
-INSERT INTO t1_i0066 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0064_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0064_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0064_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0064_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0064_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0064_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0064_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0066 MODIFY target BIT(32), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0064_it MODIFY target BIT(32), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0066 (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0064_it (target) VALUES (b'11111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0066 (target) VALUES (b'11111111111111111');
+INSERT INTO t1_tc_25_reg_0064_it (target) VALUES (b'11111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0066 (target) VALUES (b'1');
-INSERT INTO t1_i0066 (target) VALUES (b'0');
-INSERT INTO t1_i0066 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0066 (target) VALUES (b'1010');
-INSERT INTO t1_i0066 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0064_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0064_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0064_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0064_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0064_it (target) VALUES (NULL);
 -- Oracle table: BIT(32)
-CREATE TABLE t2_i0066 (
+CREATE TABLE t2_tc_25_reg_0064_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), UNIQUE INDEX uq_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0066 (target) VALUES (b'0');
-INSERT INTO t2_i0066 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0066 (target) VALUES (b'1');
-INSERT INTO t2_i0066 (target) VALUES (b'0');
-INSERT INTO t2_i0066 (target) VALUES (b'1010');
-INSERT INTO t2_i0066 (target) VALUES (b'11111111');
-INSERT INTO t2_i0066 (target) VALUES (NULL);
-INSERT INTO t2_i0066 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0066 (target) VALUES (b'11111111111111111');
-INSERT INTO t2_i0066 (target) VALUES (b'1');
-INSERT INTO t2_i0066 (target) VALUES (b'0');
-INSERT INTO t2_i0066 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0066 (target) VALUES (b'1010');
-INSERT INTO t2_i0066 (target) VALUES (NULL);
-SELECT 'TC-I0066' AS test_id,
+INSERT INTO t2_tc_25_reg_0064_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0064_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0064_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0064_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0064_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0064_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0064_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0064_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0064_it (target) VALUES (b'11111111111111111');
+INSERT INTO t2_tc_25_reg_0064_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0064_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0064_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0064_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0064_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0064-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0066
-   WHERE id NOT IN (SELECT id FROM t2_i0066)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0064_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0064_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0066
-   WHERE id NOT IN (SELECT id FROM t1_i0066)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0064_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0064_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0066 a JOIN t2_i0066 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0064_it a JOIN t2_tc_25_reg_0064_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0067
+-- Test Case: TC-25-REG-0065-IT
 -- Type: BIT(16) -> BIT(32), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: non_target_index=COMPOSITE_PREFIX
+-- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=COMPOSITE_PREFIX, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0067, t2_i0067;
+DROP TABLE IF EXISTS t1_tc_25_reg_0065_it, t2_tc_25_reg_0065_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0067 (
+CREATE TABLE t1_tc_25_reg_0065_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_composite (pad1(10), pad2(10))
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0067 (target) VALUES (b'0');
-INSERT INTO t1_i0067 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0067 (target) VALUES (b'1');
-INSERT INTO t1_i0067 (target) VALUES (b'0');
-INSERT INTO t1_i0067 (target) VALUES (b'1010');
-INSERT INTO t1_i0067 (target) VALUES (b'11111111');
-INSERT INTO t1_i0067 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0065_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0065_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0065_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0065_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0065_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0065_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0065_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0067 MODIFY target BIT(32), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0065_it MODIFY target BIT(32), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0067 (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0065_it (target) VALUES (b'11111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0067 (target) VALUES (b'11111111111111111');
+INSERT INTO t1_tc_25_reg_0065_it (target) VALUES (b'11111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0067 (target) VALUES (b'1');
-INSERT INTO t1_i0067 (target) VALUES (b'0');
-INSERT INTO t1_i0067 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0067 (target) VALUES (b'1010');
-INSERT INTO t1_i0067 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0065_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0065_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0065_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0065_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0065_it (target) VALUES (NULL);
 -- Oracle table: BIT(32)
-CREATE TABLE t2_i0067 (
+CREATE TABLE t2_tc_25_reg_0065_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_composite (pad1(10), pad2(10))
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0067 (target) VALUES (b'0');
-INSERT INTO t2_i0067 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0067 (target) VALUES (b'1');
-INSERT INTO t2_i0067 (target) VALUES (b'0');
-INSERT INTO t2_i0067 (target) VALUES (b'1010');
-INSERT INTO t2_i0067 (target) VALUES (b'11111111');
-INSERT INTO t2_i0067 (target) VALUES (NULL);
-INSERT INTO t2_i0067 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0067 (target) VALUES (b'11111111111111111');
-INSERT INTO t2_i0067 (target) VALUES (b'1');
-INSERT INTO t2_i0067 (target) VALUES (b'0');
-INSERT INTO t2_i0067 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0067 (target) VALUES (b'1010');
-INSERT INTO t2_i0067 (target) VALUES (NULL);
-SELECT 'TC-I0067' AS test_id,
+INSERT INTO t2_tc_25_reg_0065_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0065_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0065_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0065_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0065_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0065_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0065_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0065_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0065_it (target) VALUES (b'11111111111111111');
+INSERT INTO t2_tc_25_reg_0065_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0065_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0065_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0065_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0065_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0065-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0067
-   WHERE id NOT IN (SELECT id FROM t2_i0067)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0065_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0065_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0067
-   WHERE id NOT IN (SELECT id FROM t1_i0067)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0065_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0065_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0067 a JOIN t2_i0067 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0065_it a JOIN t2_tc_25_reg_0065_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0068
+-- Test Case: TC-25-REG-0066-IT
 -- Type: BIT(16) -> BIT(32), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: target_position=FIRST
+-- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=FIRST
-DROP TABLE IF EXISTS t1_i0068, t2_i0068;
+DROP TABLE IF EXISTS t1_tc_25_reg_0066_it, t2_tc_25_reg_0066_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0068 (
+CREATE TABLE t1_tc_25_reg_0066_it (
   target BIT(16),
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0068 (target) VALUES (b'0');
-INSERT INTO t1_i0068 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0068 (target) VALUES (b'1');
-INSERT INTO t1_i0068 (target) VALUES (b'0');
-INSERT INTO t1_i0068 (target) VALUES (b'1010');
-INSERT INTO t1_i0068 (target) VALUES (b'11111111');
-INSERT INTO t1_i0068 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0066_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0066_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0066_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0066_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0066_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0066_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0066_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0068 MODIFY target BIT(32), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0066_it MODIFY target BIT(32), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0068 (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0066_it (target) VALUES (b'11111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0068 (target) VALUES (b'11111111111111111');
+INSERT INTO t1_tc_25_reg_0066_it (target) VALUES (b'11111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0068 (target) VALUES (b'1');
-INSERT INTO t1_i0068 (target) VALUES (b'0');
-INSERT INTO t1_i0068 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0068 (target) VALUES (b'1010');
-INSERT INTO t1_i0068 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0066_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0066_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0066_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0066_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0066_it (target) VALUES (NULL);
 -- Oracle table: BIT(32)
-CREATE TABLE t2_i0068 (
+CREATE TABLE t2_tc_25_reg_0066_it (
   target BIT(32),
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0068 (target) VALUES (b'0');
-INSERT INTO t2_i0068 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0068 (target) VALUES (b'1');
-INSERT INTO t2_i0068 (target) VALUES (b'0');
-INSERT INTO t2_i0068 (target) VALUES (b'1010');
-INSERT INTO t2_i0068 (target) VALUES (b'11111111');
-INSERT INTO t2_i0068 (target) VALUES (NULL);
-INSERT INTO t2_i0068 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0068 (target) VALUES (b'11111111111111111');
-INSERT INTO t2_i0068 (target) VALUES (b'1');
-INSERT INTO t2_i0068 (target) VALUES (b'0');
-INSERT INTO t2_i0068 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0068 (target) VALUES (b'1010');
-INSERT INTO t2_i0068 (target) VALUES (NULL);
-SELECT 'TC-I0068' AS test_id,
+INSERT INTO t2_tc_25_reg_0066_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0066_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0066_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0066_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0066_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0066_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0066_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0066_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0066_it (target) VALUES (b'11111111111111111');
+INSERT INTO t2_tc_25_reg_0066_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0066_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0066_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0066_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0066_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0066-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0068
-   WHERE id NOT IN (SELECT id FROM t2_i0068)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0066_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0066_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0068
-   WHERE id NOT IN (SELECT id FROM t1_i0068)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0066_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0066_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0068 a JOIN t2_i0068 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0066_it a JOIN t2_tc_25_reg_0066_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0069
+-- Test Case: TC-25-REG-0067-IT
 -- Type: BIT(16) -> BIT(32), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: target_position=LAST
+-- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=LAST
-DROP TABLE IF EXISTS t1_i0069, t2_i0069;
+DROP TABLE IF EXISTS t1_tc_25_reg_0067_it, t2_tc_25_reg_0067_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0069 (
+CREATE TABLE t1_tc_25_reg_0067_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   pad2 VARCHAR(20) DEFAULT 'pad2',
   target BIT(16), PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0069 (target) VALUES (b'0');
-INSERT INTO t1_i0069 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0069 (target) VALUES (b'1');
-INSERT INTO t1_i0069 (target) VALUES (b'0');
-INSERT INTO t1_i0069 (target) VALUES (b'1010');
-INSERT INTO t1_i0069 (target) VALUES (b'11111111');
-INSERT INTO t1_i0069 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0067_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0067_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0067_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0067_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0067_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0067_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0067_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0069 MODIFY target BIT(32), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0067_it MODIFY target BIT(32), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0069 (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0067_it (target) VALUES (b'11111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0069 (target) VALUES (b'11111111111111111');
+INSERT INTO t1_tc_25_reg_0067_it (target) VALUES (b'11111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0069 (target) VALUES (b'1');
-INSERT INTO t1_i0069 (target) VALUES (b'0');
-INSERT INTO t1_i0069 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0069 (target) VALUES (b'1010');
-INSERT INTO t1_i0069 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0067_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0067_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0067_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0067_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0067_it (target) VALUES (NULL);
 -- Oracle table: BIT(32)
-CREATE TABLE t2_i0069 (
+CREATE TABLE t2_tc_25_reg_0067_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   pad2 VARCHAR(20) DEFAULT 'pad2',
   target BIT(32), PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0069 (target) VALUES (b'0');
-INSERT INTO t2_i0069 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0069 (target) VALUES (b'1');
-INSERT INTO t2_i0069 (target) VALUES (b'0');
-INSERT INTO t2_i0069 (target) VALUES (b'1010');
-INSERT INTO t2_i0069 (target) VALUES (b'11111111');
-INSERT INTO t2_i0069 (target) VALUES (NULL);
-INSERT INTO t2_i0069 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0069 (target) VALUES (b'11111111111111111');
-INSERT INTO t2_i0069 (target) VALUES (b'1');
-INSERT INTO t2_i0069 (target) VALUES (b'0');
-INSERT INTO t2_i0069 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0069 (target) VALUES (b'1010');
-INSERT INTO t2_i0069 (target) VALUES (NULL);
-SELECT 'TC-I0069' AS test_id,
+INSERT INTO t2_tc_25_reg_0067_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0067_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0067_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0067_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0067_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0067_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0067_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0067_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0067_it (target) VALUES (b'11111111111111111');
+INSERT INTO t2_tc_25_reg_0067_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0067_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0067_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0067_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0067_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0067-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0069
-   WHERE id NOT IN (SELECT id FROM t2_i0069)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0067_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0067_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0069
-   WHERE id NOT IN (SELECT id FROM t1_i0069)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0067_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0067_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0069 a JOIN t2_i0069 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0067_it a JOIN t2_tc_25_reg_0067_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0070
+-- Test Case: TC-25-REG-0068-IT
 -- Type: BIT(16) -> BIT(32), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: target_attributes=NOT_NULL_NO_DEFAULT
+-- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0070, t2_i0070;
+DROP TABLE IF EXISTS t1_tc_25_reg_0068_it, t2_tc_25_reg_0068_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0070 (
+CREATE TABLE t1_tc_25_reg_0068_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16) NOT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0070 (target) VALUES (b'0');
-INSERT INTO t1_i0070 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0070 (target) VALUES (b'1');
-INSERT INTO t1_i0070 (target) VALUES (b'0');
-INSERT INTO t1_i0070 (target) VALUES (b'1010');
-INSERT INTO t1_i0070 (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0068_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0068_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0068_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0068_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0068_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0068_it (target) VALUES (b'11111111');
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0070 MODIFY target BIT(32) NOT NULL, ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0068_it MODIFY target BIT(32) NOT NULL, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0070 (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0068_it (target) VALUES (b'11111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0070 (target) VALUES (b'11111111111111111');
+INSERT INTO t1_tc_25_reg_0068_it (target) VALUES (b'11111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0070 (target) VALUES (b'1');
-INSERT INTO t1_i0070 (target) VALUES (b'0');
-INSERT INTO t1_i0070 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0070 (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0068_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0068_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0068_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0068_it (target) VALUES (b'1010');
 -- Oracle table: BIT(32)
-CREATE TABLE t2_i0070 (
+CREATE TABLE t2_tc_25_reg_0068_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32) NOT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0070 (target) VALUES (b'0');
-INSERT INTO t2_i0070 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0070 (target) VALUES (b'1');
-INSERT INTO t2_i0070 (target) VALUES (b'0');
-INSERT INTO t2_i0070 (target) VALUES (b'1010');
-INSERT INTO t2_i0070 (target) VALUES (b'11111111');
-INSERT INTO t2_i0070 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0070 (target) VALUES (b'11111111111111111');
-INSERT INTO t2_i0070 (target) VALUES (b'1');
-INSERT INTO t2_i0070 (target) VALUES (b'0');
-INSERT INTO t2_i0070 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0070 (target) VALUES (b'1010');
-SELECT 'TC-I0070' AS test_id,
+INSERT INTO t2_tc_25_reg_0068_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0068_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0068_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0068_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0068_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0068_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0068_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0068_it (target) VALUES (b'11111111111111111');
+INSERT INTO t2_tc_25_reg_0068_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0068_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0068_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0068_it (target) VALUES (b'1010');
+SELECT 'TC-25-REG-0068-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0070
-   WHERE id NOT IN (SELECT id FROM t2_i0070)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0068_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0068_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0070
-   WHERE id NOT IN (SELECT id FROM t1_i0070)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0068_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0068_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0070 a JOIN t2_i0070 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0068_it a JOIN t2_tc_25_reg_0068_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0071
+-- Test Case: TC-25-REG-0069-IT
 -- Type: BIT(16) -> BIT(32), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: target_attributes=CONSTANT_DEFAULT
+-- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=CONSTANT_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0071, t2_i0071;
+DROP TABLE IF EXISTS t1_tc_25_reg_0069_it, t2_tc_25_reg_0069_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0071 (
+CREATE TABLE t1_tc_25_reg_0069_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16) DEFAULT b'0',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0071 (target) VALUES (b'0');
-INSERT INTO t1_i0071 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0071 (target) VALUES (b'1');
-INSERT INTO t1_i0071 (target) VALUES (b'0');
-INSERT INTO t1_i0071 (target) VALUES (b'1010');
-INSERT INTO t1_i0071 (target) VALUES (b'11111111');
-INSERT INTO t1_i0071 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0069_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0069_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0069_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0069_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0069_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0069_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0069_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0071 MODIFY target BIT(32) DEFAULT b'0', ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0069_it MODIFY target BIT(32) DEFAULT b'0', ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0071 (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0069_it (target) VALUES (b'11111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0071 (target) VALUES (b'11111111111111111');
+INSERT INTO t1_tc_25_reg_0069_it (target) VALUES (b'11111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0071 (target) VALUES (b'1');
-INSERT INTO t1_i0071 (target) VALUES (b'0');
-INSERT INTO t1_i0071 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0071 (target) VALUES (b'1010');
-INSERT INTO t1_i0071 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0069_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0069_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0069_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0069_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0069_it (target) VALUES (NULL);
 -- Oracle table: BIT(32)
-CREATE TABLE t2_i0071 (
+CREATE TABLE t2_tc_25_reg_0069_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32) DEFAULT b'0',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0071 (target) VALUES (b'0');
-INSERT INTO t2_i0071 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0071 (target) VALUES (b'1');
-INSERT INTO t2_i0071 (target) VALUES (b'0');
-INSERT INTO t2_i0071 (target) VALUES (b'1010');
-INSERT INTO t2_i0071 (target) VALUES (b'11111111');
-INSERT INTO t2_i0071 (target) VALUES (NULL);
-INSERT INTO t2_i0071 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0071 (target) VALUES (b'11111111111111111');
-INSERT INTO t2_i0071 (target) VALUES (b'1');
-INSERT INTO t2_i0071 (target) VALUES (b'0');
-INSERT INTO t2_i0071 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0071 (target) VALUES (b'1010');
-INSERT INTO t2_i0071 (target) VALUES (NULL);
-SELECT 'TC-I0071' AS test_id,
+INSERT INTO t2_tc_25_reg_0069_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0069_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0069_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0069_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0069_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0069_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0069_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0069_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0069_it (target) VALUES (b'11111111111111111');
+INSERT INTO t2_tc_25_reg_0069_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0069_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0069_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0069_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0069_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0069-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0071
-   WHERE id NOT IN (SELECT id FROM t2_i0071)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0069_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0069_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0071
-   WHERE id NOT IN (SELECT id FROM t1_i0071)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0069_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0069_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0071 a JOIN t2_i0071 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0069_it a JOIN t2_tc_25_reg_0069_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0072
+-- Test Case: TC-25-REG-0070-IT
 -- Type: BIT(16) -> BIT(32), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: target_attributes=NULL_DEFAULT
+-- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0072, t2_i0072;
+DROP TABLE IF EXISTS t1_tc_25_reg_0070_it, t2_tc_25_reg_0070_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0072 (
+CREATE TABLE t1_tc_25_reg_0070_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16) DEFAULT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0072 (target) VALUES (b'0');
-INSERT INTO t1_i0072 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0072 (target) VALUES (b'1');
-INSERT INTO t1_i0072 (target) VALUES (b'0');
-INSERT INTO t1_i0072 (target) VALUES (b'1010');
-INSERT INTO t1_i0072 (target) VALUES (b'11111111');
-INSERT INTO t1_i0072 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0070_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0070_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0070_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0070_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0070_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0070_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0070_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0072 MODIFY target BIT(32) DEFAULT NULL, ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0070_it MODIFY target BIT(32) DEFAULT NULL, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0072 (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0070_it (target) VALUES (b'11111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0072 (target) VALUES (b'11111111111111111');
+INSERT INTO t1_tc_25_reg_0070_it (target) VALUES (b'11111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0072 (target) VALUES (b'1');
-INSERT INTO t1_i0072 (target) VALUES (b'0');
-INSERT INTO t1_i0072 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0072 (target) VALUES (b'1010');
-INSERT INTO t1_i0072 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0070_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0070_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0070_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0070_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0070_it (target) VALUES (NULL);
 -- Oracle table: BIT(32)
-CREATE TABLE t2_i0072 (
+CREATE TABLE t2_tc_25_reg_0070_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32) DEFAULT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0072 (target) VALUES (b'0');
-INSERT INTO t2_i0072 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0072 (target) VALUES (b'1');
-INSERT INTO t2_i0072 (target) VALUES (b'0');
-INSERT INTO t2_i0072 (target) VALUES (b'1010');
-INSERT INTO t2_i0072 (target) VALUES (b'11111111');
-INSERT INTO t2_i0072 (target) VALUES (NULL);
-INSERT INTO t2_i0072 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0072 (target) VALUES (b'11111111111111111');
-INSERT INTO t2_i0072 (target) VALUES (b'1');
-INSERT INTO t2_i0072 (target) VALUES (b'0');
-INSERT INTO t2_i0072 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0072 (target) VALUES (b'1010');
-INSERT INTO t2_i0072 (target) VALUES (NULL);
-SELECT 'TC-I0072' AS test_id,
+INSERT INTO t2_tc_25_reg_0070_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0070_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0070_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0070_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0070_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0070_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0070_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0070_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0070_it (target) VALUES (b'11111111111111111');
+INSERT INTO t2_tc_25_reg_0070_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0070_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0070_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0070_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0070_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0070-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0072
-   WHERE id NOT IN (SELECT id FROM t2_i0072)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0070_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0070_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0072
-   WHERE id NOT IN (SELECT id FROM t1_i0072)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0070_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0070_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0072 a JOIN t2_i0072 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0070_it a JOIN t2_tc_25_reg_0070_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0073
+-- Test Case: TC-25-REG-0071-IT
 -- Type: BIT(16) -> BIT(32), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: target_attributes=NOT_NULL_DEFAULT
+-- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0073, t2_i0073;
+DROP TABLE IF EXISTS t1_tc_25_reg_0071_it, t2_tc_25_reg_0071_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0073 (
+CREATE TABLE t1_tc_25_reg_0071_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16) NOT NULL DEFAULT b'0',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0073 (target) VALUES (b'0');
-INSERT INTO t1_i0073 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0073 (target) VALUES (b'1');
-INSERT INTO t1_i0073 (target) VALUES (b'0');
-INSERT INTO t1_i0073 (target) VALUES (b'1010');
-INSERT INTO t1_i0073 (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0071_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0071_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0071_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0071_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0071_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0071_it (target) VALUES (b'11111111');
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0073 MODIFY target BIT(32) NOT NULL DEFAULT b'0', ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0071_it MODIFY target BIT(32) NOT NULL DEFAULT b'0', ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0073 (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0071_it (target) VALUES (b'11111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0073 (target) VALUES (b'11111111111111111');
+INSERT INTO t1_tc_25_reg_0071_it (target) VALUES (b'11111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0073 (target) VALUES (b'1');
-INSERT INTO t1_i0073 (target) VALUES (b'0');
-INSERT INTO t1_i0073 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0073 (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0071_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0071_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0071_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0071_it (target) VALUES (b'1010');
 -- Oracle table: BIT(32)
-CREATE TABLE t2_i0073 (
+CREATE TABLE t2_tc_25_reg_0071_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32) NOT NULL DEFAULT b'0',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0073 (target) VALUES (b'0');
-INSERT INTO t2_i0073 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0073 (target) VALUES (b'1');
-INSERT INTO t2_i0073 (target) VALUES (b'0');
-INSERT INTO t2_i0073 (target) VALUES (b'1010');
-INSERT INTO t2_i0073 (target) VALUES (b'11111111');
-INSERT INTO t2_i0073 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0073 (target) VALUES (b'11111111111111111');
-INSERT INTO t2_i0073 (target) VALUES (b'1');
-INSERT INTO t2_i0073 (target) VALUES (b'0');
-INSERT INTO t2_i0073 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0073 (target) VALUES (b'1010');
-SELECT 'TC-I0073' AS test_id,
+INSERT INTO t2_tc_25_reg_0071_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0071_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0071_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0071_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0071_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0071_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0071_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0071_it (target) VALUES (b'11111111111111111');
+INSERT INTO t2_tc_25_reg_0071_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0071_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0071_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0071_it (target) VALUES (b'1010');
+SELECT 'TC-25-REG-0071-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0073
-   WHERE id NOT IN (SELECT id FROM t2_i0073)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0071_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0071_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0073
-   WHERE id NOT IN (SELECT id FROM t1_i0073)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0071_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0071_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0073 a JOIN t2_i0073 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0071_it a JOIN t2_tc_25_reg_0071_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0074
+-- Test Case: TC-25-REG-0072-IT
 -- Type: BIT(16) -> BIT(32), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: target_attributes=INVISIBLE
+-- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=INVISIBLE, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0074, t2_i0074;
+DROP TABLE IF EXISTS t1_tc_25_reg_0072_it, t2_tc_25_reg_0072_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0074 (
+CREATE TABLE t1_tc_25_reg_0072_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16) INVISIBLE,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0074 (target) VALUES (b'0');
-INSERT INTO t1_i0074 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0074 (target) VALUES (b'1');
-INSERT INTO t1_i0074 (target) VALUES (b'0');
-INSERT INTO t1_i0074 (target) VALUES (b'1010');
-INSERT INTO t1_i0074 (target) VALUES (b'11111111');
-INSERT INTO t1_i0074 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0072_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0072_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0072_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0072_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0072_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0072_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0072_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0074 MODIFY target BIT(32) INVISIBLE, ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0072_it MODIFY target BIT(32) INVISIBLE, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0074 (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0072_it (target) VALUES (b'11111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0074 (target) VALUES (b'11111111111111111');
+INSERT INTO t1_tc_25_reg_0072_it (target) VALUES (b'11111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0074 (target) VALUES (b'1');
-INSERT INTO t1_i0074 (target) VALUES (b'0');
-INSERT INTO t1_i0074 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0074 (target) VALUES (b'1010');
-INSERT INTO t1_i0074 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0072_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0072_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0072_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0072_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0072_it (target) VALUES (NULL);
 -- Oracle table: BIT(32)
-CREATE TABLE t2_i0074 (
+CREATE TABLE t2_tc_25_reg_0072_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32) INVISIBLE,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0074 (target) VALUES (b'0');
-INSERT INTO t2_i0074 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0074 (target) VALUES (b'1');
-INSERT INTO t2_i0074 (target) VALUES (b'0');
-INSERT INTO t2_i0074 (target) VALUES (b'1010');
-INSERT INTO t2_i0074 (target) VALUES (b'11111111');
-INSERT INTO t2_i0074 (target) VALUES (NULL);
-INSERT INTO t2_i0074 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0074 (target) VALUES (b'11111111111111111');
-INSERT INTO t2_i0074 (target) VALUES (b'1');
-INSERT INTO t2_i0074 (target) VALUES (b'0');
-INSERT INTO t2_i0074 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0074 (target) VALUES (b'1010');
-INSERT INTO t2_i0074 (target) VALUES (NULL);
-SELECT 'TC-I0074' AS test_id,
+INSERT INTO t2_tc_25_reg_0072_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0072_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0072_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0072_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0072_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0072_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0072_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0072_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0072_it (target) VALUES (b'11111111111111111');
+INSERT INTO t2_tc_25_reg_0072_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0072_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0072_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0072_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0072_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0072-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0074
-   WHERE id NOT IN (SELECT id FROM t2_i0074)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0072_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0072_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0074
-   WHERE id NOT IN (SELECT id FROM t1_i0074)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0072_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0072_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0074 a JOIN t2_i0074 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0072_it a JOIN t2_tc_25_reg_0072_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0075
+-- Test Case: TC-25-REG-0073-IT
 -- Type: BIT(16) -> BIT(32), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: data_scale=S0
+-- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0075, t2_i0075;
+DROP TABLE IF EXISTS t1_tc_25_reg_0073_it, t2_tc_25_reg_0073_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0075 (
+CREATE TABLE t1_tc_25_reg_0073_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0075 MODIFY target BIT(32), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0073_it MODIFY target BIT(32), ALGORITHM=instant;
 -- Oracle table: BIT(32)
-CREATE TABLE t2_i0075 (
+CREATE TABLE t2_tc_25_reg_0073_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-SELECT 'TC-I0075' AS test_id,
+SELECT 'TC-25-REG-0073-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0075
-   WHERE id NOT IN (SELECT id FROM t2_i0075)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0073_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0073_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0075
-   WHERE id NOT IN (SELECT id FROM t1_i0075)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0073_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0073_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0075 a JOIN t2_i0075 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0073_it a JOIN t2_tc_25_reg_0073_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0076
+-- Test Case: TC-25-REG-0074-IT
 -- Type: BIT(16) -> BIT(32), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: data_scale=S1
+-- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S1, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0076, t2_i0076;
+DROP TABLE IF EXISTS t1_tc_25_reg_0074_it, t2_tc_25_reg_0074_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0076 (
+CREATE TABLE t1_tc_25_reg_0074_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0076 (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0074_it (target) VALUES (b'0');
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0076 MODIFY target BIT(32), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0074_it MODIFY target BIT(32), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0076 (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0074_it (target) VALUES (b'11111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0076 (target) VALUES (b'11111111111111111');
+INSERT INTO t1_tc_25_reg_0074_it (target) VALUES (b'11111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0076 (target) VALUES (b'1');
-INSERT INTO t1_i0076 (target) VALUES (b'0');
-INSERT INTO t1_i0076 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0076 (target) VALUES (b'1010');
-INSERT INTO t1_i0076 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0074_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0074_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0074_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0074_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0074_it (target) VALUES (NULL);
 -- Oracle table: BIT(32)
-CREATE TABLE t2_i0076 (
+CREATE TABLE t2_tc_25_reg_0074_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0076 (target) VALUES (b'0');
-INSERT INTO t2_i0076 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0076 (target) VALUES (b'11111111111111111');
-INSERT INTO t2_i0076 (target) VALUES (b'1');
-INSERT INTO t2_i0076 (target) VALUES (b'0');
-INSERT INTO t2_i0076 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0076 (target) VALUES (b'1010');
-INSERT INTO t2_i0076 (target) VALUES (NULL);
-SELECT 'TC-I0076' AS test_id,
+INSERT INTO t2_tc_25_reg_0074_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0074_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0074_it (target) VALUES (b'11111111111111111');
+INSERT INTO t2_tc_25_reg_0074_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0074_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0074_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0074_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0074_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0074-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0076
-   WHERE id NOT IN (SELECT id FROM t2_i0076)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0074_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0074_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0076
-   WHERE id NOT IN (SELECT id FROM t1_i0076)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0074_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0074_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0076 a JOIN t2_i0076 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0074_it a JOIN t2_tc_25_reg_0074_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0077
+-- Test Case: TC-25-REG-0075-IT
 -- Type: BIT(16) -> BIT(32), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: data_distribution=UNIFORM
+-- Transition ID: BIT-03
 -- Factors: data_distribution=UNIFORM, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0077, t2_i0077;
+DROP TABLE IF EXISTS t1_tc_25_reg_0075_it, t2_tc_25_reg_0075_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0077 (
+CREATE TABLE t1_tc_25_reg_0075_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0077 (target) VALUES (b'0');
-INSERT INTO t1_i0077 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0077 (target) VALUES (b'1');
-INSERT INTO t1_i0077 (target) VALUES (b'0');
-INSERT INTO t1_i0077 (target) VALUES (b'1010');
-INSERT INTO t1_i0077 (target) VALUES (b'11111111');
-INSERT INTO t1_i0077 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0075_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0075_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0075_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0075_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0075_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0075_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0075_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0077 MODIFY target BIT(32), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0075_it MODIFY target BIT(32), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0077 (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0075_it (target) VALUES (b'11111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0077 (target) VALUES (b'11111111111111111');
+INSERT INTO t1_tc_25_reg_0075_it (target) VALUES (b'11111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0077 (target) VALUES (b'1');
-INSERT INTO t1_i0077 (target) VALUES (b'0');
-INSERT INTO t1_i0077 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0077 (target) VALUES (b'1010');
-INSERT INTO t1_i0077 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0075_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0075_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0075_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0075_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0075_it (target) VALUES (NULL);
 -- Oracle table: BIT(32)
-CREATE TABLE t2_i0077 (
+CREATE TABLE t2_tc_25_reg_0075_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0077 (target) VALUES (b'0');
-INSERT INTO t2_i0077 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0077 (target) VALUES (b'1');
-INSERT INTO t2_i0077 (target) VALUES (b'0');
-INSERT INTO t2_i0077 (target) VALUES (b'1010');
-INSERT INTO t2_i0077 (target) VALUES (b'11111111');
-INSERT INTO t2_i0077 (target) VALUES (NULL);
-INSERT INTO t2_i0077 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0077 (target) VALUES (b'11111111111111111');
-INSERT INTO t2_i0077 (target) VALUES (b'1');
-INSERT INTO t2_i0077 (target) VALUES (b'0');
-INSERT INTO t2_i0077 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0077 (target) VALUES (b'1010');
-INSERT INTO t2_i0077 (target) VALUES (NULL);
-SELECT 'TC-I0077' AS test_id,
+INSERT INTO t2_tc_25_reg_0075_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0075_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0075_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0075_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0075_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0075_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0075_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0075_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0075_it (target) VALUES (b'11111111111111111');
+INSERT INTO t2_tc_25_reg_0075_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0075_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0075_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0075_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0075_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0075-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0077
-   WHERE id NOT IN (SELECT id FROM t2_i0077)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0075_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0075_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0077
-   WHERE id NOT IN (SELECT id FROM t1_i0077)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0075_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0075_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0077 a JOIN t2_i0077 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0075_it a JOIN t2_tc_25_reg_0075_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0078
+-- Test Case: TC-25-REG-0076-IT
 -- Type: BIT(16) -> BIT(32), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: data_distribution=MONOTONIC
+-- Transition ID: BIT-03
 -- Factors: data_distribution=MONOTONIC, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0078, t2_i0078;
+DROP TABLE IF EXISTS t1_tc_25_reg_0076_it, t2_tc_25_reg_0076_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0078 (
+CREATE TABLE t1_tc_25_reg_0076_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0078 (target) VALUES (b'0');
-INSERT INTO t1_i0078 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0078 (target) VALUES (b'1');
-INSERT INTO t1_i0078 (target) VALUES (b'0');
-INSERT INTO t1_i0078 (target) VALUES (b'1010');
-INSERT INTO t1_i0078 (target) VALUES (b'11111111');
-INSERT INTO t1_i0078 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0076_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0076_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0076_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0076_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0076_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0076_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0076_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0078 MODIFY target BIT(32), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0076_it MODIFY target BIT(32), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0078 (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0076_it (target) VALUES (b'11111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0078 (target) VALUES (b'11111111111111111');
+INSERT INTO t1_tc_25_reg_0076_it (target) VALUES (b'11111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0078 (target) VALUES (b'1');
-INSERT INTO t1_i0078 (target) VALUES (b'0');
-INSERT INTO t1_i0078 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0078 (target) VALUES (b'1010');
-INSERT INTO t1_i0078 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0076_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0076_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0076_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0076_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0076_it (target) VALUES (NULL);
 -- Oracle table: BIT(32)
-CREATE TABLE t2_i0078 (
+CREATE TABLE t2_tc_25_reg_0076_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0078 (target) VALUES (b'0');
-INSERT INTO t2_i0078 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0078 (target) VALUES (b'1');
-INSERT INTO t2_i0078 (target) VALUES (b'0');
-INSERT INTO t2_i0078 (target) VALUES (b'1010');
-INSERT INTO t2_i0078 (target) VALUES (b'11111111');
-INSERT INTO t2_i0078 (target) VALUES (NULL);
-INSERT INTO t2_i0078 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0078 (target) VALUES (b'11111111111111111');
-INSERT INTO t2_i0078 (target) VALUES (b'1');
-INSERT INTO t2_i0078 (target) VALUES (b'0');
-INSERT INTO t2_i0078 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0078 (target) VALUES (b'1010');
-INSERT INTO t2_i0078 (target) VALUES (NULL);
-SELECT 'TC-I0078' AS test_id,
+INSERT INTO t2_tc_25_reg_0076_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0076_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0076_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0076_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0076_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0076_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0076_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0076_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0076_it (target) VALUES (b'11111111111111111');
+INSERT INTO t2_tc_25_reg_0076_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0076_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0076_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0076_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0076_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0076-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0078
-   WHERE id NOT IN (SELECT id FROM t2_i0078)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0076_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0076_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0078
-   WHERE id NOT IN (SELECT id FROM t1_i0078)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0076_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0076_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0078 a JOIN t2_i0078 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0076_it a JOIN t2_tc_25_reg_0076_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0079
+-- Test Case: TC-25-REG-0077-IT
 -- Type: BIT(16) -> BIT(32), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: null_ratio=ZERO
+-- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=ZERO, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0079, t2_i0079;
+DROP TABLE IF EXISTS t1_tc_25_reg_0077_it, t2_tc_25_reg_0077_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0079 (
+CREATE TABLE t1_tc_25_reg_0077_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0079 (target) VALUES (b'0');
-INSERT INTO t1_i0079 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0079 (target) VALUES (b'1');
-INSERT INTO t1_i0079 (target) VALUES (b'0');
-INSERT INTO t1_i0079 (target) VALUES (b'1010');
-INSERT INTO t1_i0079 (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0077_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0077_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0077_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0077_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0077_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0077_it (target) VALUES (b'11111111');
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0079 MODIFY target BIT(32), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0077_it MODIFY target BIT(32), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0079 (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0077_it (target) VALUES (b'11111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0079 (target) VALUES (b'11111111111111111');
+INSERT INTO t1_tc_25_reg_0077_it (target) VALUES (b'11111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0079 (target) VALUES (b'1');
-INSERT INTO t1_i0079 (target) VALUES (b'0');
-INSERT INTO t1_i0079 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0079 (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0077_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0077_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0077_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0077_it (target) VALUES (b'1010');
 -- Oracle table: BIT(32)
-CREATE TABLE t2_i0079 (
+CREATE TABLE t2_tc_25_reg_0077_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0079 (target) VALUES (b'0');
-INSERT INTO t2_i0079 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0079 (target) VALUES (b'1');
-INSERT INTO t2_i0079 (target) VALUES (b'0');
-INSERT INTO t2_i0079 (target) VALUES (b'1010');
-INSERT INTO t2_i0079 (target) VALUES (b'11111111');
-INSERT INTO t2_i0079 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0079 (target) VALUES (b'11111111111111111');
-INSERT INTO t2_i0079 (target) VALUES (b'1');
-INSERT INTO t2_i0079 (target) VALUES (b'0');
-INSERT INTO t2_i0079 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0079 (target) VALUES (b'1010');
-SELECT 'TC-I0079' AS test_id,
+INSERT INTO t2_tc_25_reg_0077_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0077_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0077_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0077_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0077_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0077_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0077_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0077_it (target) VALUES (b'11111111111111111');
+INSERT INTO t2_tc_25_reg_0077_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0077_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0077_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0077_it (target) VALUES (b'1010');
+SELECT 'TC-25-REG-0077-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0079
-   WHERE id NOT IN (SELECT id FROM t2_i0079)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0077_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0077_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0079
-   WHERE id NOT IN (SELECT id FROM t1_i0079)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0077_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0077_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0079 a JOIN t2_i0079 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0077_it a JOIN t2_tc_25_reg_0077_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0080
+-- Test Case: TC-25-REG-0078-IT
 -- Type: BIT(16) -> BIT(32), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: null_ratio=SINGLE
+-- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=SINGLE, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0080, t2_i0080;
+DROP TABLE IF EXISTS t1_tc_25_reg_0078_it, t2_tc_25_reg_0078_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0080 (
+CREATE TABLE t1_tc_25_reg_0078_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0080 (target) VALUES (b'0');
-INSERT INTO t1_i0080 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0080 (target) VALUES (b'1');
-INSERT INTO t1_i0080 (target) VALUES (b'0');
-INSERT INTO t1_i0080 (target) VALUES (b'1010');
-INSERT INTO t1_i0080 (target) VALUES (b'11111111');
-INSERT INTO t1_i0080 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0078_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0078_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0078_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0078_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0078_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0078_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0078_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0080 MODIFY target BIT(32), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0078_it MODIFY target BIT(32), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0080 (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0078_it (target) VALUES (b'11111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0080 (target) VALUES (b'11111111111111111');
+INSERT INTO t1_tc_25_reg_0078_it (target) VALUES (b'11111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0080 (target) VALUES (b'1');
-INSERT INTO t1_i0080 (target) VALUES (b'0');
-INSERT INTO t1_i0080 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0080 (target) VALUES (b'1010');
-INSERT INTO t1_i0080 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0078_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0078_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0078_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0078_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0078_it (target) VALUES (NULL);
 -- Oracle table: BIT(32)
-CREATE TABLE t2_i0080 (
+CREATE TABLE t2_tc_25_reg_0078_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0080 (target) VALUES (b'0');
-INSERT INTO t2_i0080 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0080 (target) VALUES (b'1');
-INSERT INTO t2_i0080 (target) VALUES (b'0');
-INSERT INTO t2_i0080 (target) VALUES (b'1010');
-INSERT INTO t2_i0080 (target) VALUES (b'11111111');
-INSERT INTO t2_i0080 (target) VALUES (NULL);
-INSERT INTO t2_i0080 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0080 (target) VALUES (b'11111111111111111');
-INSERT INTO t2_i0080 (target) VALUES (b'1');
-INSERT INTO t2_i0080 (target) VALUES (b'0');
-INSERT INTO t2_i0080 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0080 (target) VALUES (b'1010');
-INSERT INTO t2_i0080 (target) VALUES (NULL);
-SELECT 'TC-I0080' AS test_id,
+INSERT INTO t2_tc_25_reg_0078_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0078_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0078_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0078_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0078_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0078_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0078_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0078_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0078_it (target) VALUES (b'11111111111111111');
+INSERT INTO t2_tc_25_reg_0078_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0078_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0078_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0078_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0078_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0078-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0080
-   WHERE id NOT IN (SELECT id FROM t2_i0080)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0078_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0078_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0080
-   WHERE id NOT IN (SELECT id FROM t1_i0080)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0078_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0078_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0080 a JOIN t2_i0080 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0078_it a JOIN t2_tc_25_reg_0078_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0081
+-- Test Case: TC-25-REG-0079-IT
 -- Type: BIT(16) -> BIT(32), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: null_ratio=ALL
+-- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=ALL, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0081, t2_i0081;
+DROP TABLE IF EXISTS t1_tc_25_reg_0079_it, t2_tc_25_reg_0079_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0081 (
+CREATE TABLE t1_tc_25_reg_0079_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0081 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0079_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0081 MODIFY target BIT(32), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0079_it MODIFY target BIT(32), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0081 (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0079_it (target) VALUES (b'11111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0081 (target) VALUES (b'11111111111111111');
+INSERT INTO t1_tc_25_reg_0079_it (target) VALUES (b'11111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0081 (target) VALUES (b'1');
-INSERT INTO t1_i0081 (target) VALUES (b'0');
-INSERT INTO t1_i0081 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0081 (target) VALUES (b'1010');
-INSERT INTO t1_i0081 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0079_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0079_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0079_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0079_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0079_it (target) VALUES (NULL);
 -- Oracle table: BIT(32)
-CREATE TABLE t2_i0081 (
+CREATE TABLE t2_tc_25_reg_0079_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0081 (target) VALUES (NULL);
-INSERT INTO t2_i0081 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0081 (target) VALUES (b'11111111111111111');
-INSERT INTO t2_i0081 (target) VALUES (b'1');
-INSERT INTO t2_i0081 (target) VALUES (b'0');
-INSERT INTO t2_i0081 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0081 (target) VALUES (b'1010');
-INSERT INTO t2_i0081 (target) VALUES (NULL);
-SELECT 'TC-I0081' AS test_id,
+INSERT INTO t2_tc_25_reg_0079_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0079_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0079_it (target) VALUES (b'11111111111111111');
+INSERT INTO t2_tc_25_reg_0079_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0079_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0079_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0079_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0079_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0079-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0081
-   WHERE id NOT IN (SELECT id FROM t2_i0081)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0079_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0079_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0081
-   WHERE id NOT IN (SELECT id FROM t1_i0081)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0079_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0079_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0081 a JOIN t2_i0081 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0079_it a JOIN t2_tc_25_reg_0079_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0082
+-- Test Case: TC-25-REG-0080-IT
 -- Type: BIT(16) -> BIT(32), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: sql_mode=NON_STRICT
+-- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=NON_STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0082, t2_i0082;
+DROP TABLE IF EXISTS t1_tc_25_reg_0080_it, t2_tc_25_reg_0080_it;
 SET SESSION sql_mode = '';
-CREATE TABLE t1_i0082 (
+CREATE TABLE t1_tc_25_reg_0080_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0082 (target) VALUES (b'0');
-INSERT INTO t1_i0082 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0082 (target) VALUES (b'1');
-INSERT INTO t1_i0082 (target) VALUES (b'0');
-INSERT INTO t1_i0082 (target) VALUES (b'1010');
-INSERT INTO t1_i0082 (target) VALUES (b'11111111');
-INSERT INTO t1_i0082 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0080_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0080_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0080_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0080_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0080_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0080_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0080_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0082 MODIFY target BIT(32), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0080_it MODIFY target BIT(32), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0082 (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0080_it (target) VALUES (b'11111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0082 (target) VALUES (b'11111111111111111');
+INSERT INTO t1_tc_25_reg_0080_it (target) VALUES (b'11111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0082 (target) VALUES (b'1');
-INSERT INTO t1_i0082 (target) VALUES (b'0');
-INSERT INTO t1_i0082 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0082 (target) VALUES (b'1010');
-INSERT INTO t1_i0082 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0080_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0080_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0080_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0080_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0080_it (target) VALUES (NULL);
 -- Oracle table: BIT(32)
-CREATE TABLE t2_i0082 (
+CREATE TABLE t2_tc_25_reg_0080_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0082 (target) VALUES (b'0');
-INSERT INTO t2_i0082 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0082 (target) VALUES (b'1');
-INSERT INTO t2_i0082 (target) VALUES (b'0');
-INSERT INTO t2_i0082 (target) VALUES (b'1010');
-INSERT INTO t2_i0082 (target) VALUES (b'11111111');
-INSERT INTO t2_i0082 (target) VALUES (NULL);
-INSERT INTO t2_i0082 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0082 (target) VALUES (b'11111111111111111');
-INSERT INTO t2_i0082 (target) VALUES (b'1');
-INSERT INTO t2_i0082 (target) VALUES (b'0');
-INSERT INTO t2_i0082 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0082 (target) VALUES (b'1010');
-INSERT INTO t2_i0082 (target) VALUES (NULL);
-SELECT 'TC-I0082' AS test_id,
+INSERT INTO t2_tc_25_reg_0080_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0080_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0080_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0080_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0080_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0080_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0080_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0080_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0080_it (target) VALUES (b'11111111111111111');
+INSERT INTO t2_tc_25_reg_0080_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0080_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0080_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0080_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0080_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0080-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0082
-   WHERE id NOT IN (SELECT id FROM t2_i0082)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0080_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0080_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0082
-   WHERE id NOT IN (SELECT id FROM t1_i0082)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0080_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0080_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0082 a JOIN t2_i0082 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0080_it a JOIN t2_tc_25_reg_0080_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0083
+-- Test Case: TC-25-REG-0081-IT
 -- Type: BIT(16) -> BIT(32), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: KP-01
+-- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0083, t2_i0083;
+DROP TABLE IF EXISTS t1_tc_25_reg_0081_it, t2_tc_25_reg_0081_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0083 (
+CREATE TABLE t1_tc_25_reg_0081_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16) NOT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0083 MODIFY target BIT(32) NOT NULL, ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0081_it MODIFY target BIT(32) NOT NULL, ALGORITHM=instant;
 -- Oracle table: BIT(32)
-CREATE TABLE t2_i0083 (
+CREATE TABLE t2_tc_25_reg_0081_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32) NOT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-SELECT 'TC-I0083' AS test_id,
+SELECT 'TC-25-REG-0081-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0083
-   WHERE id NOT IN (SELECT id FROM t2_i0083)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0081_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0081_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0083
-   WHERE id NOT IN (SELECT id FROM t1_i0083)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0081_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0081_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0083 a JOIN t2_i0083 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0081_it a JOIN t2_tc_25_reg_0081_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0084
+-- Test Case: TC-25-REG-0082-IT
 -- Type: BIT(16) -> BIT(32), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: KP-03
+-- Transition ID: BIT-03
 -- Factors: data_distribution=UNIFORM, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0084, t2_i0084;
+DROP TABLE IF EXISTS t1_tc_25_reg_0082_it, t2_tc_25_reg_0082_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0084 (
+CREATE TABLE t1_tc_25_reg_0082_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0084 MODIFY target BIT(32), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0082_it MODIFY target BIT(32), ALGORITHM=instant;
 -- Oracle table: BIT(32)
-CREATE TABLE t2_i0084 (
+CREATE TABLE t2_tc_25_reg_0082_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-SELECT 'TC-I0084' AS test_id,
+SELECT 'TC-25-REG-0082-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0084
-   WHERE id NOT IN (SELECT id FROM t2_i0084)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0082_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0082_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0084
-   WHERE id NOT IN (SELECT id FROM t1_i0084)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0082_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0082_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0084 a JOIN t2_i0084 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0082_it a JOIN t2_tc_25_reg_0082_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0085
+-- Test Case: TC-25-REG-0083-IT
 -- Type: BIT(16) -> BIT(32), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: KP-04
+-- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0085, t2_i0085;
+DROP TABLE IF EXISTS t1_tc_25_reg_0083_it, t2_tc_25_reg_0083_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0085 (
+CREATE TABLE t1_tc_25_reg_0083_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(16) NOT NULL DEFAULT b'0',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0085 MODIFY target BIT(32) NOT NULL DEFAULT b'0', ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0083_it MODIFY target BIT(32) NOT NULL DEFAULT b'0', ALGORITHM=instant;
 -- Oracle table: BIT(32)
-CREATE TABLE t2_i0085 (
+CREATE TABLE t2_tc_25_reg_0083_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32) NOT NULL DEFAULT b'0',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-SELECT 'TC-I0085' AS test_id,
+SELECT 'TC-25-REG-0083-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0085
-   WHERE id NOT IN (SELECT id FROM t2_i0085)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0083_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0083_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0085
-   WHERE id NOT IN (SELECT id FROM t1_i0085)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0083_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0083_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0085 a JOIN t2_i0085 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0083_it a JOIN t2_tc_25_reg_0083_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0086
+-- Test Case: TC-25-REG-0084-IT
 -- Type: BIT(16) -> BIT(32), Algorithm: instant, Expected: FAIL
+-- Varied factor: KP-05
+-- Transition ID: BIT-03
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=COMPOSITE_PK, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=FIRST
-DROP TABLE IF EXISTS t1_i0086, t2_i0086;
+DROP TABLE IF EXISTS t1_tc_25_reg_0084_it, t2_tc_25_reg_0084_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0086 (
+CREATE TABLE t1_tc_25_reg_0084_it (
   target BIT(16),
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id, target), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0086 (target) VALUES (b'0');
-INSERT INTO t1_i0086 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0086 (target) VALUES (b'1');
-INSERT INTO t1_i0086 (target) VALUES (b'0');
-INSERT INTO t1_i0086 (target) VALUES (b'1010');
-INSERT INTO t1_i0086 (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0084_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0084_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0084_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0084_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0084_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0084_it (target) VALUES (b'11111111');
 -- Expected: ALTER FAILS (table keeps old type)
-ALTER TABLE t1_i0086 MODIFY target BIT(32), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0084_it MODIFY target BIT(32), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0086 (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0084_it (target) VALUES (b'11111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0086 (target) VALUES (b'11111111111111111');
+INSERT INTO t1_tc_25_reg_0084_it (target) VALUES (b'11111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0086 (target) VALUES (b'1');
-INSERT INTO t1_i0086 (target) VALUES (b'0');
-INSERT INTO t1_i0086 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_i0086 (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0084_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0084_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0084_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_reg_0084_it (target) VALUES (b'1010');
 -- Oracle table: BIT(16)
-CREATE TABLE t2_i0086 (
+CREATE TABLE t2_tc_25_reg_0084_it (
   target BIT(16),
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id, target), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0086 (target) VALUES (b'0');
-INSERT INTO t2_i0086 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0086 (target) VALUES (b'1');
-INSERT INTO t2_i0086 (target) VALUES (b'0');
-INSERT INTO t2_i0086 (target) VALUES (b'1010');
-INSERT INTO t2_i0086 (target) VALUES (b'11111111');
-INSERT INTO t2_i0086 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0086 (target) VALUES (b'11111111111111111');
-INSERT INTO t2_i0086 (target) VALUES (b'1');
-INSERT INTO t2_i0086 (target) VALUES (b'0');
-INSERT INTO t2_i0086 (target) VALUES (b'1111111111111111');
-INSERT INTO t2_i0086 (target) VALUES (b'1010');
-SELECT 'TC-I0086' AS test_id,
+INSERT INTO t2_tc_25_reg_0084_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0084_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0084_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0084_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0084_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0084_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0084_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0084_it (target) VALUES (b'11111111111111111');
+INSERT INTO t2_tc_25_reg_0084_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0084_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0084_it (target) VALUES (b'1111111111111111');
+INSERT INTO t2_tc_25_reg_0084_it (target) VALUES (b'1010');
+SELECT 'TC-25-REG-0084-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0086
-   WHERE id NOT IN (SELECT id FROM t2_i0086)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0084_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0084_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0086
-   WHERE id NOT IN (SELECT id FROM t1_i0086)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0084_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0084_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0086 a JOIN t2_i0086 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0084_it a JOIN t2_tc_25_reg_0084_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-IA0087
+-- Test Case: TC-25-ATR-0003-IT
 -- Column attribute preservation: COMMENT
 -- Type: BIT(16) -> BIT(32), Algorithm: instant
-DROP TABLE IF EXISTS t1_tc_ia0087, t2_tc_ia0087;
-CREATE TABLE t1_tc_ia0087 (
+DROP TABLE IF EXISTS t1_tc_25_atr_0003_it, t2_tc_25_atr_0003_it;
+CREATE TABLE t1_tc_25_atr_0003_it (
   id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   target BIT(16) COMMENT 'test_comment',
   pad VARCHAR(20) DEFAULT 'pad'
 ) ENGINE=InnoDB;
-INSERT INTO t1_tc_ia0087 (target) VALUES (b'0');
-INSERT INTO t1_tc_ia0087 (target) VALUES (b'1111111111111111');
-INSERT INTO t1_tc_ia0087 (target) VALUES (b'1');
-INSERT INTO t1_tc_ia0087 (target) VALUES (b'0');
-INSERT INTO t1_tc_ia0087 (target) VALUES (b'1010');
-ALTER TABLE t1_tc_ia0087 MODIFY target BIT(32) COMMENT 'test_comment', ALGORITHM=instant;
-INSERT INTO t1_tc_ia0087 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_tc_ia0087 (target) VALUES (b'11111111111111111');
-INSERT INTO t1_tc_ia0087 (target) VALUES (b'1');
-SELECT 'TC-IA0087' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_ia0087' AND column_name='target' AND column_comment='test_comment';
+INSERT INTO t1_tc_25_atr_0003_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_atr_0003_it (target) VALUES (b'1111111111111111');
+INSERT INTO t1_tc_25_atr_0003_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_atr_0003_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_atr_0003_it (target) VALUES (b'1010');
+ALTER TABLE t1_tc_25_atr_0003_it MODIFY target BIT(32) COMMENT 'test_comment', ALGORITHM=instant;
+INSERT INTO t1_tc_25_atr_0003_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_atr_0003_it (target) VALUES (b'11111111111111111');
+INSERT INTO t1_tc_25_atr_0003_it (target) VALUES (b'1');
+SELECT 'TC-25-ATR-0003-IT' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_25_atr_0003_it' AND column_name='target' AND column_comment='test_comment';
 
--- Test Case: TC-I0088
+-- Test Case: TC-25-REG-0085-IT
 -- Type: BIT(32) -> BIT(64), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: BASELINE
+-- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0088, t2_i0088;
+DROP TABLE IF EXISTS t1_tc_25_reg_0085_it, t2_tc_25_reg_0085_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0088 (
+CREATE TABLE t1_tc_25_reg_0085_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0088 (target) VALUES (b'0');
-INSERT INTO t1_i0088 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0088 (target) VALUES (b'1');
-INSERT INTO t1_i0088 (target) VALUES (b'0');
-INSERT INTO t1_i0088 (target) VALUES (b'1010');
-INSERT INTO t1_i0088 (target) VALUES (b'11111111');
-INSERT INTO t1_i0088 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0085_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0085_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0085_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0085_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0085_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0085_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0085_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0088 MODIFY target BIT(64), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0085_it MODIFY target BIT(64), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0088 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0085_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0088 (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0085_it (target) VALUES (b'111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0088 (target) VALUES (b'1');
-INSERT INTO t1_i0088 (target) VALUES (b'0');
-INSERT INTO t1_i0088 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0088 (target) VALUES (b'1010');
-INSERT INTO t1_i0088 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0085_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0085_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0085_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0085_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0085_it (target) VALUES (NULL);
 -- Oracle table: BIT(64)
-CREATE TABLE t2_i0088 (
+CREATE TABLE t2_tc_25_reg_0085_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(64),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0088 (target) VALUES (b'0');
-INSERT INTO t2_i0088 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0088 (target) VALUES (b'1');
-INSERT INTO t2_i0088 (target) VALUES (b'0');
-INSERT INTO t2_i0088 (target) VALUES (b'1010');
-INSERT INTO t2_i0088 (target) VALUES (b'11111111');
-INSERT INTO t2_i0088 (target) VALUES (NULL);
-INSERT INTO t2_i0088 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
-INSERT INTO t2_i0088 (target) VALUES (b'111111111111111111111111111111111');
-INSERT INTO t2_i0088 (target) VALUES (b'1');
-INSERT INTO t2_i0088 (target) VALUES (b'0');
-INSERT INTO t2_i0088 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0088 (target) VALUES (b'1010');
-INSERT INTO t2_i0088 (target) VALUES (NULL);
-SELECT 'TC-I0088' AS test_id,
+INSERT INTO t2_tc_25_reg_0085_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0085_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0085_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0085_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0085_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0085_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0085_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0085_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0085_it (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0085_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0085_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0085_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0085_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0085_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0085-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0088
-   WHERE id NOT IN (SELECT id FROM t2_i0088)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0085_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0085_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0088
-   WHERE id NOT IN (SELECT id FROM t1_i0088)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0085_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0085_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0088 a JOIN t2_i0088 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0085_it a JOIN t2_tc_25_reg_0085_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0089
+-- Test Case: TC-25-REG-0086-IT
 -- Type: BIT(32) -> BIT(64), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: row_format=COMPACT
+-- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=COMPACT, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0089, t2_i0089;
+DROP TABLE IF EXISTS t1_tc_25_reg_0086_it, t2_tc_25_reg_0086_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0089 (
+CREATE TABLE t1_tc_25_reg_0086_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=COMPACT;
-INSERT INTO t1_i0089 (target) VALUES (b'0');
-INSERT INTO t1_i0089 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0089 (target) VALUES (b'1');
-INSERT INTO t1_i0089 (target) VALUES (b'0');
-INSERT INTO t1_i0089 (target) VALUES (b'1010');
-INSERT INTO t1_i0089 (target) VALUES (b'11111111');
-INSERT INTO t1_i0089 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0086_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0086_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0086_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0086_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0086_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0086_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0086_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0089 MODIFY target BIT(64), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0086_it MODIFY target BIT(64), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0089 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0086_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0089 (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0086_it (target) VALUES (b'111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0089 (target) VALUES (b'1');
-INSERT INTO t1_i0089 (target) VALUES (b'0');
-INSERT INTO t1_i0089 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0089 (target) VALUES (b'1010');
-INSERT INTO t1_i0089 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0086_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0086_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0086_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0086_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0086_it (target) VALUES (NULL);
 -- Oracle table: BIT(64)
-CREATE TABLE t2_i0089 (
+CREATE TABLE t2_tc_25_reg_0086_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(64),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=COMPACT;
-INSERT INTO t2_i0089 (target) VALUES (b'0');
-INSERT INTO t2_i0089 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0089 (target) VALUES (b'1');
-INSERT INTO t2_i0089 (target) VALUES (b'0');
-INSERT INTO t2_i0089 (target) VALUES (b'1010');
-INSERT INTO t2_i0089 (target) VALUES (b'11111111');
-INSERT INTO t2_i0089 (target) VALUES (NULL);
-INSERT INTO t2_i0089 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
-INSERT INTO t2_i0089 (target) VALUES (b'111111111111111111111111111111111');
-INSERT INTO t2_i0089 (target) VALUES (b'1');
-INSERT INTO t2_i0089 (target) VALUES (b'0');
-INSERT INTO t2_i0089 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0089 (target) VALUES (b'1010');
-INSERT INTO t2_i0089 (target) VALUES (NULL);
-SELECT 'TC-I0089' AS test_id,
+INSERT INTO t2_tc_25_reg_0086_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0086_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0086_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0086_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0086_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0086_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0086_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0086_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0086_it (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0086_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0086_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0086_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0086_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0086_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0086-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0089
-   WHERE id NOT IN (SELECT id FROM t2_i0089)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0086_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0086_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0089
-   WHERE id NOT IN (SELECT id FROM t1_i0089)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0086_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0086_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0089 a JOIN t2_i0089 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0086_it a JOIN t2_tc_25_reg_0086_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0090
+-- Test Case: TC-25-REG-0087-IT
 -- Type: BIT(32) -> BIT(64), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: row_format=REDUNDANT
+-- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=REDUNDANT, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0090, t2_i0090;
+DROP TABLE IF EXISTS t1_tc_25_reg_0087_it, t2_tc_25_reg_0087_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0090 (
+CREATE TABLE t1_tc_25_reg_0087_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=REDUNDANT;
-INSERT INTO t1_i0090 (target) VALUES (b'0');
-INSERT INTO t1_i0090 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0090 (target) VALUES (b'1');
-INSERT INTO t1_i0090 (target) VALUES (b'0');
-INSERT INTO t1_i0090 (target) VALUES (b'1010');
-INSERT INTO t1_i0090 (target) VALUES (b'11111111');
-INSERT INTO t1_i0090 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0087_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0087_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0087_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0087_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0087_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0087_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0087_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0090 MODIFY target BIT(64), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0087_it MODIFY target BIT(64), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0090 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0087_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0090 (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0087_it (target) VALUES (b'111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0090 (target) VALUES (b'1');
-INSERT INTO t1_i0090 (target) VALUES (b'0');
-INSERT INTO t1_i0090 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0090 (target) VALUES (b'1010');
-INSERT INTO t1_i0090 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0087_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0087_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0087_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0087_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0087_it (target) VALUES (NULL);
 -- Oracle table: BIT(64)
-CREATE TABLE t2_i0090 (
+CREATE TABLE t2_tc_25_reg_0087_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(64),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=REDUNDANT;
-INSERT INTO t2_i0090 (target) VALUES (b'0');
-INSERT INTO t2_i0090 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0090 (target) VALUES (b'1');
-INSERT INTO t2_i0090 (target) VALUES (b'0');
-INSERT INTO t2_i0090 (target) VALUES (b'1010');
-INSERT INTO t2_i0090 (target) VALUES (b'11111111');
-INSERT INTO t2_i0090 (target) VALUES (NULL);
-INSERT INTO t2_i0090 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
-INSERT INTO t2_i0090 (target) VALUES (b'111111111111111111111111111111111');
-INSERT INTO t2_i0090 (target) VALUES (b'1');
-INSERT INTO t2_i0090 (target) VALUES (b'0');
-INSERT INTO t2_i0090 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0090 (target) VALUES (b'1010');
-INSERT INTO t2_i0090 (target) VALUES (NULL);
-SELECT 'TC-I0090' AS test_id,
+INSERT INTO t2_tc_25_reg_0087_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0087_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0087_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0087_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0087_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0087_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0087_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0087_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0087_it (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0087_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0087_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0087_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0087_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0087_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0087-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0090
-   WHERE id NOT IN (SELECT id FROM t2_i0090)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0087_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0087_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0090
-   WHERE id NOT IN (SELECT id FROM t1_i0090)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0087_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0087_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0090 a JOIN t2_i0090 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0087_it a JOIN t2_tc_25_reg_0087_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0091
+-- Test Case: TC-25-REG-0088-IT
 -- Type: BIT(32) -> BIT(64), Algorithm: instant, Expected: FAIL
+-- Varied factor: primary_key=COMPOSITE_PK
+-- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=COMPOSITE_PK, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0091, t2_i0091;
+DROP TABLE IF EXISTS t1_tc_25_reg_0088_it, t2_tc_25_reg_0088_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0091 (
+CREATE TABLE t1_tc_25_reg_0088_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id, target), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0091 (target) VALUES (b'0');
-INSERT INTO t1_i0091 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0091 (target) VALUES (b'1');
-INSERT INTO t1_i0091 (target) VALUES (b'0');
-INSERT INTO t1_i0091 (target) VALUES (b'1010');
-INSERT INTO t1_i0091 (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0088_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0088_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0088_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0088_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0088_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0088_it (target) VALUES (b'11111111');
 -- Expected: ALTER FAILS (table keeps old type)
-ALTER TABLE t1_i0091 MODIFY target BIT(64), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0088_it MODIFY target BIT(64), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0091 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0088_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0091 (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0088_it (target) VALUES (b'111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0091 (target) VALUES (b'1');
-INSERT INTO t1_i0091 (target) VALUES (b'0');
-INSERT INTO t1_i0091 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0091 (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0088_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0088_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0088_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0088_it (target) VALUES (b'1010');
 -- Oracle table: BIT(32)
-CREATE TABLE t2_i0091 (
+CREATE TABLE t2_tc_25_reg_0088_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id, target), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0091 (target) VALUES (b'0');
-INSERT INTO t2_i0091 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0091 (target) VALUES (b'1');
-INSERT INTO t2_i0091 (target) VALUES (b'0');
-INSERT INTO t2_i0091 (target) VALUES (b'1010');
-INSERT INTO t2_i0091 (target) VALUES (b'11111111');
-INSERT INTO t2_i0091 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
-INSERT INTO t2_i0091 (target) VALUES (b'111111111111111111111111111111111');
-INSERT INTO t2_i0091 (target) VALUES (b'1');
-INSERT INTO t2_i0091 (target) VALUES (b'0');
-INSERT INTO t2_i0091 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0091 (target) VALUES (b'1010');
-SELECT 'TC-I0091' AS test_id,
+INSERT INTO t2_tc_25_reg_0088_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0088_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0088_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0088_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0088_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0088_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0088_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0088_it (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0088_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0088_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0088_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0088_it (target) VALUES (b'1010');
+SELECT 'TC-25-REG-0088-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0091
-   WHERE id NOT IN (SELECT id FROM t2_i0091)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0088_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0088_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0091
-   WHERE id NOT IN (SELECT id FROM t1_i0091)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0088_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0088_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0091 a JOIN t2_i0091 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0088_it a JOIN t2_tc_25_reg_0088_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0092
+-- Test Case: TC-25-REG-0089-IT
 -- Type: BIT(32) -> BIT(64), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: primary_key=NO_EXPLICIT_PK
+-- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=NO_EXPLICIT_PK, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0092, t2_i0092;
+DROP TABLE IF EXISTS t1_tc_25_reg_0089_it, t2_tc_25_reg_0089_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0092 (
+CREATE TABLE t1_tc_25_reg_0089_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32),
   pad2 VARCHAR(20) DEFAULT 'pad2', INDEX idx_id (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0092 (target) VALUES (b'0');
-INSERT INTO t1_i0092 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0092 (target) VALUES (b'1');
-INSERT INTO t1_i0092 (target) VALUES (b'0');
-INSERT INTO t1_i0092 (target) VALUES (b'1010');
-INSERT INTO t1_i0092 (target) VALUES (b'11111111');
-INSERT INTO t1_i0092 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0089_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0089_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0089_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0089_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0089_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0089_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0089_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0092 MODIFY target BIT(64), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0089_it MODIFY target BIT(64), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0092 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0089_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0092 (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0089_it (target) VALUES (b'111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0092 (target) VALUES (b'1');
-INSERT INTO t1_i0092 (target) VALUES (b'0');
-INSERT INTO t1_i0092 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0092 (target) VALUES (b'1010');
-INSERT INTO t1_i0092 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0089_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0089_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0089_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0089_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0089_it (target) VALUES (NULL);
 -- Oracle table: BIT(64)
-CREATE TABLE t2_i0092 (
+CREATE TABLE t2_tc_25_reg_0089_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(64),
   pad2 VARCHAR(20) DEFAULT 'pad2', INDEX idx_id (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0092 (target) VALUES (b'0');
-INSERT INTO t2_i0092 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0092 (target) VALUES (b'1');
-INSERT INTO t2_i0092 (target) VALUES (b'0');
-INSERT INTO t2_i0092 (target) VALUES (b'1010');
-INSERT INTO t2_i0092 (target) VALUES (b'11111111');
-INSERT INTO t2_i0092 (target) VALUES (NULL);
-INSERT INTO t2_i0092 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
-INSERT INTO t2_i0092 (target) VALUES (b'111111111111111111111111111111111');
-INSERT INTO t2_i0092 (target) VALUES (b'1');
-INSERT INTO t2_i0092 (target) VALUES (b'0');
-INSERT INTO t2_i0092 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0092 (target) VALUES (b'1010');
-INSERT INTO t2_i0092 (target) VALUES (NULL);
-SELECT 'TC-I0092' AS test_id,
+INSERT INTO t2_tc_25_reg_0089_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0089_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0089_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0089_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0089_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0089_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0089_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0089_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0089_it (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0089_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0089_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0089_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0089_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0089_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0089-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0092
-   WHERE id NOT IN (SELECT id FROM t2_i0092)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0089_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0089_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0092
-   WHERE id NOT IN (SELECT id FROM t1_i0092)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0089_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0089_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0092 a JOIN t2_i0092 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0089_it a JOIN t2_tc_25_reg_0089_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0093
+-- Test Case: TC-25-REG-0090-IT
 -- Type: BIT(32) -> BIT(64), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: non_target_index=NONE
+-- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=NONE, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0093, t2_i0093;
+DROP TABLE IF EXISTS t1_tc_25_reg_0090_it, t2_tc_25_reg_0090_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0093 (
+CREATE TABLE t1_tc_25_reg_0090_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0093 (target) VALUES (b'0');
-INSERT INTO t1_i0093 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0093 (target) VALUES (b'1');
-INSERT INTO t1_i0093 (target) VALUES (b'0');
-INSERT INTO t1_i0093 (target) VALUES (b'1010');
-INSERT INTO t1_i0093 (target) VALUES (b'11111111');
-INSERT INTO t1_i0093 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0090_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0090_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0090_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0090_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0090_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0090_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0090_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0093 MODIFY target BIT(64), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0090_it MODIFY target BIT(64), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0093 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0090_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0093 (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0090_it (target) VALUES (b'111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0093 (target) VALUES (b'1');
-INSERT INTO t1_i0093 (target) VALUES (b'0');
-INSERT INTO t1_i0093 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0093 (target) VALUES (b'1010');
-INSERT INTO t1_i0093 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0090_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0090_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0090_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0090_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0090_it (target) VALUES (NULL);
 -- Oracle table: BIT(64)
-CREATE TABLE t2_i0093 (
+CREATE TABLE t2_tc_25_reg_0090_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(64),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0093 (target) VALUES (b'0');
-INSERT INTO t2_i0093 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0093 (target) VALUES (b'1');
-INSERT INTO t2_i0093 (target) VALUES (b'0');
-INSERT INTO t2_i0093 (target) VALUES (b'1010');
-INSERT INTO t2_i0093 (target) VALUES (b'11111111');
-INSERT INTO t2_i0093 (target) VALUES (NULL);
-INSERT INTO t2_i0093 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
-INSERT INTO t2_i0093 (target) VALUES (b'111111111111111111111111111111111');
-INSERT INTO t2_i0093 (target) VALUES (b'1');
-INSERT INTO t2_i0093 (target) VALUES (b'0');
-INSERT INTO t2_i0093 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0093 (target) VALUES (b'1010');
-INSERT INTO t2_i0093 (target) VALUES (NULL);
-SELECT 'TC-I0093' AS test_id,
+INSERT INTO t2_tc_25_reg_0090_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0090_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0090_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0090_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0090_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0090_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0090_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0090_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0090_it (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0090_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0090_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0090_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0090_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0090_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0090-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0093
-   WHERE id NOT IN (SELECT id FROM t2_i0093)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0090_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0090_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0093
-   WHERE id NOT IN (SELECT id FROM t1_i0093)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0090_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0090_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0093 a JOIN t2_i0093 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0090_it a JOIN t2_tc_25_reg_0090_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0094
+-- Test Case: TC-25-REG-0091-IT
 -- Type: BIT(32) -> BIT(64), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: non_target_index=MULTIPLE_SECONDARY
+-- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=MULTIPLE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0094, t2_i0094;
+DROP TABLE IF EXISTS t1_tc_25_reg_0091_it, t2_tc_25_reg_0091_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0094 (
+CREATE TABLE t1_tc_25_reg_0091_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1), INDEX idx_pad2 (pad2)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0094 (target) VALUES (b'0');
-INSERT INTO t1_i0094 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0094 (target) VALUES (b'1');
-INSERT INTO t1_i0094 (target) VALUES (b'0');
-INSERT INTO t1_i0094 (target) VALUES (b'1010');
-INSERT INTO t1_i0094 (target) VALUES (b'11111111');
-INSERT INTO t1_i0094 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0091_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0091_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0091_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0091_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0091_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0091_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0091_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0094 MODIFY target BIT(64), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0091_it MODIFY target BIT(64), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0094 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0091_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0094 (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0091_it (target) VALUES (b'111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0094 (target) VALUES (b'1');
-INSERT INTO t1_i0094 (target) VALUES (b'0');
-INSERT INTO t1_i0094 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0094 (target) VALUES (b'1010');
-INSERT INTO t1_i0094 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0091_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0091_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0091_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0091_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0091_it (target) VALUES (NULL);
 -- Oracle table: BIT(64)
-CREATE TABLE t2_i0094 (
+CREATE TABLE t2_tc_25_reg_0091_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(64),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1), INDEX idx_pad2 (pad2)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0094 (target) VALUES (b'0');
-INSERT INTO t2_i0094 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0094 (target) VALUES (b'1');
-INSERT INTO t2_i0094 (target) VALUES (b'0');
-INSERT INTO t2_i0094 (target) VALUES (b'1010');
-INSERT INTO t2_i0094 (target) VALUES (b'11111111');
-INSERT INTO t2_i0094 (target) VALUES (NULL);
-INSERT INTO t2_i0094 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
-INSERT INTO t2_i0094 (target) VALUES (b'111111111111111111111111111111111');
-INSERT INTO t2_i0094 (target) VALUES (b'1');
-INSERT INTO t2_i0094 (target) VALUES (b'0');
-INSERT INTO t2_i0094 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0094 (target) VALUES (b'1010');
-INSERT INTO t2_i0094 (target) VALUES (NULL);
-SELECT 'TC-I0094' AS test_id,
+INSERT INTO t2_tc_25_reg_0091_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0091_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0091_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0091_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0091_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0091_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0091_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0091_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0091_it (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0091_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0091_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0091_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0091_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0091_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0091-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0094
-   WHERE id NOT IN (SELECT id FROM t2_i0094)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0091_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0091_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0094
-   WHERE id NOT IN (SELECT id FROM t1_i0094)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0091_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0091_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0094 a JOIN t2_i0094 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0091_it a JOIN t2_tc_25_reg_0091_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0095
+-- Test Case: TC-25-REG-0092-IT
 -- Type: BIT(32) -> BIT(64), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: non_target_index=UNIQUE
+-- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=UNIQUE, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0095, t2_i0095;
+DROP TABLE IF EXISTS t1_tc_25_reg_0092_it, t2_tc_25_reg_0092_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0095 (
+CREATE TABLE t1_tc_25_reg_0092_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), UNIQUE INDEX uq_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0095 (target) VALUES (b'0');
-INSERT INTO t1_i0095 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0095 (target) VALUES (b'1');
-INSERT INTO t1_i0095 (target) VALUES (b'0');
-INSERT INTO t1_i0095 (target) VALUES (b'1010');
-INSERT INTO t1_i0095 (target) VALUES (b'11111111');
-INSERT INTO t1_i0095 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0092_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0092_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0092_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0092_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0092_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0092_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0092_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0095 MODIFY target BIT(64), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0092_it MODIFY target BIT(64), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0095 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0092_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0095 (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0092_it (target) VALUES (b'111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0095 (target) VALUES (b'1');
-INSERT INTO t1_i0095 (target) VALUES (b'0');
-INSERT INTO t1_i0095 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0095 (target) VALUES (b'1010');
-INSERT INTO t1_i0095 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0092_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0092_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0092_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0092_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0092_it (target) VALUES (NULL);
 -- Oracle table: BIT(64)
-CREATE TABLE t2_i0095 (
+CREATE TABLE t2_tc_25_reg_0092_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(64),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), UNIQUE INDEX uq_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0095 (target) VALUES (b'0');
-INSERT INTO t2_i0095 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0095 (target) VALUES (b'1');
-INSERT INTO t2_i0095 (target) VALUES (b'0');
-INSERT INTO t2_i0095 (target) VALUES (b'1010');
-INSERT INTO t2_i0095 (target) VALUES (b'11111111');
-INSERT INTO t2_i0095 (target) VALUES (NULL);
-INSERT INTO t2_i0095 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
-INSERT INTO t2_i0095 (target) VALUES (b'111111111111111111111111111111111');
-INSERT INTO t2_i0095 (target) VALUES (b'1');
-INSERT INTO t2_i0095 (target) VALUES (b'0');
-INSERT INTO t2_i0095 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0095 (target) VALUES (b'1010');
-INSERT INTO t2_i0095 (target) VALUES (NULL);
-SELECT 'TC-I0095' AS test_id,
+INSERT INTO t2_tc_25_reg_0092_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0092_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0092_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0092_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0092_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0092_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0092_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0092_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0092_it (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0092_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0092_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0092_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0092_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0092_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0092-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0095
-   WHERE id NOT IN (SELECT id FROM t2_i0095)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0092_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0092_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0095
-   WHERE id NOT IN (SELECT id FROM t1_i0095)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0092_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0092_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0095 a JOIN t2_i0095 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0092_it a JOIN t2_tc_25_reg_0092_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0096
+-- Test Case: TC-25-REG-0093-IT
 -- Type: BIT(32) -> BIT(64), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: non_target_index=COMPOSITE_PREFIX
+-- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=COMPOSITE_PREFIX, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0096, t2_i0096;
+DROP TABLE IF EXISTS t1_tc_25_reg_0093_it, t2_tc_25_reg_0093_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0096 (
+CREATE TABLE t1_tc_25_reg_0093_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_composite (pad1(10), pad2(10))
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0096 (target) VALUES (b'0');
-INSERT INTO t1_i0096 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0096 (target) VALUES (b'1');
-INSERT INTO t1_i0096 (target) VALUES (b'0');
-INSERT INTO t1_i0096 (target) VALUES (b'1010');
-INSERT INTO t1_i0096 (target) VALUES (b'11111111');
-INSERT INTO t1_i0096 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0093_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0093_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0093_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0093_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0093_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0093_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0093_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0096 MODIFY target BIT(64), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0093_it MODIFY target BIT(64), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0096 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0093_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0096 (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0093_it (target) VALUES (b'111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0096 (target) VALUES (b'1');
-INSERT INTO t1_i0096 (target) VALUES (b'0');
-INSERT INTO t1_i0096 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0096 (target) VALUES (b'1010');
-INSERT INTO t1_i0096 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0093_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0093_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0093_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0093_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0093_it (target) VALUES (NULL);
 -- Oracle table: BIT(64)
-CREATE TABLE t2_i0096 (
+CREATE TABLE t2_tc_25_reg_0093_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(64),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_composite (pad1(10), pad2(10))
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0096 (target) VALUES (b'0');
-INSERT INTO t2_i0096 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0096 (target) VALUES (b'1');
-INSERT INTO t2_i0096 (target) VALUES (b'0');
-INSERT INTO t2_i0096 (target) VALUES (b'1010');
-INSERT INTO t2_i0096 (target) VALUES (b'11111111');
-INSERT INTO t2_i0096 (target) VALUES (NULL);
-INSERT INTO t2_i0096 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
-INSERT INTO t2_i0096 (target) VALUES (b'111111111111111111111111111111111');
-INSERT INTO t2_i0096 (target) VALUES (b'1');
-INSERT INTO t2_i0096 (target) VALUES (b'0');
-INSERT INTO t2_i0096 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0096 (target) VALUES (b'1010');
-INSERT INTO t2_i0096 (target) VALUES (NULL);
-SELECT 'TC-I0096' AS test_id,
+INSERT INTO t2_tc_25_reg_0093_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0093_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0093_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0093_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0093_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0093_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0093_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0093_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0093_it (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0093_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0093_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0093_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0093_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0093_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0093-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0096
-   WHERE id NOT IN (SELECT id FROM t2_i0096)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0093_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0093_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0096
-   WHERE id NOT IN (SELECT id FROM t1_i0096)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0093_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0093_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0096 a JOIN t2_i0096 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0093_it a JOIN t2_tc_25_reg_0093_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0097
+-- Test Case: TC-25-REG-0094-IT
 -- Type: BIT(32) -> BIT(64), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: target_position=FIRST
+-- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=FIRST
-DROP TABLE IF EXISTS t1_i0097, t2_i0097;
+DROP TABLE IF EXISTS t1_tc_25_reg_0094_it, t2_tc_25_reg_0094_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0097 (
+CREATE TABLE t1_tc_25_reg_0094_it (
   target BIT(32),
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0097 (target) VALUES (b'0');
-INSERT INTO t1_i0097 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0097 (target) VALUES (b'1');
-INSERT INTO t1_i0097 (target) VALUES (b'0');
-INSERT INTO t1_i0097 (target) VALUES (b'1010');
-INSERT INTO t1_i0097 (target) VALUES (b'11111111');
-INSERT INTO t1_i0097 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0094_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0094_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0094_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0094_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0094_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0094_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0094_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0097 MODIFY target BIT(64), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0094_it MODIFY target BIT(64), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0097 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0094_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0097 (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0094_it (target) VALUES (b'111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0097 (target) VALUES (b'1');
-INSERT INTO t1_i0097 (target) VALUES (b'0');
-INSERT INTO t1_i0097 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0097 (target) VALUES (b'1010');
-INSERT INTO t1_i0097 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0094_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0094_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0094_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0094_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0094_it (target) VALUES (NULL);
 -- Oracle table: BIT(64)
-CREATE TABLE t2_i0097 (
+CREATE TABLE t2_tc_25_reg_0094_it (
   target BIT(64),
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0097 (target) VALUES (b'0');
-INSERT INTO t2_i0097 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0097 (target) VALUES (b'1');
-INSERT INTO t2_i0097 (target) VALUES (b'0');
-INSERT INTO t2_i0097 (target) VALUES (b'1010');
-INSERT INTO t2_i0097 (target) VALUES (b'11111111');
-INSERT INTO t2_i0097 (target) VALUES (NULL);
-INSERT INTO t2_i0097 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
-INSERT INTO t2_i0097 (target) VALUES (b'111111111111111111111111111111111');
-INSERT INTO t2_i0097 (target) VALUES (b'1');
-INSERT INTO t2_i0097 (target) VALUES (b'0');
-INSERT INTO t2_i0097 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0097 (target) VALUES (b'1010');
-INSERT INTO t2_i0097 (target) VALUES (NULL);
-SELECT 'TC-I0097' AS test_id,
+INSERT INTO t2_tc_25_reg_0094_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0094_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0094_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0094_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0094_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0094_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0094_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0094_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0094_it (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0094_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0094_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0094_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0094_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0094_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0094-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0097
-   WHERE id NOT IN (SELECT id FROM t2_i0097)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0094_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0094_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0097
-   WHERE id NOT IN (SELECT id FROM t1_i0097)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0094_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0094_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0097 a JOIN t2_i0097 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0094_it a JOIN t2_tc_25_reg_0094_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0098
+-- Test Case: TC-25-REG-0095-IT
 -- Type: BIT(32) -> BIT(64), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: target_position=LAST
+-- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=LAST
-DROP TABLE IF EXISTS t1_i0098, t2_i0098;
+DROP TABLE IF EXISTS t1_tc_25_reg_0095_it, t2_tc_25_reg_0095_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0098 (
+CREATE TABLE t1_tc_25_reg_0095_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   pad2 VARCHAR(20) DEFAULT 'pad2',
   target BIT(32), PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0098 (target) VALUES (b'0');
-INSERT INTO t1_i0098 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0098 (target) VALUES (b'1');
-INSERT INTO t1_i0098 (target) VALUES (b'0');
-INSERT INTO t1_i0098 (target) VALUES (b'1010');
-INSERT INTO t1_i0098 (target) VALUES (b'11111111');
-INSERT INTO t1_i0098 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0095_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0095_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0095_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0095_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0095_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0095_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0095_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0098 MODIFY target BIT(64), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0095_it MODIFY target BIT(64), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0098 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0095_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0098 (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0095_it (target) VALUES (b'111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0098 (target) VALUES (b'1');
-INSERT INTO t1_i0098 (target) VALUES (b'0');
-INSERT INTO t1_i0098 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0098 (target) VALUES (b'1010');
-INSERT INTO t1_i0098 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0095_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0095_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0095_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0095_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0095_it (target) VALUES (NULL);
 -- Oracle table: BIT(64)
-CREATE TABLE t2_i0098 (
+CREATE TABLE t2_tc_25_reg_0095_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   pad2 VARCHAR(20) DEFAULT 'pad2',
   target BIT(64), PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0098 (target) VALUES (b'0');
-INSERT INTO t2_i0098 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0098 (target) VALUES (b'1');
-INSERT INTO t2_i0098 (target) VALUES (b'0');
-INSERT INTO t2_i0098 (target) VALUES (b'1010');
-INSERT INTO t2_i0098 (target) VALUES (b'11111111');
-INSERT INTO t2_i0098 (target) VALUES (NULL);
-INSERT INTO t2_i0098 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
-INSERT INTO t2_i0098 (target) VALUES (b'111111111111111111111111111111111');
-INSERT INTO t2_i0098 (target) VALUES (b'1');
-INSERT INTO t2_i0098 (target) VALUES (b'0');
-INSERT INTO t2_i0098 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0098 (target) VALUES (b'1010');
-INSERT INTO t2_i0098 (target) VALUES (NULL);
-SELECT 'TC-I0098' AS test_id,
+INSERT INTO t2_tc_25_reg_0095_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0095_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0095_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0095_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0095_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0095_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0095_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0095_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0095_it (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0095_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0095_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0095_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0095_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0095_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0095-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0098
-   WHERE id NOT IN (SELECT id FROM t2_i0098)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0095_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0095_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0098
-   WHERE id NOT IN (SELECT id FROM t1_i0098)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0095_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0095_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0098 a JOIN t2_i0098 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0095_it a JOIN t2_tc_25_reg_0095_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0099
+-- Test Case: TC-25-REG-0096-IT
 -- Type: BIT(32) -> BIT(64), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: target_attributes=NOT_NULL_NO_DEFAULT
+-- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0099, t2_i0099;
+DROP TABLE IF EXISTS t1_tc_25_reg_0096_it, t2_tc_25_reg_0096_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0099 (
+CREATE TABLE t1_tc_25_reg_0096_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32) NOT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0099 (target) VALUES (b'0');
-INSERT INTO t1_i0099 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0099 (target) VALUES (b'1');
-INSERT INTO t1_i0099 (target) VALUES (b'0');
-INSERT INTO t1_i0099 (target) VALUES (b'1010');
-INSERT INTO t1_i0099 (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0096_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0096_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0096_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0096_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0096_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0096_it (target) VALUES (b'11111111');
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0099 MODIFY target BIT(64) NOT NULL, ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0096_it MODIFY target BIT(64) NOT NULL, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0099 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0096_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0099 (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0096_it (target) VALUES (b'111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0099 (target) VALUES (b'1');
-INSERT INTO t1_i0099 (target) VALUES (b'0');
-INSERT INTO t1_i0099 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0099 (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0096_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0096_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0096_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0096_it (target) VALUES (b'1010');
 -- Oracle table: BIT(64)
-CREATE TABLE t2_i0099 (
+CREATE TABLE t2_tc_25_reg_0096_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(64) NOT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0099 (target) VALUES (b'0');
-INSERT INTO t2_i0099 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0099 (target) VALUES (b'1');
-INSERT INTO t2_i0099 (target) VALUES (b'0');
-INSERT INTO t2_i0099 (target) VALUES (b'1010');
-INSERT INTO t2_i0099 (target) VALUES (b'11111111');
-INSERT INTO t2_i0099 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
-INSERT INTO t2_i0099 (target) VALUES (b'111111111111111111111111111111111');
-INSERT INTO t2_i0099 (target) VALUES (b'1');
-INSERT INTO t2_i0099 (target) VALUES (b'0');
-INSERT INTO t2_i0099 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0099 (target) VALUES (b'1010');
-SELECT 'TC-I0099' AS test_id,
+INSERT INTO t2_tc_25_reg_0096_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0096_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0096_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0096_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0096_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0096_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0096_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0096_it (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0096_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0096_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0096_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0096_it (target) VALUES (b'1010');
+SELECT 'TC-25-REG-0096-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0099
-   WHERE id NOT IN (SELECT id FROM t2_i0099)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0096_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0096_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0099
-   WHERE id NOT IN (SELECT id FROM t1_i0099)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0096_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0096_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0099 a JOIN t2_i0099 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0096_it a JOIN t2_tc_25_reg_0096_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0100
+-- Test Case: TC-25-REG-0097-IT
 -- Type: BIT(32) -> BIT(64), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: target_attributes=CONSTANT_DEFAULT
+-- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=CONSTANT_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0100, t2_i0100;
+DROP TABLE IF EXISTS t1_tc_25_reg_0097_it, t2_tc_25_reg_0097_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0100 (
+CREATE TABLE t1_tc_25_reg_0097_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32) DEFAULT b'0',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0100 (target) VALUES (b'0');
-INSERT INTO t1_i0100 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0100 (target) VALUES (b'1');
-INSERT INTO t1_i0100 (target) VALUES (b'0');
-INSERT INTO t1_i0100 (target) VALUES (b'1010');
-INSERT INTO t1_i0100 (target) VALUES (b'11111111');
-INSERT INTO t1_i0100 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0097_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0097_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0097_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0097_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0097_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0097_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0097_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0100 MODIFY target BIT(64) DEFAULT b'0', ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0097_it MODIFY target BIT(64) DEFAULT b'0', ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0100 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0097_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0100 (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0097_it (target) VALUES (b'111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0100 (target) VALUES (b'1');
-INSERT INTO t1_i0100 (target) VALUES (b'0');
-INSERT INTO t1_i0100 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0100 (target) VALUES (b'1010');
-INSERT INTO t1_i0100 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0097_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0097_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0097_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0097_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0097_it (target) VALUES (NULL);
 -- Oracle table: BIT(64)
-CREATE TABLE t2_i0100 (
+CREATE TABLE t2_tc_25_reg_0097_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(64) DEFAULT b'0',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0100 (target) VALUES (b'0');
-INSERT INTO t2_i0100 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0100 (target) VALUES (b'1');
-INSERT INTO t2_i0100 (target) VALUES (b'0');
-INSERT INTO t2_i0100 (target) VALUES (b'1010');
-INSERT INTO t2_i0100 (target) VALUES (b'11111111');
-INSERT INTO t2_i0100 (target) VALUES (NULL);
-INSERT INTO t2_i0100 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
-INSERT INTO t2_i0100 (target) VALUES (b'111111111111111111111111111111111');
-INSERT INTO t2_i0100 (target) VALUES (b'1');
-INSERT INTO t2_i0100 (target) VALUES (b'0');
-INSERT INTO t2_i0100 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0100 (target) VALUES (b'1010');
-INSERT INTO t2_i0100 (target) VALUES (NULL);
-SELECT 'TC-I0100' AS test_id,
+INSERT INTO t2_tc_25_reg_0097_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0097_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0097_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0097_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0097_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0097_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0097_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0097_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0097_it (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0097_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0097_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0097_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0097_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0097_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0097-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0100
-   WHERE id NOT IN (SELECT id FROM t2_i0100)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0097_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0097_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0100
-   WHERE id NOT IN (SELECT id FROM t1_i0100)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0097_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0097_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0100 a JOIN t2_i0100 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0097_it a JOIN t2_tc_25_reg_0097_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0101
+-- Test Case: TC-25-REG-0098-IT
 -- Type: BIT(32) -> BIT(64), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: target_attributes=NULL_DEFAULT
+-- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0101, t2_i0101;
+DROP TABLE IF EXISTS t1_tc_25_reg_0098_it, t2_tc_25_reg_0098_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0101 (
+CREATE TABLE t1_tc_25_reg_0098_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32) DEFAULT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0101 (target) VALUES (b'0');
-INSERT INTO t1_i0101 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0101 (target) VALUES (b'1');
-INSERT INTO t1_i0101 (target) VALUES (b'0');
-INSERT INTO t1_i0101 (target) VALUES (b'1010');
-INSERT INTO t1_i0101 (target) VALUES (b'11111111');
-INSERT INTO t1_i0101 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0098_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0098_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0098_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0098_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0098_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0098_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0098_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0101 MODIFY target BIT(64) DEFAULT NULL, ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0098_it MODIFY target BIT(64) DEFAULT NULL, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0101 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0098_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0101 (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0098_it (target) VALUES (b'111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0101 (target) VALUES (b'1');
-INSERT INTO t1_i0101 (target) VALUES (b'0');
-INSERT INTO t1_i0101 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0101 (target) VALUES (b'1010');
-INSERT INTO t1_i0101 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0098_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0098_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0098_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0098_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0098_it (target) VALUES (NULL);
 -- Oracle table: BIT(64)
-CREATE TABLE t2_i0101 (
+CREATE TABLE t2_tc_25_reg_0098_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(64) DEFAULT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0101 (target) VALUES (b'0');
-INSERT INTO t2_i0101 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0101 (target) VALUES (b'1');
-INSERT INTO t2_i0101 (target) VALUES (b'0');
-INSERT INTO t2_i0101 (target) VALUES (b'1010');
-INSERT INTO t2_i0101 (target) VALUES (b'11111111');
-INSERT INTO t2_i0101 (target) VALUES (NULL);
-INSERT INTO t2_i0101 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
-INSERT INTO t2_i0101 (target) VALUES (b'111111111111111111111111111111111');
-INSERT INTO t2_i0101 (target) VALUES (b'1');
-INSERT INTO t2_i0101 (target) VALUES (b'0');
-INSERT INTO t2_i0101 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0101 (target) VALUES (b'1010');
-INSERT INTO t2_i0101 (target) VALUES (NULL);
-SELECT 'TC-I0101' AS test_id,
+INSERT INTO t2_tc_25_reg_0098_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0098_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0098_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0098_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0098_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0098_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0098_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0098_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0098_it (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0098_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0098_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0098_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0098_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0098_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0098-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0101
-   WHERE id NOT IN (SELECT id FROM t2_i0101)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0098_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0098_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0101
-   WHERE id NOT IN (SELECT id FROM t1_i0101)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0098_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0098_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0101 a JOIN t2_i0101 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0098_it a JOIN t2_tc_25_reg_0098_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0102
+-- Test Case: TC-25-REG-0099-IT
 -- Type: BIT(32) -> BIT(64), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: target_attributes=NOT_NULL_DEFAULT
+-- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0102, t2_i0102;
+DROP TABLE IF EXISTS t1_tc_25_reg_0099_it, t2_tc_25_reg_0099_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0102 (
+CREATE TABLE t1_tc_25_reg_0099_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32) NOT NULL DEFAULT b'0',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0102 (target) VALUES (b'0');
-INSERT INTO t1_i0102 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0102 (target) VALUES (b'1');
-INSERT INTO t1_i0102 (target) VALUES (b'0');
-INSERT INTO t1_i0102 (target) VALUES (b'1010');
-INSERT INTO t1_i0102 (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0099_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0099_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0099_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0099_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0099_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0099_it (target) VALUES (b'11111111');
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0102 MODIFY target BIT(64) NOT NULL DEFAULT b'0', ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0099_it MODIFY target BIT(64) NOT NULL DEFAULT b'0', ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0102 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0099_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0102 (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0099_it (target) VALUES (b'111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0102 (target) VALUES (b'1');
-INSERT INTO t1_i0102 (target) VALUES (b'0');
-INSERT INTO t1_i0102 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0102 (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0099_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0099_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0099_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0099_it (target) VALUES (b'1010');
 -- Oracle table: BIT(64)
-CREATE TABLE t2_i0102 (
+CREATE TABLE t2_tc_25_reg_0099_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(64) NOT NULL DEFAULT b'0',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0102 (target) VALUES (b'0');
-INSERT INTO t2_i0102 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0102 (target) VALUES (b'1');
-INSERT INTO t2_i0102 (target) VALUES (b'0');
-INSERT INTO t2_i0102 (target) VALUES (b'1010');
-INSERT INTO t2_i0102 (target) VALUES (b'11111111');
-INSERT INTO t2_i0102 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
-INSERT INTO t2_i0102 (target) VALUES (b'111111111111111111111111111111111');
-INSERT INTO t2_i0102 (target) VALUES (b'1');
-INSERT INTO t2_i0102 (target) VALUES (b'0');
-INSERT INTO t2_i0102 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0102 (target) VALUES (b'1010');
-SELECT 'TC-I0102' AS test_id,
+INSERT INTO t2_tc_25_reg_0099_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0099_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0099_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0099_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0099_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0099_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0099_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0099_it (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0099_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0099_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0099_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0099_it (target) VALUES (b'1010');
+SELECT 'TC-25-REG-0099-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0102
-   WHERE id NOT IN (SELECT id FROM t2_i0102)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0099_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0099_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0102
-   WHERE id NOT IN (SELECT id FROM t1_i0102)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0099_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0099_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0102 a JOIN t2_i0102 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0099_it a JOIN t2_tc_25_reg_0099_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0103
+-- Test Case: TC-25-REG-0100-IT
 -- Type: BIT(32) -> BIT(64), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: target_attributes=INVISIBLE
+-- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=INVISIBLE, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0103, t2_i0103;
+DROP TABLE IF EXISTS t1_tc_25_reg_0100_it, t2_tc_25_reg_0100_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0103 (
+CREATE TABLE t1_tc_25_reg_0100_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32) INVISIBLE,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0103 (target) VALUES (b'0');
-INSERT INTO t1_i0103 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0103 (target) VALUES (b'1');
-INSERT INTO t1_i0103 (target) VALUES (b'0');
-INSERT INTO t1_i0103 (target) VALUES (b'1010');
-INSERT INTO t1_i0103 (target) VALUES (b'11111111');
-INSERT INTO t1_i0103 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0100_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0100_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0100_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0100_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0100_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0100_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0100_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0103 MODIFY target BIT(64) INVISIBLE, ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0100_it MODIFY target BIT(64) INVISIBLE, ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0103 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0100_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0103 (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0100_it (target) VALUES (b'111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0103 (target) VALUES (b'1');
-INSERT INTO t1_i0103 (target) VALUES (b'0');
-INSERT INTO t1_i0103 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0103 (target) VALUES (b'1010');
-INSERT INTO t1_i0103 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0100_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0100_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0100_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0100_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0100_it (target) VALUES (NULL);
 -- Oracle table: BIT(64)
-CREATE TABLE t2_i0103 (
+CREATE TABLE t2_tc_25_reg_0100_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(64) INVISIBLE,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0103 (target) VALUES (b'0');
-INSERT INTO t2_i0103 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0103 (target) VALUES (b'1');
-INSERT INTO t2_i0103 (target) VALUES (b'0');
-INSERT INTO t2_i0103 (target) VALUES (b'1010');
-INSERT INTO t2_i0103 (target) VALUES (b'11111111');
-INSERT INTO t2_i0103 (target) VALUES (NULL);
-INSERT INTO t2_i0103 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
-INSERT INTO t2_i0103 (target) VALUES (b'111111111111111111111111111111111');
-INSERT INTO t2_i0103 (target) VALUES (b'1');
-INSERT INTO t2_i0103 (target) VALUES (b'0');
-INSERT INTO t2_i0103 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0103 (target) VALUES (b'1010');
-INSERT INTO t2_i0103 (target) VALUES (NULL);
-SELECT 'TC-I0103' AS test_id,
+INSERT INTO t2_tc_25_reg_0100_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0100_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0100_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0100_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0100_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0100_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0100_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0100_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0100_it (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0100_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0100_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0100_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0100_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0100_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0100-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0103
-   WHERE id NOT IN (SELECT id FROM t2_i0103)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0100_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0100_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0103
-   WHERE id NOT IN (SELECT id FROM t1_i0103)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0100_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0100_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0103 a JOIN t2_i0103 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0100_it a JOIN t2_tc_25_reg_0100_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0104
+-- Test Case: TC-25-REG-0101-IT
 -- Type: BIT(32) -> BIT(64), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: data_scale=S0
+-- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0104, t2_i0104;
+DROP TABLE IF EXISTS t1_tc_25_reg_0101_it, t2_tc_25_reg_0101_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0104 (
+CREATE TABLE t1_tc_25_reg_0101_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0104 MODIFY target BIT(64), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0101_it MODIFY target BIT(64), ALGORITHM=instant;
 -- Oracle table: BIT(64)
-CREATE TABLE t2_i0104 (
+CREATE TABLE t2_tc_25_reg_0101_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(64),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-SELECT 'TC-I0104' AS test_id,
+SELECT 'TC-25-REG-0101-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0104
-   WHERE id NOT IN (SELECT id FROM t2_i0104)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0101_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0101_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0104
-   WHERE id NOT IN (SELECT id FROM t1_i0104)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0101_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0101_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0104 a JOIN t2_i0104 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0101_it a JOIN t2_tc_25_reg_0101_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0105
+-- Test Case: TC-25-REG-0102-IT
 -- Type: BIT(32) -> BIT(64), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: data_scale=S1
+-- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S1, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0105, t2_i0105;
+DROP TABLE IF EXISTS t1_tc_25_reg_0102_it, t2_tc_25_reg_0102_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0105 (
+CREATE TABLE t1_tc_25_reg_0102_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0105 (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0102_it (target) VALUES (b'0');
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0105 MODIFY target BIT(64), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0102_it MODIFY target BIT(64), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0105 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0102_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0105 (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0102_it (target) VALUES (b'111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0105 (target) VALUES (b'1');
-INSERT INTO t1_i0105 (target) VALUES (b'0');
-INSERT INTO t1_i0105 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0105 (target) VALUES (b'1010');
-INSERT INTO t1_i0105 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0102_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0102_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0102_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0102_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0102_it (target) VALUES (NULL);
 -- Oracle table: BIT(64)
-CREATE TABLE t2_i0105 (
+CREATE TABLE t2_tc_25_reg_0102_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(64),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0105 (target) VALUES (b'0');
-INSERT INTO t2_i0105 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
-INSERT INTO t2_i0105 (target) VALUES (b'111111111111111111111111111111111');
-INSERT INTO t2_i0105 (target) VALUES (b'1');
-INSERT INTO t2_i0105 (target) VALUES (b'0');
-INSERT INTO t2_i0105 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0105 (target) VALUES (b'1010');
-INSERT INTO t2_i0105 (target) VALUES (NULL);
-SELECT 'TC-I0105' AS test_id,
+INSERT INTO t2_tc_25_reg_0102_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0102_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0102_it (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0102_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0102_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0102_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0102_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0102_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0102-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0105
-   WHERE id NOT IN (SELECT id FROM t2_i0105)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0102_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0102_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0105
-   WHERE id NOT IN (SELECT id FROM t1_i0105)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0102_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0102_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0105 a JOIN t2_i0105 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0102_it a JOIN t2_tc_25_reg_0102_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0106
+-- Test Case: TC-25-REG-0103-IT
 -- Type: BIT(32) -> BIT(64), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: data_distribution=UNIFORM
+-- Transition ID: BIT-04
 -- Factors: data_distribution=UNIFORM, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0106, t2_i0106;
+DROP TABLE IF EXISTS t1_tc_25_reg_0103_it, t2_tc_25_reg_0103_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0106 (
+CREATE TABLE t1_tc_25_reg_0103_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0106 (target) VALUES (b'0');
-INSERT INTO t1_i0106 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0106 (target) VALUES (b'1');
-INSERT INTO t1_i0106 (target) VALUES (b'0');
-INSERT INTO t1_i0106 (target) VALUES (b'1010');
-INSERT INTO t1_i0106 (target) VALUES (b'11111111');
-INSERT INTO t1_i0106 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0103_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0103_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0103_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0103_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0103_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0103_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0103_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0106 MODIFY target BIT(64), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0103_it MODIFY target BIT(64), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0106 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0103_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0106 (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0103_it (target) VALUES (b'111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0106 (target) VALUES (b'1');
-INSERT INTO t1_i0106 (target) VALUES (b'0');
-INSERT INTO t1_i0106 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0106 (target) VALUES (b'1010');
-INSERT INTO t1_i0106 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0103_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0103_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0103_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0103_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0103_it (target) VALUES (NULL);
 -- Oracle table: BIT(64)
-CREATE TABLE t2_i0106 (
+CREATE TABLE t2_tc_25_reg_0103_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(64),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0106 (target) VALUES (b'0');
-INSERT INTO t2_i0106 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0106 (target) VALUES (b'1');
-INSERT INTO t2_i0106 (target) VALUES (b'0');
-INSERT INTO t2_i0106 (target) VALUES (b'1010');
-INSERT INTO t2_i0106 (target) VALUES (b'11111111');
-INSERT INTO t2_i0106 (target) VALUES (NULL);
-INSERT INTO t2_i0106 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
-INSERT INTO t2_i0106 (target) VALUES (b'111111111111111111111111111111111');
-INSERT INTO t2_i0106 (target) VALUES (b'1');
-INSERT INTO t2_i0106 (target) VALUES (b'0');
-INSERT INTO t2_i0106 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0106 (target) VALUES (b'1010');
-INSERT INTO t2_i0106 (target) VALUES (NULL);
-SELECT 'TC-I0106' AS test_id,
+INSERT INTO t2_tc_25_reg_0103_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0103_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0103_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0103_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0103_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0103_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0103_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0103_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0103_it (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0103_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0103_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0103_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0103_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0103_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0103-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0106
-   WHERE id NOT IN (SELECT id FROM t2_i0106)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0103_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0103_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0106
-   WHERE id NOT IN (SELECT id FROM t1_i0106)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0103_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0103_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0106 a JOIN t2_i0106 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0103_it a JOIN t2_tc_25_reg_0103_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0107
+-- Test Case: TC-25-REG-0104-IT
 -- Type: BIT(32) -> BIT(64), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: data_distribution=MONOTONIC
+-- Transition ID: BIT-04
 -- Factors: data_distribution=MONOTONIC, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0107, t2_i0107;
+DROP TABLE IF EXISTS t1_tc_25_reg_0104_it, t2_tc_25_reg_0104_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0107 (
+CREATE TABLE t1_tc_25_reg_0104_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0107 (target) VALUES (b'0');
-INSERT INTO t1_i0107 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0107 (target) VALUES (b'1');
-INSERT INTO t1_i0107 (target) VALUES (b'0');
-INSERT INTO t1_i0107 (target) VALUES (b'1010');
-INSERT INTO t1_i0107 (target) VALUES (b'11111111');
-INSERT INTO t1_i0107 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0104_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0104_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0104_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0104_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0104_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0104_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0104_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0107 MODIFY target BIT(64), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0104_it MODIFY target BIT(64), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0107 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0104_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0107 (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0104_it (target) VALUES (b'111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0107 (target) VALUES (b'1');
-INSERT INTO t1_i0107 (target) VALUES (b'0');
-INSERT INTO t1_i0107 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0107 (target) VALUES (b'1010');
-INSERT INTO t1_i0107 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0104_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0104_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0104_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0104_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0104_it (target) VALUES (NULL);
 -- Oracle table: BIT(64)
-CREATE TABLE t2_i0107 (
+CREATE TABLE t2_tc_25_reg_0104_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(64),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0107 (target) VALUES (b'0');
-INSERT INTO t2_i0107 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0107 (target) VALUES (b'1');
-INSERT INTO t2_i0107 (target) VALUES (b'0');
-INSERT INTO t2_i0107 (target) VALUES (b'1010');
-INSERT INTO t2_i0107 (target) VALUES (b'11111111');
-INSERT INTO t2_i0107 (target) VALUES (NULL);
-INSERT INTO t2_i0107 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
-INSERT INTO t2_i0107 (target) VALUES (b'111111111111111111111111111111111');
-INSERT INTO t2_i0107 (target) VALUES (b'1');
-INSERT INTO t2_i0107 (target) VALUES (b'0');
-INSERT INTO t2_i0107 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0107 (target) VALUES (b'1010');
-INSERT INTO t2_i0107 (target) VALUES (NULL);
-SELECT 'TC-I0107' AS test_id,
+INSERT INTO t2_tc_25_reg_0104_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0104_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0104_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0104_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0104_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0104_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0104_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0104_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0104_it (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0104_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0104_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0104_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0104_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0104_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0104-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0107
-   WHERE id NOT IN (SELECT id FROM t2_i0107)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0104_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0104_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0107
-   WHERE id NOT IN (SELECT id FROM t1_i0107)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0104_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0104_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0107 a JOIN t2_i0107 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0104_it a JOIN t2_tc_25_reg_0104_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0108
+-- Test Case: TC-25-REG-0105-IT
 -- Type: BIT(32) -> BIT(64), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: null_ratio=ZERO
+-- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=ZERO, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0108, t2_i0108;
+DROP TABLE IF EXISTS t1_tc_25_reg_0105_it, t2_tc_25_reg_0105_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0108 (
+CREATE TABLE t1_tc_25_reg_0105_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0108 (target) VALUES (b'0');
-INSERT INTO t1_i0108 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0108 (target) VALUES (b'1');
-INSERT INTO t1_i0108 (target) VALUES (b'0');
-INSERT INTO t1_i0108 (target) VALUES (b'1010');
-INSERT INTO t1_i0108 (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0105_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0105_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0105_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0105_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0105_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0105_it (target) VALUES (b'11111111');
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0108 MODIFY target BIT(64), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0105_it MODIFY target BIT(64), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0108 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0105_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0108 (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0105_it (target) VALUES (b'111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0108 (target) VALUES (b'1');
-INSERT INTO t1_i0108 (target) VALUES (b'0');
-INSERT INTO t1_i0108 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0108 (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0105_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0105_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0105_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0105_it (target) VALUES (b'1010');
 -- Oracle table: BIT(64)
-CREATE TABLE t2_i0108 (
+CREATE TABLE t2_tc_25_reg_0105_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(64),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0108 (target) VALUES (b'0');
-INSERT INTO t2_i0108 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0108 (target) VALUES (b'1');
-INSERT INTO t2_i0108 (target) VALUES (b'0');
-INSERT INTO t2_i0108 (target) VALUES (b'1010');
-INSERT INTO t2_i0108 (target) VALUES (b'11111111');
-INSERT INTO t2_i0108 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
-INSERT INTO t2_i0108 (target) VALUES (b'111111111111111111111111111111111');
-INSERT INTO t2_i0108 (target) VALUES (b'1');
-INSERT INTO t2_i0108 (target) VALUES (b'0');
-INSERT INTO t2_i0108 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0108 (target) VALUES (b'1010');
-SELECT 'TC-I0108' AS test_id,
+INSERT INTO t2_tc_25_reg_0105_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0105_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0105_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0105_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0105_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0105_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0105_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0105_it (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0105_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0105_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0105_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0105_it (target) VALUES (b'1010');
+SELECT 'TC-25-REG-0105-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0108
-   WHERE id NOT IN (SELECT id FROM t2_i0108)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0105_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0105_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0108
-   WHERE id NOT IN (SELECT id FROM t1_i0108)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0105_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0105_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0108 a JOIN t2_i0108 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0105_it a JOIN t2_tc_25_reg_0105_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0109
+-- Test Case: TC-25-REG-0106-IT
 -- Type: BIT(32) -> BIT(64), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: null_ratio=SINGLE
+-- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=SINGLE, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0109, t2_i0109;
+DROP TABLE IF EXISTS t1_tc_25_reg_0106_it, t2_tc_25_reg_0106_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0109 (
+CREATE TABLE t1_tc_25_reg_0106_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0109 (target) VALUES (b'0');
-INSERT INTO t1_i0109 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0109 (target) VALUES (b'1');
-INSERT INTO t1_i0109 (target) VALUES (b'0');
-INSERT INTO t1_i0109 (target) VALUES (b'1010');
-INSERT INTO t1_i0109 (target) VALUES (b'11111111');
-INSERT INTO t1_i0109 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0106_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0106_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0106_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0106_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0106_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0106_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0106_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0109 MODIFY target BIT(64), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0106_it MODIFY target BIT(64), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0109 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0106_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0109 (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0106_it (target) VALUES (b'111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0109 (target) VALUES (b'1');
-INSERT INTO t1_i0109 (target) VALUES (b'0');
-INSERT INTO t1_i0109 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0109 (target) VALUES (b'1010');
-INSERT INTO t1_i0109 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0106_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0106_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0106_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0106_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0106_it (target) VALUES (NULL);
 -- Oracle table: BIT(64)
-CREATE TABLE t2_i0109 (
+CREATE TABLE t2_tc_25_reg_0106_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(64),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0109 (target) VALUES (b'0');
-INSERT INTO t2_i0109 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0109 (target) VALUES (b'1');
-INSERT INTO t2_i0109 (target) VALUES (b'0');
-INSERT INTO t2_i0109 (target) VALUES (b'1010');
-INSERT INTO t2_i0109 (target) VALUES (b'11111111');
-INSERT INTO t2_i0109 (target) VALUES (NULL);
-INSERT INTO t2_i0109 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
-INSERT INTO t2_i0109 (target) VALUES (b'111111111111111111111111111111111');
-INSERT INTO t2_i0109 (target) VALUES (b'1');
-INSERT INTO t2_i0109 (target) VALUES (b'0');
-INSERT INTO t2_i0109 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0109 (target) VALUES (b'1010');
-INSERT INTO t2_i0109 (target) VALUES (NULL);
-SELECT 'TC-I0109' AS test_id,
+INSERT INTO t2_tc_25_reg_0106_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0106_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0106_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0106_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0106_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0106_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0106_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0106_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0106_it (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0106_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0106_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0106_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0106_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0106_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0106-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0109
-   WHERE id NOT IN (SELECT id FROM t2_i0109)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0106_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0106_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0109
-   WHERE id NOT IN (SELECT id FROM t1_i0109)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0106_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0106_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0109 a JOIN t2_i0109 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0106_it a JOIN t2_tc_25_reg_0106_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0110
+-- Test Case: TC-25-REG-0107-IT
 -- Type: BIT(32) -> BIT(64), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: null_ratio=ALL
+-- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=ALL, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0110, t2_i0110;
+DROP TABLE IF EXISTS t1_tc_25_reg_0107_it, t2_tc_25_reg_0107_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0110 (
+CREATE TABLE t1_tc_25_reg_0107_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0110 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0107_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0110 MODIFY target BIT(64), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0107_it MODIFY target BIT(64), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0110 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0107_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0110 (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0107_it (target) VALUES (b'111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0110 (target) VALUES (b'1');
-INSERT INTO t1_i0110 (target) VALUES (b'0');
-INSERT INTO t1_i0110 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0110 (target) VALUES (b'1010');
-INSERT INTO t1_i0110 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0107_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0107_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0107_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0107_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0107_it (target) VALUES (NULL);
 -- Oracle table: BIT(64)
-CREATE TABLE t2_i0110 (
+CREATE TABLE t2_tc_25_reg_0107_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(64),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0110 (target) VALUES (NULL);
-INSERT INTO t2_i0110 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
-INSERT INTO t2_i0110 (target) VALUES (b'111111111111111111111111111111111');
-INSERT INTO t2_i0110 (target) VALUES (b'1');
-INSERT INTO t2_i0110 (target) VALUES (b'0');
-INSERT INTO t2_i0110 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0110 (target) VALUES (b'1010');
-INSERT INTO t2_i0110 (target) VALUES (NULL);
-SELECT 'TC-I0110' AS test_id,
+INSERT INTO t2_tc_25_reg_0107_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0107_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0107_it (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0107_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0107_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0107_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0107_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0107_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0107-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0110
-   WHERE id NOT IN (SELECT id FROM t2_i0110)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0107_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0107_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0110
-   WHERE id NOT IN (SELECT id FROM t1_i0110)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0107_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0107_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0110 a JOIN t2_i0110 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0107_it a JOIN t2_tc_25_reg_0107_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0111
+-- Test Case: TC-25-REG-0108-IT
 -- Type: BIT(32) -> BIT(64), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: sql_mode=NON_STRICT
+-- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=NON_STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0111, t2_i0111;
+DROP TABLE IF EXISTS t1_tc_25_reg_0108_it, t2_tc_25_reg_0108_it;
 SET SESSION sql_mode = '';
-CREATE TABLE t1_i0111 (
+CREATE TABLE t1_tc_25_reg_0108_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0111 (target) VALUES (b'0');
-INSERT INTO t1_i0111 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0111 (target) VALUES (b'1');
-INSERT INTO t1_i0111 (target) VALUES (b'0');
-INSERT INTO t1_i0111 (target) VALUES (b'1010');
-INSERT INTO t1_i0111 (target) VALUES (b'11111111');
-INSERT INTO t1_i0111 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0108_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0108_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0108_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0108_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0108_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0108_it (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0108_it (target) VALUES (NULL);
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0111 MODIFY target BIT(64), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0108_it MODIFY target BIT(64), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0111 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0108_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0111 (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0108_it (target) VALUES (b'111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0111 (target) VALUES (b'1');
-INSERT INTO t1_i0111 (target) VALUES (b'0');
-INSERT INTO t1_i0111 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0111 (target) VALUES (b'1010');
-INSERT INTO t1_i0111 (target) VALUES (NULL);
+INSERT INTO t1_tc_25_reg_0108_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0108_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0108_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0108_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0108_it (target) VALUES (NULL);
 -- Oracle table: BIT(64)
-CREATE TABLE t2_i0111 (
+CREATE TABLE t2_tc_25_reg_0108_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(64),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0111 (target) VALUES (b'0');
-INSERT INTO t2_i0111 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0111 (target) VALUES (b'1');
-INSERT INTO t2_i0111 (target) VALUES (b'0');
-INSERT INTO t2_i0111 (target) VALUES (b'1010');
-INSERT INTO t2_i0111 (target) VALUES (b'11111111');
-INSERT INTO t2_i0111 (target) VALUES (NULL);
-INSERT INTO t2_i0111 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
-INSERT INTO t2_i0111 (target) VALUES (b'111111111111111111111111111111111');
-INSERT INTO t2_i0111 (target) VALUES (b'1');
-INSERT INTO t2_i0111 (target) VALUES (b'0');
-INSERT INTO t2_i0111 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0111 (target) VALUES (b'1010');
-INSERT INTO t2_i0111 (target) VALUES (NULL);
-SELECT 'TC-I0111' AS test_id,
+INSERT INTO t2_tc_25_reg_0108_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0108_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0108_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0108_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0108_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0108_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0108_it (target) VALUES (NULL);
+INSERT INTO t2_tc_25_reg_0108_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0108_it (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0108_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0108_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0108_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0108_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0108_it (target) VALUES (NULL);
+SELECT 'TC-25-REG-0108-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0111
-   WHERE id NOT IN (SELECT id FROM t2_i0111)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0108_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0108_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0111
-   WHERE id NOT IN (SELECT id FROM t1_i0111)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0108_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0108_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0111 a JOIN t2_i0111 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0108_it a JOIN t2_tc_25_reg_0108_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0112
+-- Test Case: TC-25-REG-0109-IT
 -- Type: BIT(32) -> BIT(64), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: KP-01
+-- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0112, t2_i0112;
+DROP TABLE IF EXISTS t1_tc_25_reg_0109_it, t2_tc_25_reg_0109_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0112 (
+CREATE TABLE t1_tc_25_reg_0109_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32) NOT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0112 MODIFY target BIT(64) NOT NULL, ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0109_it MODIFY target BIT(64) NOT NULL, ALGORITHM=instant;
 -- Oracle table: BIT(64)
-CREATE TABLE t2_i0112 (
+CREATE TABLE t2_tc_25_reg_0109_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(64) NOT NULL,
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-SELECT 'TC-I0112' AS test_id,
+SELECT 'TC-25-REG-0109-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0112
-   WHERE id NOT IN (SELECT id FROM t2_i0112)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0109_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0109_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0112
-   WHERE id NOT IN (SELECT id FROM t1_i0112)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0109_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0109_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0112 a JOIN t2_i0112 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0109_it a JOIN t2_tc_25_reg_0109_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0113
+-- Test Case: TC-25-REG-0110-IT
 -- Type: BIT(32) -> BIT(64), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: KP-03
+-- Transition ID: BIT-04
 -- Factors: data_distribution=UNIFORM, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0113, t2_i0113;
+DROP TABLE IF EXISTS t1_tc_25_reg_0110_it, t2_tc_25_reg_0110_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0113 (
+CREATE TABLE t1_tc_25_reg_0110_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0113 MODIFY target BIT(64), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0110_it MODIFY target BIT(64), ALGORITHM=instant;
 -- Oracle table: BIT(64)
-CREATE TABLE t2_i0113 (
+CREATE TABLE t2_tc_25_reg_0110_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(64),
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-SELECT 'TC-I0113' AS test_id,
+SELECT 'TC-25-REG-0110-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0113
-   WHERE id NOT IN (SELECT id FROM t2_i0113)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0110_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0110_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0113
-   WHERE id NOT IN (SELECT id FROM t1_i0113)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0110_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0110_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0113 a JOIN t2_i0113 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0110_it a JOIN t2_tc_25_reg_0110_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0114
+-- Test Case: TC-25-REG-0111-IT
 -- Type: BIT(32) -> BIT(64), Algorithm: instant, Expected: SUCCESS
+-- Varied factor: KP-04
+-- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S0, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=CLUSTERED, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NOT_NULL_DEFAULT, target_position=MIDDLE
-DROP TABLE IF EXISTS t1_i0114, t2_i0114;
+DROP TABLE IF EXISTS t1_tc_25_reg_0111_it, t2_tc_25_reg_0111_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0114 (
+CREATE TABLE t1_tc_25_reg_0111_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(32) NOT NULL DEFAULT b'0',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 -- Expected: ALTER SUCCESS
-ALTER TABLE t1_i0114 MODIFY target BIT(64) NOT NULL DEFAULT b'0', ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0111_it MODIFY target BIT(64) NOT NULL DEFAULT b'0', ALGORITHM=instant;
 -- Oracle table: BIT(64)
-CREATE TABLE t2_i0114 (
+CREATE TABLE t2_tc_25_reg_0111_it (
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   target BIT(64) NOT NULL DEFAULT b'0',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-SELECT 'TC-I0114' AS test_id,
+SELECT 'TC-25-REG-0111-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0114
-   WHERE id NOT IN (SELECT id FROM t2_i0114)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0111_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0111_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0114
-   WHERE id NOT IN (SELECT id FROM t1_i0114)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0111_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0111_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0114 a JOIN t2_i0114 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0111_it a JOIN t2_tc_25_reg_0111_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-I0115
+-- Test Case: TC-25-REG-0112-IT
 -- Type: BIT(32) -> BIT(64), Algorithm: instant, Expected: FAIL
+-- Varied factor: KP-05
+-- Transition ID: BIT-04
 -- Factors: data_distribution=TYPE_BOUNDARIES, data_scale=S100, dependencies=NONE, non_target_index=ONE_SECONDARY, null_ratio=TEN_PERCENT, primary_key=COMPOSITE_PK, row_format=DYNAMIC, sql_mode=STRICT, target_attributes=NULL_NO_DEFAULT, target_position=FIRST
-DROP TABLE IF EXISTS t1_i0115, t2_i0115;
+DROP TABLE IF EXISTS t1_tc_25_reg_0112_it, t2_tc_25_reg_0112_it;
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
-CREATE TABLE t1_i0115 (
+CREATE TABLE t1_tc_25_reg_0112_it (
   target BIT(32),
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id, target), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t1_i0115 (target) VALUES (b'0');
-INSERT INTO t1_i0115 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0115 (target) VALUES (b'1');
-INSERT INTO t1_i0115 (target) VALUES (b'0');
-INSERT INTO t1_i0115 (target) VALUES (b'1010');
-INSERT INTO t1_i0115 (target) VALUES (b'11111111');
+INSERT INTO t1_tc_25_reg_0112_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0112_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0112_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0112_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0112_it (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0112_it (target) VALUES (b'11111111');
 -- Expected: ALTER FAILS (table keeps old type)
-ALTER TABLE t1_i0115 MODIFY target BIT(64), ALGORITHM=instant;
+ALTER TABLE t1_tc_25_reg_0112_it MODIFY target BIT(64), ALGORITHM=instant;
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0115 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0112_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0115 (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0112_it (target) VALUES (b'111111111111111111111111111111111');
 -- Insert new-range value (may fail if ALTER failed)
-INSERT INTO t1_i0115 (target) VALUES (b'1');
-INSERT INTO t1_i0115 (target) VALUES (b'0');
-INSERT INTO t1_i0115 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_i0115 (target) VALUES (b'1010');
+INSERT INTO t1_tc_25_reg_0112_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_reg_0112_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_reg_0112_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_reg_0112_it (target) VALUES (b'1010');
 -- Oracle table: BIT(32)
-CREATE TABLE t2_i0115 (
+CREATE TABLE t2_tc_25_reg_0112_it (
   target BIT(32),
   id INT NOT NULL AUTO_INCREMENT,
   pad1 VARCHAR(20) DEFAULT 'pad1',
   pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id, target), INDEX idx_pad1 (pad1)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-INSERT INTO t2_i0115 (target) VALUES (b'0');
-INSERT INTO t2_i0115 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0115 (target) VALUES (b'1');
-INSERT INTO t2_i0115 (target) VALUES (b'0');
-INSERT INTO t2_i0115 (target) VALUES (b'1010');
-INSERT INTO t2_i0115 (target) VALUES (b'11111111');
-INSERT INTO t2_i0115 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
-INSERT INTO t2_i0115 (target) VALUES (b'111111111111111111111111111111111');
-INSERT INTO t2_i0115 (target) VALUES (b'1');
-INSERT INTO t2_i0115 (target) VALUES (b'0');
-INSERT INTO t2_i0115 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t2_i0115 (target) VALUES (b'1010');
-SELECT 'TC-I0115' AS test_id,
+INSERT INTO t2_tc_25_reg_0112_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0112_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0112_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0112_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0112_it (target) VALUES (b'1010');
+INSERT INTO t2_tc_25_reg_0112_it (target) VALUES (b'11111111');
+INSERT INTO t2_tc_25_reg_0112_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0112_it (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0112_it (target) VALUES (b'1');
+INSERT INTO t2_tc_25_reg_0112_it (target) VALUES (b'0');
+INSERT INTO t2_tc_25_reg_0112_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t2_tc_25_reg_0112_it (target) VALUES (b'1010');
+SELECT 'TC-25-REG-0112-IT' AS test_id,
        IF(COUNT(*)=0,'PASS','FAIL') AS result,
        IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
 FROM (
-  SELECT 't1_extra' AS src, id FROM t1_i0115
-   WHERE id NOT IN (SELECT id FROM t2_i0115)
+  SELECT 't1_extra' AS src, id FROM t1_tc_25_reg_0112_it
+   WHERE id NOT IN (SELECT id FROM t2_tc_25_reg_0112_it)
   UNION ALL
-  SELECT 't2_extra' AS src, id FROM t2_i0115
-   WHERE id NOT IN (SELECT id FROM t1_i0115)
+  SELECT 't2_extra' AS src, id FROM t2_tc_25_reg_0112_it
+   WHERE id NOT IN (SELECT id FROM t1_tc_25_reg_0112_it)
   UNION ALL
-  SELECT 'data_mismatch' AS src, a.id FROM t1_i0115 a JOIN t2_i0115 b ON a.id = b.id
+  SELECT 'data_mismatch' AS src, a.id FROM t1_tc_25_reg_0112_it a JOIN t2_tc_25_reg_0112_it b ON a.id = b.id
    WHERE NOT (a.id <=> b.id AND a.pad1 <=> b.pad1 AND a.target <=> b.target AND a.pad2 <=> b.pad2)
 ) AS mismatches;
 
--- Test Case: TC-IA0116
+-- Test Case: TC-25-ATR-0004-IT
 -- Column attribute preservation: COMMENT
 -- Type: BIT(32) -> BIT(64), Algorithm: instant
-DROP TABLE IF EXISTS t1_tc_ia0116, t2_tc_ia0116;
-CREATE TABLE t1_tc_ia0116 (
+DROP TABLE IF EXISTS t1_tc_25_atr_0004_it, t2_tc_25_atr_0004_it;
+CREATE TABLE t1_tc_25_atr_0004_it (
   id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   target BIT(32) COMMENT 'test_comment',
   pad VARCHAR(20) DEFAULT 'pad'
 ) ENGINE=InnoDB;
-INSERT INTO t1_tc_ia0116 (target) VALUES (b'0');
-INSERT INTO t1_tc_ia0116 (target) VALUES (b'11111111111111111111111111111111');
-INSERT INTO t1_tc_ia0116 (target) VALUES (b'1');
-INSERT INTO t1_tc_ia0116 (target) VALUES (b'0');
-INSERT INTO t1_tc_ia0116 (target) VALUES (b'1010');
-ALTER TABLE t1_tc_ia0116 MODIFY target BIT(64) COMMENT 'test_comment', ALGORITHM=instant;
-INSERT INTO t1_tc_ia0116 (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
-INSERT INTO t1_tc_ia0116 (target) VALUES (b'111111111111111111111111111111111');
-INSERT INTO t1_tc_ia0116 (target) VALUES (b'1');
-SELECT 'TC-IA0116' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_ia0116' AND column_name='target' AND column_comment='test_comment';
+INSERT INTO t1_tc_25_atr_0004_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_atr_0004_it (target) VALUES (b'11111111111111111111111111111111');
+INSERT INTO t1_tc_25_atr_0004_it (target) VALUES (b'1');
+INSERT INTO t1_tc_25_atr_0004_it (target) VALUES (b'0');
+INSERT INTO t1_tc_25_atr_0004_it (target) VALUES (b'1010');
+ALTER TABLE t1_tc_25_atr_0004_it MODIFY target BIT(64) COMMENT 'test_comment', ALGORITHM=instant;
+INSERT INTO t1_tc_25_atr_0004_it (target) VALUES (b'1111111111111111111111111111111111111111111111111111111111111111');
+INSERT INTO t1_tc_25_atr_0004_it (target) VALUES (b'111111111111111111111111111111111');
+INSERT INTO t1_tc_25_atr_0004_it (target) VALUES (b'1');
+SELECT 'TC-25-ATR-0004-IT' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_25_atr_0004_it' AND column_name='target' AND column_comment='test_comment';
 

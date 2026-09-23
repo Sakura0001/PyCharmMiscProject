@@ -5,7 +5,10 @@
 -- 覆盖算法: INSTANT + INPLACE
 -- ============================================================
 -- 本文件由 generate_test_sql.py 自动生成, 请勿手动修改
--- 生成时间: 2026-09-20
+-- Suite-Revision: 4dfbe1e59c0b   (生成器源码哈希; 时间戳见 results/generation_manifest.json)
+-- 用例 ID 规则: TC-<文件号>-<作用域>-<序号>-<IT|IP>  —— 全局唯一
+--   作用域 REG=普通表 OFAT/二元组, ATR=列属性保持, SPE=特殊模式,
+--          FK=外键, PTK=分区(目标列是分区键), PNK=分区(目标列非分区键)
 -- ============================================================
 
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
@@ -13,763 +16,763 @@ SET SESSION innodb_lock_wait_timeout = 50;
 
 -- File 09: AUTO_INCREMENT PK 扩容专项
 
--- Test Case: TC-AII001
+-- Test Case: TC-09-ATR-0001-IT
 -- Column attribute preservation: AUTO_INCREMENT
 -- Type: TINYINT -> SMALLINT, Algorithm: instant
-DROP TABLE IF EXISTS t1_tc_aii001, t2_tc_aii001;
-CREATE TABLE t1_tc_aii001 (
+DROP TABLE IF EXISTS t1_tc_09_atr_0001_it, t2_tc_09_atr_0001_it;
+CREATE TABLE t1_tc_09_atr_0001_it (
   id TINYINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   pad VARCHAR(20) DEFAULT 'pad'
 ) ENGINE=InnoDB;
-INSERT INTO t1_tc_aii001 (id) VALUES (-128);
-INSERT INTO t1_tc_aii001 (id) VALUES (127);
-INSERT INTO t1_tc_aii001 (id) VALUES (-127);
-INSERT INTO t1_tc_aii001 (id) VALUES (126);
-INSERT INTO t1_tc_aii001 (id) VALUES (0);
-ALTER TABLE t1_tc_aii001 MODIFY id SMALLINT NOT NULL AUTO_INCREMENT, ALGORITHM=instant;
-INSERT INTO t1_tc_aii001 (id) VALUES (-32768);
-INSERT INTO t1_tc_aii001 (id) VALUES (-32767);
-INSERT INTO t1_tc_aii001 (id) VALUES (32767);
-SELECT 'TC-AII001' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_aii001' AND column_name='id' AND extra LIKE '%auto_increment%';
+INSERT INTO t1_tc_09_atr_0001_it (id) VALUES (-128);
+INSERT INTO t1_tc_09_atr_0001_it (id) VALUES (127);
+INSERT INTO t1_tc_09_atr_0001_it (id) VALUES (-127);
+INSERT INTO t1_tc_09_atr_0001_it (id) VALUES (126);
+INSERT INTO t1_tc_09_atr_0001_it (id) VALUES (0);
+ALTER TABLE t1_tc_09_atr_0001_it MODIFY id SMALLINT NOT NULL AUTO_INCREMENT, ALGORITHM=instant;
+INSERT INTO t1_tc_09_atr_0001_it (id) VALUES (-32768);
+INSERT INTO t1_tc_09_atr_0001_it (id) VALUES (-32767);
+INSERT INTO t1_tc_09_atr_0001_it (id) VALUES (32767);
+SELECT 'TC-09-ATR-0001-IT' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_09_atr_0001_it' AND column_name='id' AND extra LIKE '%auto_increment%';
 
--- Test Case: TC-AII002
+-- Test Case: TC-09-ATR-0002-IP
 -- Column attribute preservation: AUTO_INCREMENT
 -- Type: TINYINT -> SMALLINT, Algorithm: inplace
-DROP TABLE IF EXISTS t1_tc_aii002, t2_tc_aii002;
-CREATE TABLE t1_tc_aii002 (
+DROP TABLE IF EXISTS t1_tc_09_atr_0002_ip, t2_tc_09_atr_0002_ip;
+CREATE TABLE t1_tc_09_atr_0002_ip (
   id TINYINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   pad VARCHAR(20) DEFAULT 'pad'
 ) ENGINE=InnoDB;
-INSERT INTO t1_tc_aii002 (id) VALUES (-128);
-INSERT INTO t1_tc_aii002 (id) VALUES (127);
-INSERT INTO t1_tc_aii002 (id) VALUES (-127);
-INSERT INTO t1_tc_aii002 (id) VALUES (126);
-INSERT INTO t1_tc_aii002 (id) VALUES (0);
-ALTER TABLE t1_tc_aii002 MODIFY id SMALLINT NOT NULL AUTO_INCREMENT, ALGORITHM=inplace;
-INSERT INTO t1_tc_aii002 (id) VALUES (-32768);
-INSERT INTO t1_tc_aii002 (id) VALUES (-32767);
-INSERT INTO t1_tc_aii002 (id) VALUES (32767);
-SELECT 'TC-AII002' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_aii002' AND column_name='id' AND extra LIKE '%auto_increment%';
+INSERT INTO t1_tc_09_atr_0002_ip (id) VALUES (-128);
+INSERT INTO t1_tc_09_atr_0002_ip (id) VALUES (127);
+INSERT INTO t1_tc_09_atr_0002_ip (id) VALUES (-127);
+INSERT INTO t1_tc_09_atr_0002_ip (id) VALUES (126);
+INSERT INTO t1_tc_09_atr_0002_ip (id) VALUES (0);
+ALTER TABLE t1_tc_09_atr_0002_ip MODIFY id SMALLINT NOT NULL AUTO_INCREMENT, ALGORITHM=inplace;
+INSERT INTO t1_tc_09_atr_0002_ip (id) VALUES (-32768);
+INSERT INTO t1_tc_09_atr_0002_ip (id) VALUES (-32767);
+INSERT INTO t1_tc_09_atr_0002_ip (id) VALUES (32767);
+SELECT 'TC-09-ATR-0002-IP' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_09_atr_0002_ip' AND column_name='id' AND extra LIKE '%auto_increment%';
 
--- Test Case: TC-AII003
+-- Test Case: TC-09-ATR-0003-IT
 -- Column attribute preservation: AUTO_INCREMENT
 -- Type: TINYINT -> MEDIUMINT, Algorithm: instant
-DROP TABLE IF EXISTS t1_tc_aii003, t2_tc_aii003;
-CREATE TABLE t1_tc_aii003 (
+DROP TABLE IF EXISTS t1_tc_09_atr_0003_it, t2_tc_09_atr_0003_it;
+CREATE TABLE t1_tc_09_atr_0003_it (
   id TINYINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   pad VARCHAR(20) DEFAULT 'pad'
 ) ENGINE=InnoDB;
-INSERT INTO t1_tc_aii003 (id) VALUES (-128);
-INSERT INTO t1_tc_aii003 (id) VALUES (127);
-INSERT INTO t1_tc_aii003 (id) VALUES (-127);
-INSERT INTO t1_tc_aii003 (id) VALUES (126);
-INSERT INTO t1_tc_aii003 (id) VALUES (0);
-ALTER TABLE t1_tc_aii003 MODIFY id MEDIUMINT NOT NULL AUTO_INCREMENT, ALGORITHM=instant;
-INSERT INTO t1_tc_aii003 (id) VALUES (-8388608);
-INSERT INTO t1_tc_aii003 (id) VALUES (-8388607);
-INSERT INTO t1_tc_aii003 (id) VALUES (8388607);
-SELECT 'TC-AII003' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_aii003' AND column_name='id' AND extra LIKE '%auto_increment%';
+INSERT INTO t1_tc_09_atr_0003_it (id) VALUES (-128);
+INSERT INTO t1_tc_09_atr_0003_it (id) VALUES (127);
+INSERT INTO t1_tc_09_atr_0003_it (id) VALUES (-127);
+INSERT INTO t1_tc_09_atr_0003_it (id) VALUES (126);
+INSERT INTO t1_tc_09_atr_0003_it (id) VALUES (0);
+ALTER TABLE t1_tc_09_atr_0003_it MODIFY id MEDIUMINT NOT NULL AUTO_INCREMENT, ALGORITHM=instant;
+INSERT INTO t1_tc_09_atr_0003_it (id) VALUES (-8388608);
+INSERT INTO t1_tc_09_atr_0003_it (id) VALUES (-8388607);
+INSERT INTO t1_tc_09_atr_0003_it (id) VALUES (8388607);
+SELECT 'TC-09-ATR-0003-IT' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_09_atr_0003_it' AND column_name='id' AND extra LIKE '%auto_increment%';
 
--- Test Case: TC-AII004
+-- Test Case: TC-09-ATR-0004-IP
 -- Column attribute preservation: AUTO_INCREMENT
 -- Type: TINYINT -> MEDIUMINT, Algorithm: inplace
-DROP TABLE IF EXISTS t1_tc_aii004, t2_tc_aii004;
-CREATE TABLE t1_tc_aii004 (
+DROP TABLE IF EXISTS t1_tc_09_atr_0004_ip, t2_tc_09_atr_0004_ip;
+CREATE TABLE t1_tc_09_atr_0004_ip (
   id TINYINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   pad VARCHAR(20) DEFAULT 'pad'
 ) ENGINE=InnoDB;
-INSERT INTO t1_tc_aii004 (id) VALUES (-128);
-INSERT INTO t1_tc_aii004 (id) VALUES (127);
-INSERT INTO t1_tc_aii004 (id) VALUES (-127);
-INSERT INTO t1_tc_aii004 (id) VALUES (126);
-INSERT INTO t1_tc_aii004 (id) VALUES (0);
-ALTER TABLE t1_tc_aii004 MODIFY id MEDIUMINT NOT NULL AUTO_INCREMENT, ALGORITHM=inplace;
-INSERT INTO t1_tc_aii004 (id) VALUES (-8388608);
-INSERT INTO t1_tc_aii004 (id) VALUES (-8388607);
-INSERT INTO t1_tc_aii004 (id) VALUES (8388607);
-SELECT 'TC-AII004' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_aii004' AND column_name='id' AND extra LIKE '%auto_increment%';
+INSERT INTO t1_tc_09_atr_0004_ip (id) VALUES (-128);
+INSERT INTO t1_tc_09_atr_0004_ip (id) VALUES (127);
+INSERT INTO t1_tc_09_atr_0004_ip (id) VALUES (-127);
+INSERT INTO t1_tc_09_atr_0004_ip (id) VALUES (126);
+INSERT INTO t1_tc_09_atr_0004_ip (id) VALUES (0);
+ALTER TABLE t1_tc_09_atr_0004_ip MODIFY id MEDIUMINT NOT NULL AUTO_INCREMENT, ALGORITHM=inplace;
+INSERT INTO t1_tc_09_atr_0004_ip (id) VALUES (-8388608);
+INSERT INTO t1_tc_09_atr_0004_ip (id) VALUES (-8388607);
+INSERT INTO t1_tc_09_atr_0004_ip (id) VALUES (8388607);
+SELECT 'TC-09-ATR-0004-IP' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_09_atr_0004_ip' AND column_name='id' AND extra LIKE '%auto_increment%';
 
--- Test Case: TC-AII005
+-- Test Case: TC-09-ATR-0005-IT
 -- Column attribute preservation: AUTO_INCREMENT
 -- Type: TINYINT -> INT, Algorithm: instant
-DROP TABLE IF EXISTS t1_tc_aii005, t2_tc_aii005;
-CREATE TABLE t1_tc_aii005 (
+DROP TABLE IF EXISTS t1_tc_09_atr_0005_it, t2_tc_09_atr_0005_it;
+CREATE TABLE t1_tc_09_atr_0005_it (
   id TINYINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   pad VARCHAR(20) DEFAULT 'pad'
 ) ENGINE=InnoDB;
-INSERT INTO t1_tc_aii005 (id) VALUES (-128);
-INSERT INTO t1_tc_aii005 (id) VALUES (127);
-INSERT INTO t1_tc_aii005 (id) VALUES (-127);
-INSERT INTO t1_tc_aii005 (id) VALUES (126);
-INSERT INTO t1_tc_aii005 (id) VALUES (0);
-ALTER TABLE t1_tc_aii005 MODIFY id INT NOT NULL AUTO_INCREMENT, ALGORITHM=instant;
-INSERT INTO t1_tc_aii005 (id) VALUES (-2147483648);
-INSERT INTO t1_tc_aii005 (id) VALUES (-2147483647);
-INSERT INTO t1_tc_aii005 (id) VALUES (2147483647);
-SELECT 'TC-AII005' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_aii005' AND column_name='id' AND extra LIKE '%auto_increment%';
+INSERT INTO t1_tc_09_atr_0005_it (id) VALUES (-128);
+INSERT INTO t1_tc_09_atr_0005_it (id) VALUES (127);
+INSERT INTO t1_tc_09_atr_0005_it (id) VALUES (-127);
+INSERT INTO t1_tc_09_atr_0005_it (id) VALUES (126);
+INSERT INTO t1_tc_09_atr_0005_it (id) VALUES (0);
+ALTER TABLE t1_tc_09_atr_0005_it MODIFY id INT NOT NULL AUTO_INCREMENT, ALGORITHM=instant;
+INSERT INTO t1_tc_09_atr_0005_it (id) VALUES (-2147483648);
+INSERT INTO t1_tc_09_atr_0005_it (id) VALUES (-2147483647);
+INSERT INTO t1_tc_09_atr_0005_it (id) VALUES (2147483647);
+SELECT 'TC-09-ATR-0005-IT' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_09_atr_0005_it' AND column_name='id' AND extra LIKE '%auto_increment%';
 
--- Test Case: TC-AII006
+-- Test Case: TC-09-ATR-0006-IP
 -- Column attribute preservation: AUTO_INCREMENT
 -- Type: TINYINT -> INT, Algorithm: inplace
-DROP TABLE IF EXISTS t1_tc_aii006, t2_tc_aii006;
-CREATE TABLE t1_tc_aii006 (
+DROP TABLE IF EXISTS t1_tc_09_atr_0006_ip, t2_tc_09_atr_0006_ip;
+CREATE TABLE t1_tc_09_atr_0006_ip (
   id TINYINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   pad VARCHAR(20) DEFAULT 'pad'
 ) ENGINE=InnoDB;
-INSERT INTO t1_tc_aii006 (id) VALUES (-128);
-INSERT INTO t1_tc_aii006 (id) VALUES (127);
-INSERT INTO t1_tc_aii006 (id) VALUES (-127);
-INSERT INTO t1_tc_aii006 (id) VALUES (126);
-INSERT INTO t1_tc_aii006 (id) VALUES (0);
-ALTER TABLE t1_tc_aii006 MODIFY id INT NOT NULL AUTO_INCREMENT, ALGORITHM=inplace;
-INSERT INTO t1_tc_aii006 (id) VALUES (-2147483648);
-INSERT INTO t1_tc_aii006 (id) VALUES (-2147483647);
-INSERT INTO t1_tc_aii006 (id) VALUES (2147483647);
-SELECT 'TC-AII006' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_aii006' AND column_name='id' AND extra LIKE '%auto_increment%';
+INSERT INTO t1_tc_09_atr_0006_ip (id) VALUES (-128);
+INSERT INTO t1_tc_09_atr_0006_ip (id) VALUES (127);
+INSERT INTO t1_tc_09_atr_0006_ip (id) VALUES (-127);
+INSERT INTO t1_tc_09_atr_0006_ip (id) VALUES (126);
+INSERT INTO t1_tc_09_atr_0006_ip (id) VALUES (0);
+ALTER TABLE t1_tc_09_atr_0006_ip MODIFY id INT NOT NULL AUTO_INCREMENT, ALGORITHM=inplace;
+INSERT INTO t1_tc_09_atr_0006_ip (id) VALUES (-2147483648);
+INSERT INTO t1_tc_09_atr_0006_ip (id) VALUES (-2147483647);
+INSERT INTO t1_tc_09_atr_0006_ip (id) VALUES (2147483647);
+SELECT 'TC-09-ATR-0006-IP' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_09_atr_0006_ip' AND column_name='id' AND extra LIKE '%auto_increment%';
 
--- Test Case: TC-AII007
+-- Test Case: TC-09-ATR-0007-IT
 -- Column attribute preservation: AUTO_INCREMENT
 -- Type: TINYINT -> BIGINT, Algorithm: instant
-DROP TABLE IF EXISTS t1_tc_aii007, t2_tc_aii007;
-CREATE TABLE t1_tc_aii007 (
+DROP TABLE IF EXISTS t1_tc_09_atr_0007_it, t2_tc_09_atr_0007_it;
+CREATE TABLE t1_tc_09_atr_0007_it (
   id TINYINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   pad VARCHAR(20) DEFAULT 'pad'
 ) ENGINE=InnoDB;
-INSERT INTO t1_tc_aii007 (id) VALUES (-128);
-INSERT INTO t1_tc_aii007 (id) VALUES (127);
-INSERT INTO t1_tc_aii007 (id) VALUES (-127);
-INSERT INTO t1_tc_aii007 (id) VALUES (126);
-INSERT INTO t1_tc_aii007 (id) VALUES (0);
-ALTER TABLE t1_tc_aii007 MODIFY id BIGINT NOT NULL AUTO_INCREMENT, ALGORITHM=instant;
-INSERT INTO t1_tc_aii007 (id) VALUES (-9223372036854775808);
-INSERT INTO t1_tc_aii007 (id) VALUES (-9223372036854775807);
-INSERT INTO t1_tc_aii007 (id) VALUES (9223372036854775807);
-SELECT 'TC-AII007' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_aii007' AND column_name='id' AND extra LIKE '%auto_increment%';
+INSERT INTO t1_tc_09_atr_0007_it (id) VALUES (-128);
+INSERT INTO t1_tc_09_atr_0007_it (id) VALUES (127);
+INSERT INTO t1_tc_09_atr_0007_it (id) VALUES (-127);
+INSERT INTO t1_tc_09_atr_0007_it (id) VALUES (126);
+INSERT INTO t1_tc_09_atr_0007_it (id) VALUES (0);
+ALTER TABLE t1_tc_09_atr_0007_it MODIFY id BIGINT NOT NULL AUTO_INCREMENT, ALGORITHM=instant;
+INSERT INTO t1_tc_09_atr_0007_it (id) VALUES (-9223372036854775808);
+INSERT INTO t1_tc_09_atr_0007_it (id) VALUES (-9223372036854775807);
+INSERT INTO t1_tc_09_atr_0007_it (id) VALUES (9223372036854775807);
+SELECT 'TC-09-ATR-0007-IT' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_09_atr_0007_it' AND column_name='id' AND extra LIKE '%auto_increment%';
 
--- Test Case: TC-AII008
+-- Test Case: TC-09-ATR-0008-IP
 -- Column attribute preservation: AUTO_INCREMENT
 -- Type: TINYINT -> BIGINT, Algorithm: inplace
-DROP TABLE IF EXISTS t1_tc_aii008, t2_tc_aii008;
-CREATE TABLE t1_tc_aii008 (
+DROP TABLE IF EXISTS t1_tc_09_atr_0008_ip, t2_tc_09_atr_0008_ip;
+CREATE TABLE t1_tc_09_atr_0008_ip (
   id TINYINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   pad VARCHAR(20) DEFAULT 'pad'
 ) ENGINE=InnoDB;
-INSERT INTO t1_tc_aii008 (id) VALUES (-128);
-INSERT INTO t1_tc_aii008 (id) VALUES (127);
-INSERT INTO t1_tc_aii008 (id) VALUES (-127);
-INSERT INTO t1_tc_aii008 (id) VALUES (126);
-INSERT INTO t1_tc_aii008 (id) VALUES (0);
-ALTER TABLE t1_tc_aii008 MODIFY id BIGINT NOT NULL AUTO_INCREMENT, ALGORITHM=inplace;
-INSERT INTO t1_tc_aii008 (id) VALUES (-9223372036854775808);
-INSERT INTO t1_tc_aii008 (id) VALUES (-9223372036854775807);
-INSERT INTO t1_tc_aii008 (id) VALUES (9223372036854775807);
-SELECT 'TC-AII008' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_aii008' AND column_name='id' AND extra LIKE '%auto_increment%';
+INSERT INTO t1_tc_09_atr_0008_ip (id) VALUES (-128);
+INSERT INTO t1_tc_09_atr_0008_ip (id) VALUES (127);
+INSERT INTO t1_tc_09_atr_0008_ip (id) VALUES (-127);
+INSERT INTO t1_tc_09_atr_0008_ip (id) VALUES (126);
+INSERT INTO t1_tc_09_atr_0008_ip (id) VALUES (0);
+ALTER TABLE t1_tc_09_atr_0008_ip MODIFY id BIGINT NOT NULL AUTO_INCREMENT, ALGORITHM=inplace;
+INSERT INTO t1_tc_09_atr_0008_ip (id) VALUES (-9223372036854775808);
+INSERT INTO t1_tc_09_atr_0008_ip (id) VALUES (-9223372036854775807);
+INSERT INTO t1_tc_09_atr_0008_ip (id) VALUES (9223372036854775807);
+SELECT 'TC-09-ATR-0008-IP' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_09_atr_0008_ip' AND column_name='id' AND extra LIKE '%auto_increment%';
 
--- Test Case: TC-AII009
+-- Test Case: TC-09-ATR-0009-IT
 -- Column attribute preservation: AUTO_INCREMENT
 -- Type: SMALLINT -> MEDIUMINT, Algorithm: instant
-DROP TABLE IF EXISTS t1_tc_aii009, t2_tc_aii009;
-CREATE TABLE t1_tc_aii009 (
+DROP TABLE IF EXISTS t1_tc_09_atr_0009_it, t2_tc_09_atr_0009_it;
+CREATE TABLE t1_tc_09_atr_0009_it (
   id SMALLINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   pad VARCHAR(20) DEFAULT 'pad'
 ) ENGINE=InnoDB;
-INSERT INTO t1_tc_aii009 (id) VALUES (-32768);
-INSERT INTO t1_tc_aii009 (id) VALUES (32767);
-INSERT INTO t1_tc_aii009 (id) VALUES (-32767);
-INSERT INTO t1_tc_aii009 (id) VALUES (32766);
-INSERT INTO t1_tc_aii009 (id) VALUES (0);
-ALTER TABLE t1_tc_aii009 MODIFY id MEDIUMINT NOT NULL AUTO_INCREMENT, ALGORITHM=instant;
-INSERT INTO t1_tc_aii009 (id) VALUES (-8388608);
-INSERT INTO t1_tc_aii009 (id) VALUES (-8388607);
-INSERT INTO t1_tc_aii009 (id) VALUES (8388607);
-SELECT 'TC-AII009' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_aii009' AND column_name='id' AND extra LIKE '%auto_increment%';
+INSERT INTO t1_tc_09_atr_0009_it (id) VALUES (-32768);
+INSERT INTO t1_tc_09_atr_0009_it (id) VALUES (32767);
+INSERT INTO t1_tc_09_atr_0009_it (id) VALUES (-32767);
+INSERT INTO t1_tc_09_atr_0009_it (id) VALUES (32766);
+INSERT INTO t1_tc_09_atr_0009_it (id) VALUES (0);
+ALTER TABLE t1_tc_09_atr_0009_it MODIFY id MEDIUMINT NOT NULL AUTO_INCREMENT, ALGORITHM=instant;
+INSERT INTO t1_tc_09_atr_0009_it (id) VALUES (-8388608);
+INSERT INTO t1_tc_09_atr_0009_it (id) VALUES (-8388607);
+INSERT INTO t1_tc_09_atr_0009_it (id) VALUES (8388607);
+SELECT 'TC-09-ATR-0009-IT' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_09_atr_0009_it' AND column_name='id' AND extra LIKE '%auto_increment%';
 
--- Test Case: TC-AII010
+-- Test Case: TC-09-ATR-0010-IP
 -- Column attribute preservation: AUTO_INCREMENT
 -- Type: SMALLINT -> MEDIUMINT, Algorithm: inplace
-DROP TABLE IF EXISTS t1_tc_aii010, t2_tc_aii010;
-CREATE TABLE t1_tc_aii010 (
+DROP TABLE IF EXISTS t1_tc_09_atr_0010_ip, t2_tc_09_atr_0010_ip;
+CREATE TABLE t1_tc_09_atr_0010_ip (
   id SMALLINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   pad VARCHAR(20) DEFAULT 'pad'
 ) ENGINE=InnoDB;
-INSERT INTO t1_tc_aii010 (id) VALUES (-32768);
-INSERT INTO t1_tc_aii010 (id) VALUES (32767);
-INSERT INTO t1_tc_aii010 (id) VALUES (-32767);
-INSERT INTO t1_tc_aii010 (id) VALUES (32766);
-INSERT INTO t1_tc_aii010 (id) VALUES (0);
-ALTER TABLE t1_tc_aii010 MODIFY id MEDIUMINT NOT NULL AUTO_INCREMENT, ALGORITHM=inplace;
-INSERT INTO t1_tc_aii010 (id) VALUES (-8388608);
-INSERT INTO t1_tc_aii010 (id) VALUES (-8388607);
-INSERT INTO t1_tc_aii010 (id) VALUES (8388607);
-SELECT 'TC-AII010' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_aii010' AND column_name='id' AND extra LIKE '%auto_increment%';
+INSERT INTO t1_tc_09_atr_0010_ip (id) VALUES (-32768);
+INSERT INTO t1_tc_09_atr_0010_ip (id) VALUES (32767);
+INSERT INTO t1_tc_09_atr_0010_ip (id) VALUES (-32767);
+INSERT INTO t1_tc_09_atr_0010_ip (id) VALUES (32766);
+INSERT INTO t1_tc_09_atr_0010_ip (id) VALUES (0);
+ALTER TABLE t1_tc_09_atr_0010_ip MODIFY id MEDIUMINT NOT NULL AUTO_INCREMENT, ALGORITHM=inplace;
+INSERT INTO t1_tc_09_atr_0010_ip (id) VALUES (-8388608);
+INSERT INTO t1_tc_09_atr_0010_ip (id) VALUES (-8388607);
+INSERT INTO t1_tc_09_atr_0010_ip (id) VALUES (8388607);
+SELECT 'TC-09-ATR-0010-IP' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_09_atr_0010_ip' AND column_name='id' AND extra LIKE '%auto_increment%';
 
--- Test Case: TC-AII011
+-- Test Case: TC-09-ATR-0011-IT
 -- Column attribute preservation: AUTO_INCREMENT
 -- Type: SMALLINT -> INT, Algorithm: instant
-DROP TABLE IF EXISTS t1_tc_aii011, t2_tc_aii011;
-CREATE TABLE t1_tc_aii011 (
+DROP TABLE IF EXISTS t1_tc_09_atr_0011_it, t2_tc_09_atr_0011_it;
+CREATE TABLE t1_tc_09_atr_0011_it (
   id SMALLINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   pad VARCHAR(20) DEFAULT 'pad'
 ) ENGINE=InnoDB;
-INSERT INTO t1_tc_aii011 (id) VALUES (-32768);
-INSERT INTO t1_tc_aii011 (id) VALUES (32767);
-INSERT INTO t1_tc_aii011 (id) VALUES (-32767);
-INSERT INTO t1_tc_aii011 (id) VALUES (32766);
-INSERT INTO t1_tc_aii011 (id) VALUES (0);
-ALTER TABLE t1_tc_aii011 MODIFY id INT NOT NULL AUTO_INCREMENT, ALGORITHM=instant;
-INSERT INTO t1_tc_aii011 (id) VALUES (-2147483648);
-INSERT INTO t1_tc_aii011 (id) VALUES (-2147483647);
-INSERT INTO t1_tc_aii011 (id) VALUES (2147483647);
-SELECT 'TC-AII011' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_aii011' AND column_name='id' AND extra LIKE '%auto_increment%';
+INSERT INTO t1_tc_09_atr_0011_it (id) VALUES (-32768);
+INSERT INTO t1_tc_09_atr_0011_it (id) VALUES (32767);
+INSERT INTO t1_tc_09_atr_0011_it (id) VALUES (-32767);
+INSERT INTO t1_tc_09_atr_0011_it (id) VALUES (32766);
+INSERT INTO t1_tc_09_atr_0011_it (id) VALUES (0);
+ALTER TABLE t1_tc_09_atr_0011_it MODIFY id INT NOT NULL AUTO_INCREMENT, ALGORITHM=instant;
+INSERT INTO t1_tc_09_atr_0011_it (id) VALUES (-2147483648);
+INSERT INTO t1_tc_09_atr_0011_it (id) VALUES (-2147483647);
+INSERT INTO t1_tc_09_atr_0011_it (id) VALUES (2147483647);
+SELECT 'TC-09-ATR-0011-IT' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_09_atr_0011_it' AND column_name='id' AND extra LIKE '%auto_increment%';
 
--- Test Case: TC-AII012
+-- Test Case: TC-09-ATR-0012-IP
 -- Column attribute preservation: AUTO_INCREMENT
 -- Type: SMALLINT -> INT, Algorithm: inplace
-DROP TABLE IF EXISTS t1_tc_aii012, t2_tc_aii012;
-CREATE TABLE t1_tc_aii012 (
+DROP TABLE IF EXISTS t1_tc_09_atr_0012_ip, t2_tc_09_atr_0012_ip;
+CREATE TABLE t1_tc_09_atr_0012_ip (
   id SMALLINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   pad VARCHAR(20) DEFAULT 'pad'
 ) ENGINE=InnoDB;
-INSERT INTO t1_tc_aii012 (id) VALUES (-32768);
-INSERT INTO t1_tc_aii012 (id) VALUES (32767);
-INSERT INTO t1_tc_aii012 (id) VALUES (-32767);
-INSERT INTO t1_tc_aii012 (id) VALUES (32766);
-INSERT INTO t1_tc_aii012 (id) VALUES (0);
-ALTER TABLE t1_tc_aii012 MODIFY id INT NOT NULL AUTO_INCREMENT, ALGORITHM=inplace;
-INSERT INTO t1_tc_aii012 (id) VALUES (-2147483648);
-INSERT INTO t1_tc_aii012 (id) VALUES (-2147483647);
-INSERT INTO t1_tc_aii012 (id) VALUES (2147483647);
-SELECT 'TC-AII012' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_aii012' AND column_name='id' AND extra LIKE '%auto_increment%';
+INSERT INTO t1_tc_09_atr_0012_ip (id) VALUES (-32768);
+INSERT INTO t1_tc_09_atr_0012_ip (id) VALUES (32767);
+INSERT INTO t1_tc_09_atr_0012_ip (id) VALUES (-32767);
+INSERT INTO t1_tc_09_atr_0012_ip (id) VALUES (32766);
+INSERT INTO t1_tc_09_atr_0012_ip (id) VALUES (0);
+ALTER TABLE t1_tc_09_atr_0012_ip MODIFY id INT NOT NULL AUTO_INCREMENT, ALGORITHM=inplace;
+INSERT INTO t1_tc_09_atr_0012_ip (id) VALUES (-2147483648);
+INSERT INTO t1_tc_09_atr_0012_ip (id) VALUES (-2147483647);
+INSERT INTO t1_tc_09_atr_0012_ip (id) VALUES (2147483647);
+SELECT 'TC-09-ATR-0012-IP' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_09_atr_0012_ip' AND column_name='id' AND extra LIKE '%auto_increment%';
 
--- Test Case: TC-AII013
+-- Test Case: TC-09-ATR-0013-IT
 -- Column attribute preservation: AUTO_INCREMENT
 -- Type: SMALLINT -> BIGINT, Algorithm: instant
-DROP TABLE IF EXISTS t1_tc_aii013, t2_tc_aii013;
-CREATE TABLE t1_tc_aii013 (
+DROP TABLE IF EXISTS t1_tc_09_atr_0013_it, t2_tc_09_atr_0013_it;
+CREATE TABLE t1_tc_09_atr_0013_it (
   id SMALLINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   pad VARCHAR(20) DEFAULT 'pad'
 ) ENGINE=InnoDB;
-INSERT INTO t1_tc_aii013 (id) VALUES (-32768);
-INSERT INTO t1_tc_aii013 (id) VALUES (32767);
-INSERT INTO t1_tc_aii013 (id) VALUES (-32767);
-INSERT INTO t1_tc_aii013 (id) VALUES (32766);
-INSERT INTO t1_tc_aii013 (id) VALUES (0);
-ALTER TABLE t1_tc_aii013 MODIFY id BIGINT NOT NULL AUTO_INCREMENT, ALGORITHM=instant;
-INSERT INTO t1_tc_aii013 (id) VALUES (-9223372036854775808);
-INSERT INTO t1_tc_aii013 (id) VALUES (-9223372036854775807);
-INSERT INTO t1_tc_aii013 (id) VALUES (9223372036854775807);
-SELECT 'TC-AII013' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_aii013' AND column_name='id' AND extra LIKE '%auto_increment%';
+INSERT INTO t1_tc_09_atr_0013_it (id) VALUES (-32768);
+INSERT INTO t1_tc_09_atr_0013_it (id) VALUES (32767);
+INSERT INTO t1_tc_09_atr_0013_it (id) VALUES (-32767);
+INSERT INTO t1_tc_09_atr_0013_it (id) VALUES (32766);
+INSERT INTO t1_tc_09_atr_0013_it (id) VALUES (0);
+ALTER TABLE t1_tc_09_atr_0013_it MODIFY id BIGINT NOT NULL AUTO_INCREMENT, ALGORITHM=instant;
+INSERT INTO t1_tc_09_atr_0013_it (id) VALUES (-9223372036854775808);
+INSERT INTO t1_tc_09_atr_0013_it (id) VALUES (-9223372036854775807);
+INSERT INTO t1_tc_09_atr_0013_it (id) VALUES (9223372036854775807);
+SELECT 'TC-09-ATR-0013-IT' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_09_atr_0013_it' AND column_name='id' AND extra LIKE '%auto_increment%';
 
--- Test Case: TC-AII014
+-- Test Case: TC-09-ATR-0014-IP
 -- Column attribute preservation: AUTO_INCREMENT
 -- Type: SMALLINT -> BIGINT, Algorithm: inplace
-DROP TABLE IF EXISTS t1_tc_aii014, t2_tc_aii014;
-CREATE TABLE t1_tc_aii014 (
+DROP TABLE IF EXISTS t1_tc_09_atr_0014_ip, t2_tc_09_atr_0014_ip;
+CREATE TABLE t1_tc_09_atr_0014_ip (
   id SMALLINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   pad VARCHAR(20) DEFAULT 'pad'
 ) ENGINE=InnoDB;
-INSERT INTO t1_tc_aii014 (id) VALUES (-32768);
-INSERT INTO t1_tc_aii014 (id) VALUES (32767);
-INSERT INTO t1_tc_aii014 (id) VALUES (-32767);
-INSERT INTO t1_tc_aii014 (id) VALUES (32766);
-INSERT INTO t1_tc_aii014 (id) VALUES (0);
-ALTER TABLE t1_tc_aii014 MODIFY id BIGINT NOT NULL AUTO_INCREMENT, ALGORITHM=inplace;
-INSERT INTO t1_tc_aii014 (id) VALUES (-9223372036854775808);
-INSERT INTO t1_tc_aii014 (id) VALUES (-9223372036854775807);
-INSERT INTO t1_tc_aii014 (id) VALUES (9223372036854775807);
-SELECT 'TC-AII014' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_aii014' AND column_name='id' AND extra LIKE '%auto_increment%';
+INSERT INTO t1_tc_09_atr_0014_ip (id) VALUES (-32768);
+INSERT INTO t1_tc_09_atr_0014_ip (id) VALUES (32767);
+INSERT INTO t1_tc_09_atr_0014_ip (id) VALUES (-32767);
+INSERT INTO t1_tc_09_atr_0014_ip (id) VALUES (32766);
+INSERT INTO t1_tc_09_atr_0014_ip (id) VALUES (0);
+ALTER TABLE t1_tc_09_atr_0014_ip MODIFY id BIGINT NOT NULL AUTO_INCREMENT, ALGORITHM=inplace;
+INSERT INTO t1_tc_09_atr_0014_ip (id) VALUES (-9223372036854775808);
+INSERT INTO t1_tc_09_atr_0014_ip (id) VALUES (-9223372036854775807);
+INSERT INTO t1_tc_09_atr_0014_ip (id) VALUES (9223372036854775807);
+SELECT 'TC-09-ATR-0014-IP' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_09_atr_0014_ip' AND column_name='id' AND extra LIKE '%auto_increment%';
 
--- Test Case: TC-AII015
+-- Test Case: TC-09-ATR-0015-IT
 -- Column attribute preservation: AUTO_INCREMENT
 -- Type: MEDIUMINT -> INT, Algorithm: instant
-DROP TABLE IF EXISTS t1_tc_aii015, t2_tc_aii015;
-CREATE TABLE t1_tc_aii015 (
+DROP TABLE IF EXISTS t1_tc_09_atr_0015_it, t2_tc_09_atr_0015_it;
+CREATE TABLE t1_tc_09_atr_0015_it (
   id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   pad VARCHAR(20) DEFAULT 'pad'
 ) ENGINE=InnoDB;
-INSERT INTO t1_tc_aii015 (id) VALUES (-8388608);
-INSERT INTO t1_tc_aii015 (id) VALUES (8388607);
-INSERT INTO t1_tc_aii015 (id) VALUES (-8388607);
-INSERT INTO t1_tc_aii015 (id) VALUES (8388606);
-INSERT INTO t1_tc_aii015 (id) VALUES (0);
-ALTER TABLE t1_tc_aii015 MODIFY id INT NOT NULL AUTO_INCREMENT, ALGORITHM=instant;
-INSERT INTO t1_tc_aii015 (id) VALUES (-2147483648);
-INSERT INTO t1_tc_aii015 (id) VALUES (-2147483647);
-INSERT INTO t1_tc_aii015 (id) VALUES (2147483647);
-SELECT 'TC-AII015' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_aii015' AND column_name='id' AND extra LIKE '%auto_increment%';
+INSERT INTO t1_tc_09_atr_0015_it (id) VALUES (-8388608);
+INSERT INTO t1_tc_09_atr_0015_it (id) VALUES (8388607);
+INSERT INTO t1_tc_09_atr_0015_it (id) VALUES (-8388607);
+INSERT INTO t1_tc_09_atr_0015_it (id) VALUES (8388606);
+INSERT INTO t1_tc_09_atr_0015_it (id) VALUES (0);
+ALTER TABLE t1_tc_09_atr_0015_it MODIFY id INT NOT NULL AUTO_INCREMENT, ALGORITHM=instant;
+INSERT INTO t1_tc_09_atr_0015_it (id) VALUES (-2147483648);
+INSERT INTO t1_tc_09_atr_0015_it (id) VALUES (-2147483647);
+INSERT INTO t1_tc_09_atr_0015_it (id) VALUES (2147483647);
+SELECT 'TC-09-ATR-0015-IT' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_09_atr_0015_it' AND column_name='id' AND extra LIKE '%auto_increment%';
 
--- Test Case: TC-AII016
+-- Test Case: TC-09-ATR-0016-IP
 -- Column attribute preservation: AUTO_INCREMENT
 -- Type: MEDIUMINT -> INT, Algorithm: inplace
-DROP TABLE IF EXISTS t1_tc_aii016, t2_tc_aii016;
-CREATE TABLE t1_tc_aii016 (
+DROP TABLE IF EXISTS t1_tc_09_atr_0016_ip, t2_tc_09_atr_0016_ip;
+CREATE TABLE t1_tc_09_atr_0016_ip (
   id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   pad VARCHAR(20) DEFAULT 'pad'
 ) ENGINE=InnoDB;
-INSERT INTO t1_tc_aii016 (id) VALUES (-8388608);
-INSERT INTO t1_tc_aii016 (id) VALUES (8388607);
-INSERT INTO t1_tc_aii016 (id) VALUES (-8388607);
-INSERT INTO t1_tc_aii016 (id) VALUES (8388606);
-INSERT INTO t1_tc_aii016 (id) VALUES (0);
-ALTER TABLE t1_tc_aii016 MODIFY id INT NOT NULL AUTO_INCREMENT, ALGORITHM=inplace;
-INSERT INTO t1_tc_aii016 (id) VALUES (-2147483648);
-INSERT INTO t1_tc_aii016 (id) VALUES (-2147483647);
-INSERT INTO t1_tc_aii016 (id) VALUES (2147483647);
-SELECT 'TC-AII016' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_aii016' AND column_name='id' AND extra LIKE '%auto_increment%';
+INSERT INTO t1_tc_09_atr_0016_ip (id) VALUES (-8388608);
+INSERT INTO t1_tc_09_atr_0016_ip (id) VALUES (8388607);
+INSERT INTO t1_tc_09_atr_0016_ip (id) VALUES (-8388607);
+INSERT INTO t1_tc_09_atr_0016_ip (id) VALUES (8388606);
+INSERT INTO t1_tc_09_atr_0016_ip (id) VALUES (0);
+ALTER TABLE t1_tc_09_atr_0016_ip MODIFY id INT NOT NULL AUTO_INCREMENT, ALGORITHM=inplace;
+INSERT INTO t1_tc_09_atr_0016_ip (id) VALUES (-2147483648);
+INSERT INTO t1_tc_09_atr_0016_ip (id) VALUES (-2147483647);
+INSERT INTO t1_tc_09_atr_0016_ip (id) VALUES (2147483647);
+SELECT 'TC-09-ATR-0016-IP' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_09_atr_0016_ip' AND column_name='id' AND extra LIKE '%auto_increment%';
 
--- Test Case: TC-AII017
+-- Test Case: TC-09-ATR-0017-IT
 -- Column attribute preservation: AUTO_INCREMENT
 -- Type: MEDIUMINT -> BIGINT, Algorithm: instant
-DROP TABLE IF EXISTS t1_tc_aii017, t2_tc_aii017;
-CREATE TABLE t1_tc_aii017 (
+DROP TABLE IF EXISTS t1_tc_09_atr_0017_it, t2_tc_09_atr_0017_it;
+CREATE TABLE t1_tc_09_atr_0017_it (
   id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   pad VARCHAR(20) DEFAULT 'pad'
 ) ENGINE=InnoDB;
-INSERT INTO t1_tc_aii017 (id) VALUES (-8388608);
-INSERT INTO t1_tc_aii017 (id) VALUES (8388607);
-INSERT INTO t1_tc_aii017 (id) VALUES (-8388607);
-INSERT INTO t1_tc_aii017 (id) VALUES (8388606);
-INSERT INTO t1_tc_aii017 (id) VALUES (0);
-ALTER TABLE t1_tc_aii017 MODIFY id BIGINT NOT NULL AUTO_INCREMENT, ALGORITHM=instant;
-INSERT INTO t1_tc_aii017 (id) VALUES (-9223372036854775808);
-INSERT INTO t1_tc_aii017 (id) VALUES (-9223372036854775807);
-INSERT INTO t1_tc_aii017 (id) VALUES (9223372036854775807);
-SELECT 'TC-AII017' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_aii017' AND column_name='id' AND extra LIKE '%auto_increment%';
+INSERT INTO t1_tc_09_atr_0017_it (id) VALUES (-8388608);
+INSERT INTO t1_tc_09_atr_0017_it (id) VALUES (8388607);
+INSERT INTO t1_tc_09_atr_0017_it (id) VALUES (-8388607);
+INSERT INTO t1_tc_09_atr_0017_it (id) VALUES (8388606);
+INSERT INTO t1_tc_09_atr_0017_it (id) VALUES (0);
+ALTER TABLE t1_tc_09_atr_0017_it MODIFY id BIGINT NOT NULL AUTO_INCREMENT, ALGORITHM=instant;
+INSERT INTO t1_tc_09_atr_0017_it (id) VALUES (-9223372036854775808);
+INSERT INTO t1_tc_09_atr_0017_it (id) VALUES (-9223372036854775807);
+INSERT INTO t1_tc_09_atr_0017_it (id) VALUES (9223372036854775807);
+SELECT 'TC-09-ATR-0017-IT' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_09_atr_0017_it' AND column_name='id' AND extra LIKE '%auto_increment%';
 
--- Test Case: TC-AII018
+-- Test Case: TC-09-ATR-0018-IP
 -- Column attribute preservation: AUTO_INCREMENT
 -- Type: MEDIUMINT -> BIGINT, Algorithm: inplace
-DROP TABLE IF EXISTS t1_tc_aii018, t2_tc_aii018;
-CREATE TABLE t1_tc_aii018 (
+DROP TABLE IF EXISTS t1_tc_09_atr_0018_ip, t2_tc_09_atr_0018_ip;
+CREATE TABLE t1_tc_09_atr_0018_ip (
   id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   pad VARCHAR(20) DEFAULT 'pad'
 ) ENGINE=InnoDB;
-INSERT INTO t1_tc_aii018 (id) VALUES (-8388608);
-INSERT INTO t1_tc_aii018 (id) VALUES (8388607);
-INSERT INTO t1_tc_aii018 (id) VALUES (-8388607);
-INSERT INTO t1_tc_aii018 (id) VALUES (8388606);
-INSERT INTO t1_tc_aii018 (id) VALUES (0);
-ALTER TABLE t1_tc_aii018 MODIFY id BIGINT NOT NULL AUTO_INCREMENT, ALGORITHM=inplace;
-INSERT INTO t1_tc_aii018 (id) VALUES (-9223372036854775808);
-INSERT INTO t1_tc_aii018 (id) VALUES (-9223372036854775807);
-INSERT INTO t1_tc_aii018 (id) VALUES (9223372036854775807);
-SELECT 'TC-AII018' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_aii018' AND column_name='id' AND extra LIKE '%auto_increment%';
+INSERT INTO t1_tc_09_atr_0018_ip (id) VALUES (-8388608);
+INSERT INTO t1_tc_09_atr_0018_ip (id) VALUES (8388607);
+INSERT INTO t1_tc_09_atr_0018_ip (id) VALUES (-8388607);
+INSERT INTO t1_tc_09_atr_0018_ip (id) VALUES (8388606);
+INSERT INTO t1_tc_09_atr_0018_ip (id) VALUES (0);
+ALTER TABLE t1_tc_09_atr_0018_ip MODIFY id BIGINT NOT NULL AUTO_INCREMENT, ALGORITHM=inplace;
+INSERT INTO t1_tc_09_atr_0018_ip (id) VALUES (-9223372036854775808);
+INSERT INTO t1_tc_09_atr_0018_ip (id) VALUES (-9223372036854775807);
+INSERT INTO t1_tc_09_atr_0018_ip (id) VALUES (9223372036854775807);
+SELECT 'TC-09-ATR-0018-IP' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_09_atr_0018_ip' AND column_name='id' AND extra LIKE '%auto_increment%';
 
--- Test Case: TC-AII019
+-- Test Case: TC-09-ATR-0019-IT
 -- Column attribute preservation: AUTO_INCREMENT
 -- Type: INT -> BIGINT, Algorithm: instant
-DROP TABLE IF EXISTS t1_tc_aii019, t2_tc_aii019;
-CREATE TABLE t1_tc_aii019 (
+DROP TABLE IF EXISTS t1_tc_09_atr_0019_it, t2_tc_09_atr_0019_it;
+CREATE TABLE t1_tc_09_atr_0019_it (
   id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   pad VARCHAR(20) DEFAULT 'pad'
 ) ENGINE=InnoDB;
-INSERT INTO t1_tc_aii019 (id) VALUES (-2147483648);
-INSERT INTO t1_tc_aii019 (id) VALUES (2147483647);
-INSERT INTO t1_tc_aii019 (id) VALUES (-2147483647);
-INSERT INTO t1_tc_aii019 (id) VALUES (2147483646);
-INSERT INTO t1_tc_aii019 (id) VALUES (0);
-ALTER TABLE t1_tc_aii019 MODIFY id BIGINT NOT NULL AUTO_INCREMENT, ALGORITHM=instant;
-INSERT INTO t1_tc_aii019 (id) VALUES (-9223372036854775808);
-INSERT INTO t1_tc_aii019 (id) VALUES (-9223372036854775807);
-INSERT INTO t1_tc_aii019 (id) VALUES (9223372036854775807);
-SELECT 'TC-AII019' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_aii019' AND column_name='id' AND extra LIKE '%auto_increment%';
+INSERT INTO t1_tc_09_atr_0019_it (id) VALUES (-2147483648);
+INSERT INTO t1_tc_09_atr_0019_it (id) VALUES (2147483647);
+INSERT INTO t1_tc_09_atr_0019_it (id) VALUES (-2147483647);
+INSERT INTO t1_tc_09_atr_0019_it (id) VALUES (2147483646);
+INSERT INTO t1_tc_09_atr_0019_it (id) VALUES (0);
+ALTER TABLE t1_tc_09_atr_0019_it MODIFY id BIGINT NOT NULL AUTO_INCREMENT, ALGORITHM=instant;
+INSERT INTO t1_tc_09_atr_0019_it (id) VALUES (-9223372036854775808);
+INSERT INTO t1_tc_09_atr_0019_it (id) VALUES (-9223372036854775807);
+INSERT INTO t1_tc_09_atr_0019_it (id) VALUES (9223372036854775807);
+SELECT 'TC-09-ATR-0019-IT' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_09_atr_0019_it' AND column_name='id' AND extra LIKE '%auto_increment%';
 
--- Test Case: TC-AII020
+-- Test Case: TC-09-ATR-0020-IP
 -- Column attribute preservation: AUTO_INCREMENT
 -- Type: INT -> BIGINT, Algorithm: inplace
-DROP TABLE IF EXISTS t1_tc_aii020, t2_tc_aii020;
-CREATE TABLE t1_tc_aii020 (
+DROP TABLE IF EXISTS t1_tc_09_atr_0020_ip, t2_tc_09_atr_0020_ip;
+CREATE TABLE t1_tc_09_atr_0020_ip (
   id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   pad VARCHAR(20) DEFAULT 'pad'
 ) ENGINE=InnoDB;
-INSERT INTO t1_tc_aii020 (id) VALUES (-2147483648);
-INSERT INTO t1_tc_aii020 (id) VALUES (2147483647);
-INSERT INTO t1_tc_aii020 (id) VALUES (-2147483647);
-INSERT INTO t1_tc_aii020 (id) VALUES (2147483646);
-INSERT INTO t1_tc_aii020 (id) VALUES (0);
-ALTER TABLE t1_tc_aii020 MODIFY id BIGINT NOT NULL AUTO_INCREMENT, ALGORITHM=inplace;
-INSERT INTO t1_tc_aii020 (id) VALUES (-9223372036854775808);
-INSERT INTO t1_tc_aii020 (id) VALUES (-9223372036854775807);
-INSERT INTO t1_tc_aii020 (id) VALUES (9223372036854775807);
-SELECT 'TC-AII020' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_aii020' AND column_name='id' AND extra LIKE '%auto_increment%';
+INSERT INTO t1_tc_09_atr_0020_ip (id) VALUES (-2147483648);
+INSERT INTO t1_tc_09_atr_0020_ip (id) VALUES (2147483647);
+INSERT INTO t1_tc_09_atr_0020_ip (id) VALUES (-2147483647);
+INSERT INTO t1_tc_09_atr_0020_ip (id) VALUES (2147483646);
+INSERT INTO t1_tc_09_atr_0020_ip (id) VALUES (0);
+ALTER TABLE t1_tc_09_atr_0020_ip MODIFY id BIGINT NOT NULL AUTO_INCREMENT, ALGORITHM=inplace;
+INSERT INTO t1_tc_09_atr_0020_ip (id) VALUES (-9223372036854775808);
+INSERT INTO t1_tc_09_atr_0020_ip (id) VALUES (-9223372036854775807);
+INSERT INTO t1_tc_09_atr_0020_ip (id) VALUES (9223372036854775807);
+SELECT 'TC-09-ATR-0020-IP' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_09_atr_0020_ip' AND column_name='id' AND extra LIKE '%auto_increment%';
 
--- Test Case: TC-AII021
+-- Test Case: TC-09-ATR-0021-IT
 -- Column attribute preservation: AUTO_INCREMENT
 -- Type: TINYINT UNSIGNED -> SMALLINT UNSIGNED, Algorithm: instant
-DROP TABLE IF EXISTS t1_tc_aii021, t2_tc_aii021;
-CREATE TABLE t1_tc_aii021 (
+DROP TABLE IF EXISTS t1_tc_09_atr_0021_it, t2_tc_09_atr_0021_it;
+CREATE TABLE t1_tc_09_atr_0021_it (
   id TINYINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   pad VARCHAR(20) DEFAULT 'pad'
 ) ENGINE=InnoDB;
-INSERT INTO t1_tc_aii021 (id) VALUES (0);
-INSERT INTO t1_tc_aii021 (id) VALUES (255);
-INSERT INTO t1_tc_aii021 (id) VALUES (254);
-INSERT INTO t1_tc_aii021 (id) VALUES (1);
-INSERT INTO t1_tc_aii021 (id) VALUES (42);
-ALTER TABLE t1_tc_aii021 MODIFY id SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT, ALGORITHM=instant;
-INSERT INTO t1_tc_aii021 (id) VALUES (65535);
-INSERT INTO t1_tc_aii021 (id) VALUES (65534);
-INSERT INTO t1_tc_aii021 (id) VALUES (256);
-SELECT 'TC-AII021' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_aii021' AND column_name='id' AND extra LIKE '%auto_increment%';
+INSERT INTO t1_tc_09_atr_0021_it (id) VALUES (0);
+INSERT INTO t1_tc_09_atr_0021_it (id) VALUES (255);
+INSERT INTO t1_tc_09_atr_0021_it (id) VALUES (254);
+INSERT INTO t1_tc_09_atr_0021_it (id) VALUES (1);
+INSERT INTO t1_tc_09_atr_0021_it (id) VALUES (42);
+ALTER TABLE t1_tc_09_atr_0021_it MODIFY id SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT, ALGORITHM=instant;
+INSERT INTO t1_tc_09_atr_0021_it (id) VALUES (65535);
+INSERT INTO t1_tc_09_atr_0021_it (id) VALUES (65534);
+INSERT INTO t1_tc_09_atr_0021_it (id) VALUES (256);
+SELECT 'TC-09-ATR-0021-IT' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_09_atr_0021_it' AND column_name='id' AND extra LIKE '%auto_increment%';
 
--- Test Case: TC-AII022
+-- Test Case: TC-09-ATR-0022-IP
 -- Column attribute preservation: AUTO_INCREMENT
 -- Type: TINYINT UNSIGNED -> SMALLINT UNSIGNED, Algorithm: inplace
-DROP TABLE IF EXISTS t1_tc_aii022, t2_tc_aii022;
-CREATE TABLE t1_tc_aii022 (
+DROP TABLE IF EXISTS t1_tc_09_atr_0022_ip, t2_tc_09_atr_0022_ip;
+CREATE TABLE t1_tc_09_atr_0022_ip (
   id TINYINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   pad VARCHAR(20) DEFAULT 'pad'
 ) ENGINE=InnoDB;
-INSERT INTO t1_tc_aii022 (id) VALUES (0);
-INSERT INTO t1_tc_aii022 (id) VALUES (255);
-INSERT INTO t1_tc_aii022 (id) VALUES (254);
-INSERT INTO t1_tc_aii022 (id) VALUES (1);
-INSERT INTO t1_tc_aii022 (id) VALUES (42);
-ALTER TABLE t1_tc_aii022 MODIFY id SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT, ALGORITHM=inplace;
-INSERT INTO t1_tc_aii022 (id) VALUES (65535);
-INSERT INTO t1_tc_aii022 (id) VALUES (65534);
-INSERT INTO t1_tc_aii022 (id) VALUES (256);
-SELECT 'TC-AII022' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_aii022' AND column_name='id' AND extra LIKE '%auto_increment%';
+INSERT INTO t1_tc_09_atr_0022_ip (id) VALUES (0);
+INSERT INTO t1_tc_09_atr_0022_ip (id) VALUES (255);
+INSERT INTO t1_tc_09_atr_0022_ip (id) VALUES (254);
+INSERT INTO t1_tc_09_atr_0022_ip (id) VALUES (1);
+INSERT INTO t1_tc_09_atr_0022_ip (id) VALUES (42);
+ALTER TABLE t1_tc_09_atr_0022_ip MODIFY id SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT, ALGORITHM=inplace;
+INSERT INTO t1_tc_09_atr_0022_ip (id) VALUES (65535);
+INSERT INTO t1_tc_09_atr_0022_ip (id) VALUES (65534);
+INSERT INTO t1_tc_09_atr_0022_ip (id) VALUES (256);
+SELECT 'TC-09-ATR-0022-IP' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_09_atr_0022_ip' AND column_name='id' AND extra LIKE '%auto_increment%';
 
--- Test Case: TC-AII023
+-- Test Case: TC-09-ATR-0023-IT
 -- Column attribute preservation: AUTO_INCREMENT
 -- Type: TINYINT UNSIGNED -> MEDIUMINT UNSIGNED, Algorithm: instant
-DROP TABLE IF EXISTS t1_tc_aii023, t2_tc_aii023;
-CREATE TABLE t1_tc_aii023 (
+DROP TABLE IF EXISTS t1_tc_09_atr_0023_it, t2_tc_09_atr_0023_it;
+CREATE TABLE t1_tc_09_atr_0023_it (
   id TINYINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   pad VARCHAR(20) DEFAULT 'pad'
 ) ENGINE=InnoDB;
-INSERT INTO t1_tc_aii023 (id) VALUES (0);
-INSERT INTO t1_tc_aii023 (id) VALUES (255);
-INSERT INTO t1_tc_aii023 (id) VALUES (254);
-INSERT INTO t1_tc_aii023 (id) VALUES (1);
-INSERT INTO t1_tc_aii023 (id) VALUES (42);
-ALTER TABLE t1_tc_aii023 MODIFY id MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT, ALGORITHM=instant;
-INSERT INTO t1_tc_aii023 (id) VALUES (16777215);
-INSERT INTO t1_tc_aii023 (id) VALUES (16777214);
-INSERT INTO t1_tc_aii023 (id) VALUES (256);
-SELECT 'TC-AII023' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_aii023' AND column_name='id' AND extra LIKE '%auto_increment%';
+INSERT INTO t1_tc_09_atr_0023_it (id) VALUES (0);
+INSERT INTO t1_tc_09_atr_0023_it (id) VALUES (255);
+INSERT INTO t1_tc_09_atr_0023_it (id) VALUES (254);
+INSERT INTO t1_tc_09_atr_0023_it (id) VALUES (1);
+INSERT INTO t1_tc_09_atr_0023_it (id) VALUES (42);
+ALTER TABLE t1_tc_09_atr_0023_it MODIFY id MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT, ALGORITHM=instant;
+INSERT INTO t1_tc_09_atr_0023_it (id) VALUES (16777215);
+INSERT INTO t1_tc_09_atr_0023_it (id) VALUES (16777214);
+INSERT INTO t1_tc_09_atr_0023_it (id) VALUES (256);
+SELECT 'TC-09-ATR-0023-IT' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_09_atr_0023_it' AND column_name='id' AND extra LIKE '%auto_increment%';
 
--- Test Case: TC-AII024
+-- Test Case: TC-09-ATR-0024-IP
 -- Column attribute preservation: AUTO_INCREMENT
 -- Type: TINYINT UNSIGNED -> MEDIUMINT UNSIGNED, Algorithm: inplace
-DROP TABLE IF EXISTS t1_tc_aii024, t2_tc_aii024;
-CREATE TABLE t1_tc_aii024 (
+DROP TABLE IF EXISTS t1_tc_09_atr_0024_ip, t2_tc_09_atr_0024_ip;
+CREATE TABLE t1_tc_09_atr_0024_ip (
   id TINYINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   pad VARCHAR(20) DEFAULT 'pad'
 ) ENGINE=InnoDB;
-INSERT INTO t1_tc_aii024 (id) VALUES (0);
-INSERT INTO t1_tc_aii024 (id) VALUES (255);
-INSERT INTO t1_tc_aii024 (id) VALUES (254);
-INSERT INTO t1_tc_aii024 (id) VALUES (1);
-INSERT INTO t1_tc_aii024 (id) VALUES (42);
-ALTER TABLE t1_tc_aii024 MODIFY id MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT, ALGORITHM=inplace;
-INSERT INTO t1_tc_aii024 (id) VALUES (16777215);
-INSERT INTO t1_tc_aii024 (id) VALUES (16777214);
-INSERT INTO t1_tc_aii024 (id) VALUES (256);
-SELECT 'TC-AII024' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_aii024' AND column_name='id' AND extra LIKE '%auto_increment%';
+INSERT INTO t1_tc_09_atr_0024_ip (id) VALUES (0);
+INSERT INTO t1_tc_09_atr_0024_ip (id) VALUES (255);
+INSERT INTO t1_tc_09_atr_0024_ip (id) VALUES (254);
+INSERT INTO t1_tc_09_atr_0024_ip (id) VALUES (1);
+INSERT INTO t1_tc_09_atr_0024_ip (id) VALUES (42);
+ALTER TABLE t1_tc_09_atr_0024_ip MODIFY id MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT, ALGORITHM=inplace;
+INSERT INTO t1_tc_09_atr_0024_ip (id) VALUES (16777215);
+INSERT INTO t1_tc_09_atr_0024_ip (id) VALUES (16777214);
+INSERT INTO t1_tc_09_atr_0024_ip (id) VALUES (256);
+SELECT 'TC-09-ATR-0024-IP' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_09_atr_0024_ip' AND column_name='id' AND extra LIKE '%auto_increment%';
 
--- Test Case: TC-AII025
+-- Test Case: TC-09-ATR-0025-IT
 -- Column attribute preservation: AUTO_INCREMENT
 -- Type: TINYINT UNSIGNED -> INT UNSIGNED, Algorithm: instant
-DROP TABLE IF EXISTS t1_tc_aii025, t2_tc_aii025;
-CREATE TABLE t1_tc_aii025 (
+DROP TABLE IF EXISTS t1_tc_09_atr_0025_it, t2_tc_09_atr_0025_it;
+CREATE TABLE t1_tc_09_atr_0025_it (
   id TINYINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   pad VARCHAR(20) DEFAULT 'pad'
 ) ENGINE=InnoDB;
-INSERT INTO t1_tc_aii025 (id) VALUES (0);
-INSERT INTO t1_tc_aii025 (id) VALUES (255);
-INSERT INTO t1_tc_aii025 (id) VALUES (254);
-INSERT INTO t1_tc_aii025 (id) VALUES (1);
-INSERT INTO t1_tc_aii025 (id) VALUES (42);
-ALTER TABLE t1_tc_aii025 MODIFY id INT UNSIGNED NOT NULL AUTO_INCREMENT, ALGORITHM=instant;
-INSERT INTO t1_tc_aii025 (id) VALUES (4294967295);
-INSERT INTO t1_tc_aii025 (id) VALUES (4294967294);
-INSERT INTO t1_tc_aii025 (id) VALUES (256);
-SELECT 'TC-AII025' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_aii025' AND column_name='id' AND extra LIKE '%auto_increment%';
+INSERT INTO t1_tc_09_atr_0025_it (id) VALUES (0);
+INSERT INTO t1_tc_09_atr_0025_it (id) VALUES (255);
+INSERT INTO t1_tc_09_atr_0025_it (id) VALUES (254);
+INSERT INTO t1_tc_09_atr_0025_it (id) VALUES (1);
+INSERT INTO t1_tc_09_atr_0025_it (id) VALUES (42);
+ALTER TABLE t1_tc_09_atr_0025_it MODIFY id INT UNSIGNED NOT NULL AUTO_INCREMENT, ALGORITHM=instant;
+INSERT INTO t1_tc_09_atr_0025_it (id) VALUES (4294967295);
+INSERT INTO t1_tc_09_atr_0025_it (id) VALUES (4294967294);
+INSERT INTO t1_tc_09_atr_0025_it (id) VALUES (256);
+SELECT 'TC-09-ATR-0025-IT' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_09_atr_0025_it' AND column_name='id' AND extra LIKE '%auto_increment%';
 
--- Test Case: TC-AII026
+-- Test Case: TC-09-ATR-0026-IP
 -- Column attribute preservation: AUTO_INCREMENT
 -- Type: TINYINT UNSIGNED -> INT UNSIGNED, Algorithm: inplace
-DROP TABLE IF EXISTS t1_tc_aii026, t2_tc_aii026;
-CREATE TABLE t1_tc_aii026 (
+DROP TABLE IF EXISTS t1_tc_09_atr_0026_ip, t2_tc_09_atr_0026_ip;
+CREATE TABLE t1_tc_09_atr_0026_ip (
   id TINYINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   pad VARCHAR(20) DEFAULT 'pad'
 ) ENGINE=InnoDB;
-INSERT INTO t1_tc_aii026 (id) VALUES (0);
-INSERT INTO t1_tc_aii026 (id) VALUES (255);
-INSERT INTO t1_tc_aii026 (id) VALUES (254);
-INSERT INTO t1_tc_aii026 (id) VALUES (1);
-INSERT INTO t1_tc_aii026 (id) VALUES (42);
-ALTER TABLE t1_tc_aii026 MODIFY id INT UNSIGNED NOT NULL AUTO_INCREMENT, ALGORITHM=inplace;
-INSERT INTO t1_tc_aii026 (id) VALUES (4294967295);
-INSERT INTO t1_tc_aii026 (id) VALUES (4294967294);
-INSERT INTO t1_tc_aii026 (id) VALUES (256);
-SELECT 'TC-AII026' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_aii026' AND column_name='id' AND extra LIKE '%auto_increment%';
+INSERT INTO t1_tc_09_atr_0026_ip (id) VALUES (0);
+INSERT INTO t1_tc_09_atr_0026_ip (id) VALUES (255);
+INSERT INTO t1_tc_09_atr_0026_ip (id) VALUES (254);
+INSERT INTO t1_tc_09_atr_0026_ip (id) VALUES (1);
+INSERT INTO t1_tc_09_atr_0026_ip (id) VALUES (42);
+ALTER TABLE t1_tc_09_atr_0026_ip MODIFY id INT UNSIGNED NOT NULL AUTO_INCREMENT, ALGORITHM=inplace;
+INSERT INTO t1_tc_09_atr_0026_ip (id) VALUES (4294967295);
+INSERT INTO t1_tc_09_atr_0026_ip (id) VALUES (4294967294);
+INSERT INTO t1_tc_09_atr_0026_ip (id) VALUES (256);
+SELECT 'TC-09-ATR-0026-IP' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_09_atr_0026_ip' AND column_name='id' AND extra LIKE '%auto_increment%';
 
--- Test Case: TC-AII027
+-- Test Case: TC-09-ATR-0027-IT
 -- Column attribute preservation: AUTO_INCREMENT
 -- Type: TINYINT UNSIGNED -> BIGINT UNSIGNED, Algorithm: instant
-DROP TABLE IF EXISTS t1_tc_aii027, t2_tc_aii027;
-CREATE TABLE t1_tc_aii027 (
+DROP TABLE IF EXISTS t1_tc_09_atr_0027_it, t2_tc_09_atr_0027_it;
+CREATE TABLE t1_tc_09_atr_0027_it (
   id TINYINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   pad VARCHAR(20) DEFAULT 'pad'
 ) ENGINE=InnoDB;
-INSERT INTO t1_tc_aii027 (id) VALUES (0);
-INSERT INTO t1_tc_aii027 (id) VALUES (255);
-INSERT INTO t1_tc_aii027 (id) VALUES (254);
-INSERT INTO t1_tc_aii027 (id) VALUES (1);
-INSERT INTO t1_tc_aii027 (id) VALUES (42);
-ALTER TABLE t1_tc_aii027 MODIFY id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, ALGORITHM=instant;
-INSERT INTO t1_tc_aii027 (id) VALUES (18446744073709551615);
-INSERT INTO t1_tc_aii027 (id) VALUES (18446744073709551614);
-INSERT INTO t1_tc_aii027 (id) VALUES (256);
-SELECT 'TC-AII027' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_aii027' AND column_name='id' AND extra LIKE '%auto_increment%';
+INSERT INTO t1_tc_09_atr_0027_it (id) VALUES (0);
+INSERT INTO t1_tc_09_atr_0027_it (id) VALUES (255);
+INSERT INTO t1_tc_09_atr_0027_it (id) VALUES (254);
+INSERT INTO t1_tc_09_atr_0027_it (id) VALUES (1);
+INSERT INTO t1_tc_09_atr_0027_it (id) VALUES (42);
+ALTER TABLE t1_tc_09_atr_0027_it MODIFY id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, ALGORITHM=instant;
+INSERT INTO t1_tc_09_atr_0027_it (id) VALUES (18446744073709551615);
+INSERT INTO t1_tc_09_atr_0027_it (id) VALUES (18446744073709551614);
+INSERT INTO t1_tc_09_atr_0027_it (id) VALUES (256);
+SELECT 'TC-09-ATR-0027-IT' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_09_atr_0027_it' AND column_name='id' AND extra LIKE '%auto_increment%';
 
--- Test Case: TC-AII028
+-- Test Case: TC-09-ATR-0028-IP
 -- Column attribute preservation: AUTO_INCREMENT
 -- Type: TINYINT UNSIGNED -> BIGINT UNSIGNED, Algorithm: inplace
-DROP TABLE IF EXISTS t1_tc_aii028, t2_tc_aii028;
-CREATE TABLE t1_tc_aii028 (
+DROP TABLE IF EXISTS t1_tc_09_atr_0028_ip, t2_tc_09_atr_0028_ip;
+CREATE TABLE t1_tc_09_atr_0028_ip (
   id TINYINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   pad VARCHAR(20) DEFAULT 'pad'
 ) ENGINE=InnoDB;
-INSERT INTO t1_tc_aii028 (id) VALUES (0);
-INSERT INTO t1_tc_aii028 (id) VALUES (255);
-INSERT INTO t1_tc_aii028 (id) VALUES (254);
-INSERT INTO t1_tc_aii028 (id) VALUES (1);
-INSERT INTO t1_tc_aii028 (id) VALUES (42);
-ALTER TABLE t1_tc_aii028 MODIFY id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, ALGORITHM=inplace;
-INSERT INTO t1_tc_aii028 (id) VALUES (18446744073709551615);
-INSERT INTO t1_tc_aii028 (id) VALUES (18446744073709551614);
-INSERT INTO t1_tc_aii028 (id) VALUES (256);
-SELECT 'TC-AII028' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_aii028' AND column_name='id' AND extra LIKE '%auto_increment%';
+INSERT INTO t1_tc_09_atr_0028_ip (id) VALUES (0);
+INSERT INTO t1_tc_09_atr_0028_ip (id) VALUES (255);
+INSERT INTO t1_tc_09_atr_0028_ip (id) VALUES (254);
+INSERT INTO t1_tc_09_atr_0028_ip (id) VALUES (1);
+INSERT INTO t1_tc_09_atr_0028_ip (id) VALUES (42);
+ALTER TABLE t1_tc_09_atr_0028_ip MODIFY id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, ALGORITHM=inplace;
+INSERT INTO t1_tc_09_atr_0028_ip (id) VALUES (18446744073709551615);
+INSERT INTO t1_tc_09_atr_0028_ip (id) VALUES (18446744073709551614);
+INSERT INTO t1_tc_09_atr_0028_ip (id) VALUES (256);
+SELECT 'TC-09-ATR-0028-IP' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_09_atr_0028_ip' AND column_name='id' AND extra LIKE '%auto_increment%';
 
--- Test Case: TC-AII029
+-- Test Case: TC-09-ATR-0029-IT
 -- Column attribute preservation: AUTO_INCREMENT
 -- Type: SMALLINT UNSIGNED -> MEDIUMINT UNSIGNED, Algorithm: instant
-DROP TABLE IF EXISTS t1_tc_aii029, t2_tc_aii029;
-CREATE TABLE t1_tc_aii029 (
+DROP TABLE IF EXISTS t1_tc_09_atr_0029_it, t2_tc_09_atr_0029_it;
+CREATE TABLE t1_tc_09_atr_0029_it (
   id SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   pad VARCHAR(20) DEFAULT 'pad'
 ) ENGINE=InnoDB;
-INSERT INTO t1_tc_aii029 (id) VALUES (0);
-INSERT INTO t1_tc_aii029 (id) VALUES (65535);
-INSERT INTO t1_tc_aii029 (id) VALUES (65534);
-INSERT INTO t1_tc_aii029 (id) VALUES (1);
-INSERT INTO t1_tc_aii029 (id) VALUES (42);
-ALTER TABLE t1_tc_aii029 MODIFY id MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT, ALGORITHM=instant;
-INSERT INTO t1_tc_aii029 (id) VALUES (16777215);
-INSERT INTO t1_tc_aii029 (id) VALUES (16777214);
-INSERT INTO t1_tc_aii029 (id) VALUES (65536);
-SELECT 'TC-AII029' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_aii029' AND column_name='id' AND extra LIKE '%auto_increment%';
+INSERT INTO t1_tc_09_atr_0029_it (id) VALUES (0);
+INSERT INTO t1_tc_09_atr_0029_it (id) VALUES (65535);
+INSERT INTO t1_tc_09_atr_0029_it (id) VALUES (65534);
+INSERT INTO t1_tc_09_atr_0029_it (id) VALUES (1);
+INSERT INTO t1_tc_09_atr_0029_it (id) VALUES (42);
+ALTER TABLE t1_tc_09_atr_0029_it MODIFY id MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT, ALGORITHM=instant;
+INSERT INTO t1_tc_09_atr_0029_it (id) VALUES (16777215);
+INSERT INTO t1_tc_09_atr_0029_it (id) VALUES (16777214);
+INSERT INTO t1_tc_09_atr_0029_it (id) VALUES (65536);
+SELECT 'TC-09-ATR-0029-IT' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_09_atr_0029_it' AND column_name='id' AND extra LIKE '%auto_increment%';
 
--- Test Case: TC-AII030
+-- Test Case: TC-09-ATR-0030-IP
 -- Column attribute preservation: AUTO_INCREMENT
 -- Type: SMALLINT UNSIGNED -> MEDIUMINT UNSIGNED, Algorithm: inplace
-DROP TABLE IF EXISTS t1_tc_aii030, t2_tc_aii030;
-CREATE TABLE t1_tc_aii030 (
+DROP TABLE IF EXISTS t1_tc_09_atr_0030_ip, t2_tc_09_atr_0030_ip;
+CREATE TABLE t1_tc_09_atr_0030_ip (
   id SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   pad VARCHAR(20) DEFAULT 'pad'
 ) ENGINE=InnoDB;
-INSERT INTO t1_tc_aii030 (id) VALUES (0);
-INSERT INTO t1_tc_aii030 (id) VALUES (65535);
-INSERT INTO t1_tc_aii030 (id) VALUES (65534);
-INSERT INTO t1_tc_aii030 (id) VALUES (1);
-INSERT INTO t1_tc_aii030 (id) VALUES (42);
-ALTER TABLE t1_tc_aii030 MODIFY id MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT, ALGORITHM=inplace;
-INSERT INTO t1_tc_aii030 (id) VALUES (16777215);
-INSERT INTO t1_tc_aii030 (id) VALUES (16777214);
-INSERT INTO t1_tc_aii030 (id) VALUES (65536);
-SELECT 'TC-AII030' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_aii030' AND column_name='id' AND extra LIKE '%auto_increment%';
+INSERT INTO t1_tc_09_atr_0030_ip (id) VALUES (0);
+INSERT INTO t1_tc_09_atr_0030_ip (id) VALUES (65535);
+INSERT INTO t1_tc_09_atr_0030_ip (id) VALUES (65534);
+INSERT INTO t1_tc_09_atr_0030_ip (id) VALUES (1);
+INSERT INTO t1_tc_09_atr_0030_ip (id) VALUES (42);
+ALTER TABLE t1_tc_09_atr_0030_ip MODIFY id MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT, ALGORITHM=inplace;
+INSERT INTO t1_tc_09_atr_0030_ip (id) VALUES (16777215);
+INSERT INTO t1_tc_09_atr_0030_ip (id) VALUES (16777214);
+INSERT INTO t1_tc_09_atr_0030_ip (id) VALUES (65536);
+SELECT 'TC-09-ATR-0030-IP' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_09_atr_0030_ip' AND column_name='id' AND extra LIKE '%auto_increment%';
 
--- Test Case: TC-AII031
+-- Test Case: TC-09-ATR-0031-IT
 -- Column attribute preservation: AUTO_INCREMENT
 -- Type: SMALLINT UNSIGNED -> INT UNSIGNED, Algorithm: instant
-DROP TABLE IF EXISTS t1_tc_aii031, t2_tc_aii031;
-CREATE TABLE t1_tc_aii031 (
+DROP TABLE IF EXISTS t1_tc_09_atr_0031_it, t2_tc_09_atr_0031_it;
+CREATE TABLE t1_tc_09_atr_0031_it (
   id SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   pad VARCHAR(20) DEFAULT 'pad'
 ) ENGINE=InnoDB;
-INSERT INTO t1_tc_aii031 (id) VALUES (0);
-INSERT INTO t1_tc_aii031 (id) VALUES (65535);
-INSERT INTO t1_tc_aii031 (id) VALUES (65534);
-INSERT INTO t1_tc_aii031 (id) VALUES (1);
-INSERT INTO t1_tc_aii031 (id) VALUES (42);
-ALTER TABLE t1_tc_aii031 MODIFY id INT UNSIGNED NOT NULL AUTO_INCREMENT, ALGORITHM=instant;
-INSERT INTO t1_tc_aii031 (id) VALUES (4294967295);
-INSERT INTO t1_tc_aii031 (id) VALUES (4294967294);
-INSERT INTO t1_tc_aii031 (id) VALUES (65536);
-SELECT 'TC-AII031' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_aii031' AND column_name='id' AND extra LIKE '%auto_increment%';
+INSERT INTO t1_tc_09_atr_0031_it (id) VALUES (0);
+INSERT INTO t1_tc_09_atr_0031_it (id) VALUES (65535);
+INSERT INTO t1_tc_09_atr_0031_it (id) VALUES (65534);
+INSERT INTO t1_tc_09_atr_0031_it (id) VALUES (1);
+INSERT INTO t1_tc_09_atr_0031_it (id) VALUES (42);
+ALTER TABLE t1_tc_09_atr_0031_it MODIFY id INT UNSIGNED NOT NULL AUTO_INCREMENT, ALGORITHM=instant;
+INSERT INTO t1_tc_09_atr_0031_it (id) VALUES (4294967295);
+INSERT INTO t1_tc_09_atr_0031_it (id) VALUES (4294967294);
+INSERT INTO t1_tc_09_atr_0031_it (id) VALUES (65536);
+SELECT 'TC-09-ATR-0031-IT' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_09_atr_0031_it' AND column_name='id' AND extra LIKE '%auto_increment%';
 
--- Test Case: TC-AII032
+-- Test Case: TC-09-ATR-0032-IP
 -- Column attribute preservation: AUTO_INCREMENT
 -- Type: SMALLINT UNSIGNED -> INT UNSIGNED, Algorithm: inplace
-DROP TABLE IF EXISTS t1_tc_aii032, t2_tc_aii032;
-CREATE TABLE t1_tc_aii032 (
+DROP TABLE IF EXISTS t1_tc_09_atr_0032_ip, t2_tc_09_atr_0032_ip;
+CREATE TABLE t1_tc_09_atr_0032_ip (
   id SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   pad VARCHAR(20) DEFAULT 'pad'
 ) ENGINE=InnoDB;
-INSERT INTO t1_tc_aii032 (id) VALUES (0);
-INSERT INTO t1_tc_aii032 (id) VALUES (65535);
-INSERT INTO t1_tc_aii032 (id) VALUES (65534);
-INSERT INTO t1_tc_aii032 (id) VALUES (1);
-INSERT INTO t1_tc_aii032 (id) VALUES (42);
-ALTER TABLE t1_tc_aii032 MODIFY id INT UNSIGNED NOT NULL AUTO_INCREMENT, ALGORITHM=inplace;
-INSERT INTO t1_tc_aii032 (id) VALUES (4294967295);
-INSERT INTO t1_tc_aii032 (id) VALUES (4294967294);
-INSERT INTO t1_tc_aii032 (id) VALUES (65536);
-SELECT 'TC-AII032' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_aii032' AND column_name='id' AND extra LIKE '%auto_increment%';
+INSERT INTO t1_tc_09_atr_0032_ip (id) VALUES (0);
+INSERT INTO t1_tc_09_atr_0032_ip (id) VALUES (65535);
+INSERT INTO t1_tc_09_atr_0032_ip (id) VALUES (65534);
+INSERT INTO t1_tc_09_atr_0032_ip (id) VALUES (1);
+INSERT INTO t1_tc_09_atr_0032_ip (id) VALUES (42);
+ALTER TABLE t1_tc_09_atr_0032_ip MODIFY id INT UNSIGNED NOT NULL AUTO_INCREMENT, ALGORITHM=inplace;
+INSERT INTO t1_tc_09_atr_0032_ip (id) VALUES (4294967295);
+INSERT INTO t1_tc_09_atr_0032_ip (id) VALUES (4294967294);
+INSERT INTO t1_tc_09_atr_0032_ip (id) VALUES (65536);
+SELECT 'TC-09-ATR-0032-IP' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_09_atr_0032_ip' AND column_name='id' AND extra LIKE '%auto_increment%';
 
--- Test Case: TC-AII033
+-- Test Case: TC-09-ATR-0033-IT
 -- Column attribute preservation: AUTO_INCREMENT
 -- Type: SMALLINT UNSIGNED -> BIGINT UNSIGNED, Algorithm: instant
-DROP TABLE IF EXISTS t1_tc_aii033, t2_tc_aii033;
-CREATE TABLE t1_tc_aii033 (
+DROP TABLE IF EXISTS t1_tc_09_atr_0033_it, t2_tc_09_atr_0033_it;
+CREATE TABLE t1_tc_09_atr_0033_it (
   id SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   pad VARCHAR(20) DEFAULT 'pad'
 ) ENGINE=InnoDB;
-INSERT INTO t1_tc_aii033 (id) VALUES (0);
-INSERT INTO t1_tc_aii033 (id) VALUES (65535);
-INSERT INTO t1_tc_aii033 (id) VALUES (65534);
-INSERT INTO t1_tc_aii033 (id) VALUES (1);
-INSERT INTO t1_tc_aii033 (id) VALUES (42);
-ALTER TABLE t1_tc_aii033 MODIFY id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, ALGORITHM=instant;
-INSERT INTO t1_tc_aii033 (id) VALUES (18446744073709551615);
-INSERT INTO t1_tc_aii033 (id) VALUES (18446744073709551614);
-INSERT INTO t1_tc_aii033 (id) VALUES (65536);
-SELECT 'TC-AII033' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_aii033' AND column_name='id' AND extra LIKE '%auto_increment%';
+INSERT INTO t1_tc_09_atr_0033_it (id) VALUES (0);
+INSERT INTO t1_tc_09_atr_0033_it (id) VALUES (65535);
+INSERT INTO t1_tc_09_atr_0033_it (id) VALUES (65534);
+INSERT INTO t1_tc_09_atr_0033_it (id) VALUES (1);
+INSERT INTO t1_tc_09_atr_0033_it (id) VALUES (42);
+ALTER TABLE t1_tc_09_atr_0033_it MODIFY id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, ALGORITHM=instant;
+INSERT INTO t1_tc_09_atr_0033_it (id) VALUES (18446744073709551615);
+INSERT INTO t1_tc_09_atr_0033_it (id) VALUES (18446744073709551614);
+INSERT INTO t1_tc_09_atr_0033_it (id) VALUES (65536);
+SELECT 'TC-09-ATR-0033-IT' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_09_atr_0033_it' AND column_name='id' AND extra LIKE '%auto_increment%';
 
--- Test Case: TC-AII034
+-- Test Case: TC-09-ATR-0034-IP
 -- Column attribute preservation: AUTO_INCREMENT
 -- Type: SMALLINT UNSIGNED -> BIGINT UNSIGNED, Algorithm: inplace
-DROP TABLE IF EXISTS t1_tc_aii034, t2_tc_aii034;
-CREATE TABLE t1_tc_aii034 (
+DROP TABLE IF EXISTS t1_tc_09_atr_0034_ip, t2_tc_09_atr_0034_ip;
+CREATE TABLE t1_tc_09_atr_0034_ip (
   id SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   pad VARCHAR(20) DEFAULT 'pad'
 ) ENGINE=InnoDB;
-INSERT INTO t1_tc_aii034 (id) VALUES (0);
-INSERT INTO t1_tc_aii034 (id) VALUES (65535);
-INSERT INTO t1_tc_aii034 (id) VALUES (65534);
-INSERT INTO t1_tc_aii034 (id) VALUES (1);
-INSERT INTO t1_tc_aii034 (id) VALUES (42);
-ALTER TABLE t1_tc_aii034 MODIFY id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, ALGORITHM=inplace;
-INSERT INTO t1_tc_aii034 (id) VALUES (18446744073709551615);
-INSERT INTO t1_tc_aii034 (id) VALUES (18446744073709551614);
-INSERT INTO t1_tc_aii034 (id) VALUES (65536);
-SELECT 'TC-AII034' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_aii034' AND column_name='id' AND extra LIKE '%auto_increment%';
+INSERT INTO t1_tc_09_atr_0034_ip (id) VALUES (0);
+INSERT INTO t1_tc_09_atr_0034_ip (id) VALUES (65535);
+INSERT INTO t1_tc_09_atr_0034_ip (id) VALUES (65534);
+INSERT INTO t1_tc_09_atr_0034_ip (id) VALUES (1);
+INSERT INTO t1_tc_09_atr_0034_ip (id) VALUES (42);
+ALTER TABLE t1_tc_09_atr_0034_ip MODIFY id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, ALGORITHM=inplace;
+INSERT INTO t1_tc_09_atr_0034_ip (id) VALUES (18446744073709551615);
+INSERT INTO t1_tc_09_atr_0034_ip (id) VALUES (18446744073709551614);
+INSERT INTO t1_tc_09_atr_0034_ip (id) VALUES (65536);
+SELECT 'TC-09-ATR-0034-IP' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_09_atr_0034_ip' AND column_name='id' AND extra LIKE '%auto_increment%';
 
--- Test Case: TC-AII035
+-- Test Case: TC-09-ATR-0035-IT
 -- Column attribute preservation: AUTO_INCREMENT
 -- Type: MEDIUMINT UNSIGNED -> INT UNSIGNED, Algorithm: instant
-DROP TABLE IF EXISTS t1_tc_aii035, t2_tc_aii035;
-CREATE TABLE t1_tc_aii035 (
+DROP TABLE IF EXISTS t1_tc_09_atr_0035_it, t2_tc_09_atr_0035_it;
+CREATE TABLE t1_tc_09_atr_0035_it (
   id MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   pad VARCHAR(20) DEFAULT 'pad'
 ) ENGINE=InnoDB;
-INSERT INTO t1_tc_aii035 (id) VALUES (0);
-INSERT INTO t1_tc_aii035 (id) VALUES (16777215);
-INSERT INTO t1_tc_aii035 (id) VALUES (16777214);
-INSERT INTO t1_tc_aii035 (id) VALUES (1);
-INSERT INTO t1_tc_aii035 (id) VALUES (42);
-ALTER TABLE t1_tc_aii035 MODIFY id INT UNSIGNED NOT NULL AUTO_INCREMENT, ALGORITHM=instant;
-INSERT INTO t1_tc_aii035 (id) VALUES (4294967295);
-INSERT INTO t1_tc_aii035 (id) VALUES (4294967294);
-INSERT INTO t1_tc_aii035 (id) VALUES (16777216);
-SELECT 'TC-AII035' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_aii035' AND column_name='id' AND extra LIKE '%auto_increment%';
+INSERT INTO t1_tc_09_atr_0035_it (id) VALUES (0);
+INSERT INTO t1_tc_09_atr_0035_it (id) VALUES (16777215);
+INSERT INTO t1_tc_09_atr_0035_it (id) VALUES (16777214);
+INSERT INTO t1_tc_09_atr_0035_it (id) VALUES (1);
+INSERT INTO t1_tc_09_atr_0035_it (id) VALUES (42);
+ALTER TABLE t1_tc_09_atr_0035_it MODIFY id INT UNSIGNED NOT NULL AUTO_INCREMENT, ALGORITHM=instant;
+INSERT INTO t1_tc_09_atr_0035_it (id) VALUES (4294967295);
+INSERT INTO t1_tc_09_atr_0035_it (id) VALUES (4294967294);
+INSERT INTO t1_tc_09_atr_0035_it (id) VALUES (16777216);
+SELECT 'TC-09-ATR-0035-IT' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_09_atr_0035_it' AND column_name='id' AND extra LIKE '%auto_increment%';
 
--- Test Case: TC-AII036
+-- Test Case: TC-09-ATR-0036-IP
 -- Column attribute preservation: AUTO_INCREMENT
 -- Type: MEDIUMINT UNSIGNED -> INT UNSIGNED, Algorithm: inplace
-DROP TABLE IF EXISTS t1_tc_aii036, t2_tc_aii036;
-CREATE TABLE t1_tc_aii036 (
+DROP TABLE IF EXISTS t1_tc_09_atr_0036_ip, t2_tc_09_atr_0036_ip;
+CREATE TABLE t1_tc_09_atr_0036_ip (
   id MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   pad VARCHAR(20) DEFAULT 'pad'
 ) ENGINE=InnoDB;
-INSERT INTO t1_tc_aii036 (id) VALUES (0);
-INSERT INTO t1_tc_aii036 (id) VALUES (16777215);
-INSERT INTO t1_tc_aii036 (id) VALUES (16777214);
-INSERT INTO t1_tc_aii036 (id) VALUES (1);
-INSERT INTO t1_tc_aii036 (id) VALUES (42);
-ALTER TABLE t1_tc_aii036 MODIFY id INT UNSIGNED NOT NULL AUTO_INCREMENT, ALGORITHM=inplace;
-INSERT INTO t1_tc_aii036 (id) VALUES (4294967295);
-INSERT INTO t1_tc_aii036 (id) VALUES (4294967294);
-INSERT INTO t1_tc_aii036 (id) VALUES (16777216);
-SELECT 'TC-AII036' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_aii036' AND column_name='id' AND extra LIKE '%auto_increment%';
+INSERT INTO t1_tc_09_atr_0036_ip (id) VALUES (0);
+INSERT INTO t1_tc_09_atr_0036_ip (id) VALUES (16777215);
+INSERT INTO t1_tc_09_atr_0036_ip (id) VALUES (16777214);
+INSERT INTO t1_tc_09_atr_0036_ip (id) VALUES (1);
+INSERT INTO t1_tc_09_atr_0036_ip (id) VALUES (42);
+ALTER TABLE t1_tc_09_atr_0036_ip MODIFY id INT UNSIGNED NOT NULL AUTO_INCREMENT, ALGORITHM=inplace;
+INSERT INTO t1_tc_09_atr_0036_ip (id) VALUES (4294967295);
+INSERT INTO t1_tc_09_atr_0036_ip (id) VALUES (4294967294);
+INSERT INTO t1_tc_09_atr_0036_ip (id) VALUES (16777216);
+SELECT 'TC-09-ATR-0036-IP' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_09_atr_0036_ip' AND column_name='id' AND extra LIKE '%auto_increment%';
 
--- Test Case: TC-AII037
+-- Test Case: TC-09-ATR-0037-IT
 -- Column attribute preservation: AUTO_INCREMENT
 -- Type: MEDIUMINT UNSIGNED -> BIGINT UNSIGNED, Algorithm: instant
-DROP TABLE IF EXISTS t1_tc_aii037, t2_tc_aii037;
-CREATE TABLE t1_tc_aii037 (
+DROP TABLE IF EXISTS t1_tc_09_atr_0037_it, t2_tc_09_atr_0037_it;
+CREATE TABLE t1_tc_09_atr_0037_it (
   id MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   pad VARCHAR(20) DEFAULT 'pad'
 ) ENGINE=InnoDB;
-INSERT INTO t1_tc_aii037 (id) VALUES (0);
-INSERT INTO t1_tc_aii037 (id) VALUES (16777215);
-INSERT INTO t1_tc_aii037 (id) VALUES (16777214);
-INSERT INTO t1_tc_aii037 (id) VALUES (1);
-INSERT INTO t1_tc_aii037 (id) VALUES (42);
-ALTER TABLE t1_tc_aii037 MODIFY id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, ALGORITHM=instant;
-INSERT INTO t1_tc_aii037 (id) VALUES (18446744073709551615);
-INSERT INTO t1_tc_aii037 (id) VALUES (18446744073709551614);
-INSERT INTO t1_tc_aii037 (id) VALUES (16777216);
-SELECT 'TC-AII037' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_aii037' AND column_name='id' AND extra LIKE '%auto_increment%';
+INSERT INTO t1_tc_09_atr_0037_it (id) VALUES (0);
+INSERT INTO t1_tc_09_atr_0037_it (id) VALUES (16777215);
+INSERT INTO t1_tc_09_atr_0037_it (id) VALUES (16777214);
+INSERT INTO t1_tc_09_atr_0037_it (id) VALUES (1);
+INSERT INTO t1_tc_09_atr_0037_it (id) VALUES (42);
+ALTER TABLE t1_tc_09_atr_0037_it MODIFY id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, ALGORITHM=instant;
+INSERT INTO t1_tc_09_atr_0037_it (id) VALUES (18446744073709551615);
+INSERT INTO t1_tc_09_atr_0037_it (id) VALUES (18446744073709551614);
+INSERT INTO t1_tc_09_atr_0037_it (id) VALUES (16777216);
+SELECT 'TC-09-ATR-0037-IT' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_09_atr_0037_it' AND column_name='id' AND extra LIKE '%auto_increment%';
 
--- Test Case: TC-AII038
+-- Test Case: TC-09-ATR-0038-IP
 -- Column attribute preservation: AUTO_INCREMENT
 -- Type: MEDIUMINT UNSIGNED -> BIGINT UNSIGNED, Algorithm: inplace
-DROP TABLE IF EXISTS t1_tc_aii038, t2_tc_aii038;
-CREATE TABLE t1_tc_aii038 (
+DROP TABLE IF EXISTS t1_tc_09_atr_0038_ip, t2_tc_09_atr_0038_ip;
+CREATE TABLE t1_tc_09_atr_0038_ip (
   id MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   pad VARCHAR(20) DEFAULT 'pad'
 ) ENGINE=InnoDB;
-INSERT INTO t1_tc_aii038 (id) VALUES (0);
-INSERT INTO t1_tc_aii038 (id) VALUES (16777215);
-INSERT INTO t1_tc_aii038 (id) VALUES (16777214);
-INSERT INTO t1_tc_aii038 (id) VALUES (1);
-INSERT INTO t1_tc_aii038 (id) VALUES (42);
-ALTER TABLE t1_tc_aii038 MODIFY id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, ALGORITHM=inplace;
-INSERT INTO t1_tc_aii038 (id) VALUES (18446744073709551615);
-INSERT INTO t1_tc_aii038 (id) VALUES (18446744073709551614);
-INSERT INTO t1_tc_aii038 (id) VALUES (16777216);
-SELECT 'TC-AII038' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_aii038' AND column_name='id' AND extra LIKE '%auto_increment%';
+INSERT INTO t1_tc_09_atr_0038_ip (id) VALUES (0);
+INSERT INTO t1_tc_09_atr_0038_ip (id) VALUES (16777215);
+INSERT INTO t1_tc_09_atr_0038_ip (id) VALUES (16777214);
+INSERT INTO t1_tc_09_atr_0038_ip (id) VALUES (1);
+INSERT INTO t1_tc_09_atr_0038_ip (id) VALUES (42);
+ALTER TABLE t1_tc_09_atr_0038_ip MODIFY id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, ALGORITHM=inplace;
+INSERT INTO t1_tc_09_atr_0038_ip (id) VALUES (18446744073709551615);
+INSERT INTO t1_tc_09_atr_0038_ip (id) VALUES (18446744073709551614);
+INSERT INTO t1_tc_09_atr_0038_ip (id) VALUES (16777216);
+SELECT 'TC-09-ATR-0038-IP' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_09_atr_0038_ip' AND column_name='id' AND extra LIKE '%auto_increment%';
 
--- Test Case: TC-AII039
+-- Test Case: TC-09-ATR-0039-IT
 -- Column attribute preservation: AUTO_INCREMENT
 -- Type: INT UNSIGNED -> BIGINT UNSIGNED, Algorithm: instant
-DROP TABLE IF EXISTS t1_tc_aii039, t2_tc_aii039;
-CREATE TABLE t1_tc_aii039 (
+DROP TABLE IF EXISTS t1_tc_09_atr_0039_it, t2_tc_09_atr_0039_it;
+CREATE TABLE t1_tc_09_atr_0039_it (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   pad VARCHAR(20) DEFAULT 'pad'
 ) ENGINE=InnoDB;
-INSERT INTO t1_tc_aii039 (id) VALUES (0);
-INSERT INTO t1_tc_aii039 (id) VALUES (4294967295);
-INSERT INTO t1_tc_aii039 (id) VALUES (4294967294);
-INSERT INTO t1_tc_aii039 (id) VALUES (1);
-INSERT INTO t1_tc_aii039 (id) VALUES (42);
-ALTER TABLE t1_tc_aii039 MODIFY id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, ALGORITHM=instant;
-INSERT INTO t1_tc_aii039 (id) VALUES (18446744073709551615);
-INSERT INTO t1_tc_aii039 (id) VALUES (18446744073709551614);
-INSERT INTO t1_tc_aii039 (id) VALUES (4294967296);
-SELECT 'TC-AII039' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_aii039' AND column_name='id' AND extra LIKE '%auto_increment%';
+INSERT INTO t1_tc_09_atr_0039_it (id) VALUES (0);
+INSERT INTO t1_tc_09_atr_0039_it (id) VALUES (4294967295);
+INSERT INTO t1_tc_09_atr_0039_it (id) VALUES (4294967294);
+INSERT INTO t1_tc_09_atr_0039_it (id) VALUES (1);
+INSERT INTO t1_tc_09_atr_0039_it (id) VALUES (42);
+ALTER TABLE t1_tc_09_atr_0039_it MODIFY id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, ALGORITHM=instant;
+INSERT INTO t1_tc_09_atr_0039_it (id) VALUES (18446744073709551615);
+INSERT INTO t1_tc_09_atr_0039_it (id) VALUES (18446744073709551614);
+INSERT INTO t1_tc_09_atr_0039_it (id) VALUES (4294967296);
+SELECT 'TC-09-ATR-0039-IT' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_09_atr_0039_it' AND column_name='id' AND extra LIKE '%auto_increment%';
 
--- Test Case: TC-AII040
+-- Test Case: TC-09-ATR-0040-IP
 -- Column attribute preservation: AUTO_INCREMENT
 -- Type: INT UNSIGNED -> BIGINT UNSIGNED, Algorithm: inplace
-DROP TABLE IF EXISTS t1_tc_aii040, t2_tc_aii040;
-CREATE TABLE t1_tc_aii040 (
+DROP TABLE IF EXISTS t1_tc_09_atr_0040_ip, t2_tc_09_atr_0040_ip;
+CREATE TABLE t1_tc_09_atr_0040_ip (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   pad VARCHAR(20) DEFAULT 'pad'
 ) ENGINE=InnoDB;
-INSERT INTO t1_tc_aii040 (id) VALUES (0);
-INSERT INTO t1_tc_aii040 (id) VALUES (4294967295);
-INSERT INTO t1_tc_aii040 (id) VALUES (4294967294);
-INSERT INTO t1_tc_aii040 (id) VALUES (1);
-INSERT INTO t1_tc_aii040 (id) VALUES (42);
-ALTER TABLE t1_tc_aii040 MODIFY id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, ALGORITHM=inplace;
-INSERT INTO t1_tc_aii040 (id) VALUES (18446744073709551615);
-INSERT INTO t1_tc_aii040 (id) VALUES (18446744073709551614);
-INSERT INTO t1_tc_aii040 (id) VALUES (4294967296);
-SELECT 'TC-AII040' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_aii040' AND column_name='id' AND extra LIKE '%auto_increment%';
+INSERT INTO t1_tc_09_atr_0040_ip (id) VALUES (0);
+INSERT INTO t1_tc_09_atr_0040_ip (id) VALUES (4294967295);
+INSERT INTO t1_tc_09_atr_0040_ip (id) VALUES (4294967294);
+INSERT INTO t1_tc_09_atr_0040_ip (id) VALUES (1);
+INSERT INTO t1_tc_09_atr_0040_ip (id) VALUES (42);
+ALTER TABLE t1_tc_09_atr_0040_ip MODIFY id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, ALGORITHM=inplace;
+INSERT INTO t1_tc_09_atr_0040_ip (id) VALUES (18446744073709551615);
+INSERT INTO t1_tc_09_atr_0040_ip (id) VALUES (18446744073709551614);
+INSERT INTO t1_tc_09_atr_0040_ip (id) VALUES (4294967296);
+SELECT 'TC-09-ATR-0040-IP' AS test_id, IF(COUNT(*)>0,'PASS','FAIL') AS result FROM information_schema.columns WHERE table_name='t1_tc_09_atr_0040_ip' AND column_name='id' AND extra LIKE '%auto_increment%';
 

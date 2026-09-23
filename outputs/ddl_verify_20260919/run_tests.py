@@ -845,7 +845,9 @@ def write_outputs(runner, env, manifest, snapshot, out_dir):
         if os.path.exists(src):
             base, ext = os.path.splitext(src_name)
             shutil.copyfile(src, os.path.join(archive_dir, "%s_%s%s" % (base, stamp, ext)))
-    with open(os.path.join(out_dir, "manifest_%s.json" % env), "w", encoding="utf-8") as fh:
+    # 注意: 全量基线 manifest_<env>.json 由 main() 写入且**不可**被本轮结果覆盖，
+    # 否则 --files 局部运行会把基线污染成子集（已在 Step1 复现并修复）。
+    with open(os.path.join(out_dir, "run_manifest_%s.json" % env), "w", encoding="utf-8") as fh:
         json.dump(manifest, fh, ensure_ascii=False, indent=2)
     with open(os.path.join(out_dir, "env_snapshot_%s.json" % env), "w", encoding="utf-8") as fh:
         json.dump(snapshot, fh, ensure_ascii=False, indent=2, default=str)

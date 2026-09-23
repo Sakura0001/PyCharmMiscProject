@@ -12,6 +12,8 @@ import json
 import shutil
 import textwrap
 
+import re as _re
+
 import pytest
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -47,14 +49,19 @@ def _write(path, text, compress=False):
 
 # ---------------------------------------------------------------- discovery
 
-def test_discover_finds_gz_files():
-    files, dups = R.discover_sql_files(ALIYUN)
-    names = [os.path.basename(p) for p, _ in files]
-    assert "07_varchar_instant.sql.gz" in names
-    assert "12_partition_64.sql.gz" in names
-    assert "01_integer_signed_instant.sql" in names
-    assert len(files) == 12
-    assert dups == []
+def test_discover_finds_all_files_whatever_the_extension():
+    """P0-1 核心：不管生成器把文件写成 .sql 还是 .sql.gz，都必须被发现，一个不漏。"""
+    for d, expect in ((ALIYUN, 12), (INTERNAL, 15)):
+        files, dups = R.discover_sql_files(d)
+        names = [os.path.basename(p) for p, _ in files]
+        on_disk = [f for f in os.listdir(d)
+                   if f.endswith(".sql") or f.endswith(".sql.gz")]
+        assert len(files) == expect == len(on_disk), (d, names, on_disk)
+        assert dups == []
+        # 分区大文件必然是 gz，用来证明 gz 分支真的被走到
+        assert any(n.startswith("12_") and n.endswith(".gz") for n in names) \
+            if d == ALIYUN else True
+        assert all(os.path.exists(p) for p, _ in files)
 
 
 def test_discover_prefers_plain_over_gz(tmp_path):
@@ -244,12 +251,95 @@ def test_classify_manual_legacy_constant():
 
 # ---------------------------------------------------------------- real files
 
-def test_real_partition_file_has_known_defects_documented():
-    """记录 P0-4/P0-2 的基线事实，修复后这些断言必须被更新（防回归哨兵）。"""
-    man = R.build_manifest([(os.path.join(ALIYUN, "12_partition_64.sql.gz"), True)])
+PART_FILE = "12_partition_64.sql.gz"
+
+
+def test_real_partition_file_ids_are_unique():
+    """P0-4 回归守卫：分区文件曾有 4096 个重复 ID（instant/inplace 共用），修复后必须为 0。"""
+    files, _ = R.discover_sql_files(ALIYUN)
+    part = [(p, g) for p, g in files if os.path.basename(p).startswith("12_")]
+    assert part, "分区文件不存在"
+    man = R.build_manifest(part, use_cache=True)
     f = man["files"][0]
     assert f["cases"] == 8192
-    assert f["duplicate_case_ids"] == 4096, "P0-4 未修复时每个分区 ID 出现 2 次"
+    assert f["duplicate_case_ids"] == 0, "分区用例 ID 又出现重复（P0-4 回归）"
+    assert f["unique_case_ids"] == f["cases"]
+
+
+@pytest.fixture(scope="session")
+def all_cases():
+    """一次性解析全部 27 个文件（~47MB 解压后），供多个断言复用。"""
+    out = []
+    for d in (ALIYUN, INTERNAL):
+        files, _ = R.discover_sql_files(d)
+        for p, g in files:
+            _pre, cases = R.split_cases(p, g)
+            for c in cases:
+                out.append((os.path.basename(p), c))
+    return out
+
+
+def test_all_case_ids_globally_unique(all_cases):
+    """全 27 个文件、18993 个用例的 ID 必须全局唯一（跨文件也不能撞）。
+
+    旧实现里 TC-A0001 同时是 8 个文件中 8 种不同的类型转换，结果无法归因、
+    且派生表名 t1_a0001 被 8 个文件共用 -> 并发执行互相污染。
+    """
+    seen = {}
+    total = 0
+    for fname, c in all_cases:
+        total += 1
+        assert c.test_id not in seen, "ID 冲突: %s (%s vs %s)" % (
+            c.test_id, seen.get(c.test_id), fname)
+        seen[c.test_id] = fname
+        # ID 必须自带文件号与算法，便于归因
+        parts = c.test_id.split("-")
+        assert len(parts) == 5 and parts[0] == "TC", c.test_id
+        assert parts[4] in ("IT", "IP", "CP", "DF", "XX"), c.test_id
+        assert parts[1] == fname[:2], (c.test_id, fname)
+    assert total == 18993, "用例总数变化，请确认是否为预期（当前 %d）" % total
+
+
+def test_derived_table_names_unique(all_cases):
+    """表名由 ID 派生 => 表名同样全局唯一，--workers>1 才安全。"""
+    ids = {"t1_" + c.test_id.lower().replace("-", "_") for _f, c in all_cases}
+    assert len(ids) == 18993
+    assert max(len(i) for i in ids) <= 64, "表名超出 MySQL 64 字符上限"
+
+
+def test_every_case_has_a_verdict_select(all_cases):
+    """每个用例必须至少有一条会输出判定行的 SELECT（否则必然记为 ERROR/NO_VERDICT）。"""
+    bad = []
+    for fname, c in all_cases:
+        if not any(st.lstrip().upper().startswith("SELECT") and c.test_id in st
+                   for st in c.statements):
+            bad.append((fname, c.test_id))
+    assert not bad, "缺少判定 SELECT 的用例: %d 个，示例 %s" % (len(bad), bad[:5])
+
+
+@pytest.mark.xfail(strict=True, reason="P0-2 未修复: 分区 PTK 分支对照 SQL 引用不存在的 b.pad (4544 处)")
+def test_oracle_compare_columns_exist_in_both_tables(all_cases):
+    """P0-2 回归守卫：对照 SELECT 里引用的列必须在 t1/t2 中都真实存在。
+
+    旧实现里分区分支生成 `a.pad <=> b.pad`，而 t2 只有 pad1/pad2 =>
+    ERROR 1054 Unknown column 'b.pad'，3328+1216 个用例恒无判定输出。
+    """
+    bad = []
+    for fname, c in all_cases:
+        text = c.text
+        creates = _re.findall(r"CREATE TABLE (t[12]_\w+) \((.*?)\n\) ENGINE", text, _re.S)
+        cols = {}
+        for tname, body in creates:
+            cols[tname] = set(_re.findall(r"^\s*(?:`?)(\w+)(?:`?)\s+(?=[A-Za-z])", body, _re.M))
+        for m in _re.finditer(r"(a|b)\.(\w+)\s*<=>\s*(a|b)\.(\w+)", text):
+            for alias, col in ((m.group(1), m.group(2)), (m.group(3), m.group(4))):
+                want = "t1_" if alias == "a" else "t2_"
+                tbl = next((t for t in cols if t.startswith(want)), None)
+                if tbl is None:
+                    continue
+                if col not in cols[tbl] and col != "id":
+                    bad.append((fname, c.test_id, alias, col, sorted(cols[tbl])))
+    assert not bad, "对照 SQL 引用了不存在的列: %d 处，示例 %s" % (len(bad), bad[:3])
 
 
 def test_no_gz_file_is_silently_dropped():
@@ -366,3 +456,49 @@ def test_check_manifest_detects_drift(tmp_path):
     assert "对账不一致" in r3.stdout
     assert "内容变化" in r3.stdout or "新增文件" in r3.stdout
     assert "总用例数 1 -> 2" in r3.stdout
+
+
+def test_partial_run_does_not_clobber_full_baseline_manifest(tmp_path):
+    """--files 局部运行必须保留全量基线 manifest_<env>.json（回归守卫）。"""
+    import subprocess
+    d = tmp_path / "sql"
+    d.mkdir()
+    out = tmp_path / "results"
+    out.mkdir()
+    _write(str(d / "a.sql"), SAMPLE_CASE)
+    _write(str(d / "b.sql"), SAMPLE_CASE.replace("X0001", "X0002").replace("X0002", "X0002"))
+
+    def run(*extra):
+        return subprocess.run(
+            [sys.executable, os.path.join(ROOT, "run_tests.py"), "--env", "aliyun",
+             "--sql-dir", str(d), "--out-dir", str(out), *extra],
+            capture_output=True, text=True, cwd=ROOT,
+            env=dict(os.environ, MYSQL_PWD="unused", DDL_TEST_NO_DB="1"))
+
+    r = run("--dry-run")
+    assert r.returncode == 0, r.stderr
+    base = json.load(open(str(out / "manifest_aliyun.json")))
+    assert base["file_count"] == 2 and base["total_cases"] == 2
+
+    # 局部运行（不连库：用 --dry-run 无法触发 write_outputs，这里直接调用函数验证）
+    sys.path.insert(0, ROOT)
+    import run_tests as RR
+    files, _ = RR.discover_sql_files(str(d))
+    picked = RR.select_files(["a.sql"], files, str(d))
+    assert len(picked) == 1
+    run_man = RR.build_manifest(picked, use_cache=False)
+
+    class _FakeRunner:
+        results = []
+        jsonl_path = str(out / "details_aliyun.jsonl")
+        state_path = str(out / "state_aliyun.json")
+
+        def flush_state(self):
+            pass
+
+    open(_FakeRunner.jsonl_path, "w").close()
+    RR.write_outputs(_FakeRunner(), "aliyun", run_man, {"version": "fake"}, str(out))
+    base2 = json.load(open(str(out / "manifest_aliyun.json")))
+    assert base2["file_count"] == 2, "全量基线被本轮 run_manifest 覆盖"
+    rm = json.load(open(str(out / "run_manifest_aliyun.json")))
+    assert rm["file_count"] == 1
