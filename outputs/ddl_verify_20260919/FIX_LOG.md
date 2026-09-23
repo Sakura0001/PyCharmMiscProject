@@ -13,7 +13,7 @@
 | 5 | P0-8 VC-08/VC-09/VBIN-03 超行宽上限(errno 1118) | ✅ 已修复并验证 | pytest 59 + **RDS 全量 5220/5220 PASS** |
 | 6 | P0-6 超上限负向 INSERT 被注释 | ✅ 已修复并验证 | pytest 69 + **RDS 全量 5220/5220 PASS** |
 | 7 | P0-7 + P1-1 期望值机读化 + 列类型断言 | ✅ 已修复并验证 | pytest 80 + 反向对照 6/6 + **RDS 全量 5228/5228 PASS** |
-| 8 | 环境能力画像 + 内网 CHAR/VARCHAR 口径 | ⏳ 进行中 | — |
+| 8 | 环境能力画像 + 内网 CHAR/VARCHAR 口径 | ✅ 机制已落地并验证（口径待确认） | pytest 85 + RDS 画像反向对照 |
 | 9+ | P1-2 ~ P3 | ⏳ 待办 | — |
 
 ---
@@ -336,3 +336,58 @@ python3 run_tests.py --env aliyun --workers 8          # 5228/5228 PASS，0 FAIL
 
 ALTER 声明与实际逐条对齐：SUCCESS↔SUCCESS 3,604；FAIL↔FAIL 1,202
 （errno 1846×1056、1845×138、3780×8）；N/A 422（建表即被拒，无 ALTER）。
+
+---
+
+## Step 8 — 环境能力画像（为内网实例的 CHAR/VARCHAR 口径差异做数据化支撑）
+
+**背景**：内网实例与阿里云 RDS 对 CHAR/VARCHAR 改类型的支持范围不同
+（口径："不支持同字节变更，只支持跨字节变更"）。旧实现把期望值硬编码在
+`transition["instant"] / transition["inplace"]` 里，换实例就得改代码、且无法审阅差异。
+
+**改动：把实例差异表达成数据**
+- 新增 `ENV_PROFILES` / `resolve_expectation(transition, algorithm, env)`：
+  期望值先过环境画像，再叠加因子交互调整；命中画像规则的用例会在
+  `@expect` 头留下 `profile_rule=PROFILE:<env>/charvarchar=<mode>(<same|cross>桶不支持)` 标记
+- 长度字节桶口径统一：`LEN_BUCKET_BOUNDARY = 255`，CHAR 与 VARCHAR 用同一个桶函数
+  （CHAR 定长存储没有长度前缀，但字节宽度同样以 255 为界）
+- 四种模式：`cross_only`（只支持跨桶）/ `same_only`（只支持同桶）/ `all` / `none`
+- 命令行 `--charvarchar-mode` 可整体切换口径，**换实例不改代码**
+- 当前画像：`aliyun = all`（实测 5228/5228 PASS）、`internal = cross_only`（按口径，待实测复核）
+
+**画像对内网的影响预览**（12 条 CHAR/VARCHAR 转换）
+
+| 转换 | 字节变化 | 桶 | 内网(cross_only) 期望 |
+|---|---|---|---|
+| CHAR(1)→CHAR(2) latin1 | 1→2 | same | **FAIL** |
+| CHAR(63)→CHAR(64) utf8mb4 | 252→256 | cross | SUCCESS |
+| CHAR(254)→CHAR(255) utf8mb4 | 1016→1020 | same | **FAIL** |
+| VARCHAR(1)→(2) latin1 | 1→2 | same | **FAIL** |
+| VARCHAR(254)→(255) latin1 | 254→255 | same | **FAIL** |
+| VARCHAR(255)→(256) latin1 | 255→256 | cross | SUCCESS |
+| VARCHAR(85)→(86) utf8mb3 | 255→258 | cross | SUCCESS |
+| VARCHAR(63)→(64) utf8mb4 | 252→256 | cross | SUCCESS |
+| VARCHAR(64)→(65) utf8mb4 | 256→260 | same | **FAIL** |
+| VARCHAR(100)→(200) utf8mb4 | 400→800 | same | **FAIL** |
+| VARCHAR(16381)→(16382) utf8mb4 | 65524→65528 | same | **FAIL** |
+| VARCHAR(65527)→(65528) latin1 | 65527→65528 | same | **FAIL** |
+
+**验证：画像反向对照（在 RDS 上故意用错画像）**
+
+把 aliyun 环境强制切成 `cross_only`（RDS 实际两种都支持），跑 `07_varchar_instant.sql.gz`：
+
+```
+279 例 -> 119 PASS / 160 FAIL / 0 ERROR
+  被判 FAIL 的 160 例全部是同桶转换（VC-01/02/06/07/08/09），
+  且每例被三条独立断言同时抓到：PRIMARY(数据对照) + META(列类型) + ALTER_OUTCOME(声明vs实际)
+  93 个跨桶转换用例（VC-03/04/05）保持 100% 全绿
+```
+
+这证明两件事：① 画像确实在驱动期望值；② 一旦实例真实行为与声明的画像不符，
+**三条独立机制都会立刻报出来**，不会静默通过 —— 因此拿到内网实例后，
+即使口径描述有偏差，第一轮跑就会把差异精确暴露出来（哪条转换、哪个算法、实际 errno 多少）。
+
+```bash
+python3 -m pytest selfcheck/test_runner.py -q     # 85 passed（新增 5 项画像守卫）
+python3 generate_test_sql.py --charvarchar-mode same_only   # 可整体切换口径，不改代码
+```

@@ -201,6 +201,85 @@ ALL_TRANSITIONS = _build_integer_transitions() + CHAR_VARCHAR_TRANSITIONS + INTE
 
 
 # ============================================================
+# Section 1b: 环境能力画像（Env Capability Profiles）
+# ============================================================
+# 不同实例（阿里云 RDS / 内网 RDS / 社区版）对同一转换的支持范围不同。
+# 把这些差异表达成**数据**而不是散落在各处的 if：
+#   * 换实例只改画像，不改生成逻辑
+#   * 每条画像都注明实测/口径出处
+#   * 差异可以 diff 审阅，报告里能直接引用
+#
+# CHARVARCHAR_MODE 的四种取值（对应"同字节/跨字节"口径）：
+#   CROSS_ONLY  只支持**跨**长度字节桶的变更（如 VARCHAR(255)->(256) latin1、
+#               VARCHAR(63)->(64) utf8mb4 即 252->256 字节）；同桶变更 => 预期 FAIL
+#   SAME_ONLY   只支持**同**桶变更；跨桶 => 预期 FAIL
+#   ALL         两种都支持（阿里云 RDS 8.0.36 实测行为，5228/5228 PASS）
+#   NONE        两种都不支持
+CROSS_ONLY, SAME_ONLY, ALL_SUPPORTED, NONE_SUPPORTED = "cross_only", "same_only", "all", "none"
+
+# 长度字节桶：VARCHAR/VARBINARY 的最大字节数 <=255 用 1 字节长度前缀，否则 2 字节。
+# CHAR 是定长存储、没有长度前缀，但其"字节宽度"同样以 255 为界（pack length 语义），
+# 因此这里对 CHAR/VARCHAR 用同一个桶函数，保证口径一致。
+LEN_BUCKET_BOUNDARY = 255
+
+ENV_PROFILES = {
+    # 阿里云 RDS MySQL 8.0.36：CHAR/VARCHAR 同桶与跨桶变更 INSTANT+INPLACE 均支持
+    # （实测 5228/5228 PASS，见 FIX_LOG Step 5/7）
+    "aliyun": {"charvarchar": ALL_SUPPORTED},
+    # 内网实例：按测试同学口径"不支持 CHAR/VARCHAR 同字节变更，只支持跨字节变更"
+    # => CROSS_ONLY。可用 --charvarchar-mode 覆盖，无需改代码。
+    "internal": {"charvarchar": CROSS_ONLY},
+    # 说明：其它实例（如社区版）尚未做完整画像实测，先不内置口径，
+    # 需要时用 --charvarchar-mode 临时指定；实测清楚后再补进 ENV_PROFILES。
+    # 已实测的社区版 8.0.45 片段：VARCHAR 同桶扩容 INPLACE 支持 / INSTANT 不支持(1845)，
+    # 跨桶(255->256) INPLACE 也不支持(1846)，CHAR 改长度两种算法都不支持(1846)。
+}
+CHARVARCHAR_MODE_CLI = None      # 由 --charvarchar-mode 设置，覆盖 ENV_PROFILES
+
+
+def len_bucket(max_bytes: Optional[int]) -> Optional[int]:
+    if max_bytes is None:
+        return None
+    return 1 if max_bytes <= LEN_BUCKET_BOUNDARY else 2
+
+
+def transition_len_bucket_change(transition: dict) -> Optional[str]:
+    """返回 'same' / 'cross' / None（非 CHAR/VARCHAR 类）。"""
+    if transition.get("category") not in ("char", "varchar"):
+        return None
+    ob = _type_max_bytes(transition["old_type"], transition.get("charset"))
+    nb = _type_max_bytes(transition["new_type"], transition.get("charset"))
+    bo, bn = len_bucket(ob), len_bucket(nb)
+    if bo is None or bn is None:
+        return None
+    return "same" if bo == bn else "cross"
+
+
+def charvarchar_mode(env: str) -> str:
+    if CHARVARCHAR_MODE_CLI:
+        return CHARVARCHAR_MODE_CLI
+    return ENV_PROFILES.get(env, {}).get("charvarchar", ALL_SUPPORTED)
+
+
+def resolve_expectation(transition: dict, algorithm: str, env: str) -> Tuple[str, list, str]:
+    """解析某条转换在某环境/某算法下的期望结果。
+
+    返回 (SUCCESS|FAIL, [允许的 errno], 命中的画像规则 id)。
+    """
+    base = transition.get(algorithm.lower(), "SUCCESS")
+    mode = charvarchar_mode(env)
+    kind = transition_len_bucket_change(transition)
+    if kind and mode != ALL_SUPPORTED:
+        unsupported = (kind == "same" and mode == CROSS_ONLY) or \
+                      (kind == "cross" and mode == SAME_ONLY) or (mode == NONE_SUPPORTED)
+        if unsupported and base == "SUCCESS":
+            return "FAIL", [1846, 1845], "PROFILE:%s/charvarchar=%s(%s桶不支持)" % (env, mode, kind)
+    if base == "FAIL":
+        return "FAIL", [1846, 1845], ""
+    return "SUCCESS", [], ""
+
+
+# ============================================================
 # Section 2: Factor Definitions (OFAT + Key Pairs)
 # ============================================================
 
@@ -1154,7 +1233,8 @@ FROM (
 
 
 def _build_test_case_sql(test_id: str, transition: dict, algorithm: str, factors: dict,
-                         table_suffix: str = "", factor_name: str = "") -> str:
+                         table_suffix: str = "", factor_name: str = "",
+                         env: str = "aliyun") -> str:
     """
     Build a complete test case:
     1. DROP tables
@@ -1172,8 +1252,9 @@ def _build_test_case_sql(test_id: str, transition: dict, algorithm: str, factors
     t2 = f"t2_{table_suffix}"
     old_type = transition["old_type"]
     new_type = transition["new_type"]
-    expected = transition[algorithm.lower()]
-    
+    # P0-7/画像：期望值先过环境能力画像，再叠加因子交互调整
+    expected, expected_errnos, profile_rule = resolve_expectation(transition, algorithm, env)
+
     # Adjust expected based on factor interactions
     # INSTANT fails when target is part of any index (PK, secondary, unique)
     #
@@ -1333,7 +1414,10 @@ def _build_test_case_sql(test_id: str, transition: dict, algorithm: str, factors
     tag = ("-- @expect alter=%s build=SUCCESS assertions=%d neg_probes=%d alter_sha=%s"
            % (alter_expected, n_assertions, neg_n, alter_sha(alter_stmt)))
     if alter_expected == "FAIL":
-        tag += " errno=[1845,1846,1659,3780]"
+        _en = sorted(set(expected_errnos or [1845, 1846, 1659, 3780]))
+        tag += " errno=[%s]" % ",".join(str(e) for e in _en)
+    if profile_rule:
+        tag += " profile_rule=%s" % profile_rule.replace(" ", "_")
     tag += " column_type=%s" % sql_quote(meta["column_type"]).strip("'")
     for pr in neg_probes:
         tag += " neg_probe=%s" % pr
@@ -1588,7 +1672,8 @@ def crosses_len_prefix(transition: dict) -> bool:
     return (ob <= 255) != (nb <= 255)
 
 
-def expected_partition_key_alter(transition: dict, algorithm: str) -> Tuple[str, list]:
+def expected_partition_key_alter(transition: dict, algorithm: str,
+                                 env: str = "aliyun") -> Tuple[str, list]:
     """目标列**是**分区键时，ALTER 的预期结果。返回 (SUCCESS|FAIL, [允许的 errno])。
 
     RDS MySQL 8.0.36 实测（tools/probe_partition_compat.py + 定向复核）：
@@ -1600,6 +1685,10 @@ def expected_partition_key_alter(transition: dict, algorithm: str) -> Tuple[str,
     旧实现一律假定"分区键不可改 => ALTER 预期失败"，与实测不符。
     """
     cat = transition.get("category", "")
+    # 先看环境画像：该实例根本不支持这类 CHAR/VARCHAR 变更时，分区键场景自然也失败
+    prof, prof_errnos, _rule = resolve_expectation(transition, algorithm, env)
+    if prof == "FAIL":
+        return "FAIL", sorted(set(prof_errnos + [1846, 3780, 1659]))
     if cat in ("varchar", "varbinary") and not crosses_len_prefix(transition):
         if algorithm == "inplace":
             return "SUCCESS", []
@@ -1609,7 +1698,7 @@ def expected_partition_key_alter(transition: dict, algorithm: str) -> Tuple[str,
 
 def _build_partition_test(test_id: str, transition: dict, algorithm: str,
                           pp_idx: int, strategy: str,
-                          target_is_partition_key: bool) -> str:
+                          target_is_partition_key: bool, env: str = "aliyun") -> str:
     """生成一个分区表用例。
 
     target_is_partition_key=True  (PTK): 目标列是分区键
@@ -1634,7 +1723,7 @@ def _build_partition_test(test_id: str, transition: dict, algorithm: str,
     if not target_is_partition_key:
         # ---------------- PNK: 分区键是自增 id ----------------
         part_def = build_partition_clause(strategy, KIND_INT_ID)
-        expected = transition[algorithm.lower()]
+        expected, _pnk_errnos, _pnk_rule = resolve_expectation(transition, algorithm, env)
         lines.append("-- Factors: partition_target_key=False, partition_strategy=%s" % strategy)
         lines.append("-- @pnk_expect_placeholder@")
         lines.append("-- Expected: CREATE OK, ALTER %s" % expected)
@@ -1702,7 +1791,7 @@ def _build_partition_test(test_id: str, transition: dict, algorithm: str,
             % reason))
         return "\n".join(lines)
 
-    exp_alter, exp_errnos = expected_partition_key_alter(transition, algorithm)
+    exp_alter, exp_errnos = expected_partition_key_alter(transition, algorithm, env)
     after_type = new_type if exp_alter == "SUCCESS" else old_type
     lines.append("-- Factors: partition_target_key=True, partition_strategy=%s" % strategy)
     lines.append("-- @ptk_expect_placeholder@")
@@ -2641,7 +2730,7 @@ def _gen_regular_table_tests(transitions: list, algorithm: str, env: str,
 
             test_id = ids.next(SCOPE_REGULAR, algorithm)
             sql = _build_test_case_sql(test_id, trans, algorithm, factors,
-                                       id_to_suffix(test_id), factor_name)
+                                       id_to_suffix(test_id), factor_name, env)
             results.append(sql)
 
         # Column attribute preservation tests (one per type)
@@ -2673,10 +2762,10 @@ def _gen_partition_tests(transitions: list, algorithm: str, env: str,
                 continue
             results.append(_build_partition_test(
                 ids.next(SCOPE_PART_KEY, algorithm), trans, algorithm,
-                pp_idx, strategy, True))
+                pp_idx, strategy, True, env))
             results.append(_build_partition_test(
                 ids.next(SCOPE_PART_NONKEY, algorithm), trans, algorithm,
-                pp_idx, strategy, False))
+                pp_idx, strategy, False, env))
     return results
 
 
@@ -2785,7 +2874,7 @@ def _emit(dirpath: str, filename: str, header: str, title: str, build, registry:
     return stmts
 
 
-def generate_all():
+def generate_all(profile_report: Optional[list] = None):
     """生成全部 SQL 测试文件，并做全局唯一性自检（P0-4）。"""
     global GENERATED_AT, SUITE_REVISION
     import time as _time
@@ -2957,6 +3046,10 @@ def generate_all():
     print("类型转换数      : %d" % manifest["transition_count"])
     print("产出 .gz 文件   : %d  (明文名已写入 .gitignore 自动区块)" % len(WRITTEN_GZ))
     print("生成清单        : results/generation_manifest.json")
+    print("")
+    print("环境能力画像    : %s" % {e: charvarchar_mode(e) for e in ENV_PROFILES})
+    if CHARVARCHAR_MODE_CLI:
+        print("  (由 --charvarchar-mode=%s 全局覆盖)" % CHARVARCHAR_MODE_CLI)
 
     manifest["untracked_in_git"] = verify_git_tracking([p for p, _c, _s, _g in WRITTEN_FILES])
     if manifest["untracked_in_git"]:
@@ -2969,6 +3062,17 @@ def generate_all():
         print("git 跟踪自检    : 全部产物已入库 ✅")
 
 
-if __name__ == "__main__":
+def _main():
+    import argparse
+    ap = argparse.ArgumentParser(description="RDS MySQL DDL 测试套件生成器")
+    ap.add_argument("--charvarchar-mode", choices=[CROSS_ONLY, SAME_ONLY, ALL_SUPPORTED, NONE_SUPPORTED],
+                    help="覆盖所有环境的 CHAR/VARCHAR 同字节桶/跨字节桶支持口径")
+    args = ap.parse_args()
+    global CHARVARCHAR_MODE_CLI
+    CHARVARCHAR_MODE_CLI = args.charvarchar_mode
     generate_all()
+
+
+if __name__ == "__main__":
+    _main()
 

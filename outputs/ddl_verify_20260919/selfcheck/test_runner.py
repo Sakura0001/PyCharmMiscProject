@@ -1284,3 +1284,95 @@ def test_alter_outcome_ignores_other_statement_errors():
              "statement": "INSERT ...", "stmt_sha1": "ffff00001111", "duration_ms": 1}
     a, errno = R.check_alter_outcome(c, [other])
     assert a[0]["result"] == "PASS" and errno is None
+
+
+# ================================================================
+# Step 8 环境能力画像（内网 CHAR/VARCHAR 同字节桶/跨字节桶口径）
+# ================================================================
+
+def test_len_bucket_classification():
+    """长度字节桶判定：<=255 字节为 1 桶，>255 为 2 桶（CHAR/VARCHAR 统一口径）。"""
+    assert G.len_bucket(255) == 1 and G.len_bucket(256) == 2
+    assert G.len_bucket(None) is None
+    cases = {
+        "CHAR-01": "same",     # CHAR(1)->CHAR(2) latin1: 1 -> 2 字节
+        "CHAR-02": "cross",    # CHAR(63)->CHAR(64) utf8mb4: 252 -> 256 字节
+        "CHAR-03": "same",     # CHAR(254)->CHAR(255) utf8mb4: 1016 -> 1020 字节
+        "VC-01": "same",       # VARCHAR(1)->(2) latin1
+        "VC-03": "cross",      # VARCHAR(255)->(256) latin1: 255 -> 256 字节
+        "VC-04": "cross",      # VARCHAR(85)->(86) utf8mb3: 255 -> 258 字节
+        "VC-05": "cross",      # VARCHAR(63)->(64) utf8mb4: 252 -> 256 字节
+        "VC-08": "same",       # VARCHAR(16381)->(16382) utf8mb4
+        "VC-09": "same",       # VARCHAR(65527)->(65528) latin1
+    }
+    by_id = {t["id"]: t for t in G.ALL_TRANSITIONS}
+    for tid, want in cases.items():
+        assert G.transition_len_bucket_change(by_id[tid]) == want, tid
+    # 非 CHAR/VARCHAR 类型不参与该口径
+    assert G.transition_len_bucket_change(by_id["INT-S-1-2"]) is None
+    assert G.transition_len_bucket_change(by_id["VBIN-03"]) is None
+
+
+def test_aliyun_profile_supports_both_buckets():
+    """阿里云 RDS 8.0.36 实测：同桶与跨桶 CHAR/VARCHAR 变更 INSTANT+INPLACE 均支持。"""
+    assert G.charvarchar_mode("aliyun") == G.ALL_SUPPORTED
+    by_id = {t["id"]: t for t in G.ALL_TRANSITIONS}
+    for tid in ("CHAR-01", "CHAR-03", "VC-01", "VC-02", "VC-08", "VC-09",
+                "CHAR-02", "VC-03", "VC-04", "VC-05"):
+        for algo in ("instant", "inplace"):
+            exp, errnos, rule = G.resolve_expectation(by_id[tid], algo, "aliyun")
+            assert exp == "SUCCESS", "%s/%s 在 aliyun 画像下应为 SUCCESS，实得 %s" % (tid, algo, exp)
+            assert not rule
+
+
+def test_internal_profile_rejects_same_bucket_only():
+    """内网画像 CROSS_ONLY：只支持跨字节桶变更，同桶变更预期 FAIL(1846/1845)。"""
+    assert G.charvarchar_mode("internal") == G.CROSS_ONLY
+    by_id = {t["id"]: t for t in G.ALL_TRANSITIONS}
+    same = ["CHAR-01", "CHAR-03", "VC-01", "VC-02", "VC-06", "VC-07", "VC-08", "VC-09"]
+    cross = ["CHAR-02", "VC-03", "VC-04", "VC-05"]
+    for tid in same:
+        for algo in ("instant", "inplace"):
+            exp, errnos, rule = G.resolve_expectation(by_id[tid], algo, "internal")
+            assert exp == "FAIL", "%s/%s 同桶变更在内网画像下应为 FAIL" % (tid, algo)
+            assert set(errnos) & {1845, 1846}, errnos
+            assert rule.startswith("PROFILE:internal"), rule
+    for tid in cross:
+        for algo in ("instant", "inplace"):
+            exp, _e, rule = G.resolve_expectation(by_id[tid], algo, "internal")
+            assert exp == "SUCCESS", "%s/%s 跨桶变更在内网画像下应为 SUCCESS" % (tid, algo)
+            assert not rule
+
+
+def test_profile_mode_switchable_without_code_change():
+    """--charvarchar-mode 必须能整体切换口径（换实例不改代码）。"""
+    by_id = {t["id"]: t for t in G.ALL_TRANSITIONS}
+    t = by_id["VC-01"]                      # 同桶
+    saved = G.CHARVARCHAR_MODE_CLI
+    try:
+        for mode, want in ((G.ALL_SUPPORTED, "SUCCESS"), (G.CROSS_ONLY, "FAIL"),
+                           (G.SAME_ONLY, "SUCCESS"), (G.NONE_SUPPORTED, "FAIL")):
+            G.CHARVARCHAR_MODE_CLI = mode
+            exp, _e, _r = G.resolve_expectation(t, "inplace", "internal")
+            assert exp == want, "mode=%s 期望 %s 实得 %s" % (mode, want, exp)
+        # 跨桶转换在 SAME_ONLY 下应被拒
+        G.CHARVARCHAR_MODE_CLI = G.SAME_ONLY
+        exp, _e, _r = G.resolve_expectation(by_id["VC-03"], "inplace", "internal")
+        assert exp == "FAIL"
+    finally:
+        G.CHARVARCHAR_MODE_CLI = saved
+
+
+def test_profile_rule_is_traceable_in_generated_sql(all_cases):
+    """命中画像规则的用例必须在 @expect 头里留下可追溯标记。"""
+    n = 0
+    for fname, c in all_cases:
+        tags = c.meta.get("expect_tags", {})
+        if not tags.get("profile_rule"):
+            continue
+        n += 1
+        assert (tags.get("alter") or [""])[0] == "FAIL", c.test_id
+        assert tags.get("errno"), c.test_id
+    # aliyun 画像是 ALL_SUPPORTED，因此当前产物里不应有命中标记；
+    # 该断言保证"画像改判"这件事一定留痕，不会静默改变期望
+    assert n == 0, "当前生成用的是 aliyun 画像，不应有 profile_rule 标记（实得 %d）" % n
