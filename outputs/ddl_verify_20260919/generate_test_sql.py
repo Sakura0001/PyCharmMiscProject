@@ -42,6 +42,9 @@ SCOPE_SPECIAL = "SPE"      # 连续ALTER / 多列ALTER / 生成列 等特殊模�
 SCOPE_FK = "FK"            # 外键表
 SCOPE_PART_KEY = "PTK"     # 分区表，目标列**是**分区键
 SCOPE_PART_NONKEY = "PNK"  # 分区表，目标列**不是**分区键
+SCOPE_FORM = "FRM"         # DDL 语句形态专项 (DEFAULT/LOCKNONE/CHANGE/COPY)
+SCOPE_TIMING = "TMG"       # 秒级差分计时专项
+SCOPE_INDEX = "IDX"        # 索引与约束完整性专项
 
 
 class CaseIdFactory:
@@ -2574,6 +2577,437 @@ def _build_column_attribute_test(test_id: str, transition: dict, algorithm: str,
 
 
 # ============================================================
+# Section 7b: DDL 语句形态 / 秒级差分计时 / 索引完整性 专项
+#             (P1-3 在线性与语句形态, P1-4 索引与约束复验)
+# ============================================================
+# 为什么需要这一节：
+#   * 旧套件 19,021 条 ALTER **全部**显式写 ALGORITHM=，`LOCK=` 出现 0 次、`CHANGE` 0 次。
+#     于是"在线(不阻塞 DML)"和"秒级(用户不写 ALGORITHM 时自动走 INSTANT)"这两个
+#     PRD 核心卖点在纯 SQL 套件里没有任何直接证据。
+#   * 旧套件对带索引的用例只比对数据行，ALTER 之后二级索引/唯一索引/前缀索引是否
+#     被正确重建、唯一约束是否仍然生效，完全没有复验。
+
+DDL_FORMS = [
+    ("DEFAULT", "不写 ALGORITHM，由服务器自选（用户真实写法；不支持秒级时应回退 COPY 并仍然成功）"),
+    ("LOCKNONE", "ALGORITHM=INPLACE, LOCK=NONE（在线性硬证明：必须能在不阻塞 DML 的前提下完成）"),
+    ("CHANGE", "CHANGE 同时改名 + 改类型（旧套件 0 覆盖）"),
+    ("COPY", "ALGORITHM=COPY（结果对照组：数据与元数据必须与秒级路径完全一致）"),
+]
+
+INDEX_KINDS = [
+    ("SECONDARY", "INDEX idx_target (target)"),
+    ("UNIQUE", "UNIQUE INDEX uq_target (target)"),
+]
+
+
+def _std_table_shape(transition):
+    """专项用例统一采用 (id, pad1, target, pad2) 形态；minimal_table 时退化为 (id, target)。"""
+    return not bool(transition.get("minimal_table"))
+
+
+def _form_alter(form, t1, col_old, col_new, new_def, algorithm_hint):
+    if form == "DEFAULT":
+        return "ALTER TABLE %s MODIFY %s %s;" % (t1, col_old, new_def)
+    if form == "LOCKNONE":
+        return "ALTER TABLE %s MODIFY %s %s, ALGORITHM=INPLACE, LOCK=NONE;" % (t1, col_old, new_def)
+    if form == "CHANGE":
+        return "ALTER TABLE %s CHANGE %s %s %s;" % (t1, col_old, col_new, new_def)
+    if form == "COPY":
+        return "ALTER TABLE %s MODIFY %s %s, ALGORITHM=COPY;" % (t1, col_old, new_def)
+    raise ValueError(form)
+
+
+def build_ddl_form_case(test_id: str, transition: dict, env: str, form: str) -> str:
+    """生成一个 DDL 语句形态用例（DEFAULT / LOCKNONE / CHANGE / COPY）。"""
+    old_type, new_type = transition["old_type"], transition["new_type"]
+    suf = id_to_suffix(test_id)
+    t1, t2 = "t1_" + suf, "t2_" + suf
+    minimal = not _std_table_shape(transition)
+
+    inst_exp, inst_err, _r1 = resolve_expectation(transition, "instant", env)
+    inplace_exp, inplace_err, _r2 = resolve_expectation(transition, "inplace", env)
+
+    col_final = "target2" if form == "CHANGE" else "target"
+    old_def = _build_column_def(old_type, dict(BASELINE), transition)
+    new_def = _build_column_def(new_type, dict(BASELINE), transition)
+
+    # 各形态的期望：
+    #   DEFAULT  服务器自选算法；不支持秒级时回退 COPY，只要转换合法就应成功
+    #   LOCKNONE 只有 INPLACE 被支持时才可能成功
+    #   CHANGE   改名 + 改类型，用默认算法 => 应成功
+    #   COPY     对照组，合法转换必成功
+    if form == "LOCKNONE":
+        exp, errnos = ("SUCCESS", []) if inplace_exp == "SUCCESS" else ("FAIL", sorted(set(inplace_err) | {1846, 1845}))
+    else:
+        exp, errnos = "SUCCESS", []
+    final_type = new_type if exp == "SUCCESS" else old_type
+
+    lines = []
+    lines.append("-- Test Case: %s" % test_id)
+    lines.append("-- DDL form: %s" % form)
+    lines.append("-- Type: %s -> %s, Algorithm: %s, Expected: %s"
+                 % (old_type, new_type, form.lower(), exp))
+    lines.append("-- Transition ID: %s" % transition.get("id", ""))
+    lines.append("-- Form note: %s" % dict((k, v) for k, v in DDL_FORMS)[form])
+    lines.append("-- @form_placeholder@")
+    lines.append("DROP TABLE IF EXISTS %s, %s;" % (t1, t2))
+    lines.append("SET SESSION sql_mode = 'STRICT_TRANS_TABLES';")
+
+    # t1
+    if minimal:
+        lines.append("CREATE TABLE %s (\n  id INT NOT NULL AUTO_INCREMENT,\n  target %s,"
+                     " PRIMARY KEY (id)\n) ENGINE=InnoDB;" % (t1, old_def))
+        cmp_cols = ["id", "target"]
+    else:
+        lines.append("CREATE TABLE %s (\n  id INT NOT NULL AUTO_INCREMENT,\n"
+                     "  pad1 VARCHAR(20) DEFAULT 'pad1',\n  target %s,\n"
+                     "  pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id)\n) ENGINE=InnoDB;"
+                     % (t1, old_def))
+        cmp_cols = ["id", "pad1", "target", "pad2"]
+
+    data = gen_test_data(transition)
+    pre = [v for v in data["pre_values"] if v != "NULL"][:6] + ["NULL"]
+    for v in pre:
+        lines.append(_build_insert_stmt(t1, "target", v))
+
+    alter_stmt = _form_alter(form, t1, "target", col_final, new_def, form)
+    lines.append("-- ALTER (form=%s) expected %s" % (form, exp))
+    lines.append(alter_stmt)
+
+    post = ([v for v in data["post_new_range"] if v != "NULL"][:3]
+            if exp == "SUCCESS" else [])
+    for v in post:
+        lines.append(_build_insert_stmt(t1, col_final, v))
+
+    # t2: 期望的最终形态（CHANGE 形态下列名也变）
+    t2_def = _build_column_def(final_type, dict(BASELINE), transition)
+    if minimal:
+        lines.append("CREATE TABLE %s (\n  id INT NOT NULL AUTO_INCREMENT,\n  %s %s,"
+                     " PRIMARY KEY (id)\n) ENGINE=InnoDB;" % (t2, col_final, t2_def))
+        cmp_cols2 = ["id", col_final]
+    else:
+        lines.append("CREATE TABLE %s (\n  id INT NOT NULL AUTO_INCREMENT,\n"
+                     "  pad1 VARCHAR(20) DEFAULT 'pad1',\n  %s %s,\n"
+                     "  pad2 VARCHAR(20) DEFAULT 'pad2', PRIMARY KEY (id)\n) ENGINE=InnoDB;"
+                     % (t2, col_final, t2_def))
+        cmp_cols2 = ["id", "pad1", col_final, "pad2"]
+    for v in pre + post:
+        lines.append(_build_insert_stmt(t2, col_final, v))
+
+    # 断言 1: 数据对照（CHANGE 形态下两边列名都变成 target2）
+    a_cols = ["id"] + (["pad1"] if not minimal else []) + [col_final] + \
+             (["pad2"] if not minimal else [])
+    lines.append(_build_compare_sql_named(test_id, t1, t2, a_cols, col_final))
+
+    n_assert = 1
+    # 断言 2: 最终列元数据
+    meta = expected_meta(transition, dict(BASELINE), final_type,
+                         overrides={"ordinal_position": (3 if not minimal else 2)})
+    lines.append(build_meta_assertion_full(test_id, t1, col_final, meta, name="META"))
+    n_assert += 1
+
+    # 断言 3（仅 CHANGE）: 旧列名必须消失，证明改名真的发生
+    if form == "CHANGE":
+        lines.append(
+            "SELECT '%s#OLD_COL_GONE' AS test_id,\n"
+            "       IF(COUNT(*)=0,'PASS','FAIL') AS result,\n"
+            "       CONCAT('old column `target` still present, count=',COUNT(*)) AS mismatch\n"
+            "FROM information_schema.columns\n"
+            "WHERE table_schema=DATABASE() AND table_name=%s AND column_name='target';"
+            % (test_id, sql_quote(t1)))
+        n_assert += 1
+
+    tag = ("-- @expect alter=%s%s build=SUCCESS assertions=%d alter_sha=%s column_type=%s ddl_form=%s"
+           % (exp, (" errno=[%s]" % ",".join(str(e) for e in errnos)) if errnos else "",
+              n_assert, alter_sha(alter_stmt), meta["column_type"], form))
+    return "\n".join(lines).replace("-- @form_placeholder@", tag)
+
+
+def _build_compare_sql_named(test_id, t1, t2, columns, join_col):
+    """对照 SELECT，可指定用于 JOIN 的列名（CHANGE 形态下目标列改名了）。"""
+    col_cmp = " AND ".join("a.%s <=> b.%s" % (c, c) for c in columns)
+    col_list = ", ".join(columns)
+    return """SELECT '%s' AS test_id,
+       IF(COUNT(*)=0,'PASS','FAIL') AS result,
+       IF(COUNT(*)=0,'',GROUP_CONCAT(CONCAT(src,':id=',id) SEPARATOR '; ')) AS mismatch
+FROM (
+  SELECT 't1_extra' AS src, id FROM %s
+   WHERE id NOT IN (SELECT id FROM %s)
+  UNION ALL
+  SELECT 't2_extra' AS src, id FROM %s
+   WHERE id NOT IN (SELECT id FROM %s)
+  UNION ALL
+  SELECT 'data_mismatch' AS src, a.id FROM %s a JOIN %s b ON a.id = b.id
+   WHERE NOT (%s)
+) AS mismatches;""" % (test_id, t1, t2, t2, t1, t1, t2, col_cmp)
+
+
+# ---------------------------------------------------------------- 秒级差分计时
+# 8192 行时 DDL 固定开销(约 80ms：MDL + 数据字典事务 + binlog + redo fsync)会淹没
+# "改元数据 vs 重建表"的差异，实测比值只有 1.3~1.5，断言没有分辨力。
+# 提到 2^19 = 524,288 行后 COPY 需要数秒，比值可达两个数量级。
+TIMING_ROWS_POW = 19
+TIMING_MARGIN = 3             # 默认算法路径必须比强制 COPY 快至少 3 倍
+TIMING_ABS_BUDGET_US = 2_000_000   # 且默认路径必须在 2 秒内完成（"秒级"的字面含义）
+
+
+def build_timing_case(test_id: str, transition: dict, env: str) -> str:
+    """秒级证据：同一转换、同样数据量，比较"默认算法"与"强制 COPY"的耗时。
+
+    这是"秒级修改列类型"唯一可自动化的硬证据：元数据级变更应当比重建表快
+    至少一个数量级；如果服务器悄悄退化成重建，比值会掉下来并被这条断言抓住。
+    """
+    old_type, new_type = transition["old_type"], transition["new_type"]
+    suf = id_to_suffix(test_id)
+    t_fast, t_slow = "t1_" + suf, "t2_" + suf
+    old_def = _build_column_def(old_type, dict(BASELINE), transition)
+    new_def = _build_column_def(new_type, dict(BASELINE), transition)
+    data = gen_test_data(transition)
+    seed = [v for v in data["pre_values"] if v != "NULL"][0]
+
+    lines = []
+    lines.append("-- Test Case: %s" % test_id)
+    lines.append("-- Timing: default-algorithm vs forced COPY, %d rows" % (2 ** TIMING_ROWS_POW))
+    lines.append("-- Type: %s -> %s, Algorithm: default_vs_copy, Expected: SUCCESS" % (old_type, new_type))
+    lines.append("-- Transition ID: %s" % transition.get("id", ""))
+    lines.append("-- @timing_placeholder@")
+    lines.append("DROP TABLE IF EXISTS %s, %s;" % (t_fast, t_slow))
+    lines.append("SET SESSION sql_mode = 'STRICT_TRANS_TABLES';")
+    for t in (t_fast, t_slow):
+        lines.append("CREATE TABLE %s (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, target %s) ENGINE=InnoDB;"
+                     % (t, old_def))
+        lines.append("INSERT INTO %s (target) VALUES (%s);" % (t, seed))
+        for _i in range(TIMING_ROWS_POW):
+            lines.append("INSERT INTO %s (target) SELECT target FROM %s;" % (t, t))
+        lines.append("ANALYZE TABLE %s;" % t)
+
+    a_fast = "ALTER TABLE %s MODIFY target %s;" % (t_fast, new_def)
+    a_slow = "ALTER TABLE %s MODIFY target %s, ALGORITHM=COPY;" % (t_slow, new_def)
+    lines.append("SET @t0 = NOW(6);")
+    lines.append(a_fast)
+    lines.append("SET @t1 = NOW(6);")
+    lines.append("SET @t2 = NOW(6);")
+    lines.append(a_slow)
+    lines.append("SET @t3 = NOW(6);")
+    lines.append(
+        "SELECT '%s#FAST_PATH' AS test_id,\n"
+        "       IF(TIMESTAMPDIFF(MICROSECOND,@t0,@t1) * %d < TIMESTAMPDIFF(MICROSECOND,@t2,@t3)\n"
+        "          AND TIMESTAMPDIFF(MICROSECOND,@t0,@t1) < %d,'PASS','FAIL') AS result,\n"
+        "       CONCAT('default_us=',TIMESTAMPDIFF(MICROSECOND,@t0,@t1),"
+        "' copy_us=',TIMESTAMPDIFF(MICROSECOND,@t2,@t3),"
+        "' ratio=',ROUND(TIMESTAMPDIFF(MICROSECOND,@t2,@t3)/GREATEST(TIMESTAMPDIFF(MICROSECOND,@t0,@t1),1),1),"
+        "' need_ratio>%d and default_us<%d') AS mismatch;"
+        % (test_id, TIMING_MARGIN, TIMING_ABS_BUDGET_US, TIMING_MARGIN, TIMING_ABS_BUDGET_US))
+    lines.append(build_meta_assertion_full(
+        test_id, t_fast, "target",
+        expected_meta(transition, dict(BASELINE), new_type,
+                      overrides={"ordinal_position": 2}), name="META"))
+    tag = ("-- @expect alter=SUCCESS build=SUCCESS assertions=2 alter_sha=%s column_type=%s"
+           % (alter_sha(a_fast), column_type_of(new_type)))
+    return "\n".join(lines).replace("-- @timing_placeholder@", tag)
+
+
+# ---------------------------------------------------------------- 索引完整性
+_B62 = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+
+def _b62_fixed(i: int, width: int) -> str:
+    """定宽 base62 编码：width=1 也能给出 62 个互不相同的值。
+
+    旧写法 ("v%d" % i).ljust(width,"_")[:width] 在 width=1 时对任何 i 都得到 'v'，
+    于是 CHAR(1)/VARCHAR(1) 的唯一索引用例只插得进 1 行 —— 用例"通过"了，
+    但唯一约束、索引一致性、CRC 对照全都退化成单行比较，等于没测。
+    """
+    if width <= 0:
+        return ""
+    digits = []
+    v = max(0, int(i))
+    while v and len(digits) < width:
+        digits.append(_B62[v % 62])
+        v //= 62
+    while len(digits) < width:
+        digits.append(_B62[0])
+    return "".join(reversed(digits))
+
+
+def unique_values_for(transition: dict, n: int) -> list:
+    """为索引完整性用例生成 n 个**互不相同**且落在旧类型值域内的字面量。"""
+    cat = transition.get("category", "")
+    old = transition["old_type"].upper()
+    n = max(2, min(n, 62))
+    if cat.startswith("integer"):
+        unsigned = "UNSIGNED" in old
+        return [str(i if unsigned else i - n // 2) for i in range(n)]
+    if cat == "decimal":
+        m = _re.match(r"DECIMAL\((\d+),(\d+)\)", old)
+        prec = int(m.group(1)) if m else 10
+        scale = int(m.group(2)) if m else 0
+        cap = min(n, 10 ** min(prec, 6))          # 10^M 个可表示值，取样即可
+        out = []
+        for i in range(max(2, cap)):
+            out.append(("%d.%s" % (i // (10 ** scale), str(i % (10 ** scale)).rjust(scale, "0")))
+                       if scale else str(i))
+        return out
+    if cat == "bit":
+        w = int(_re.match(r"BIT\((\d+)\)", old).group(1))
+        cap = max(2, min(n, 2 ** min(w, 16)))
+        return [str(i) for i in range(cap)]
+    if cat in ("binary", "varbinary", "blob"):
+        # 必须用真正的十六进制编码：base62 的 g~z / A~Z 不是合法 hex 字符，
+        # n>15 时会生成 X'000000000000000g' 这种非法字面量。
+        m = _re.match(r"(?:VAR)?BINARY\((\d+)\)", old)
+        width = max(1, min(int(m.group(1)) if m else 4, 8))
+        hexw = width * 2
+        cap = min(n, 16 ** hexw)
+        return ["X'%s'" % ("%0*X" % (hexw, i)) for i in range(cap)]
+    # char / varchar / text
+    m = _re.search(r"\((\d+)\)", old)
+    cap = int(m.group(1)) if m else 20
+    width = max(1, min(cap, 8))
+    return ["'%s'" % _b62_fixed(i, width) for i in range(n)]
+
+
+def index_def_for(transition: dict, kind: str) -> Tuple[str, str]:
+    """按目标列宽度选择整列索引或前缀索引，返回 (索引名, 索引 DDL)。
+
+    InnoDB 单索引键上限 3072 字节：VARCHAR(16381) utf8mb4 = 65,524 字节，
+    建整列索引必然 errno 1071。此时改用前缀索引 —— 既保住覆盖，
+    也顺带验证"前缀索引在类型变更后是否被正确重建"。
+    """
+    name = "idx_target" if kind == "SECONDARY" else "uq_target"
+    kw = "INDEX" if kind == "SECONDARY" else "UNIQUE INDEX"
+    mb = target_index_bytes(transition)
+    if mb and mb > INDEX_KEY_LIMIT_BYTES:
+        return name, "%s %s (target(64))" % (kw, name)
+    return name, "%s %s (target)" % (kw, name)
+
+
+def build_index_integrity_case(test_id: str, transition: dict, env: str, kind: str) -> str:
+    """ALTER 之后复验索引与约束（P1-4）。
+
+    断言集合：
+      IDX_PRESENT    索引仍然存在、列与序号正确
+      IDX_CONSISTENT FORCE INDEX 与 IGNORE INDEX 的行数一致（索引与表物理一致）
+      IDX_SCAN_HASH  索引扫描与全表扫描的有序哈希一致
+      CRC_ORACLE     与"用新类型全新建的对照表"逐行哈希一致
+      UNIQ_ENFORCED  唯一索引仍然拒绝重复值（负向探针，errno 1062）
+      META           列元数据
+    """
+    old_type, new_type = transition["old_type"], transition["new_type"]
+    suf = id_to_suffix(test_id)
+    t1, t2 = "t1_" + suf, "t2_" + suf
+    idx_name, idx_def = index_def_for(transition, kind)
+    old_def = _build_column_def(old_type, dict(BASELINE), transition)
+    new_def = _build_column_def(new_type, dict(BASELINE), transition)
+    vals = unique_values_for(transition, 32)
+
+    inst_exp, _ie, _r1 = resolve_expectation(transition, "instant", env)
+    inplace_exp, inplace_err, _r2 = resolve_expectation(transition, "inplace", env)
+    # 目标列在索引里 => INSTANT 不可用；用 INPLACE（不支持则退回 COPY）
+    if inplace_exp == "SUCCESS":
+        algo_clause, exp, errnos = ", ALGORITHM=INPLACE, LOCK=NONE", "SUCCESS", []
+    else:
+        algo_clause, exp, errnos = ", ALGORITHM=COPY", "SUCCESS", []
+
+    def hash_expr(tbl):
+        return ("(SELECT BIT_XOR(CAST(CRC32(CONCAT_WS(0x7C, id, IFNULL(target,'~N~'))) AS UNSIGNED))"
+                " FROM %s)" % tbl)
+
+    lines = []
+    lines.append("-- Test Case: %s" % test_id)
+    lines.append("-- Index integrity: %s index on target" % kind)
+    lines.append("-- Type: %s -> %s, Algorithm: %s, Expected: %s"
+                 % (old_type, new_type, "inplace" if algo_clause.startswith(", ALGORITHM=INPLACE") else "copy", exp))
+    lines.append("-- Transition ID: %s" % transition.get("id", ""))
+    lines.append("-- @idx_placeholder@")
+    lines.append("DROP TABLE IF EXISTS %s, %s;" % (t1, t2))
+    lines.append("SET SESSION sql_mode = 'STRICT_TRANS_TABLES';")
+    # minimal_table（VARCHAR(16381)+ / VARCHAR(65527)+ 这类逼近 65535 行宽的类型）
+    # 不能再带 pad 列，否则 CREATE 直接 errno 1118，索引用例一个都跑不起来。
+    minimal = bool(transition.get("minimal_table"))
+    if minimal:
+        create = ("CREATE TABLE %s (\n  id INT NOT NULL AUTO_INCREMENT,\n  target %s,\n"
+                  "  PRIMARY KEY (id),\n  %s\n) ENGINE=InnoDB;")
+    else:
+        create = ("CREATE TABLE %s (\n  id INT NOT NULL AUTO_INCREMENT,\n  target %s,\n"
+                  "  pad VARCHAR(20) DEFAULT 'pad',\n  PRIMARY KEY (id),\n  %s\n) ENGINE=InnoDB;")
+    lines.append(create % (t1, old_def, idx_def))
+    for v in vals:
+        lines.append("INSERT INTO %s (target) VALUES (%s);" % (t1, v))
+    lines.append("ANALYZE TABLE %s;" % t1)
+
+    alter_stmt = "ALTER TABLE %s MODIFY target %s%s;" % (t1, new_def, algo_clause)
+    lines.append("-- ALTER expected %s" % exp)
+    lines.append(alter_stmt)
+
+    # 对照表：新类型 + 同样的索引
+    lines.append(create % (t2, new_def, idx_def))
+    for v in vals:
+        lines.append("INSERT INTO %s (target) VALUES (%s);" % (t2, v))
+    lines.append("ANALYZE TABLE %s;" % t2)
+
+    n_assert = 0
+    # IDX_PRESENT
+    lines.append(
+        "SELECT '%s#IDX_PRESENT' AS test_id,\n"
+        "       IF(COUNT(*)=1,'PASS','FAIL') AS result,\n"
+        "       CONCAT('index %s on ',%s,' columns found=',COUNT(*)) AS mismatch\n"
+        "FROM information_schema.statistics\n"
+        "WHERE table_schema=DATABASE() AND table_name=%s AND index_name=%s AND column_name='target';"
+        % (test_id, idx_name, sql_quote(t1), sql_quote(t1), sql_quote(idx_name)))
+    n_assert += 1
+    # IDX_CONSISTENT
+    lines.append(
+        "SELECT '%s#IDX_CONSISTENT' AS test_id,\n"
+        "       IF((SELECT COUNT(*) FROM %s FORCE INDEX(%s)) = (SELECT COUNT(*) FROM %s IGNORE INDEX(%s)),"
+        "'PASS','FAIL') AS result,\n"
+        "       CONCAT('force=',(SELECT COUNT(*) FROM %s FORCE INDEX(%s)),"
+        "' ignore=',(SELECT COUNT(*) FROM %s IGNORE INDEX(%s))) AS mismatch;"
+        % (test_id, t1, idx_name, t1, idx_name, t1, idx_name, t1, idx_name))
+    n_assert += 1
+    # IDX_SCAN_HASH：走索引的顺序扫描 vs 走主键的顺序扫描，哈希必须一致
+    lines.append(
+        "SELECT '%s#IDX_SCAN_HASH' AS test_id,\n"
+        "       IF((SELECT BIT_XOR(CAST(CRC32(CONCAT_WS(0x7C, id, IFNULL(target,'~N~'))) AS UNSIGNED))\n"
+        "             FROM (SELECT id, target FROM %s FORCE INDEX(%s) ORDER BY id) x)\n"
+        "          = (SELECT BIT_XOR(CAST(CRC32(CONCAT_WS(0x7C, id, IFNULL(target,'~N~'))) AS UNSIGNED))\n"
+        "             FROM (SELECT id, target FROM %s IGNORE INDEX(%s) ORDER BY id) y),"
+        "'PASS','FAIL') AS result,\n"
+        "       'index-scan hash != table-scan hash' AS mismatch;"
+        % (test_id, t1, idx_name, t1, idx_name))
+    n_assert += 1
+    # CRC_ORACLE
+    lines.append(
+        "SELECT '%s#CRC_ORACLE' AS test_id,\n"
+        "       IF(%s <=> %s,'PASS','FAIL') AS result,\n"
+        "       CONCAT('t1=',IFNULL(%s,'NULL'),' t2=',IFNULL(%s,'NULL')) AS mismatch;"
+        % (test_id, hash_expr(t1), hash_expr(t2), hash_expr(t1), hash_expr(t2)))
+    n_assert += 1
+    # META
+    lines.append(build_meta_assertion_full(
+        test_id, t1, "target",
+        expected_meta(transition, dict(BASELINE), new_type,
+                      overrides={"ordinal_position": 2}), name="META"))
+    n_assert += 1
+
+    probes = []
+    if kind == "UNIQUE":
+        dup = vals[0]
+        probe = "INSERT INTO %s (target) VALUES (%s)" % (t1, dup)
+        lines.append("-- 负向探针：唯一约束必须仍然生效（重复值必须被拒 1062）")
+        lines.append(probe + ";")
+        probes.append("%s=1062" % _probe_sha1(probe))
+        n_assert += 0    # runner 合成断言，不计入 SQL 判定行
+
+    tag = ("-- @expect alter=%s%s build=SUCCESS assertions=%d alter_sha=%s column_type=%s index_kind=%s%s"
+           % (exp, (" errno=[%s]" % ",".join(str(e) for e in errnos)) if errnos else "",
+              n_assert, alter_sha(alter_stmt), column_type_of(new_type), kind,
+              (" " + " ".join("neg_probe=%s" % p for p in probes)) if probes else ""))
+    return "\n".join(lines).replace("-- @idx_placeholder@", tag)
+
+
+
+# ============================================================
 # Section 8: File Writers & Main Function
 # ============================================================
 
@@ -2863,6 +3297,17 @@ def _emit(dirpath: str, filename: str, header: str, title: str, build, registry:
                     header + "-- File %02d: %s\n\n" % (file_no, title), stmts)
     blob = "\n".join(stmts)
     case_ids = _re.findall(r"^-- Test Case: (\S+)", blob, _re.M)
+    if len(case_ids) != len(stmts):
+        raise SystemExit(
+            "!! %s: 语句块 %d 个但用例头 %d 个 —— 生成器有块没有用例头，"
+            "或某个块被错误拼接（例如 '\\n'.join(<str>) 会把字符串按字符炸开）"
+            % (filename, len(stmts), len(case_ids)))
+    # 粗粒度体积哨兵：VC-08/VC-09 这类上限用例本身就带 65KB 级字面量（约 900KB/用例），
+    # 因此阈值放到 4MB；真正抓"字符串被按字符炸开"的是上面的用例头数量校验。
+    _oversized = [(i, len(b)) for i, b in enumerate(stmts) if len(b) > 4_000_000]
+    if _oversized:
+        raise SystemExit("!! %s: %d 个用例体积异常 (>4MB)，示例 %s"
+                         % (filename, len(_oversized), _oversized[:3]))
     registry.append({
         "file_no": file_no,
         "file": filename if not filename.endswith(".gz") else filename,
@@ -2985,6 +3430,54 @@ def generate_all(profile_report: Optional[list] = None):
     STALE_PRUNED = stale
     if stale:
         print("清理过期产物    : %d 个 %s" % (len(stale), [os.path.basename(x) for x in stale]))
+
+    # ---------------- 专项：DDL 语句形态 / 秒级计时 / 索引完整性 ----------------
+    def forms(env, trans):
+        def build(ids):
+            out = []
+            for t in trans:
+                for form, _desc in DDL_FORMS:
+                    out.append(build_ddl_form_case(ids.next(SCOPE_FORM, None), t, env, form))
+            return out
+        return build
+
+    def timing(env, trans):
+        def build(ids):
+            # 只对"该环境支持 INSTANT"的转换做秒级差分，并取代表性子集控制耗时
+            picked = [t for t in trans
+                      if resolve_expectation(t, "instant", env)[0] == "SUCCESS"]
+            step = max(1, len(picked) // 8)
+            return [build_timing_case(ids.next(SCOPE_TIMING, None), t, env)
+                    for t in picked[::step][:8]]
+        return build
+
+    def index_integrity(env, trans):
+        def build(ids):
+            out = []
+            for t in trans:
+                for kind, _d in INDEX_KINDS:
+                    out.append(build_index_integrity_case(ids.next(SCOPE_INDEX, None), t, env, kind))
+            return out
+        return build
+
+    _emit(A, "30_ddl_forms.sql", header_aliyun,
+          "DDL 语句形态 (默认算法 / LOCK=NONE / CHANGE 改名 / COPY 对照组)",
+          forms("aliyun", aliyun_trans), registry)
+    _emit(A, "32_ddl_timing.sql", header_aliyun,
+          "秒级差分计时 (默认算法 vs 强制 COPY, %d 行)" % (2 ** TIMING_ROWS_POW),
+          timing("aliyun", aliyun_trans), registry)
+    _emit(A, "34_index_integrity.sql", header_aliyun,
+          "索引与约束完整性复验 (SECONDARY / UNIQUE)",
+          index_integrity("aliyun", aliyun_trans), registry)
+    _emit(I, "31_ddl_forms_enhanced.sql", header_internal,
+          "DDL 语句形态 (默认算法 / LOCK=NONE / CHANGE 改名 / COPY 对照组)",
+          forms("internal", internal_trans), registry)
+    _emit(I, "33_ddl_timing_enhanced.sql", header_internal,
+          "秒级差分计时 (默认算法 vs 强制 COPY, %d 行)" % (2 ** TIMING_ROWS_POW),
+          timing("internal", internal_trans), registry)
+    _emit(I, "35_index_integrity_enhanced.sql", header_internal,
+          "索引与约束完整性复验 (SECONDARY / UNIQUE)",
+          index_integrity("internal", internal_trans), registry)
 
     # ---------------- .gitignore 同步（P0-1: 产物/跟踪一致） ----------------
     _sync_gitignore()

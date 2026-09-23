@@ -14,7 +14,10 @@
 | 6 | P0-6 超上限负向 INSERT 被注释 | ✅ 已修复并验证 | pytest 69 + **RDS 全量 5220/5220 PASS** |
 | 7 | P0-7 + P1-1 期望值机读化 + 列类型断言 | ✅ 已修复并验证 | pytest 80 + 反向对照 6/6 + **RDS 全量 5228/5228 PASS** |
 | 8 | 环境能力画像 + 内网 CHAR/VARCHAR 口径 | ✅ 机制已落地并验证（口径待确认） | pytest 85 + RDS 画像反向对照 |
-| 9+ | P1-2 ~ P3 | ⏳ 待办 | — |
+| 9 | P1-2/P1-3/P1-4 空表 + DDL 语句形态 + 索引完整性 | ✅ 已修复并验证 | pytest 90 + RDS 200/200 + 392/392 |
+| 10 | P1-5 在线 DDL 失败模式 | ⏳ 进行中 | — |
+| 11 | P1-6 主备复制与崩溃恢复 | ⏳ 待办 | — |
+| 12+ | P2 类型/因子矩阵、concurrent_dml、P3 文档 | ⏳ 待办 | — |
 
 ---
 
@@ -391,3 +394,75 @@ ALTER 声明与实际逐条对齐：SUCCESS↔SUCCESS 3,604；FAIL↔FAIL 1,202
 python3 -m pytest selfcheck/test_runner.py -q     # 85 passed（新增 5 项画像守卫）
 python3 generate_test_sql.py --charvarchar-mode same_only   # 可整体切换口径，不改代码
 ```
+
+---
+
+## Step 9 — P1-3 DDL 语句形态 + 秒级差分计时 + P1-4 索引完整性（含 P1-2）
+
+**问题**
+- 19,021 条 ALTER **全部**显式写 `ALGORITHM=`，`LOCK=` 出现 **0 次**、`CHANGE` 出现 **0 次**
+  → "在线（不阻塞 DML）"与"秒级（用户不写 ALGORITHM 时自动走 INSTANT）"两个 PRD 核心卖点没有任何直接证据
+- ALTER 之后索引/约束完全没有复验：`CHECKSUM TABLE` / `FORCE INDEX` 一致性 / 唯一约束复验 均为 0
+- 472 个空表（`data_scale=S0`）用例：post 插入被跳过、t1/t2 都空 → 恒 PASS，ALTER 意外失败也无感
+
+**新增 6 个专项文件**（文件号全局唯一，30/32/34 阿里云，31/33/35 内网）
+
+| 文件 | 内容 | 用例数 |
+|---|---|---|
+| `30_ddl_forms` / `31_..._enhanced` | 4 种语句形态 × 每条转换 | 128 / 108 |
+| `32_ddl_timing` / `33_..._enhanced` | 秒级差分计时（2^19 行） | 8 / 8 |
+| `34_index_integrity` / `35_..._enhanced` | 索引与约束完整性 × 2 种索引 | 64 / 54 |
+
+1. **DEFAULT**：不写 `ALGORITHM`（用户真实写法）→ 必须成功，且元数据与对照表一致
+2. **LOCKNONE**：`ALGORITHM=INPLACE, LOCK=NONE` → 这是"在线不阻塞 DML"的**硬证明**；
+   INPLACE 不被支持时必须以声明的 errno 失败，而不是悄悄降级
+3. **CHANGE**：`CHANGE target target2 <新类型>`（改名 + 改类型）→ 额外断言 `#OLD_COL_GONE`（旧列名必须消失）
+4. **COPY**：`ALGORITHM=COPY` 对照组 → 数据与元数据必须与秒级路径完全一致
+5. **秒级差分计时**：同一转换、同样 524,288 行，比较"默认算法"与"强制 COPY"耗时，
+   断言 `默认 × 3 < COPY` **且** `默认 < 2 秒`（双条件：只用比值不够，两边都慢也能过；只用绝对值受机器影响）
+6. **索引完整性**（6 条断言）：`IDX_PRESENT`（索引仍在且列/序号正确）、
+   `IDX_CONSISTENT`（`FORCE INDEX` 与 `IGNORE INDEX` 行数一致 = 索引与表物理一致）、
+   `IDX_SCAN_HASH`（索引扫描 vs 全表扫描的有序 CRC 哈希一致）、
+   `CRC_ORACLE`（与"用新类型全新建的对照表"逐行哈希一致）、
+   `UNIQ_ENFORCED`（唯一索引仍拒绝重复值，负向探针 errno 1062）、`META`
+
+P1-2 由 Step 7 的 META 断言覆盖：空表用例现在也断言列类型/可空性/默认值/字符集/列序，
+ALTER 意外失败会被 META 判 FAIL（反向对照 NC2 已验证这条路径）。
+
+**过程中自查出的 4 个缺陷（已修）**
+1. `build_ddl_form_case` 结尾写成 `"\n".join(<字符串>)` → 把字符串**按字符炸开**，
+   128 个用例生成 7.6MB 乱码。已在 `_emit` 里加"用例头数量必须等于语句块数量"强校验 +
+   单用例体积哨兵，这类问题以后生成阶段就直接 `SystemExit`
+2. 计时用 8,192 行时，DDL 固定开销（约 80ms：MDL + 数据字典事务 + binlog + redo fsync）
+   淹没"改元数据 vs 重建表"的差异，实测比值只有 **1.3~1.5**，断言毫无分辨力（8/8 FAIL）。
+   提到 2^19 行后比值升到 **20.5~37.9**
+3. `unique_values_for` 用 `("v%d" % i).ljust(width,"_")[:width]`，在 `width=1`（CHAR(1)/VARCHAR(1)）时
+   对任何 i 都得到 `'v'` → 唯一索引用例只插得进 1 行，**用例"通过"了但唯一约束/索引一致性/CRC 对照
+   全部退化成单行比较**。改为定宽 base62 编码
+4. 二进制类型的取值生成误用了 base62（`g~z` 不是合法十六进制字符，n>15 就生成 `X'...z'` 非法字面量）；
+   索引专项也没认 `minimal_table`（多一个 pad 列 → errno 1118）
+5. `VARCHAR(16381)` 建整列索引必然 errno 1071 → 改为**前缀索引** `target(64)`，
+   既保住覆盖，又顺带验证"前缀索引在类型变更后是否被正确重建"
+
+**验证**
+```bash
+python3 -m pytest selfcheck/test_runner.py -q      # 90 passed
+python3 run_tests.py --env aliyun --files 30_ddl_forms.sql.gz 32_ddl_timing.sql 34_index_integrity.sql.gz --workers 6
+#   -> 200/200 PASS
+python3 run_tests.py --env aliyun --files 34_index_integrity.sql.gz 30_ddl_forms.sql.gz --workers 6
+#   -> 192/192 PASS
+```
+秒级差分实测（RDS 8.0.36，524,288 行）：
+
+| 转换 | 默认算法 | 强制 COPY | 比值 |
+|---|---|---|---|
+| TINYINT→SMALLINT | 82 ms | 3,080 ms | **37.5×** |
+| SMALLINT→MEDIUMINT | 94 ms | 3,118 ms | 33.2× |
+| MEDIUMINT→BIGINT | 95 ms | 3,173 ms | 33.5× |
+| TINYINT U→INT U | 93 ms | 3,118 ms | 33.5× |
+| SMALLINT U→BIGINT U | 87 ms | 3,293 ms | **37.9×** |
+| CHAR(1)→CHAR(2) | 120 ms | 3,107 ms | 25.8× |
+| VARCHAR(254)→(255) | 81 ms | 1,655 ms | 20.5× |
+| VARCHAR(64)→(65) | 78 ms | 1,642 ms | 21.2× |
+
+这是套件里第一次有"秒级"的**可自动判定**证据：若服务器悄悄退化成重建表，比值会掉下来并被断言抓住。

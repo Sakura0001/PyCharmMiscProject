@@ -13,6 +13,7 @@ import shutil
 import textwrap
 
 import re as _re
+import collections
 
 import pytest
 
@@ -50,13 +51,19 @@ def _write(path, text, compress=False):
 # ---------------------------------------------------------------- discovery
 
 def test_discover_finds_all_files_whatever_the_extension():
-    """P0-1 核心：不管生成器把文件写成 .sql 还是 .sql.gz，都必须被发现，一个不漏。"""
-    for d, expect in ((ALIYUN, 12), (INTERNAL, 15)):
+    """P0-1 核心：不管生成器把文件写成 .sql 还是 .sql.gz，都必须被发现，一个不漏。
+
+    期望文件数取自生成清单（不写死数字，新增专项文件时无需改测试）。
+    """
+    with open(GEN_MANIFEST) as fh:
+        _man = json.load(fh)
+    _expect = collections.Counter(f["dir"] for f in _man["files"])
+    for d in (ALIYUN, INTERNAL):
         files, dups = R.discover_sql_files(d)
         names = [os.path.basename(p) for p, _ in files]
         on_disk = [f for f in os.listdir(d)
                    if f.endswith(".sql") or f.endswith(".sql.gz")]
-        assert len(files) == expect == len(on_disk), (d, names, on_disk)
+        assert len(files) == _expect[os.path.basename(d)] == len(on_disk), (d, names, on_disk)
         assert dups == []
         # 分区大文件必然是 gz，用来证明 gz 分支真的被走到
         assert any(n.startswith("12_") and n.endswith(".gz") for n in names) \
@@ -274,14 +281,36 @@ def test_real_partition_file_ids_are_unique():
 
 @pytest.fixture(scope="session")
 def all_cases():
-    """一次性解析全部 27 个文件（~47MB 解压后），供多个断言复用。"""
-    out = []
+    """一次性解析全部 SQL 文件（解压后 ~50MB），供多个断言复用。
+
+    解析结果按 (size, mtime_ns) 缓存到 .pytest_cache/，重复运行从 ~70s 降到 <1s。
+    """
+    import pickle
+    cache_dir = os.path.join(ROOT, ".pytest_cache")
+    os.makedirs(cache_dir, exist_ok=True)
+    cache_path = os.path.join(cache_dir, "all_cases.pkl")
+    files = []
     for d in (ALIYUN, INTERNAL):
-        files, _ = R.discover_sql_files(d)
-        for p, g in files:
-            _pre, cases = R.split_cases(p, g)
-            for c in cases:
-                out.append((os.path.basename(p), c))
+        files += R.discover_sql_files(d)[0]
+    key = tuple((os.path.abspath(p), os.stat(p).st_size, os.stat(p).st_mtime_ns)
+                for p, _g in files)
+    try:
+        with open(cache_path, "rb") as fh:
+            blob = pickle.load(fh)
+        if blob.get("key") == key:
+            return blob["cases"]
+    except Exception:
+        pass
+    out = []
+    for p, g in files:
+        _pre, cases = R.split_cases(p, g)
+        for c in cases:
+            out.append((os.path.basename(p), c))
+    try:
+        with open(cache_path, "wb") as fh:
+            pickle.dump({"key": key, "cases": out}, fh, protocol=4)
+    except Exception:
+        pass
     return out
 
 
@@ -337,6 +366,11 @@ def test_oracle_compare_columns_exist_in_both_tables(all_cases):
         cols = {}
         for tname, body in creates:
             cols[tname] = set(_re.findall(r"^\s*(?:`?)(\w+)(?:`?)\s+(?=[A-Za-z])", body, _re.M))
+        # CHANGE 形态会改名：`CHANGE target target2 <type>` 之后 target2 才是真实列名
+        for _o, _n in _re.findall(r"CHANGE (\w+) (\w+) ", text):
+            for _t in list(cols):
+                if _o in cols[_t]:
+                    cols[_t].add(_n)
         for m in _re.finditer(r"(a|b)\.(\w+)\s*<=>\s*(a|b)\.(\w+)", text):
             for alias, col in ((m.group(1), m.group(2)), (m.group(3), m.group(4))):
                 want = "t1_" if alias == "a" else "t2_"
@@ -1145,7 +1179,7 @@ def test_every_regular_case_has_meta_assertion(all_cases):
     n = 0
     for fname, c in all_cases:
         scope = c.test_id.split("-")[2]
-        if scope not in ("REG", "ATR", "PTK", "PNK", "SPE", "FK"):
+        if scope not in ("REG", "ATR", "PTK", "PNK", "SPE", "FK", "FRM", "TMG", "IDX"):
             continue
         # BUILD_REJECTED 类用例根本不建表、不 ALTER，没有列可断言
         if "#BUILD_REJECTED" in c.text:
@@ -1376,3 +1410,104 @@ def test_profile_rule_is_traceable_in_generated_sql(all_cases):
     # aliyun 画像是 ALL_SUPPORTED，因此当前产物里不应有命中标记；
     # 该断言保证"画像改判"这件事一定留痕，不会静默改变期望
     assert n == 0, "当前生成用的是 aliyun 画像，不应有 profile_rule 标记（实得 %d）" % n
+
+
+# ================================================================
+# Step 9 (P1-3 / P1-4) DDL 语句形态 / 秒级差分计时 / 索引完整性
+# ================================================================
+
+def test_unique_values_are_actually_unique_for_every_transition():
+    """回归守卫：CHAR(1)/VARCHAR(1) 这类极窄列曾对所有 i 生成同一个值 'v'，
+    使唯一索引用例只插得进 1 行 —— 用例"通过"了但什么也没验证。"""
+    for t in G.ALL_TRANSITIONS:
+        vals = G.unique_values_for(t, 32)
+        assert len(vals) >= 2, "%s 只生成了 %d 个值" % (t["id"], len(vals))
+        assert len(set(vals)) == len(vals), "%s 生成的值有重复: %s" % (t["id"], vals[:6])
+        # 字面量必须合法（十六进制不能混入 base62 字母 g~z）
+        for v in vals:
+            if v.startswith("X'"):
+                assert set(v[2:-1].lower()) <= set("0123456789abcdef"), \
+                    "%s 非法十六进制字面量 %s" % (t["id"], v)
+            assert "\n" not in v and ";" not in v, "%s 字面量含危险字符 %r" % (t["id"], v[:40])
+
+
+def test_prefix_index_used_when_column_exceeds_key_limit():
+    """超过 3072 字节的目标列必须改用前缀索引，而不是放弃索引覆盖。"""
+    by_id = {t["id"]: t for t in G.ALL_TRANSITIONS}
+    for tid in ("VC-08", "VC-09", "VBIN-03"):
+        for kind in ("SECONDARY", "UNIQUE"):
+            _name, ddl = G.index_def_for(by_id[tid], kind)
+            assert "(target(" in ddl, "%s/%s 应使用前缀索引，实得 %s" % (tid, kind, ddl)
+    for tid in ("INT-S-1-2", "CHAR-01", "VC-01"):
+        for kind in ("SECONDARY", "UNIQUE"):
+            _name, ddl = G.index_def_for(by_id[tid], kind)
+            assert ddl.endswith("(target)"), "%s/%s 应为整列索引，实得 %s" % (tid, kind, ddl)
+
+
+def test_all_four_ddl_forms_generated(all_cases):
+    """P1-3：四种语句形态必须齐全 —— 旧套件 19,021 条 ALTER 全部显式写 ALGORITHM=，
+    LOCK= 出现 0 次、CHANGE 出现 0 次，"在线"与"秒级"都没有直接证据。"""
+    forms = collections.Counter()
+    locknone = change = default = copy = 0
+    for fname, c in all_cases:
+        m = _re.search(r"^-- DDL form: (\w+)$", c.text, _re.M)
+        if not m:
+            continue
+        forms[m.group(1)] += 1
+        if "LOCK=NONE" in c.text:
+            locknone += 1
+        if _re.search(r"ALTER TABLE \w+ CHANGE ", c.text):
+            change += 1
+        if _re.search(r"ALTER TABLE \w+ MODIFY \w+ [^;]*;\n", c.text) and "ALGORITHM" not in \
+                _re.search(r"(ALTER TABLE \w+ MODIFY [^;]*;)", c.text).group(1):
+            default += 1
+        if "ALGORITHM=COPY" in c.text:
+            copy += 1
+    assert set(forms) == {"DEFAULT", "LOCKNONE", "CHANGE", "COPY"}, forms
+    assert min(forms.values()) >= 50, forms
+    assert locknone == forms["LOCKNONE"]
+    assert change == forms["CHANGE"]
+    assert default == forms["DEFAULT"]
+    assert copy >= forms["COPY"]
+
+
+def test_timing_case_asserts_ratio_and_absolute_budget(all_cases):
+    """秒级差分计时：必须同时断言"比 COPY 快 N 倍"和"绝对耗时在预算内"。
+
+    只用比值不够（两边都慢也能过），只用绝对值也不够（机器快慢不同）。
+    8192 行时 DDL 固定开销约 80ms 会淹没差异（实测比值仅 1.3~1.5），故用 2^19 行。
+    """
+    n = 0
+    for fname, c in all_cases:
+        if "#FAST_PATH" not in c.text:
+            continue
+        n += 1
+        assert "TIMESTAMPDIFF(MICROSECOND,@t0,@t1)" in c.text, c.test_id
+        assert "TIMESTAMPDIFF(MICROSECOND,@t2,@t3)" in c.text, c.test_id
+        assert "ALGORITHM=COPY" in c.text, c.test_id
+        assert str(G.TIMING_MARGIN) in c.text and str(G.TIMING_ABS_BUDGET_US) in c.text, c.test_id
+        assert c.text.count("INSERT INTO") >= 2 * G.TIMING_ROWS_POW, "倍增灌数据语句不足"
+    assert n >= 8, "计时用例数异常: %d" % n
+
+
+def test_index_integrity_assertions_complete(all_cases):
+    """P1-4：索引用例必须包含 5 类断言，UNIQUE 还要有重复值负向探针。"""
+    need = ("IDX_PRESENT", "IDX_CONSISTENT", "IDX_SCAN_HASH", "CRC_ORACLE", "META")
+    n = n_uniq = 0
+    bad = []
+    for fname, c in all_cases:
+        if "-IDX-" not in c.test_id:
+            continue
+        n += 1
+        for a in need:
+            if "#%s" % a not in c.text:
+                bad.append((fname, c.test_id, "缺 %s" % a))
+        if "UNIQUE INDEX" in c.text:
+            n_uniq += 1
+            if "neg_probe=" not in c.text or "1062" not in c.text:
+                bad.append((fname, c.test_id, "UNIQUE 用例缺重复值负向探针(1062)"))
+        if "FORCE INDEX" not in c.text or "IGNORE INDEX" not in c.text:
+            bad.append((fname, c.test_id, "缺索引扫描 vs 全表扫描一致性对比"))
+    assert n >= 100, "索引用例数异常: %d" % n
+    assert n_uniq >= 50, "UNIQUE 索引用例数异常: %d" % n_uniq
+    assert not bad, "索引完整性断言不全: %d 处，示例 %s" % (len(bad), bad[:4])
