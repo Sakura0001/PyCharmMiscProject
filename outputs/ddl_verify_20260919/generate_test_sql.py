@@ -3892,15 +3892,6 @@ def generate_all(profile_report: Optional[list] = None):
           both_algos(lambda ids, algo: _gen_partition_tests(internal_trans, algo, "internal", ids)),
           registry)
 
-    # ---------------- 清理过期产物 ----------------
-    # 文件改名或数量变化后，旧产物若留在目录里会被执行器当成有效用例跑，
-    # 造成"跑了已经不存在的覆盖"。这里按本轮实际写入清单做差集清理。
-    stale = _prune_stale_sql([p for p, _c, _sz, _g in WRITTEN_FILES])
-    global STALE_PRUNED
-    STALE_PRUNED = stale
-    if stale:
-        print("清理过期产物    : %d 个 %s" % (len(stale), [os.path.basename(x) for x in stale]))
-
     # ---------------- 专项：DDL 语句形态 / 秒级计时 / 索引完整性 ----------------
     def forms(env, trans):
         def build(ids):
@@ -3986,6 +3977,15 @@ def generate_all(profile_report: Optional[list] = None):
     # ---------------- .gitignore 同步（P0-1: 产物/跟踪一致） ----------------
     _sync_gitignore()
 
+    # ---------------- 清理过期产物 ----------------
+    # 文件改名或数量变化后，旧产物若留在目录里会被执行器当成有效用例跑，
+    # 造成"跑了已经不存在的覆盖"。这里按本轮实际写入清单做差集清理。
+    stale = _prune_stale_sql([p for p, _c, _sz, _g in WRITTEN_FILES])
+    global STALE_PRUNED
+    STALE_PRUNED = stale
+    if stale:
+        print("清理过期产物    : %d 个 %s" % (len(stale), [os.path.basename(x) for x in stale]))
+
     # ---------------- 全局唯一性自检（P0-4） ----------------
     all_ids: List[str] = []
     for entry in registry:
@@ -4023,6 +4023,12 @@ def generate_all(profile_report: Optional[list] = None):
             "id_first": entry["case_ids"][0] if entry["case_ids"] else "",
             "id_last": entry["case_ids"][-1] if entry["case_ids"] else "",
         })
+    # git 跟踪自检必须在写清单**之前**完成，否则清单里查不到 untracked_in_git /
+    # git_tracking_ok 两个字段，证据不自洽（Step 15 复核时发现的问题）
+    manifest["untracked_in_git"] = verify_git_tracking(
+        [p for p, _c, _sz, _g in WRITTEN_FILES])
+    manifest["git_tracking_ok"] = not manifest["untracked_in_git"]
+
     os.makedirs(os.path.join(OUTPUT_DIR, "results"), exist_ok=True)
     with open(os.path.join(OUTPUT_DIR, "results", "generation_manifest.json"), "w",
               encoding="utf-8") as f:
@@ -4048,14 +4054,7 @@ def generate_all(profile_report: Optional[list] = None):
     if CHARVARCHAR_MODE_CLI:
         print("  (由 --charvarchar-mode=%s 全局覆盖)" % CHARVARCHAR_MODE_CLI)
 
-    manifest["untracked_in_git"] = verify_git_tracking([p for p, _c, _s, _g in WRITTEN_FILES])
-    if manifest["untracked_in_git"]:
-        manifest["git_tracking_ok"] = False
-        with open(os.path.join(OUTPUT_DIR, "results", "generation_manifest.json"), "w",
-                  encoding="utf-8") as f:
-            json.dump(manifest, f, ensure_ascii=False, indent=2)
-    else:
-        manifest["git_tracking_ok"] = True
+    if manifest["git_tracking_ok"]:
         print("git 跟踪自检    : 全部产物已入库 ✅")
 
 
