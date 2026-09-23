@@ -157,6 +157,12 @@ class DualWriteOracle:
         self._ddl_done = threading.Event()
         self._dml_ops = [0] * max(num_workers, 1)
         self._dml_errors = [0] * max(num_workers, 1)
+        # P2: per-DML 延迟采样（p50/p95/p99）。QPS 只能看到"每秒多少条"，
+        # 看不到 DDL 窗口期的**延迟尖刺** —— 那才是业务真正感知的抖动。
+        # 每 worker 一份本地 list，避免锁竞争；超过上限后按步长抽样，内存有界。
+        self._lat = [[] for _ in range(max(num_workers, 1))]
+        self._lat_phase = 'pre_ddl'
+        self._lat_cap = 20000
         self._mismatch_log = []
         self._mismatch_lock = threading.Lock()
         # Track all PKs inserted for UPDATE/DELETE targeting
@@ -330,12 +336,20 @@ class DualWriteOracle:
                     time.sleep(0.01)
                     continue
 
-                # Execute on t1
+                # Execute on t1（同时记录单条延迟，用于 p50/p95/p99）
+                _lat_t0 = time.perf_counter()
                 try:
                     cur1.execute(sql1, args)
                     r1 = (True, None)
                 except Exception as e:
                     r1 = (False, str(e))
+                _lat_ms = (time.perf_counter() - _lat_t0) * 1000.0
+                _lb = self._lat[worker_id] if worker_id < len(self._lat) else None
+                if _lb is not None and r1[0]:
+                    if len(_lb) < self._lat_cap:
+                        _lb.append((self._lat_phase, _lat_ms))
+                    elif op_count % 8 == 0:      # 超限后抽样，内存有界
+                        _lb.append((self._lat_phase, _lat_ms))
 
                 # For SELECT, no dual-write needed; just record result
                 if op_type == 'SELECT':
@@ -450,6 +464,7 @@ class DualWriteOracle:
     def run_ddl(self):
         """执行 DDL ALTER"""
         self._qps_sampler.set_phase('during_ddl')
+        self._lat_phase = 'during_ddl' 
         conn = self._get_conn()
         try:
             t0 = time.time()
@@ -473,6 +488,7 @@ class DualWriteOracle:
             conn.close()
             self._ddl_done.set()
             self._qps_sampler.set_phase('post_ddl')
+            self._lat_phase = 'post_ddl' 
 
     def run_post_ddl_inserts(self):
         """DDL后插入新范围数据，然后将t1完全同步到t2"""
@@ -582,11 +598,40 @@ class DualWriteOracle:
             self.results['mismatches'] = mismatches[:20]
             self.results['dml_ops'] = sum(self._dml_ops)
             self.results['dml_errors'] = sum(self._dml_errors)
+            self.results['latency'] = self.get_latency_summary()
             self.results['mismatch_log'] = self._mismatch_log[:20]
 
             return result
         finally:
             conn.close()
+
+    def get_latency_summary(self):
+        """按相位统计单条 DML 延迟分位数（ms）。"""
+        buckets = {}
+        for lb in self._lat:
+            for phase, ms in lb:
+                buckets.setdefault(phase, []).append(ms)
+        out = {}
+        for phase, vals in buckets.items():
+            if not vals:
+                continue
+            vals.sort()
+            n = len(vals)
+
+            def pct(p):
+                return round(vals[min(n - 1, int(n * p))], 3)
+            out[phase] = {
+                'samples': n, 'avg_ms': round(sum(vals) / n, 3),
+                'p50_ms': pct(0.50), 'p95_ms': pct(0.95),
+                'p99_ms': pct(0.99), 'max_ms': round(vals[-1], 3),
+            }
+        pre = out.get('pre_ddl', {})
+        dur = out.get('during_ddl', {})
+        if pre.get('p99_ms') and dur.get('p99_ms'):
+            out['p99_spike_ratio'] = round(dur['p99_ms'] / pre['p99_ms'], 2)
+        if pre.get('p50_ms') and dur.get('p50_ms'):
+            out['p50_spike_ratio'] = round(dur['p50_ms'] / pre['p50_ms'], 2)
+        return out
 
     def run(self):
         """完整执行流程"""

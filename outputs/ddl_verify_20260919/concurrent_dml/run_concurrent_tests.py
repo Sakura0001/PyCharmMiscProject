@@ -5,6 +5,7 @@ RDS MySQL DDL 并发DML数据一致性验证 — 主执行器
 """
 import sys
 import os
+import re
 import time
 import json
 import csv
@@ -25,13 +26,29 @@ logger = logging.getLogger(__name__)
 # ============================================================
 # 连接配置
 # ============================================================
-ALIYUN_CONFIG = {
-    'host': 'rm-uf65zzh9t461f8k64co.mysql.cn-shanghai.rds.aliyuncs.com',
-    'port': 3306,
-    'user': 'root',
-    'password': 'Taurus_123',
-    'database': 'ddl_test',
-}
+def _load_db_config(env=None):
+    """连接配置从 config.ini / 环境变量读取，源码里**不留任何真实凭据**。
+
+    旧实现在这个已入库的文件里硬编码了真实 RDS 地址与 root 口令。
+    优先级：环境变量 > config.ini 的 [env] 段 > 占位符默认值（连不上会明确报错）。
+    """
+    import configparser
+    env = env or os.environ.get('DDL_TEST_ENV', 'aliyun')
+    cfg_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'config.ini')
+    cp = configparser.ConfigParser()
+    if os.path.exists(cfg_path):
+        cp.read(cfg_path)
+    sec = cp[env] if env in cp else {}
+    return {
+        'host': os.environ.get('DDL_TEST_HOST') or sec.get('host') or '127.0.0.1',
+        'port': int(os.environ.get('DDL_TEST_PORT') or sec.get('port') or 3306),
+        'user': os.environ.get('DDL_TEST_USER') or sec.get('user') or 'root',
+        'password': os.environ.get('MYSQL_PWD') or sec.get('password') or '',
+        'database': os.environ.get('DDL_TEST_DB') or sec.get('database') or 'ddl_test',
+    }
+
+
+ALIYUN_CONFIG = _load_db_config()
 
 RESULTS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'results')
 os.makedirs(RESULTS_DIR, exist_ok=True)
@@ -534,13 +551,18 @@ def run_max_column_test():
 # ============================================================
 # 5. 连续 INSTANT 性能劣化验证 (单个用例)
 # ============================================================
+# InnoDB 对" instant 变更累积的行版本数"有上限，旧实现只测到 50 轮，
+# 恰好停在边界之前 —— 63/64/65/70 这几档才是真正会触发行为变化的地方。
+INSTANT_ROUND_STEPS = [10, 30, 50, 63, 64, 65, 70]
+
+
 def run_consecutive_instant_test():
-    """连续 10/30/50 条 INSTANT COLUMN 后性能对比"""
+    """连续 INSTANT ADD COLUMN 到 10/30/50/63/64/65/70 轮 + 同一列反复 INSTANT MODIFY"""
     logger.info('=== Consecutive INSTANT Performance Test ===')
     conn = get_conn()
     results = {}
-    
-    for rounds in [10, 30, 50]:
+
+    for rounds in INSTANT_ROUND_STEPS:
         try:
             exec_sql(conn, 'DROP TABLE IF EXISTS t_perf')
             exec_sql(conn, 'CREATE TABLE t_perf (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, c0 INT) ENGINE=InnoDB')
@@ -551,13 +573,23 @@ def run_consecutive_instant_test():
             
             # 连续 ADD COLUMN (原生 INSTANT)
             t0 = time.time()
+            first_fail = None
+            done = 0
             for i in range(1, rounds + 1):
                 ok, err = exec_sql(conn, f'ALTER TABLE t_perf ADD COLUMN c{i} INT, ALGORITHM=INSTANT')
                 if not ok:
+                    first_fail = {'round': i, 'err': str(err)[:200]}
                     logger.warning(f'ADD COLUMN c{i} failed: {err}')
                     break
+                done = i
             t1 = time.time()
-            results[f'add_{rounds}_cols'] = {'duration': round(t1-t0, 4)}
+            results[f'add_{rounds}_cols'] = {
+                'duration': round(t1 - t0, 4), 'completed': done,
+                'first_failure': first_fail,
+                # 边界档必须给出明确结论：到底哪一轮开始不再支持 INSTANT
+                'boundary_verdict': ('ALL_INSTANT_OK' if first_fail is None
+                                     else 'INSTANT_REJECTED_AT_%d' % first_fail['round']),
+            }
             
             # 测QPS - 用100次SELECT
             cur = conn.cursor()
@@ -591,6 +623,60 @@ def run_consecutive_instant_test():
 # ============================================================
 # 6. DDL Fuzz 内存泄漏测试 (单个用例)
 # ============================================================
+def run_repeated_instant_modify_test(rounds=70):
+    """同一列反复 INSTANT 改类型 N 轮：每次改类型同样会累积行版本。
+
+    旧实现的连续 INSTANT 测试只做 ADD COLUMN，完全没有覆盖
+    "对同一列反复秒级改类型"这条本套件的核心路径。
+    """
+    logger.info('=== Repeated INSTANT MODIFY on the same column (%d rounds) ===' % rounds)
+    conn = get_conn()
+    out = {'rounds_requested': rounds, 'completed': 0, 'first_failure': None,
+           'durations_ms': [], 'verdict': None}
+    try:
+        exec_sql(conn, 'DROP TABLE IF EXISTS t_rmod')
+        exec_sql(conn, "CREATE TABLE t_rmod (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, "
+                       "c0 INT, v VARCHAR(50) CHARACTER SET latin1) ENGINE=InnoDB")
+        batch = ','.join(['(%d)' % i for i in range(200)])
+        exec_sql(conn, f'INSERT INTO t_rmod (c0) VALUES {batch}')
+        for i in range(1, rounds + 1):
+            # 宽度必须**单调递增**：来回改会混入"缩窄"这一独立变量
+            # （实测缩窄本身就不支持 INSTANT，会在第 3 轮就失败，测不到行版本累积）
+            width = 50 + i
+            t0 = time.time()
+            ok, err = exec_sql(conn, 'ALTER TABLE t_rmod MODIFY v VARCHAR(%d) '
+                                     'CHARACTER SET latin1, ALGORITHM=INSTANT' % width)
+            out['durations_ms'].append(round((time.time() - t0) * 1000, 2))
+            if not ok:
+                out['first_failure'] = {'round': i, 'err': str(err)[:220]}
+                break
+            out['completed'] = i
+        # 收尾复验：数据没丢、列类型是最后一次的目标值
+        cnt = None
+        try:
+            cur = conn.cursor()
+            cur.execute('SELECT COUNT(*), MAX(CHAR_LENGTH(v)) FROM t_rmod')
+            cnt = cur.fetchone()
+        except Exception as e:
+            out['post_check_error'] = str(e)[:160]
+        out['post_rows'] = cnt[0] if cnt else None
+        expect_width = 60 if out['completed'] % 2 else 70
+        if out['first_failure'] is None:
+            out['verdict'] = 'ALL_%d_ROUNDS_INSTANT_OK' % out['completed']
+        else:
+            out['verdict'] = 'INSTANT_REJECTED_AT_ROUND_%d' % out['first_failure']['round']
+        out['rows_intact'] = (out['post_rows'] == 200)
+        logger.info('Repeated INSTANT MODIFY: %s completed=%d rows=%s durations(max/avg)=%s/%s'
+                    % (out['verdict'], out['completed'], out['post_rows'],
+                       max(out['durations_ms']) if out['durations_ms'] else None,
+                       round(sum(out['durations_ms']) / len(out['durations_ms']), 2)
+                       if out['durations_ms'] else None))
+        exec_sql(conn, 'DROP TABLE IF EXISTS t_rmod')
+    finally:
+        conn.close()
+    return out
+
+
 def run_ddl_fuzz_test():
     """1000轮 CREATE→INSERT→ALTER→DROP，监控内存"""
     logger.info('=== DDL Fuzz Memory Leak Test (1000 rounds) ===')
@@ -607,15 +693,42 @@ def run_ddl_fuzz_test():
         """)
         return {r[0]: r[1] for r in cur.fetchall()}
     
+    results['ddl_stats'] = {'ok': 0, 'fail': 0, 'errnos': {}, 'first_failures': []}
+
+    def _ddl(sql, rnd):
+        """执行一条 DDL 并**校验返回值**。
+
+        旧实现直接丢弃 exec_sql 的 (ok, err)，只统计内存增长 ——
+        即使 1000 轮 ALTER 全部失败，也照样给出 NO_LEAK 的结论。
+        """
+        ok, err = exec_sql(conn, sql)
+        st = results['ddl_stats']
+        if ok:
+            st['ok'] += 1
+        else:
+            st['fail'] += 1
+            code = None
+            m = re.search(r'\((\d+),', str(err))
+            if m:
+                code = int(m.group(1))
+            st['errnos'][str(code)] = st['errnos'].get(str(code), 0) + 1
+            if len(st['first_failures']) < 20:
+                st['first_failures'].append({'round': rnd, 'errno': code,
+                                             'err': str(err)[:160], 'sql': sql[:160]})
+        return ok
+
     for i in range(1000):
         try:
             exec_sql(conn, 'DROP TABLE IF EXISTS t_fuzz')
             exec_sql(conn, 'CREATE TABLE t_fuzz (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, c1 INT, c2 VARCHAR(50)) ENGINE=InnoDB')
             exec_sql(conn, "INSERT INTO t_fuzz (c1, c2) VALUES (100, 'hello'), (-1, NULL), (0, ''), (2147483647, 'test')")
-            
-            exec_sql(conn, 'ALTER TABLE t_fuzz MODIFY c1 BIGINT, ALGORITHM=INSTANT')
-            exec_sql(conn, 'ALTER TABLE t_fuzz MODIFY c2 VARCHAR(100), ALGORITHM=INPLACE')
-            
+
+            _ddl('ALTER TABLE t_fuzz MODIFY c1 BIGINT, ALGORITHM=INSTANT', i)
+            _ddl('ALTER TABLE t_fuzz MODIFY c2 VARCHAR(100), ALGORITHM=INPLACE', i)
+            # 同一列反复 INSTANT 改类型：累积行版本，用来撞 InnoDB 的 instant 变更上限
+            _ddl('ALTER TABLE t_fuzz MODIFY c2 VARCHAR(120), ALGORITHM=INSTANT', i)
+            _ddl('ALTER TABLE t_fuzz MODIFY c2 VARCHAR(140), ALGORITHM=INSTANT', i)
+
             exec_sql(conn, 'DROP TABLE t_fuzz')
             
             if i % 50 == 0:
@@ -637,9 +750,24 @@ def run_ddl_fuzz_test():
         growth_pct = ((last - first) / first * 100) if first > 0 else 0
         results['memory_growth_pct'] = round(growth_pct, 2)
         results['verdict'] = 'NO_LEAK' if growth_pct < 10 else 'POSSIBLE_LEAK'
-    
+
+    # DDL 成功率必须同时纳入判定：只判内存会把"1000 轮 DDL 全失败"报成 NO_LEAK
+    st = results['ddl_stats']
+    total_ddl = st['ok'] + st['fail']
+    results['ddl_success_rate'] = round(st['ok'] / total_ddl * 100, 2) if total_ddl else 0.0
+    if total_ddl and st['fail']:
+        results['verdict'] = 'DDL_FAILURES'
+        logger.warning('DDL Fuzz: %d/%d 条 DDL 失败，errno 分布 %s，示例 %s'
+                       % (st['fail'], total_ddl, st['errnos'], st['first_failures'][:2]))
+    if results.get('rounds'):
+        results['verdict'] = 'EXCEPTIONS'
+        logger.warning('DDL Fuzz: %d 轮抛异常，示例 %s'
+                       % (len(results['rounds']), results['rounds'][:2]))
+
     conn.close()
-    logger.info(f'DDL Fuzz results: verdict={results.get("verdict")}, growth={results.get("memory_growth_pct")}%')
+    logger.info('DDL Fuzz results: verdict=%s growth=%s%% ddl_ok=%d ddl_fail=%d success_rate=%s%%'
+                % (results.get('verdict'), results.get('memory_growth_pct'),
+                   st['ok'], st['fail'], results['ddl_success_rate']))
     return results
 
 
@@ -1894,6 +2022,21 @@ def run_large_table_test_single(test_prefix, category, old_type, new_type, chars
         dml_types = ['INSERT', 'UPDATE', 'DELETE', 'SELECT', 'UPSERT']
         
         qps_samples = {'pre_ddl': [], 'during_ddl': [], 'post_ddl': []}
+        # P2: per-DML 延迟采样（p50/p95/p99）。QPS 只反映"每秒多少条"，
+        # 看不到 DDL 窗口期的**延迟尖刺**，而尖刺才是业务真正感知的抖动。
+        # 每 worker 一份本地 list 避免锁竞争；超过上限后抽样，内存有界。
+        lat_samples = {'pre_ddl': [], 'during_ddl': [], 'post_ddl': []}
+        lat_lock = threading.Lock()
+        LAT_CAP = 20000
+
+        def _rec_latency(phase, ms):
+            bucket = lat_samples.get(phase)
+            if bucket is None:
+                return
+            with lat_lock:
+                if len(bucket) < LAT_CAP or (len(bucket) % 8 == 0):
+                    bucket.append(ms)
+
         qps_last_ops = [0]
         qps_last_ts = [time.time()]
         qps_phase = ['pre_ddl']
@@ -1929,6 +2072,8 @@ def run_large_table_test_single(test_prefix, category, old_type, new_type, chars
             pk_start = 90000000 + worker_id * 1000000
             
             while not stop_event.is_set():
+                _lat_t0 = time.perf_counter()
+                _lat_ok = True
                 try:
                     phase = 'pre' if not ddl_done.is_set() else 'post'
                     val = _gen_large_table_dml_value(category, old_type, new_type, charset, signed, phase)
@@ -1994,8 +2139,12 @@ def run_large_table_test_single(test_prefix, category, old_type, new_type, chars
                         with dml_stats['lock']:
                             dml_stats['ops'][worker_id] += 1
                 except Exception as e:
+                    _lat_ok = False
                     with dml_stats['lock']:
                         dml_stats['errors'][worker_id] += 1
+                finally:
+                    if _lat_ok:
+                        _rec_latency(qps_phase[0], (time.perf_counter() - _lat_t0) * 1000.0)
                 time.sleep(0.002)
             w_conn.close()
         
@@ -2046,6 +2195,32 @@ def run_large_table_test_single(test_prefix, category, old_type, new_type, chars
         post_qps = avg_qps(qps_samples['post_ddl'])
         drop_pct = round((1 - during_qps/pre_qps) * 100, 1) if pre_qps > 0 else 0
         recovery_pct = round(post_qps/pre_qps * 100, 1) if pre_qps > 0 else 0
+        def _pct(vals, p):
+            if not vals:
+                return None
+            v = sorted(vals)
+            return round(v[min(len(v) - 1, int(len(v) * p))], 3)
+
+        latency = {}
+        with lat_lock:
+            snapshot = {k: list(v) for k, v in lat_samples.items()}
+        for ph, vals in snapshot.items():
+            if not vals:
+                continue
+            latency[ph] = {
+                'samples': len(vals),
+                'avg_ms': round(sum(vals) / len(vals), 3),
+                'p50_ms': _pct(vals, 0.50), 'p95_ms': _pct(vals, 0.95),
+                'p99_ms': _pct(vals, 0.99), 'max_ms': round(max(vals), 3),
+            }
+        if latency.get('pre_ddl', {}).get('p99_ms') and latency.get('during_ddl', {}).get('p99_ms'):
+            latency['p99_spike_ratio'] = round(
+                latency['during_ddl']['p99_ms'] / latency['pre_ddl']['p99_ms'], 2)
+        if latency.get('pre_ddl', {}).get('p50_ms') and latency.get('during_ddl', {}).get('p50_ms'):
+            latency['p50_spike_ratio'] = round(
+                latency['during_ddl']['p50_ms'] / latency['pre_ddl']['p50_ms'], 2)
+        results['latency'] = latency
+
         results['qps_summary'] = {
             'pre_ddl_avg_qps': pre_qps,
             'during_ddl_avg_qps': during_qps,
@@ -2207,6 +2382,10 @@ def main():
     all_results.append(('CONSECUTIVE_INSTANT', r))
     
     # 3. DDL Fuzz 内存泄漏
+    r = run_repeated_instant_modify_test()
+    logger.info(f'Repeated INSTANT MODIFY results: {json.dumps(r, default=str)[:600]}')
+    all_results.append(('REPEATED_INSTANT_MODIFY', r))
+
     r = run_ddl_fuzz_test()
     all_results.append(('DDL_FUZZ', r))
     
@@ -2381,22 +2560,52 @@ def main():
     logger.info(f'{"="*60}')
 
 
-def main_large_only(quick=False):
-    """只运行大表测试"""
+def main_large_only(quick=False, rows_scale=1.0):
+    """只运行大表测试。
+
+    P2 修复：旧实现声明 LARGE_TABLE_TYPES 里每条 1,000,000 行，但归档证据全是
+    `--quick` 跑出来的 100,000 行，而报告里写的是"大表 5000 万行"。
+    现在把**声明行数 / 实际行数 / 运行模式 / 缩放系数**全部写进结果与 CSV，
+    报告无法再引用与实际不符的规模。
+    """
     logger.info('='*60)
     logger.info('RDS MySQL DDL Large Table Verification Suite (Large Only)')
     logger.info('='*60)
-    
+
     all_results = []
-    
+
     types = LARGE_TABLE_TYPES
     if quick:
-        # Quick mode: reduce row counts to 100K for fast verification
         types = [(t[0], t[1], t[2], t[3], t[4], t[5], t[6], t[7], 100_000) for t in LARGE_TABLE_TYPES]
-        logger.info(f'QUICK MODE: reduced to 100K rows per test')
+        logger.warning('QUICK MODE: 行数被压到 100K —— 结果**不可**用于宣称任何"大表"规模结论')
+    elif rows_scale != 1.0:
+        types = [(t[0], t[1], t[2], t[3], t[4], t[5], t[6], t[7],
+                  max(1000, int(t[8] * rows_scale))) for t in LARGE_TABLE_TYPES]
+        logger.info('ROWS SCALE = %s（声明行数按此缩放）' % rows_scale)
+    declared = {t[0]: t[8] for t in types}
+    logger.info('本轮声明行数分布: %s' % sorted(set(declared.values())))
     
     logger.info(f'\n### Large Table Tests: {len(types)} entries ###')
     r = run_large_table_test(types)
+    # 把声明行数与实际行数一起记进每条结果，并标出未达声明规模的条目
+    # 注意 run_large_table_test 返回的是 summary dict，用例列表在 r['results']
+    _items = r.get('results') if isinstance(r, dict) else (r if isinstance(r, list) else [])
+    if _items:
+        shortfall = []
+        for item in _items:
+            if not isinstance(item, dict):
+                continue
+            tid = item.get('test_id') or item.get('test_prefix')
+            item['declared_rows'] = declared.get(tid)
+            item['run_mode'] = 'quick_100k' if quick else ('scale_%s' % rows_scale)
+            got = item.get('row_count')
+            if item.get('declared_rows') and got and int(got) < int(item['declared_rows']):
+                shortfall.append((tid, got, item['declared_rows']))
+        if shortfall:
+            logger.warning('!! %d 条用例实际行数**低于**声明行数（规模结论不可用）：%s'
+                           % (len(shortfall), shortfall[:5]))
+        else:
+            logger.info('全部用例实际行数达到声明规模 ✅')
     all_results.append(('LARGE_TABLE', r))
     
     # CSV summary
@@ -2450,9 +2659,11 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='RDS MySQL DDL Concurrent DML Verification Suite')
     parser.add_argument('--large-only', action='store_true', help='Only run large table tests')
     parser.add_argument('--quick', action='store_true', help='Quick mode: 100K rows instead of millions')
+    parser.add_argument('--rows-scale', type=float, default=1.0,
+                        help='按系数缩放 LARGE_TABLE_TYPES 声明的行数（默认 1.0 = 按声明跑满）')
     args = parser.parse_args()
     
     if args.large_only:
-        main_large_only(quick=args.quick)
+        main_large_only(quick=args.quick, rows_scale=args.rows_scale)
     else:
         main()

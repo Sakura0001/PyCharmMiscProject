@@ -19,7 +19,7 @@
 | 11 | P1-6 binlog/备库一致性 + 崩溃恢复 | ✅ 已实现并验证 | R1 7/7 (RDS) + C1/C2 各 14/14 (SIGKILL 真实崩溃) |
 | 12 | P2 类型转换兼容矩阵（49 探针 × 4 算法） | ✅ 已实现并冻结基线 | 196/196 PASS + golden 回归 |
 | 13 | P2 因子矩阵（22 因子 × 3 转换 × 3 算法）+ 会话变量专项 | ✅ 已实现并冻结基线 | 198/198 PASS + 本机 14/14 + RDS 明确 SKIP |
-| 14 | P2 concurrent_dml 四项 | ⏳ 待办 | — |
+| 14 | P2 concurrent_dml 四项 + 凭据外置 | ✅ 已修复并验证 | RDS 实跑：4092 边界 / 70 轮 MODIFY / 4000 DDL / 延迟分位 |
 | 15 | P3 工程与文档口径统一 | ⏳ 待办 | — |
 
 ---
@@ -689,3 +689,42 @@ python3 scenarios/session_variables.py --env local      # 14 PASS / 0 FAIL
 python3 scenarios/session_variables.py --env aliyun     # 3 SKIP（errno 1227，如实报告）
 python3 -m pytest selfcheck/test_runner.py -q           # 90 passed
 ```
+
+---
+
+## Step 14 — P2 concurrent_dml 四项修复 + 凭据外置
+
+| # | 问题 | 修复 | 实测结果 |
+|---|---|---|---|
+| 1 | DDL Fuzz 1000 轮**不校验 `exec_sql` 返回值**，只判内存增长 → 1000 轮 ALTER 全失败也会给 `NO_LEAK` | 每条 DDL 都校验，统计 `ddl_ok/ddl_fail/errnos/成功率`，失败即 `verdict=DDL_FAILURES`；异常轮次记 `EXCEPTIONS` | **4000 条 DDL 全部成功、成功率 100%、内存增长 0%**（现在这个数字是被校验过的） |
+| 2 | 连续 INSTANT 只做 **ADD COLUMN**、轮次 `[10,30,50]`，恰好停在边界之前；且完全没有"同一列反复 INSTANT 改类型" | 轮次扩到 `[10,30,50,63,64,65,70]` 并给出 `boundary_verdict`；新增 `run_repeated_instant_modify_test()` | **第 65 轮被拒：errno 4092**（见下）；同一列反复 MODIFY **70/70 轮全成功**、行数不变、单轮 p50=45.7ms/p95=48.1ms/max=50.0ms |
+| 3 | 无 per-DML 延迟分位，只有秒级 QPS，看不到 DDL 窗口期的延迟尖刺 | `dml_framework.DualWriteOracle` 与 `run_large_table_test_single` 两条路径都加 per-worker 延迟采样（超上限抽样、内存有界），输出各相位 p50/p95/p99/max + 尖刺倍数 | 实测 pre/during/post 三相位分位齐全，`p99_spike_ratio` / `p50_spike_ratio` 可判定 |
+| 4 | `LARGE_TABLE_TYPES` 声明 1,000,000 行，归档证据却是 `--quick` 的 100,000 行，而报告写"5000 万行" | 新增 `--rows-scale`；每条结果写入 `declared_rows` / `row_count` / `run_mode`；实际低于声明即 WARN 并列出条目；`--quick` 打印明确告警"不可用于宣称任何大表规模结论" | 规模口径与证据强绑定，报告无法再引用与实际不符的数字 |
+
+**头条发现：InnoDB instant 行版本上限 = 64，第 65 次被拒**
+```
+add_10_cols   completed=10  ALL_INSTANT_OK
+add_30_cols   completed=30  ALL_INSTANT_OK
+add_50_cols   completed=50  ALL_INSTANT_OK
+add_63_cols   completed=63  ALL_INSTANT_OK
+add_64_cols   completed=64  ALL_INSTANT_OK
+add_65_cols   completed=64  INSTANT_REJECTED_AT_65
+add_70_cols   completed=64  INSTANT_REJECTED_AT_65
+
+errno 4092: Maximum row versions reached for table ddl_test/t_perf.
+            No more columns can be added or dropped instantly. Please use COPY/INPLACE.
+```
+旧测试只跑到 50 轮，**正好停在边界之前**，因此这个运维上很关键的限制从未被发现：
+一张表累积 64 次 instant 加/删列之后，后续 instant 变更会被拒绝，必须走 COPY/INPLACE（即"秒级"能力失效）。
+
+同时测出一个重要区分：**同一列反复 INSTANT MODIFY 类型 70 轮全部成功**，
+说明 4092 的行版本上限只约束 ADD/DROP COLUMN，不约束本套件核心的 MODIFY 类型变更。
+
+**凭据外置（P3-4 的一部分）**
+`concurrent_dml/run_concurrent_tests.py` 里硬编码了真实 RDS 地址与 root 口令，且该文件**已入库**。
+改为 `_load_db_config()`：环境变量 > `config.ini` 的 `[env]` 段 > 占位符默认值，源码不留任何凭据。
+
+> ⚠️ **安全提示**：口令 `Taurus_123` 已存在于 git 历史的 2 个提交中
+> （`cdf1c3a879` 初始提交、`d419023ee3`）。清理工作区**不能**清除历史，
+> 必须**轮换该口令**；若仓库曾外发，还需用 `git filter-repo` 重写历史。
+> 真实 endpoint 仍出现在 4 份文档里，Step 15 统一替换为占位符。
