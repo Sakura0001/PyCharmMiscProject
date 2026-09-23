@@ -317,7 +317,6 @@ def test_every_case_has_a_verdict_select(all_cases):
     assert not bad, "缺少判定 SELECT 的用例: %d 个，示例 %s" % (len(bad), bad[:5])
 
 
-@pytest.mark.xfail(strict=True, reason="P0-2 未修复: 分区 PTK 分支对照 SQL 引用不存在的 b.pad (4544 处)")
 def test_oracle_compare_columns_exist_in_both_tables(all_cases):
     """P0-2 回归守卫：对照 SELECT 里引用的列必须在 t1/t2 中都真实存在。
 
@@ -502,3 +501,142 @@ def test_partial_run_does_not_clobber_full_baseline_manifest(tmp_path):
     assert base2["file_count"] == 2, "全量基线被本轮 run_manifest 覆盖"
     rm = json.load(open(str(out / "run_manifest_aliyun.json")))
     assert rm["file_count"] == 1
+
+
+# ================================================================
+# Step 3 (P0-2 / P0-3) 分区分支修复
+# ================================================================
+
+def _creates_in(text):
+    """抽取 CREATE TABLE 的列名集合，返回 {表名: {列名}}。"""
+    out = {}
+    for tname, body in _re.findall(r"CREATE TABLE (\w+) \((.*?)\n\) ENGINE", text, _re.S):
+        out[tname] = set(_re.findall(r"^\s*`?(\w+)`?\s+(?=[A-Za-z])", body, _re.M))
+    return out
+
+
+def test_partition_target_key_oracle_is_structurally_identical(all_cases):
+    """P0-2：PTK 分支的对照表 t2 必须与 t1 结构一致（同列名集合）。
+
+    旧实现 t1=(id,target,pad) 而 t2=(id,pad1,target,pad2)，对照 SQL 却写
+    a.pad<=>b.pad -> ERROR 1054，3328+1216 个用例恒无判定输出。
+    """
+    checked = 0
+    bad = []
+    for fname, c in all_cases:
+        if "-PTK-" not in c.test_id:
+            continue
+        creates = _creates_in(c.text)
+        t1 = next((t for t in creates if t.startswith("t1_")), None)
+        t2 = next((t for t in creates if t.startswith("t2_")), None)
+        if t1 is None or t2 is None:
+            continue          # BUILD 被拒分支：本来就不该有 t2
+        checked += 1
+        if creates[t1] != creates[t2]:
+            bad.append((fname, c.test_id, sorted(creates[t1]), sorted(creates[t2])))
+    assert checked > 1000, "PTK 可建表分支用例数异常: %d" % checked
+    assert not bad, "t1/t2 结构不一致: %d 处，示例 %s" % (len(bad), bad[:2])
+
+
+def test_no_constant_manual_verdict_left(all_cases):
+    """P0-3：不再存在"无条件通过"的常量判定行。"""
+    bad = [(f, c.test_id) for f, c in all_cases
+           if "BUILD_OR_ALTER_FAIL_EXPECTED" in c.text or "CHECK_MANUALLY" in c.text]
+    assert not bad, "仍有 %d 个空断言用例，示例 %s" % (len(bad), bad[:3])
+
+
+def test_build_rejected_branch_asserts_table_absent(all_cases):
+    """P0-3：BUILD 预期失败的分支必须真的去查 information_schema.tables。"""
+    n = 0
+    for fname, c in all_cases:
+        if "-PTK-" not in c.test_id or "#BUILD_REJECTED" not in c.text:
+            continue
+        n += 1
+        assert "information_schema.tables" in c.text, c.test_id
+        assert "PK_COMPAT needs correction" in c.text, c.test_id
+    assert n > 500, "BUILD_REJECTED 断言用例数异常: %d" % n
+
+
+def test_target_key_branch_asserts_type_unchanged(all_cases):
+    """P0-2：ALTER 预期失败的分支必须断言列类型仍是旧类型（否则无法证明 ALTER 被拒）。"""
+    n = 0
+    for fname, c in all_cases:
+        if "-PTK-" not in c.test_id or "#TYPE_UNCHANGED" not in c.text:
+            continue
+        n += 1
+        assert "information_schema.columns" in c.text
+        assert _re.search(r"column_type\)\s*,\s*'<missing>'\)=", c.text) or \
+               "IFNULL(MAX(column_type)" in c.text, c.test_id
+    assert n > 1000, "TYPE_UNCHANGED 断言用例数异常: %d" % n
+
+
+def test_multi_assertion_cases_declare_count(all_cases):
+    """多条断言的用例必须声明 assertions=N，runner 才能发现某条断言静默消失。"""
+    bad = []
+    for fname, c in all_cases:
+        n_verdict = len(_re.findall(r"^SELECT '(TC-[^']+)' AS test_id", c.text, _re.M))
+        declared = c.meta.get("expect_tags", {}).get("assertions")
+        if n_verdict > 1 and not declared:
+            bad.append((fname, c.test_id, n_verdict))
+        if declared and int(declared[0]) != n_verdict:
+            bad.append((fname, c.test_id, "declared=%s actual=%d" % (declared[0], n_verdict)))
+    assert not bad, "断言条数声明缺失/不符: %d 处，示例 %s" % (len(bad), bad[:3])
+
+
+# ================================================================
+# Step 3: runner 侧多断言聚合
+# ================================================================
+
+def test_aggregate_all_pass():
+    st, res, mis, a = R.aggregate_assertions([
+        {"test_id": "TC-X", "result": "PASS", "mismatch": ""},
+        {"test_id": "TC-X#TYPE_UNCHANGED", "result": "PASS", "mismatch": ""}])
+    assert st == "PASS" and len(a) == 2
+    assert a[1]["name"] == "TYPE_UNCHANGED"
+
+
+def test_aggregate_any_fail_wins_regardless_of_order():
+    rows_pass_first = [{"test_id": "TC-X", "result": "PASS", "mismatch": ""},
+                       {"test_id": "TC-X#TYPE_UNCHANGED", "result": "FAIL",
+                        "mismatch": "expect=tinyint actual=smallint"}]
+    rows_fail_first = list(reversed(rows_pass_first))
+    for rows in (rows_pass_first, rows_fail_first):
+        st, res, mis, a = R.aggregate_assertions(rows)
+        assert st == "FAIL", "旧实现只看最后一行，先失败后通过会被掩盖"
+        assert "TYPE_UNCHANGED=FAIL" in mis
+        assert "actual=smallint" in mis
+
+
+def test_aggregate_manual_only_when_no_fail():
+    st, _r, _m, _a = R.aggregate_assertions([
+        {"test_id": "TC-X", "result": "BUILD_FAIL_EXPECTED", "mismatch": ""}])
+    assert st == "MANUAL"
+    st, _r, _m, _a = R.aggregate_assertions([
+        {"test_id": "TC-X", "result": "BUILD_FAIL_EXPECTED", "mismatch": ""},
+        {"test_id": "TC-X#A", "result": "FAIL", "mismatch": "x"}])
+    assert st == "FAIL"
+
+
+def test_assertion_count_mismatch_is_error():
+    """声明了 assertions=2 却只产出 1 条 => 必须判 ERROR，不能当 PASS。"""
+    case = _case(SAMPLE_CASE.replace(
+        "-- @expect alter=SUCCESS column_type=smallint nullable=YES",
+        "-- @expect alter=SUCCESS assertions=2"))
+    st, res, mis, a, e = R.classify_case(case, {
+        "verdict_rows": [{"test_id": case.test_id, "result": "PASS", "mismatch": ""}],
+        "errors": [{"stmt_index": 9, "errno": 1054, "error": "Unknown column 'b.pad'",
+                    "statement": "SELECT ...", "duration_ms": 1}],
+        "duration_ms": 5, "statement_count": 7})
+    assert st == "ERROR" and res == "ASSERTION_COUNT"
+    assert "expected 2 assertion rows, got 1" in mis
+
+
+def test_assertion_count_match_passes():
+    case = _case(SAMPLE_CASE.replace(
+        "-- @expect alter=SUCCESS column_type=smallint nullable=YES",
+        "-- @expect alter=SUCCESS assertions=2"))
+    st, res, mis, a, e = R.classify_case(case, {
+        "verdict_rows": [{"test_id": case.test_id, "result": "PASS", "mismatch": ""},
+                         {"test_id": case.test_id + "#TYPE", "result": "PASS", "mismatch": ""}],
+        "errors": [], "duration_ms": 5, "statement_count": 7})
+    assert st == "PASS" and len(a) == 2

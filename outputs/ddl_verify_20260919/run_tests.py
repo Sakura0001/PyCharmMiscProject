@@ -51,7 +51,9 @@ RE_EXPECT_TAG = re.compile(r"^--\s*@expect\s+(.*)$")
 RE_FACTOR = re.compile(r"^--\s*Factors:\s*(.*)$")
 RE_PARTITION = re.compile(r"^--\s*Partition:\s*(.*)$")
 RE_PARTKEY = re.compile(r"^--\s*Target is partition key:\s*(True|False)", re.I)
-RE_VERDICT_ID = re.compile(r"^(TC-[A-Za-z0-9_.\-]+)$")
+# 判定行 ID：主判定就是用例 ID；子断言形如 <用例ID>#<断言名>
+RE_VERDICT_ID = re.compile(r"^(TC-[A-Za-z0-9_.\-]+(?:#[A-Za-z0-9_]+)?)$")
+RE_SUB_ASSERT = re.compile(r"^(TC-[^#]+)#([A-Za-z0-9_]+)$")
 
 # 环境快照采集的变量（结果可复现性）
 SNAPSHOT_VARS = [
@@ -516,41 +518,85 @@ def execute_case_cli(cases, preamble, path, is_gz, db_config, timeout):
 # ============================================================
 
 MANUAL_RESULTS = ("BUILD_OR_ALTER_FAIL_EXPECTED", "BUILD_FAIL_EXPECTED", "ALTER_FAIL_EXPECTED")
+KNOWN_RESULTS = ("PASS", "FAIL") + MANUAL_RESULTS
+
+
+def aggregate_assertions(verdict_rows):
+    """把用例内所有判定行收敛成 (status, result, mismatch, assertions)。
+
+    一个用例可以有多条断言（数据对照 / 类型未变 / 建表被拒 / 索引复验 ...），
+    聚合规则：任一 FAIL => FAIL；否则任一 MANUAL => MANUAL；否则任一未知 => UNKNOWN；
+    全部 PASS => PASS。旧实现只看最后一行，会出现"前面的断言失败被后面的通过掩盖"。
+    """
+    assertions = []
+    for row in verdict_rows:
+        vals = list(row.values())
+        aid = str(vals[0]).strip() if vals else ""
+        m = RE_SUB_ASSERT.match(aid)
+        name = m.group(2) if m else "PRIMARY"
+        result = str(vals[1]).strip() if len(vals) > 1 and vals[1] is not None else ""
+        mismatch = ""
+        if len(vals) > 2 and vals[2] is not None:
+            mismatch = str(vals[2]).strip()
+        assertions.append({"name": name, "assert_id": aid, "result": result,
+                           "mismatch": mismatch[:600]})
+    if not assertions:
+        return None, "", "", []
+    results = [a["result"] for a in assertions]
+    if any(r == "FAIL" for r in results):
+        status = "FAIL"
+    elif any(r in MANUAL_RESULTS for r in results):
+        status = "MANUAL"
+    elif any(r not in KNOWN_RESULTS for r in results):
+        status = "UNKNOWN"
+    else:
+        status = "PASS"
+    failing = [a for a in assertions if a["result"] != "PASS"] or assertions
+    mismatch = " | ".join("%s=%s%s" % (a["name"], a["result"],
+                                       (": " + a["mismatch"]) if a["mismatch"] else "")
+                          for a in failing)
+    return status, failing[0]["result"], mismatch, assertions
 
 
 def classify_case(case, detail):
-    """把一个用例的执行明细收敛成 status/result。
+    """把一个用例的执行明细收敛成 status/result/assertions。
 
     v3 语义:
-      PASS     判定行输出 PASS
-      FAIL     判定行输出 FAIL
-      MANUAL   判定行是"需人工确认"的常量（P0-3 修复后应逐步消失）
-      ERROR    有语句报错且没有产出任何判定行（附 per-case errno 归因）
-      MISSING  用例根本没被执行（并发/续跑/超时导致的遗漏）
+      PASS     全部断言 PASS，且断言条数与用例声明一致
+      FAIL     任一断言 FAIL
+      MANUAL   无断言 FAIL，但存在"需人工确认"的常量断言（P0-3 修复后应为 0）
+      ERROR    有语句报错 / 断言缺失，没有可用判定
+      MISSING  用例根本没被执行
     """
     verdict_rows = detail.get("verdict_rows") or []
     errors = detail.get("errors") or []
-    if verdict_rows:
-        row = verdict_rows[-1]
-        vals = list(row.values())
-        result = str(vals[1]).strip() if len(vals) > 1 else ""
-        mismatch = str(vals[2]).strip() if len(vals) > 2 else ""
-        if result == "PASS":
-            status = "PASS"
-        elif result == "FAIL":
-            status = "FAIL"
-        elif result in MANUAL_RESULTS:
-            status = "MANUAL"
-        else:
-            status = "UNKNOWN"
-        return status, result, mismatch, verdict_rows, errors
+    status, result, mismatch, assertions = aggregate_assertions(verdict_rows)
+
+    # 断言条数完整性：生成器用 `@expect assertions=N` 声明应有几条判定行，
+    # 少一条就说明某条断言语句报错了 —— 不能当成 PASS。
+    want = case.meta.get("expect_tags", {}).get("assertions")
+    if want:
+        try:
+            want_n = int(want[0])
+        except (TypeError, ValueError):
+            want_n = None
+        if want_n is not None and len(assertions) != want_n:
+            got = [a["name"] for a in assertions]
+            return ("ERROR", "ASSERTION_COUNT",
+                    "expected %d assertion rows, got %d %s（某条断言未产出，"
+                    "通常是该断言语句本身报错）" % (want_n, len(assertions), got),
+                    assertions, errors)
+
+    if status is not None:
+        return status, result, mismatch, assertions, errors
     if errors:
         first = errors[0]
         return ("ERROR", "NO_VERDICT",
                 "errno=%s %s | stmt#%d: %s" % (first.get("errno"), first.get("error"),
                                                first.get("stmt_index"), first.get("statement")),
-                verdict_rows, errors)
-    return "ERROR", "NO_VERDICT", "no verdict row and no statement error (empty case?)", verdict_rows, errors
+                assertions, errors)
+    return ("ERROR", "NO_VERDICT",
+            "no verdict row and no statement error (empty case?)", assertions, errors)
 
 
 # ============================================================
@@ -642,7 +688,7 @@ class Runner(object):
                               "verdict_rows": [], "duration_ms": 0, "statement_count": len(case.statements)}
                 else:
                     time.sleep(min(5 * attempt, 15))
-        status, result, mismatch, verdict_rows, errors = classify_case(case, detail)
+        status, result, mismatch, assertions, errors = classify_case(case, detail)
         rec = {
             "test_id": case.test_id,
             "file": os.path.basename(case.file),
@@ -657,11 +703,12 @@ class Runner(object):
             "result": result,
             "status": status,
             "mismatch": mismatch[:1000],
+            "assertions": assertions,
+            "assertion_count": len(assertions),
             "statement_count": detail.get("statement_count", 0),
             "duration_ms": detail.get("duration_ms", 0),
             "error_count": len(errors),
             "errors": errors[:20],
-            "verdict_rows": verdict_rows[:5],
             "attempts": attempt,
         }
         with self.lock:
@@ -762,16 +809,17 @@ class Runner(object):
         return len(cases), len(selected), missing
 
     def run_one_with_detail(self, case, detail):
-        status, result, mismatch, verdict_rows, errors = classify_case(case, detail)
+        status, result, mismatch, assertions, errors = classify_case(case, detail)
         rec = {"test_id": case.test_id, "file": os.path.basename(case.file), "case_index": case.idx,
                "type": case.meta.get("type", ""), "algorithm": case.meta.get("algorithm", ""),
                "expected": case.meta.get("expected_norm", "") or case.meta.get("expected", ""),
                "expect_tags": case.meta.get("expect_tags", {}), "factors": case.meta.get("factors", ""),
                "partition": case.meta.get("partition", ""), "partition_key": case.meta.get("partition_key", ""),
                "result": result, "status": status, "mismatch": mismatch[:1000],
+               "assertions": assertions, "assertion_count": len(assertions),
                "statement_count": detail.get("statement_count", 0), "duration_ms": detail.get("duration_ms", 0),
                "error_count": len(errors), "errors": errors[:20],
-               "verdict_rows": verdict_rows[:5], "attempts": 1}
+               "attempts": 1}
         with self.lock:
             self.results.append(rec)
             self.counters[status] = self.counters.get(status, 0) + 1
@@ -829,15 +877,18 @@ def write_outputs(runner, env, manifest, snapshot, out_dir):
     csv_path = os.path.join(out_dir, "summary_%s.csv" % env)
     archive_csv = os.path.join(archive_dir, "summary_%s_%s.csv" % (env, stamp))
     cols = ["test_id", "file", "case_index", "type", "algorithm", "expected", "result",
-            "status", "error_count", "duration_ms", "mismatch", "factors", "partition",
-            "partition_key"]
+            "status", "assertion_count", "assertions", "error_count", "duration_ms",
+            "mismatch", "factors", "partition", "partition_key"]
     ordered = sorted(runner.results, key=lambda x: (x["file"], x["case_index"], x["test_id"]))
     for target in (csv_path, archive_csv):
         with open(target, "w", newline="", encoding="utf-8") as fh:
             w = csv.DictWriter(fh, fieldnames=cols, extrasaction="ignore")
             w.writeheader()
             for r in ordered:
-                w.writerow(r)
+                row = dict(r)
+                row["assertions"] = ";".join("%s=%s" % (a["name"], a["result"])
+                                             for a in (r.get("assertions") or []))
+                w.writerow(row)
     # 本轮详情/失败日志同样归档一份
     for src_name in ("details_%s.jsonl" % env, "failures_%s.log" % env,
                      "env_snapshot_%s.json" % env):

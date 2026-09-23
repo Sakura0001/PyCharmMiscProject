@@ -656,6 +656,53 @@ def _hex_literal(data: bytes) -> str:
 # Section 4: SQL Building Functions
 # ============================================================
 
+def column_type_of(type_def: str) -> str:
+    """把套件里的类型定义映射为 information_schema.columns.column_type 的字面值。
+
+    规则已在 RDS MySQL 8.0.36 上用 51 个真实样本验证（整数/无符号/BIT/DECIMAL/
+    CHAR/VARCHAR/BINARY/VARBINARY/TEXT族/BLOB族）：column_type 就是类型定义的
+    小写 + 空格归一，例如 `TINYINT UNSIGNED` -> `tinyint unsigned`，
+    `DECIMAL(64,30)` -> `decimal(64,30)`。
+    """
+    return _re.sub(r"\s+", " ", str(type_def).strip().lower())
+
+
+def sql_quote(v) -> str:
+    """把值安全地放进单引号（用于断言里的期望值字面量）。"""
+    if v is None:
+        return "NULL"
+    return "'" + str(v).replace("\\", "\\\\").replace("'", "''") + "'"
+
+
+def build_meta_assertion(test_id: str, table: str, column: str, expect_column_type: str,
+                         name: str = "TYPE") -> str:
+    """断言 ALTER 之后某列的 column_type 精确等于期望值（P1-1 的基础件）。
+
+    恒输出一行判定：actual == expect 才 PASS，mismatch 里同时给出期望与实际，
+    因此"类型没变""类型变了但不是目标类型""列不存在"都能被区分出来。
+    """
+    exp = sql_quote(column_type_of(expect_column_type))
+    return (
+        "SELECT '%s#%s' AS test_id,\n"
+        "       IF(IFNULL(MAX(column_type),'<missing>')=%s,'PASS','FAIL') AS result,\n"
+        "       CONCAT('expect=',%s,' actual=',IFNULL(MAX(column_type),'<missing>')) AS mismatch\n"
+        "FROM information_schema.columns\n"
+        "WHERE table_schema=DATABASE() AND table_name=%s AND column_name=%s;"
+        % (test_id, name, exp, exp, sql_quote(table), sql_quote(column))
+    )
+
+
+def build_table_absent_assertion(test_id: str, table: str, name: str, detail: str) -> str:
+    """断言某张表**不存在**（用于"建表本应被拒绝"的负向场景，P0-3）。"""
+    return (
+        "SELECT '%s#%s' AS test_id,\n"
+        "       IF(COUNT(*)=0,'PASS','FAIL') AS result,\n"
+        "       IF(COUNT(*)=0,'',%s) AS mismatch\n"
+        "FROM information_schema.tables\n"
+        "WHERE table_schema=DATABASE() AND table_name=%s;"
+        % (test_id, name, sql_quote(detail), sql_quote(table))
+    )
+
 def _build_column_def(target_type: str, factors: dict, transition: dict, is_target: bool = True) -> str:
     """Build the target column definition with factor attributes."""
     attrs = factors.get("target_attributes", "NULL_NO_DEFAULT")
@@ -1178,18 +1225,28 @@ def _build_partition_test(test_id: str, transition: dict, algorithm: str,
         can_partition = PK_COMPAT.get((first_type, _normalize_category(cat)), False)
         if not can_partition:
             # CREATE TABLE will fail - record as BUILD_FAIL
+            # P0-3 修复：旧实现这里输出的是一条**常量** SELECT，与前面语句的成败
+            # 完全无关（永远 'BUILD_OR_ALTER_FAIL_EXPECTED' / 'CHECK_MANUALLY'），
+            # 640 个用例等于没有断言。现在改成对 information_schema 的真实检查。
+            lines.append(f"-- Factors: partition_target_key=True, partition_strategy={first_type}")
             lines.append(f"-- Expected: BUILD FAIL (type {cat} not supported as partition key for {first_type})")
+            lines.append(f"-- @expect build=FAIL alter=N/A assertions=1")
             lines.append(f"CREATE TABLE {t1} (id INT NOT NULL AUTO_INCREMENT, target {old_type}, pad VARCHAR(10), PRIMARY KEY(id)) ENGINE=InnoDB PARTITION BY {first_type}(target) PARTITIONS 2;")
-            lines.append(f"-- If above succeeded, ALTER should also FAIL (partition key column cannot be modified)")
+            lines.append(f"-- 若上面意外成功，则 ALTER 也必须失败（分区键列不可改类型）")
             lines.append(f"ALTER TABLE {t1} MODIFY target {_build_column_def(new_type, dict(BASELINE), transition)}, ALGORITHM={algorithm};")
-            # Comparison: t1 should have no data (or failed to create)
-            lines.append(f"SELECT '{test_id}' AS test_id, 'BUILD_OR_ALTER_FAIL_EXPECTED' AS result, 'CHECK_MANUALLY' AS note;")
+            lines.append(build_table_absent_assertion(
+                test_id, t1, "BUILD_REJECTED",
+                "table was created although PK_COMPAT says %s cannot be a %s partition key "
+                "(%s) - PK_COMPAT needs correction" % (cat, first_type, old_type)))
             return "\n".join(lines)
         else:
             # Can create partition table with target as partition key
             # ALTER should FAIL (partition key column)
             pk_col = "target"
             part_def = _build_single_partition(first_type, pk_col, True)
+            lines.append(f"-- Factors: partition_target_key=True, partition_strategy={first_type}")
+            lines.append(f"-- @expect build=SUCCESS alter=FAIL assertions=2 "
+                         f"column_type={column_type_of(old_type)}")
             lines.append(f"-- Expected: CREATE OK, ALTER FAIL (partition key cannot be modified)")
             lines.append(f"CREATE TABLE {t1} (")
             lines.append(f"  id INT NOT NULL AUTO_INCREMENT,")
@@ -1207,12 +1264,25 @@ def _build_partition_test(test_id: str, transition: dict, algorithm: str,
             lines.append(f"-- ALTER expected to FAIL")
             lines.append(_build_alter_stmt(t1, "target", _build_column_def(new_type, dict(BASELINE), transition), algorithm))
 
-            # t2: same old type (ALTER failed)
-            lines.append(_build_create_table(t2, old_type, dict(BASELINE), transition))
+            # P0-2 修复：t2 必须是 t1 的**结构克隆**（同列、同 PK、同分区定义）。
+            # 旧实现用 _build_create_table() 建出 (id, pad1, target, pad2)，
+            # 而对照 SQL 却引用 a.pad/b.pad -> ERROR 1054 Unknown column 'b.pad'，
+            # 3328(阿里云)+1216(内网) 个用例恒无判定输出，还被误归因为"建表失败"。
+            lines.append(f"-- Oracle table: 与 t1 结构一致（ALTER 预期失败，仍为旧类型）")
+            lines.append(f"CREATE TABLE {t2} (")
+            lines.append(f"  id INT NOT NULL AUTO_INCREMENT,")
+            lines.append(f"  target {old_type},")
+            lines.append(f"  pad VARCHAR(20) DEFAULT 'pad',")
+            lines.append(f"  PRIMARY KEY (id, target)")
+            lines.append(f") ENGINE=InnoDB")
+            lines.append(part_def)
             for v in pre_vals:
                 lines.append(_build_insert_stmt(t2, "target", v))
 
+            # 断言 1: 数据一致
             lines.append(_build_compare_sql(test_id, t1, t2, ["id", "target", "pad"]))
+            # 断言 2: 目标列类型**仍是旧类型** —— 直接证明 ALTER 被拒绝、没有半生效
+            lines.append(build_meta_assertion(test_id, t1, "target", old_type, "TYPE_UNCHANGED"))
             return "\n".join(lines)
     else:
         # Target is NOT partition key - use id as partition key
