@@ -1,0 +1,542 @@
+{
+ "INT->BIGINT|child|instant": {
+  "parent": "-",
+  "child": "3780",
+  "types": {
+   "fc": "int",
+   "fp": "int"
+  }
+ },
+ "INT->BIGINT|child|inplace": {
+  "parent": "-",
+  "child": "3780",
+  "types": {
+   "fc": "int",
+   "fp": "int"
+  }
+ },
+ "INT->BIGINT|parent|instant": {
+  "parent": "3780",
+  "child": "-",
+  "types": {
+   "fc": "int",
+   "fp": "int"
+  }
+ },
+ "INT->BIGINT|parent|inplace": {
+  "parent": "3780",
+  "child": "-",
+  "types": {
+   "fc": "int",
+   "fp": "int"
+  }
+ },
+ "INT->BIGINT|both|instant": {
+  "parent": "3780",
+  "child": "3780",
+  "types": {
+   "fc": "int",
+   "fp": "int"
+  }
+ },
+ "INT->BIGINT|both|inplace": {
+  "parent": "3780",
+  "child": "3780",
+  "types": {
+   "fc": "int",
+   "fp": "int"
+  }
+ },
+ "INT->BIGINT|both_fkc0|instant": {
+  "parent": "3780",
+  "child": "3780",
+  "types": {
+   "fc": "int",
+   "fp": "int"
+  }
+ },
+ "INT->BIGINT|both_fkc0|inplace": {
+  "parent": "3780",
+  "child": "3780",
+  "types": {
+   "fc": "int",
+   "fp": "int"
+  }
+ },
+ "INT->BIGINT|both_drop_fk|instant": {
+  "parent": "1845",
+  "child": "1845",
+  "drop_fk": "OK",
+  "add_fk": "OK",
+  "types": {
+   "fc": "int",
+   "fp": "int"
+  }
+ },
+ "INT->BIGINT|both_drop_fk|inplace": {
+  "parent": "OK",
+  "child": "OK",
+  "drop_fk": "OK",
+  "add_fk": "OK",
+  "types": {
+   "fc": "bigint",
+   "fp": "bigint"
+  }
+ },
+ "VARCHAR(50)->(100) latin1 [同长度前缀]|child|instant": {
+  "parent": "-",
+  "child": "1845",
+  "types": {
+   "fc": "varchar(50)",
+   "fp": "varchar(50)"
+  }
+ },
+ "VARCHAR(50)->(100) latin1 [同长度前缀]|child|inplace": {
+  "parent": "-",
+  "child": "OK",
+  "types": {
+   "fc": "varchar(100)",
+   "fp": "varchar(50)"
+  }
+ },
+ "VARCHAR(50)->(100) latin1 [同长度前缀]|parent|instant": {
+  "parent": "1845",
+  "child": "-",
+  "types": {
+   "fc": "varchar(50)",
+   "fp": "varchar(50)"
+  }
+ },
+ "VARCHAR(50)->(100) latin1 [同长度前缀]|parent|inplace": {
+  "parent": "OK",
+  "child": "-",
+  "types": {
+   "fc": "varchar(50)",
+   "fp": "varchar(100)"
+  }
+ },
+ "VARCHAR(50)->(100) latin1 [同长度前缀]|both|instant": {
+  "parent": "1845",
+  "child": "1845",
+  "types": {
+   "fc": "varchar(50)",
+   "fp": "varchar(50)"
+  }
+ },
+ "VARCHAR(50)->(100) latin1 [同长度前缀]|both|inplace": {
+  "parent": "OK",
+  "child": "OK",
+  "types": {
+   "fc": "varchar(100)",
+   "fp": "varchar(100)"
+  }
+ },
+ "VARCHAR(50)->(100) latin1 [同长度前缀]|both_fkc0|instant": {
+  "parent": "1845",
+  "child": "1845",
+  "types": {
+   "fc": "varchar(50)",
+   "fp": "varchar(50)"
+  }
+ },
+ "VARCHAR(50)->(100) latin1 [同长度前缀]|both_fkc0|inplace": {
+  "parent": "OK",
+  "child": "OK",
+  "types": {
+   "fc": "varchar(100)",
+   "fp": "varchar(100)"
+  }
+ },
+ "VARCHAR(50)->(100) latin1 [同长度前缀]|both_drop_fk|instant": {
+  "parent": "1845",
+  "child": "1845",
+  "drop_fk": "OK",
+  "add_fk": "OK",
+  "types": {
+   "fc": "varchar(50)",
+   "fp": "varchar(50)"
+  }
+ },
+ "VARCHAR(50)->(100) latin1 [同长度前缀]|both_drop_fk|inplace": {
+  "parent": "OK",
+  "child": "OK",
+  "drop_fk": "OK",
+  "add_fk": "OK",
+  "types": {
+   "fc": "varchar(100)",
+   "fp": "varchar(100)"
+  }
+ },
+ "VARCHAR(255)->(256) latin1 [跨长度前缀]|child|instant": {
+  "parent": "-",
+  "child": "1845",
+  "types": {
+   "fc": "varchar(255)",
+   "fp": "varchar(255)"
+  }
+ },
+ "VARCHAR(255)->(256) latin1 [跨长度前缀]|child|inplace": {
+  "parent": "-",
+  "child": "OK",
+  "types": {
+   "fc": "varchar(256)",
+   "fp": "varchar(255)"
+  }
+ },
+ "VARCHAR(255)->(256) latin1 [跨长度前缀]|parent|instant": {
+  "parent": "1845",
+  "child": "-",
+  "types": {
+   "fc": "varchar(255)",
+   "fp": "varchar(255)"
+  }
+ },
+ "VARCHAR(255)->(256) latin1 [跨长度前缀]|parent|inplace": {
+  "parent": "OK",
+  "child": "-",
+  "types": {
+   "fc": "varchar(255)",
+   "fp": "varchar(256)"
+  }
+ },
+ "VARCHAR(255)->(256) latin1 [跨长度前缀]|both|instant": {
+  "parent": "1845",
+  "child": "1845",
+  "types": {
+   "fc": "varchar(255)",
+   "fp": "varchar(255)"
+  }
+ },
+ "VARCHAR(255)->(256) latin1 [跨长度前缀]|both|inplace": {
+  "parent": "OK",
+  "child": "OK",
+  "types": {
+   "fc": "varchar(256)",
+   "fp": "varchar(256)"
+  }
+ },
+ "VARCHAR(255)->(256) latin1 [跨长度前缀]|both_fkc0|instant": {
+  "parent": "1845",
+  "child": "1845",
+  "types": {
+   "fc": "varchar(255)",
+   "fp": "varchar(255)"
+  }
+ },
+ "VARCHAR(255)->(256) latin1 [跨长度前缀]|both_fkc0|inplace": {
+  "parent": "OK",
+  "child": "OK",
+  "types": {
+   "fc": "varchar(256)",
+   "fp": "varchar(256)"
+  }
+ },
+ "VARCHAR(255)->(256) latin1 [跨长度前缀]|both_drop_fk|instant": {
+  "parent": "1845",
+  "child": "1845",
+  "drop_fk": "OK",
+  "add_fk": "OK",
+  "types": {
+   "fc": "varchar(255)",
+   "fp": "varchar(255)"
+  }
+ },
+ "VARCHAR(255)->(256) latin1 [跨长度前缀]|both_drop_fk|inplace": {
+  "parent": "OK",
+  "child": "OK",
+  "drop_fk": "OK",
+  "add_fk": "OK",
+  "types": {
+   "fc": "varchar(256)",
+   "fp": "varchar(256)"
+  }
+ },
+ "CHAR(10)->CHAR(20) utf8mb4|child|instant": {
+  "child": "1845",
+  "types": {
+   "fc": "char(10)",
+   "fp": "char(10)"
+  }
+ },
+ "CHAR(10)->CHAR(20) utf8mb4|child|inplace": {
+  "child": "OK",
+  "types": {
+   "fc": "char(20)",
+   "fp": "char(10)"
+  }
+ },
+ "CHAR(10)->CHAR(20) utf8mb4|both|instant": {
+  "parent": "1845",
+  "child": "1845",
+  "types": {
+   "fc": "char(10)",
+   "fp": "char(10)"
+  }
+ },
+ "CHAR(10)->CHAR(20) utf8mb4|both|inplace": {
+  "parent": "OK",
+  "child": "OK",
+  "types": {
+   "fc": "char(20)",
+   "fp": "char(20)"
+  }
+ },
+ "CHAR(10)->CHAR(20) utf8mb4|both_drop_fk|instant": {
+  "parent": "1845",
+  "child": "1845",
+  "add_fk": "OK",
+  "types": {
+   "fc": "char(10)",
+   "fp": "char(10)"
+  }
+ },
+ "CHAR(10)->CHAR(20) utf8mb4|both_drop_fk|inplace": {
+  "parent": "OK",
+  "child": "OK",
+  "add_fk": "OK",
+  "types": {
+   "fc": "char(20)",
+   "fp": "char(20)"
+  }
+ },
+ "CHAR(20)->CHAR(21) latin1|child|instant": {
+  "child": "1845",
+  "types": {
+   "fc": "char(20)",
+   "fp": "char(20)"
+  }
+ },
+ "CHAR(20)->CHAR(21) latin1|child|inplace": {
+  "child": "OK",
+  "types": {
+   "fc": "char(21)",
+   "fp": "char(20)"
+  }
+ },
+ "CHAR(20)->CHAR(21) latin1|both|instant": {
+  "parent": "1845",
+  "child": "1845",
+  "types": {
+   "fc": "char(20)",
+   "fp": "char(20)"
+  }
+ },
+ "CHAR(20)->CHAR(21) latin1|both|inplace": {
+  "parent": "OK",
+  "child": "OK",
+  "types": {
+   "fc": "char(21)",
+   "fp": "char(21)"
+  }
+ },
+ "CHAR(20)->CHAR(21) latin1|both_drop_fk|instant": {
+  "parent": "1845",
+  "child": "1845",
+  "add_fk": "OK",
+  "types": {
+   "fc": "char(20)",
+   "fp": "char(20)"
+  }
+ },
+ "CHAR(20)->CHAR(21) latin1|both_drop_fk|inplace": {
+  "parent": "OK",
+  "child": "OK",
+  "add_fk": "OK",
+  "types": {
+   "fc": "char(21)",
+   "fp": "char(21)"
+  }
+ },
+ "BINARY(10)->BINARY(20)|child|instant": {
+  "child": "1845",
+  "types": {
+   "fc": "binary(10)",
+   "fp": "binary(10)"
+  }
+ },
+ "BINARY(10)->BINARY(20)|child|inplace": {
+  "child": "OK",
+  "types": {
+   "fc": "binary(20)",
+   "fp": "binary(10)"
+  }
+ },
+ "BINARY(10)->BINARY(20)|both|instant": {
+  "parent": "1845",
+  "child": "1845",
+  "types": {
+   "fc": "binary(10)",
+   "fp": "binary(10)"
+  }
+ },
+ "BINARY(10)->BINARY(20)|both|inplace": {
+  "parent": "OK",
+  "child": "OK",
+  "types": {
+   "fc": "binary(20)",
+   "fp": "binary(20)"
+  }
+ },
+ "BINARY(10)->BINARY(20)|both_drop_fk|instant": {
+  "parent": "1845",
+  "child": "1845",
+  "add_fk": "OK",
+  "types": {
+   "fc": "binary(10)",
+   "fp": "binary(10)"
+  }
+ },
+ "BINARY(10)->BINARY(20)|both_drop_fk|inplace": {
+  "parent": "OK",
+  "child": "OK",
+  "add_fk": "OK",
+  "types": {
+   "fc": "binary(20)",
+   "fp": "binary(20)"
+  }
+ },
+ "VARBINARY(20)->VARBINARY(40)|child|instant": {
+  "child": "1845",
+  "types": {
+   "fc": "varbinary(20)",
+   "fp": "varbinary(20)"
+  }
+ },
+ "VARBINARY(20)->VARBINARY(40)|child|inplace": {
+  "child": "OK",
+  "types": {
+   "fc": "varbinary(40)",
+   "fp": "varbinary(20)"
+  }
+ },
+ "VARBINARY(20)->VARBINARY(40)|both|instant": {
+  "parent": "1845",
+  "child": "1845",
+  "types": {
+   "fc": "varbinary(20)",
+   "fp": "varbinary(20)"
+  }
+ },
+ "VARBINARY(20)->VARBINARY(40)|both|inplace": {
+  "parent": "OK",
+  "child": "OK",
+  "types": {
+   "fc": "varbinary(40)",
+   "fp": "varbinary(40)"
+  }
+ },
+ "VARBINARY(20)->VARBINARY(40)|both_drop_fk|instant": {
+  "parent": "1845",
+  "child": "1845",
+  "add_fk": "OK",
+  "types": {
+   "fc": "varbinary(20)",
+   "fp": "varbinary(20)"
+  }
+ },
+ "VARBINARY(20)->VARBINARY(40)|both_drop_fk|inplace": {
+  "parent": "OK",
+  "child": "OK",
+  "add_fk": "OK",
+  "types": {
+   "fc": "varbinary(40)",
+   "fp": "varbinary(40)"
+  }
+ },
+ "DECIMAL(10,2)->DECIMAL(12,2)|child|instant": {
+  "child": "1846",
+  "types": {
+   "fc": "decimal(10,2)",
+   "fp": "decimal(10,2)"
+  }
+ },
+ "DECIMAL(10,2)->DECIMAL(12,2)|child|inplace": {
+  "child": "1846",
+  "types": {
+   "fc": "decimal(10,2)",
+   "fp": "decimal(10,2)"
+  }
+ },
+ "DECIMAL(10,2)->DECIMAL(12,2)|both|instant": {
+  "parent": "1846",
+  "child": "1846",
+  "types": {
+   "fc": "decimal(10,2)",
+   "fp": "decimal(10,2)"
+  }
+ },
+ "DECIMAL(10,2)->DECIMAL(12,2)|both|inplace": {
+  "parent": "1846",
+  "child": "1846",
+  "types": {
+   "fc": "decimal(10,2)",
+   "fp": "decimal(10,2)"
+  }
+ },
+ "DECIMAL(10,2)->DECIMAL(12,2)|both_drop_fk|instant": {
+  "parent": "1846",
+  "child": "1846",
+  "add_fk": "OK",
+  "types": {
+   "fc": "decimal(10,2)",
+   "fp": "decimal(10,2)"
+  }
+ },
+ "DECIMAL(10,2)->DECIMAL(12,2)|both_drop_fk|inplace": {
+  "parent": "1846",
+  "child": "1846",
+  "add_fk": "OK",
+  "types": {
+   "fc": "decimal(10,2)",
+   "fp": "decimal(10,2)"
+  }
+ },
+ "BIT(8)->BIT(16)|child|instant": {
+  "child": "1846",
+  "types": {
+   "fc": "bit(8)",
+   "fp": "bit(8)"
+  }
+ },
+ "BIT(8)->BIT(16)|child|inplace": {
+  "child": "1846",
+  "types": {
+   "fc": "bit(8)",
+   "fp": "bit(8)"
+  }
+ },
+ "BIT(8)->BIT(16)|both|instant": {
+  "parent": "1846",
+  "child": "1846",
+  "types": {
+   "fc": "bit(8)",
+   "fp": "bit(8)"
+  }
+ },
+ "BIT(8)->BIT(16)|both|inplace": {
+  "parent": "1846",
+  "child": "1846",
+  "types": {
+   "fc": "bit(8)",
+   "fp": "bit(8)"
+  }
+ },
+ "BIT(8)->BIT(16)|both_drop_fk|instant": {
+  "parent": "1846",
+  "child": "1846",
+  "add_fk": "OK",
+  "types": {
+   "fc": "bit(8)",
+   "fp": "bit(8)"
+  }
+ },
+ "BIT(8)->BIT(16)|both_drop_fk|inplace": {
+  "parent": "1846",
+  "child": "1846",
+  "add_fk": "OK",
+  "types": {
+   "fc": "bit(8)",
+   "fp": "bit(8)"
+  }
+ }
+}

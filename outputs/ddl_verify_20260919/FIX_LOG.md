@@ -12,8 +12,9 @@
 | 4 | P0-9 分区定义非类型感知 + P0-5 无 SUBPARTITION | ✅ 已修复并验证 | 实测探针 + pytest 52 + RDS 512 例 |
 | 5 | P0-8 VC-08/VC-09/VBIN-03 超行宽上限(errno 1118) | ✅ 已修复并验证 | pytest 59 + **RDS 全量 5220/5220 PASS** |
 | 6 | P0-6 超上限负向 INSERT 被注释 | ✅ 已修复并验证 | pytest 69 + **RDS 全量 5220/5220 PASS** |
-| 7 | P0-7 + P1-1 期望值机读化 + 列类型断言 | ⏳ 待办 | — |
-| 8+ | P1-2 ~ P3 | ⏳ 待办 | — |
+| 7 | P0-7 + P1-1 期望值机读化 + 列类型断言 | ✅ 已修复并验证 | pytest 80 + 反向对照 6/6 + **RDS 全量 5228/5228 PASS** |
+| 8 | 环境能力画像 + 内网 CHAR/VARCHAR 口径 | ⏳ 进行中 | — |
+| 9+ | P1-2 ~ P3 | ⏳ 待办 | — |
 
 ---
 
@@ -254,3 +255,84 @@ python3 run_tests.py --env aliyun --workers 8
 #   -> 5220/5220 PASS，0 FAIL / 0 ERROR / 0 MANUAL / 0 MISSING
 ```
 STRICT 与非 STRICT 两档均有用例覆盖并全部通过。
+
+---
+
+## Step 7 — P0-7 期望值机读化并强制比对 + P1-1 每用例列元数据断言
+
+**问题**
+- 执行器把 `expected` 写进 CSV 却**从不比对**；解析规则互相打架，实测取值分布为
+  `CREATE` 5440 / `BUILD` 640 / `FAILS` 80 / `FAIL` 8 / 空 168（从 `-- Expected: CREATE OK, ALTER FAIL ...`
+  里错抓了 "CREATE"）。所以"0 FAIL"只意味着"产出了判定行的用例里数据对照没差异"。
+- 全套件 238 条元数据断言只覆盖 column_comment(118) / auto_increment(40) / unsigned(20) /
+  collation(30) / charset(30)，**断言 ALTER 后列类型的条数 = 0**；
+  `SHOW CREATE TABLE` / `is_nullable` / `column_default` / `ordinal_position` 均为 0。
+
+**改动**
+- 每个用例头输出机读期望：`-- @expect alter=SUCCESS|FAIL errno=[...] build=... assertions=N
+  alter_sha=<sha> column_type=... neg_probe=<sha>=<errno|ACCEPTED>`
+- 执行器新增 `check_alter_outcome()`：按 `alter_sha` 在错误记录里定位那条 ALTER，
+  声明 SUCCESS 就必须没报错、声明 FAIL 就必须报错且 errno 在声明集合内；
+  一条用例可声明多个 sha（连续 ALTER 链 / 外键父子双侧）
+- 新增 `build_meta_assertion_full()`：一条判定行同时校验 **column_type / is_nullable /
+  column_default 有无 / character_set_name / collation_name / extra / ordinal_position**，
+  mismatch 同时给出 `actual[...]` 与 `want[...]`；铺到 REG / ATR / PTK / PNK / SPE / FK 全部用例
+- 期望值的表示形式先在 RDS 上实测（`information_schema` 里 `utf8` 显示为 `utf8mb3`、
+  INVISIBLE 列 `extra='INVISIBLE'`、`BINARY DEFAULT x'00'` 的 `column_default='0x'` 等），不靠猜
+- 字符集/排序规则支持 `*`（不校验）标记，用于列字符集继承 `character_set_database` 的场景
+  （RDS=utf8mb3 / 本机=utf8mb4，硬编码会造成环境相关的假失败）
+
+**新断言抓出的 4 个真实问题（全部已修）**
+
+| # | 发现 | 实测证据 | 处理 |
+|---|---|---|---|
+| 1 | **AUTO_INCREMENT 列的类型加宽不支持 INSTANT** | 20 例 errno **1845**；INPLACE/COPY 正常；普通列 INSTANT 正常；与 SIGNED/UNSIGNED、是 PK 还是 UNIQUE 无关 | 期望改为 FAIL(1845)。旧套件对本文件只断言 `extra LIKE '%auto_increment%'`（ALTER 成败都为真），因此把 20 个实际失败的用例报成 "40/40 PASS" |
+| 2 | **外键列改类型的完整规律** | 见下表；`tools/fk_matrix_aliyun.json` 66 条组合实测 | 重写 `expected_fk_alter()`；新增 `both_fkc0` / `both_drop_fk` 两个场景 |
+| 3 | 带 VIRTUAL 生成列 + 生成列索引的列，INSTANT 改类型**成功** | 旧模型判 FAIL → 对照表按旧类型建且跳过 post-ALTER 插入 → 用例恒 PASS，什么也没验证 | 期望改为 SUCCESS |
+| 4 | `vcol BIGINT AS (base_col*2)` 与 `base_col=9223372036854775807` 冲突 | errno **1690** BIGINT value out of range，整条多行 INSERT 失败、3 行数据全丢 | 改用 ±2^62，仍覆盖 INT→BIGINT 加宽 |
+
+外键列改类型实测规律（RDS 8.0.36）：
+
+| 规则 | 实测结论 |
+|---|---|
+| R1 | `ALGORITHM=INSTANT` 改 fk_col **一律失败**（MySQL 强制 fk_col 有索引）：整数 → **3780**（外键兼容性校验先触发）、字符串 → **1845**、DECIMAL/BIT → **1846** |
+| R2 | `ALGORITHM=INPLACE` 改 CHAR/VARCHAR/BINARY/VARBINARY 的 fk_col **一律成功**，连"只改单侧"也成功 → 改完 parent=varchar(50) 与 child=varchar(100) 能和活的外键共存，**MySQL 对这类扩容不复核外键类型兼容性**（反直觉，风险点） |
+| R3 | `ALGORITHM=INPLACE` 改整数（需 rebuild）：外键在 → **3780**；只有先 `DROP FOREIGN KEY` 才成功 |
+| R4 | `SET foreign_key_checks=0` **不能**绕过 3780（常见误解，实测无效） |
+| R5 | 摘除外键后 INSTANT 仍失败，但 errno 从 3780 变成 **1845**（失败原因变了） |
+
+新增 FK 场景：`both_fkc0`（固化"关外键检查无效"这个反直觉结论）、
+`both_drop_fk`（唯一可行序列 DROP FK → 改两侧 → ADD FK，并断言**约束确实加回来了**，
+防止"改成功"是靠永久丢约束换来的）。FK 用例 16 → 24（阿里云）/ 24 → 36（内网）。
+
+**反向对照（证明断言不是恒过）** —— `selfcheck/negative_control.py`，故意注入 6 类缺陷跑真实实例：
+
+| 注入的缺陷 | 必须被谁抓到 | 结果 |
+|---|---|---|
+| 声明 alter=FAIL，实际成功 | ALTER_OUTCOME | ✓ |
+| 声明 alter=SUCCESS，实际失败(1845) | ALTER_OUTCOME + META | ✓ |
+| META 期望列类型写错 | META | ✓ |
+| 探针声明 ACCEPTED，实际被拒 | NEG_ERRNO | ✓ |
+| 声明 assertions=2 只产出 1 条 | ASSERTION_COUNT → ERROR | ✓ |
+| 对照表少一行数据 | PRIMARY | ✓ |
+
+**验证**
+```bash
+python3 -m pytest selfcheck/test_runner.py -q          # 80 passed
+python3 selfcheck/negative_control.py --env aliyun     # 6/6 全部捕获
+python3 run_tests.py --env aliyun --workers 8          # 5228/5228 PASS，0 FAIL/ERROR/MANUAL/MISSING
+```
+本轮实测规模：**5,228 用例 / 19,530 条断言（3.74 条/用例，SQL 11,564 + 执行器合成 7,966）**
+
+| 断言 | 条数 |
+|---|---|
+| PRIMARY（数据对照） | 4,806 |
+| ALTER_OUTCOME（声明 vs 实际 + errno） | 4,806 |
+| META（7 项列元数据） | 4,780 |
+| NEG_ERRNO（探针 errno 级） | 3,160 |
+| NEG_REJECTED（超限值不落库/两表对称） | 1,458 |
+| BUILD_REJECTED（建表应被拒） | 422 |
+| META_CHILD_FK / META_PARENT_FK / META_CHILD_DATA / FK_CONSTRAINT_PRESENT / META_COL_* | 98 |
+
+ALTER 声明与实际逐条对齐：SUCCESS↔SUCCESS 3,604；FAIL↔FAIL 1,202
+（errno 1846×1056、1845×138、3780×8）；N/A 422（建表即被拒，无 ALTER）。

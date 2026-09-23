@@ -700,6 +700,121 @@ def build_meta_assertion(test_id: str, table: str, column: str, expect_column_ty
     )
 
 
+# 字符集 -> 默认排序规则（RDS 8.0.36 实测；注意 utf8 在 information_schema 里叫 utf8mb3）
+DEFAULT_COLLATIONS = {
+    "latin1": "latin1_swedish_ci",
+    "utf8": "utf8mb3_general_ci",
+    "utf8mb3": "utf8mb3_general_ci",
+    "utf8mb4": "utf8mb4_0900_ai_ci",
+}
+# information_schema 里 utf8 一律显示为 utf8mb3
+IS_CHARSET_NAME = {"utf8": "utf8mb3", "utf8mb3": "utf8mb3",
+                   "utf8mb4": "utf8mb4", "latin1": "latin1"}
+
+
+def expected_meta(transition: dict, factors: dict, final_type: str,
+                  overrides: Optional[dict] = None) -> dict:
+    """推导 ALTER 之后目标列在 information_schema 里应有的元数据（P1-1）。
+
+    每一项都在 RDS 8.0.36 上实测过表示形式：
+      is_nullable YES/NO；column_default 有值为字符串、无值为 NULL；
+      extra 对 INVISIBLE 列为 'INVISIBLE'；非字符串列 charset/collation 为 NULL；
+      utf8 在 information_schema 中显示为 utf8mb3。
+    """
+    cat = transition.get("category", "")
+    attrs = factors.get("target_attributes", "NULL_NO_DEFAULT")
+    minimal = bool(transition.get("minimal_table"))
+    pk = factors.get("primary_key", "CLUSTERED")
+    pos = factors.get("target_position", "MIDDLE")
+
+    not_null = attrs in ("NOT_NULL_NO_DEFAULT", "NOT_NULL_DEFAULT")
+    if pk == "COMPOSITE_PK" and not minimal:
+        not_null = True                      # 进了 PK 就隐式 NOT NULL
+    has_default = attrs in ("CONSTANT_DEFAULT", "NOT_NULL_DEFAULT")
+    extra = "INVISIBLE" if attrs == "INVISIBLE" else ""
+
+    cs = transition.get("charset") if cat in ("char", "varchar", "text") else None
+    cs_is = IS_CHARSET_NAME.get(cs) if cs else None
+    coll = DEFAULT_COLLATIONS.get(cs) if cs else None
+
+    if minimal:
+        ordinal = 1 if pos == "FIRST" else 2
+    else:
+        ordinal = {"FIRST": 1, "MIDDLE": 3, "LAST": 4}.get(pos, 3)
+
+    meta = {
+        "column_type": column_type_of(final_type),
+        "is_nullable": "NO" if not_null else "YES",
+        "has_default": 1 if has_default else 0,
+        "charset": cs_is,
+        "collation": coll,
+        "extra": extra,
+        "ordinal_position": ordinal,
+    }
+    if overrides:
+        meta.update(overrides)
+    return meta
+
+
+def _lit_or_null(v):
+    return "NULL" if v is None else sql_quote(v)
+
+
+# 字符集/排序规则标 "*" 表示"不校验"：用于列字符集继承自库默认值的场景
+# （不同实例的 character_set_database 可能不同，硬编码期望会造成环境相关的假失败）
+DONT_CARE = "*"
+
+
+def build_meta_assertion_full(test_id: str, table: str, column: str, meta: dict,
+                              name: str = "META") -> str:
+    """一次性断言列类型 + 可空性 + 默认值有无 + 字符集 + 排序规则 + extra + 列序。
+
+    恒输出一行（聚合查询），mismatch 同时给出 actual 与 want，便于定位。
+    这是 P1-1 的核心：旧套件 238 条元数据断言里，**没有一条**断言 ALTER 后的列类型。
+    """
+    cs_cond = "1=1" if meta["charset"] == DONT_CARE else \
+        "(MAX(character_set_name) <=> %s)" % _lit_or_null(meta["charset"])
+    coll_cond = "1=1" if meta["collation"] == DONT_CARE else \
+        "(MAX(collation_name) <=> %s)" % _lit_or_null(meta["collation"])
+    return (
+        "SELECT '%s#%s' AS test_id,\n"
+        "       IF(COUNT(*)=1\n"
+        "          AND MAX(column_type)=%s\n"
+        "          AND MAX(is_nullable)=%s\n"
+        "          AND ((MAX(column_default) IS NOT NULL) = %d)\n"
+        "          AND %s\n"
+        "          AND %s\n"
+        "          AND (MAX(extra) <=> %s)\n"
+        "          AND MAX(ordinal_position)=%d,'PASS','FAIL') AS result,\n"
+        "       CONCAT('rows=',COUNT(*),\n"
+        "              ' actual[type=',IFNULL(MAX(column_type),'<missing>'),\n"
+        "                     ' nullable=',IFNULL(MAX(is_nullable),'<missing>'),\n"
+        "                     ' has_default=',(MAX(column_default) IS NOT NULL),\n"
+        "                     ' charset=',IFNULL(MAX(character_set_name),'NULL'),\n"
+        "                     ' collation=',IFNULL(MAX(collation_name),'NULL'),\n"
+        "                     ' extra=',IFNULL(MAX(extra),'NULL'),\n"
+        "                     ' pos=',IFNULL(MAX(ordinal_position),-1),']',\n"
+        "              ' want[type=%s nullable=%s has_default=%d charset=%s collation=%s"
+        " extra=%s pos=%d]') AS mismatch\n"
+        "FROM information_schema.columns\n"
+        "WHERE table_schema=DATABASE() AND table_name=%s AND column_name=%s;"
+        % (test_id, name,
+           sql_quote(meta["column_type"]), sql_quote(meta["is_nullable"]),
+           meta["has_default"], cs_cond, coll_cond,
+           sql_quote(meta["extra"]), meta["ordinal_position"],
+           meta["column_type"], meta["is_nullable"], meta["has_default"],
+           (meta["charset"] if meta["charset"] == DONT_CARE else (meta["charset"] or "NULL")),
+           (meta["collation"] if meta["collation"] == DONT_CARE else (meta["collation"] or "NULL")),
+           meta["extra"] or "", meta["ordinal_position"],
+           sql_quote(table), sql_quote(column))
+    )
+
+
+def alter_sha(stmt: str) -> str:
+    """ALTER 语句文本的短哈希，供执行器把"声明的期望"与"实际报错的语句"对上（P0-7）。"""
+    return hashlib.sha1(stmt.rstrip().rstrip(";").encode("utf-8")).hexdigest()[:12]
+
+
 def build_table_absent_assertion(test_id: str, table: str, name: str, detail: str) -> str:
     """断言某张表**不存在**（用于"建表本应被拒绝"的负向场景，P0-3）。"""
     return (
@@ -1207,10 +1322,19 @@ def _build_test_case_sql(test_id: str, transition: dict, algorithm: str, factors
     compare_cols = ["id", "target"] if transition.get("minimal_table") else ["id", "pad1", "target", "pad2"]
     lines.append(_build_compare_sql(test_id, t1, t2, compare_cols))
 
-    # P0-7: 机读期望头（占位符在 neg_probes 已知后回填）
-    n_assertions = 1 + (1 if neg_n else 0)      # PRIMARY 对照 + NEG_REJECTED
-    tag = ("-- @expect alter=%s build=SUCCESS assertions=%d neg_probes=%d"
-           % (alter_expected, n_assertions, neg_n))
+    # Step 9: META 断言（P1-1）—— ALTER 之后目标列的元数据必须精确符合预期。
+    # 成功路径 => 新类型；失败路径 => 仍是旧类型；两种情况都同时校验
+    # 可空性 / 默认值有无 / 字符集 / 排序规则 / extra(INVISIBLE) / 列序。
+    meta = expected_meta(transition, factors, t2_type)
+    lines.append(build_meta_assertion_full(test_id, t1, "target", meta))
+
+    # P0-7: 机读期望头（占位符在 neg_probes / alter_sha 已知后回填）
+    n_assertions = 2 + (1 if neg_n else 0)      # PRIMARY 对照 + META (+ NEG_REJECTED)
+    tag = ("-- @expect alter=%s build=SUCCESS assertions=%d neg_probes=%d alter_sha=%s"
+           % (alter_expected, n_assertions, neg_n, alter_sha(alter_stmt)))
+    if alter_expected == "FAIL":
+        tag += " errno=[1845,1846,1659,3780]"
+    tag += " column_type=%s" % sql_quote(meta["column_type"]).strip("'")
     for pr in neg_probes:
         tag += " neg_probe=%s" % pr
     text = "\n".join(lines)
@@ -1512,8 +1636,7 @@ def _build_partition_test(test_id: str, transition: dict, algorithm: str,
         part_def = build_partition_clause(strategy, KIND_INT_ID)
         expected = transition[algorithm.lower()]
         lines.append("-- Factors: partition_target_key=False, partition_strategy=%s" % strategy)
-        lines.append("-- @expect build=SUCCESS alter=%s assertions=2 column_type=%s"
-                     % (expected, column_type_of(new_type if expected == "SUCCESS" else old_type)))
+        lines.append("-- @pnk_expect_placeholder@")
         lines.append("-- Expected: CREATE OK, ALTER %s" % expected)
         lines.append(_build_create_table(t1, old_type, dict(BASELINE), transition,
                                          partition_def=part_def))
@@ -1521,9 +1644,15 @@ def _build_partition_test(test_id: str, transition: dict, algorithm: str,
         for v in pre_vals:
             lines.append(_build_insert_stmt(t1, "target", v))
         lines.append("-- ALTER expected %s" % expected)
-        lines.append(_build_alter_stmt(t1, "target",
+        _pnk_alter = _build_alter_stmt(t1, "target",
                                        _build_column_def(new_type, dict(BASELINE), transition),
-                                       algorithm))
+                                       algorithm)
+        lines[lines.index("-- @pnk_expect_placeholder@")] = (
+            "-- @expect build=SUCCESS alter=%s%s assertions=2 alter_sha=%s column_type=%s"
+            % (expected, " errno=[1845,1846,1659]" if expected == "FAIL" else "",
+               alter_sha(_pnk_alter),
+               column_type_of(new_type if expected == "SUCCESS" else old_type)))
+        lines.append(_pnk_alter)
         post_new = list(data["post_new_range"][:3])
         post_old = list(data["post_old_range"][:2])
         for v in post_new + post_old:
@@ -1535,8 +1664,12 @@ def _build_partition_test(test_id: str, transition: dict, algorithm: str,
             lines.append(_build_insert_stmt(t2, "target", v))
         cmp_cols = ["id", "target"] if transition.get("minimal_table") else ["id", "pad1", "target", "pad2"]
         lines.append(_build_compare_sql(test_id, t1, t2, cmp_cols))
-        # 断言 2: ALTER 后列类型必须符合预期（成功=>新类型，失败=>仍是旧类型）
-        lines.append(build_meta_assertion(test_id, t1, "target", t2_type, "TYPE_AFTER_ALTER"))
+        # 断言 2: ALTER 后的完整列元数据（类型 + 可空性 + 默认值 + 字符集 +
+        # 排序规则 + extra + 列序）。PNK 的 t1 由 _build_create_table 按 BASELINE 建，
+        # 形态是 (id, pad1, target, pad2) => target 在第 3 位、可空性由因子决定。
+        lines.append(build_meta_assertion_full(
+            test_id, t1, "target",
+            expected_meta(transition, dict(BASELINE), t2_type), name="META"))
         return "\n".join(lines)
 
     # ---------------- PTK: 目标列是分区键 ----------------
@@ -1572,10 +1705,7 @@ def _build_partition_test(test_id: str, transition: dict, algorithm: str,
     exp_alter, exp_errnos = expected_partition_key_alter(transition, algorithm)
     after_type = new_type if exp_alter == "SUCCESS" else old_type
     lines.append("-- Factors: partition_target_key=True, partition_strategy=%s" % strategy)
-    lines.append("-- @expect build=SUCCESS alter=%s%s assertions=2 column_type=%s"
-                 % (exp_alter,
-                    (" errno=[%s]" % ",".join(str(e) for e in exp_errnos)) if exp_errnos else "",
-                    column_type_of(after_type)))
+    lines.append("-- @ptk_expect_placeholder@")
     lines.append("-- Expected: CREATE OK, ALTER %s%s"
                  % (exp_alter, " (errno %s)" % "/".join(str(e) for e in exp_errnos) if exp_errnos else ""))
     create_body = ("CREATE TABLE %s (\n  id INT NOT NULL AUTO_INCREMENT,\n  target %s,\n"
@@ -1591,9 +1721,15 @@ def _build_partition_test(test_id: str, transition: dict, algorithm: str,
         lines.append(_build_insert_stmt(t1, "target", v))
 
     lines.append("-- ALTER expected %s" % exp_alter)
-    lines.append(_build_alter_stmt(t1, "target",
+    _ptk_alter = _build_alter_stmt(t1, "target",
                                    _build_column_def(new_type, dict(BASELINE), transition),
-                                   algorithm))
+                                   algorithm)
+    lines[lines.index("-- @ptk_expect_placeholder@")] = (
+        "-- @expect build=SUCCESS alter=%s%s assertions=2 alter_sha=%s column_type=%s"
+        % (exp_alter,
+           (" errno=[%s]" % ",".join(str(e) for e in exp_errnos)) if exp_errnos else "",
+           alter_sha(_ptk_alter), column_type_of(after_type)))
+    lines.append(_ptk_alter)
 
     # Oracle: t1 的**结构克隆**（同列/同 PK/同分区定义），类型为 after_type
     lines.append("-- Oracle table: 与 t1 结构一致，类型 %s" % after_type)
@@ -1613,7 +1749,11 @@ def _build_partition_test(test_id: str, transition: dict, algorithm: str,
             lines.append(_build_insert_stmt(t2, "target", v))
 
     lines.append(_build_compare_sql(test_id, t1, t2, ["id", "target", "pad"]))
-    lines.append(build_meta_assertion(test_id, t1, "target", after_type, "TYPE_AFTER_ALTER"))
+    lines.append(build_meta_assertion_full(
+        test_id, t1, "target",
+        expected_meta(transition, dict(BASELINE), after_type,
+                      overrides={"is_nullable": "NO", "ordinal_position": 2}),
+        name="META"))
     return "\n".join(lines)
 
 
@@ -1631,19 +1771,63 @@ FK_TRANSITIONS = [
 ]
 
 
+# 外键列改类型的实测规律（RDS MySQL 8.0.36，tools/fk_matrix_aliyun.json，66 条组合）：
+#   R1 ALGORITHM=INSTANT 改 fk_col **一律失败**：MySQL 强制 fk_col 上有索引，
+#      而目标列在索引里就不允许 INSTANT => errno 1845（DECIMAL/BIT 因类型本身不支持 => 1846）
+#   R2 ALGORITHM=INPLACE 改 CHAR/VARCHAR/BINARY/VARBINARY 的 fk_col **一律成功**，
+#      连"只改单侧"也成功 => 改完 parent=varchar(50) 与 child=varchar(100) 能和活的
+#      外键约束共存，MySQL 对这类扩容**不做外键类型兼容性复核**（重要且反直觉）
+#   R3 ALGORITHM=INPLACE 改整数（需 rebuild）：外键在 => errno 3780
+#      "Referencing column and referenced column are incompatible"；
+#      只有先 DROP FOREIGN KEY 才能成功
+#   R4 SET foreign_key_checks=0 **不能**绕过 3780（常见误解，实测无效）
+#   R5 DECIMAL/BIT 在该实例上任何算法都 1846（类型本身不支持），内网实例需另行实测
+FK_STRING_CATEGORIES = ("char", "varchar", "binary", "varbinary")
+
+
+def expected_fk_alter(cat: str, algorithm: str, scenario: str) -> Tuple[str, list]:
+    """按实测规律推导外键场景下 ALTER 的预期结果（errno 取自实测，不做放宽）。
+
+    注意错误码的**先后顺序**差异（实测）：
+      * 整数 + INSTANT -> 3780：外键类型兼容性校验先于算法可行性校验触发
+      * 字符串 + INSTANT -> 1845：算法可行性校验先失败，轮不到外键校验
+      * DECIMAL/BIT -> 1846：该实例根本不支持这类改类型
+    """
+    is_int = cat.startswith("integer")
+    is_str = cat in FK_STRING_CATEGORIES
+    fk_gone = (scenario == "both_drop_fk")   # 外键已摘除，只剩"索引列不允许 INSTANT"
+    if algorithm == "instant":
+        if is_int:
+            # 外键在 => 兼容性校验先失败(3780)；外键已摘 => 算法可行性校验失败(1845)
+            return "FAIL", ([1845] if fk_gone else [3780])
+        if is_str:
+            return "FAIL", [1845]
+        return "FAIL", [1846]                # decimal/bit/text/blob
+    # INPLACE
+    if is_str:
+        return "SUCCESS", []                 # R2：连单侧改都成功，MySQL 不复核外键兼容性
+    if is_int:
+        return ("SUCCESS", []) if scenario == "both_drop_fk" else ("FAIL", [3780])   # R3
+    return "FAIL", [1846]                    # R5
+
+
 def _build_fk_test(test_id: str, fk_trans: tuple, algorithm: str, scenario: str) -> str:
     """Build FK test case. scenario: child/parent/both/non_fk"""
     fk_id, old_type, new_type, fk_col_type, cat, instant_exp, inplace_exp, single_exp, _notes = fk_trans
     expected = inplace_exp if algorithm == "inplace" else instant_exp
 
-    # For 'both' scenario, expected is always SUCCESS for INPLACE
-    # For 'child'/'parent' (single-side), expected depends on single_exp
-    if scenario == "both":
-        alter_expected = "SUCCESS" if algorithm == "inplace" else "FAIL"
-    elif scenario in ("child", "parent"):
-        alter_expected = single_exp if algorithm == "inplace" else "FAIL"
-    else:  # non_fk
-        alter_expected = expected
+    # 期望模型（RDS MySQL 8.0.36 实测，见 FIX_LOG Step 7）：
+    #   * 只要外键约束还在，改任一侧 fk_col 的类型都会 errno 3780
+    #     "Referencing column and referenced column ... are incompatible"
+    #   * `SET foreign_key_checks=0` **并不能**绕过（实测仍 3780）—— 常见误解
+    #   * 唯一可行序列：DROP FOREIGN KEY -> 改两侧 -> ADD FOREIGN KEY
+    if scenario == "non_fk":
+        # 改的是非外键列 data，不涉及 R1~R3
+        alter_expected, alter_errnos = expected, []
+        if alter_expected == "FAIL":
+            alter_errnos = [1845, 1846]
+    else:
+        alter_expected, alter_errnos = expected_fk_alter(cat, algorithm, scenario)
 
     t_parent = f"tp_{test_id.lower().replace(chr(45), chr(95))}"
     t_child = f"tc_{test_id.lower().replace(chr(45), chr(95))}"
@@ -1653,8 +1837,9 @@ def _build_fk_test(test_id: str, fk_trans: tuple, algorithm: str, scenario: str)
     lines.append(f"-- Test Case: {test_id}")
     lines.append(f"-- FK Scenario: {scenario}, Algorithm: {algorithm}")
     lines.append(f"-- Type: {old_type} -> {new_type}")
+    lines.append(f"-- FK Transition: {fk_id}")
     lines.append(f"-- Expected: {alter_expected}")
-    lines.append(f"-- Expected ALTER: {alter_expected}")
+    lines.append(f"-- @fk_placeholder@")
     lines.append(f"SET SESSION sql_mode = 'STRICT_TRANS_TABLES';")
     lines.append(f"SET foreign_key_checks=0;")
     lines.append(f"DROP TABLE IF EXISTS {t_child}, {t_parent}, {t2};")
@@ -1690,19 +1875,41 @@ def _build_fk_test(test_id: str, fk_trans: tuple, algorithm: str, scenario: str)
         lines.append(f"INSERT INTO {t_child} (fk_col) VALUES ({v});")
 
     # ALTER
+    _fk_shas = []
+
+    def _emit_alter(tbl, col, typ, comment):
+        _cs = (" CHARACTER SET %s" % cs) if (cs and col == "fk_col") else ""
+        _dflt = " DEFAULT 'child'" if col == "data" else ""
+        _st = "ALTER TABLE %s MODIFY %s %s%s%s, ALGORITHM=%s;" % (tbl, col, typ, _cs, _dflt, algorithm)
+        lines.append(comment)
+        lines.append(_st)
+        _fk_shas.append(alter_sha(_st))
+
     if scenario == "child":
-        lines.append(f"-- ALTER child table only")
-        lines.append(f"ALTER TABLE {t_child} MODIFY fk_col {new_type}" + (f" CHARACTER SET {cs}" if cs else "") + f", ALGORITHM={algorithm};")
+        _emit_alter(t_child, "fk_col", new_type, "-- ALTER child table only")
     elif scenario == "parent":
-        lines.append(f"-- ALTER parent table only")
-        lines.append(f"ALTER TABLE {t_parent} MODIFY fk_col {new_type}" + (f" CHARACTER SET {cs}" if cs else "") + f", ALGORITHM={algorithm};")
+        _emit_alter(t_parent, "fk_col", new_type, "-- ALTER parent table only")
     elif scenario == "both":
-        lines.append(f"-- ALTER both tables (parent first, then child)")
-        lines.append(f"ALTER TABLE {t_parent} MODIFY fk_col {new_type}" + (f" CHARACTER SET {cs}" if cs else "") + f", ALGORITHM={algorithm};")
-        lines.append(f"ALTER TABLE {t_child} MODIFY fk_col {new_type}" + (f" CHARACTER SET {cs}" if cs else "") + f", ALGORITHM={algorithm};")
+        _emit_alter(t_parent, "fk_col", new_type, "-- ALTER both tables (parent first, then child)")
+        _emit_alter(t_child, "fk_col", new_type, "")
+    elif scenario == "both_fkc0":
+        # 反直觉结论的固化用例：关掉外键检查也**不能**改 FK 列类型
+        lines.append("-- 实测: foreign_key_checks=0 并不能绕过 errno 3780")
+        lines.append("SET foreign_key_checks=0;")
+        _emit_alter(t_parent, "fk_col", new_type, "-- ALTER parent with fk_checks=0")
+        _emit_alter(t_child, "fk_col", new_type, "")
+        lines.append("SET foreign_key_checks=1;")
+    elif scenario == "both_drop_fk":
+        # 唯一可行的操作序列
+        _cname = "%s_fk" % test_id.lower().replace("-", "_")
+        lines.append("-- 正确序列: DROP FOREIGN KEY -> 改两侧 -> ADD FOREIGN KEY")
+        lines.append("ALTER TABLE %s DROP FOREIGN KEY %s;" % (t_child, _cname))
+        _emit_alter(t_parent, "fk_col", new_type, "-- ALTER parent (FK 已摘除)")
+        _emit_alter(t_child, "fk_col", new_type, "")
+        lines.append("ALTER TABLE %s ADD CONSTRAINT %s FOREIGN KEY (fk_col) REFERENCES %s(fk_col);"
+                     % (t_child, _cname, t_parent))
     else:  # non_fk - modify a non-FK column
-        lines.append(f"-- ALTER non-FK column (data column)")
-        lines.append(f"ALTER TABLE {t_child} MODIFY data VARCHAR(50) DEFAULT 'child', ALGORITHM={algorithm};")
+        _emit_alter(t_child, "data", "VARCHAR(50)", "-- ALTER non-FK column (data column)")
 
     # Post-ALTER data
     if alter_expected == "SUCCESS":
@@ -1743,7 +1950,68 @@ FROM (
    WHERE NOT (a.fk_col <=> b.fk_col AND a.data <=> b.data)
 ) AS mismatches;""")
 
-    return "\n".join(lines)
+    # P1-1: FK 用例同样必须断言 ALTER 之后的列类型（子表 fk_col / data，父表 fk_col）
+    _succ = (alter_expected == "SUCCESS")
+    _n_meta = 0
+    _fk_meta = {"category": cat, "charset": cs}
+    if scenario == "child":
+        _child_fk = new_type if _succ else old_type
+        _parent_fk = old_type
+        _child_data = "VARCHAR(20)"
+    elif scenario == "parent":
+        _child_fk = old_type
+        _parent_fk = new_type if _succ else old_type
+        _child_data = "VARCHAR(20)"
+    elif scenario in ("both", "both_fkc0", "both_drop_fk"):
+        # 两侧同改：结果取决于 expected_fk_alter 的实测结论 ——
+        # 整数(需 rebuild)在外键还在时 3780 改不动；字符串扩容一律成功。
+        # 之前把"整数场景改不动"错误地推广到了字符串，导致 4 个 META 断言假失败。
+        _child_fk = new_type if _succ else old_type
+        _parent_fk = new_type if _succ else old_type
+        _child_data = "VARCHAR(20)"
+    else:
+        _child_fk = old_type
+        _parent_fk = old_type
+        _child_data = "VARCHAR(50)" if _succ else "VARCHAR(20)"
+    lines.append(build_meta_assertion_full(
+        test_id, t_child, "fk_col",
+        expected_meta(_fk_meta, dict(BASELINE), _child_fk,
+                      overrides={"ordinal_position": 2}), name="META_CHILD_FK"))
+    _n_meta += 1
+    lines.append(build_meta_assertion_full(
+        test_id, t_child, "data",
+        expected_meta({"category": "varchar", "charset": None}, dict(BASELINE), _child_data,
+                      overrides={"ordinal_position": 3, "has_default": 1,
+                                 # data 列没有显式字符集，继承 character_set_database，
+                                 # 不同实例可能不同（RDS=utf8mb3 / 本机=utf8mb4）=> 不做硬断言
+                                 "charset": DONT_CARE, "collation": DONT_CARE}),
+        name="META_CHILD_DATA"))
+    _n_meta += 1
+    lines.append(build_meta_assertion_full(
+        test_id, t_parent, "fk_col",
+        expected_meta(_fk_meta, dict(BASELINE), _parent_fk,
+                      overrides={"ordinal_position": 2}), name="META_PARENT_FK"))
+    _n_meta += 1
+    # both_drop_fk 场景：外键必须真的加回来了（否则"改成功"是靠永久丢约束换来的）
+    _extra_assert = 0
+    if scenario in ("both_drop_fk", "both", "both_fkc0", "child", "parent"):
+        _cname = "%s_fk" % test_id.lower().replace("-", "_")
+        lines.append(
+            "SELECT '%s#FK_CONSTRAINT_PRESENT' AS test_id,\n"
+            "       IF(COUNT(*)=1,'PASS','FAIL') AS result,\n"
+            "       CONCAT('foreign key %s on %s: found=',COUNT(*)) AS mismatch\n"
+            "FROM information_schema.table_constraints\n"
+            "WHERE table_schema=DATABASE() AND table_name=%s AND constraint_type='FOREIGN KEY'\n"
+            "  AND constraint_name=%s;"
+            % (test_id, _cname, t_child, sql_quote(t_child), sql_quote(_cname)))
+        _extra_assert += 1
+
+    _text = "\n".join(lines)
+    _tag = ("-- @expect alter=%s%s build=SUCCESS assertions=%d %s"
+            % (alter_expected,
+               (" errno=[%s]" % ",".join(str(e) for e in alter_errnos)) if alter_errnos else "",
+               1 + _n_meta + _extra_assert, " ".join("alter_sha=%s" % x for x in _fk_shas)))
+    return _text.replace("-- @fk_placeholder@", _tag)
 
 
 def _gen_fk_data(fk_trans: tuple, cat: str) -> dict:
@@ -1803,6 +2071,7 @@ def _build_consecutive_alter(test_id: str, unsigned: bool, algorithm: str) -> st
     lines.append(f"-- Test Case: {test_id}")
     lines.append(f"-- Consecutive ALTER: {' -> '.join(types)}")
     lines.append(f"-- Algorithm: {algorithm}")
+    lines.append(f"-- @spe_chain_placeholder@")
     lines.append(f"DROP TABLE IF EXISTS {t1}, {t2};")
     lines.append(f"CREATE TABLE {t1} (")
     lines.append(f"  id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,")
@@ -1817,9 +2086,12 @@ def _build_consecutive_alter(test_id: str, unsigned: bool, algorithm: str) -> st
         all_data.append(v)
 
     # Steps 1-4: ALTER + insert
+    chain_shas = []
     for i in range(1, len(types)):
         lines.append(f"-- Step {i}: ALTER to {types[i]}")
-        lines.append(f"ALTER TABLE {t1} MODIFY target {types[i]}, ALGORITHM={algorithm};")
+        _st = f"ALTER TABLE {t1} MODIFY target {types[i]}, ALGORITHM={algorithm};"
+        chain_shas.append(alter_sha(_st))
+        lines.append(_st)
         for v in data_per_step[i]:
             lines.append(_build_insert_stmt(t1, "target", v))
             all_data.append(v)
@@ -1835,7 +2107,18 @@ def _build_consecutive_alter(test_id: str, unsigned: bool, algorithm: str) -> st
         lines.append(_build_insert_stmt(t2, "target", v))
 
     lines.append(_build_compare_sql(test_id, t1, t2, ["id", "target", "pad"]))
-    return "\n".join(lines)
+    # P1-1: 链式升级后必须断言最终列类型（表结构 id, target, pad => 第 2 位）
+    lines.append(build_meta_assertion_full(
+        test_id, t1, "target",
+        expected_meta({"category": "integer_unsigned" if unsigned else "integer_signed",
+                       "charset": None}, dict(BASELINE), final_type,
+                      overrides={"ordinal_position": 2}),
+        name="META"))
+    _text = "\n".join(lines)
+    _tag = ("-- @expect alter=SUCCESS build=SUCCESS assertions=2 column_type=%s %s"
+            % (column_type_of(final_type),
+               " ".join("alter_sha=%s" % x for x in chain_shas)))
+    return _text.replace("-- @spe_chain_placeholder@", _tag)
 
 
 def _build_multi_column_alter(test_id: str, algorithm: str, env: str) -> str:
@@ -1846,6 +2129,7 @@ def _build_multi_column_alter(test_id: str, algorithm: str, env: str) -> str:
     lines = []
     lines.append(f"-- Test Case: {test_id}")
     lines.append(f"-- Multi-column ALTER, Algorithm: {algorithm}")
+    lines.append(f"-- @spe_multi_placeholder@")
     lines.append(f"DROP TABLE IF EXISTS {t1}, {t2};")
 
     # Create table with multiple columns of different types
@@ -1922,7 +2206,32 @@ def _build_multi_column_alter(test_id: str, algorithm: str, env: str) -> str:
         compare_cols.extend(["col_decimal", "col_binary", "col_blob", "col_bit"])
 
     lines.append(_build_compare_sql(test_id, t1, t2, compare_cols))
-    return "\n".join(lines)
+    # P1-1: 多列同时改类型 => 每一列都要断言最终类型与列序
+    _multi_final = {"col_int": "BIGINT", "col_char": "CHAR(20)",
+                    "col_varchar": "VARCHAR(100)"}
+    if env == "internal":
+        _multi_final.update({"col_decimal": "DECIMAL(20,2)", "col_binary": "BINARY(20)",
+                             "col_blob": "MEDIUMBLOB", "col_bit": "BIT(16)"})
+    _n_meta = 0
+    for _i, (_col, _typ) in enumerate(sorted(_multi_final.items(),
+                                             key=lambda kv: compare_cols.index(kv[0])
+                                             if kv[0] in compare_cols else 99)):
+        _cat = ("char" if _col == "col_char" else "varchar" if _col == "col_varchar"
+                else "decimal" if _col == "col_decimal" else "binary" if _col == "col_binary"
+                else "blob" if _col == "col_blob" else "bit" if _col == "col_bit"
+                else "integer_signed")
+        _cs = "utf8mb4" if _col in ("col_char", "col_varchar") else None
+        lines.append(build_meta_assertion_full(
+            test_id, t1, _col,
+            expected_meta({"category": _cat, "charset": _cs}, dict(BASELINE), _typ,
+                          overrides={"ordinal_position": (compare_cols.index(_col) + 1)
+                                     if _col in compare_cols else _i + 2}),
+            name="META_%s" % _col.upper()))
+        _n_meta += 1
+    _text = "\n".join(lines)
+    _tag = ("-- @expect alter=SUCCESS build=SUCCESS assertions=%d alter_sha=%s"
+            % (1 + _n_meta, alter_sha(alter_stmt)))
+    return _text.replace("-- @spe_multi_placeholder@", _tag)
 
 
 def _build_virtual_generated_test(test_id: str, algorithm: str) -> str:
@@ -1933,9 +2242,13 @@ def _build_virtual_generated_test(test_id: str, algorithm: str) -> str:
     lines = []
     lines.append(f"-- Test Case: {test_id}")
     lines.append(f"-- Virtual generated column + function index, Algorithm: {algorithm}")
+    lines.append(f"-- @spe_vcol_placeholder@")
     lines.append(f"DROP TABLE IF EXISTS {t1}, {t2};")
 
-    expected = "SUCCESS" if algorithm == "inplace" else "FAIL"
+    # 实测（RDS 8.0.36）：即使目标列被 VIRTUAL 生成列引用、且生成列上有索引，
+    # INSTANT 与 INPLACE 改类型**都成功**。旧模型假定 INSTANT 必失败，
+    # 于是对照表按旧类型建、且跳过 post-ALTER 插入 => 用例恒 PASS，什么也没验证。
+    expected = "SUCCESS"
 
     # Create table with virtual generated column and function index
     lines.append(f"CREATE TABLE {t1} (")
@@ -1950,11 +2263,16 @@ def _build_virtual_generated_test(test_id: str, algorithm: str) -> str:
 
     # ALTER base column
     lines.append(f"-- ALTER base_col INT -> BIGINT, expected: {expected}")
-    lines.append(f"ALTER TABLE {t1} MODIFY base_col BIGINT, ALGORITHM={algorithm};")
+    _vcol_alter = f"ALTER TABLE {t1} MODIFY base_col BIGINT, ALGORITHM={algorithm};"
+    lines.append(_vcol_alter)
 
+    # 注意：vcol = base_col * 2，因此 base_col 不能超过 BIGINT 的一半，
+    # 否则 errno 1690 "BIGINT value is out of range" 会让整条多行 INSERT 失败、
+    # 3 行数据全部丢失（旧实现灌 9223372036854775807，实测就是这么挂的）。
+    _VMAX = 4611686018427387903      # 2^62 - 1
+    _VMIN = -4611686018427387904     # -2^62
     if expected == "SUCCESS":
-        # Post-ALTER insert with new range
-        lines.append(f"INSERT INTO {t1} (base_col) VALUES (2147483648), (9223372036854775807), (-9223372036854775808);")
+        lines.append(f"INSERT INTO {t1} (base_col) VALUES (2147483648), ({_VMAX}), ({_VMIN});")
 
     # Oracle table
     lines.append(f"CREATE TABLE {t2} (")
@@ -1964,7 +2282,7 @@ def _build_virtual_generated_test(test_id: str, algorithm: str) -> str:
     lines.append(f") ENGINE=InnoDB;")
     lines.append(f"INSERT INTO {t2} (base_col) VALUES (0), (1), (-1), (2147483647), (42), (-42), (NULL);")
     if expected == "SUCCESS":
-        lines.append(f"INSERT INTO {t2} (base_col) VALUES (2147483648), (9223372036854775807), (-9223372036854775808);")
+        lines.append(f"INSERT INTO {t2} (base_col) VALUES (2147483648), ({_VMAX}), ({_VMIN});")
 
     # Compare only base_col since vcol is generated
     lines.append(f"""SELECT '{test_id}' AS test_id,
@@ -1980,7 +2298,19 @@ FROM (
   SELECT 'data_mismatch' AS src, a.id FROM {t1} a JOIN {t2} b ON a.id = b.id
    WHERE NOT (a.base_col <=> b.base_col)
 ) AS mismatches;""")
-    return "\n".join(lines)
+    # P1-1: 断言 base_col 的最终类型（成功=>bigint，失败=>仍是 int）
+    lines.append(build_meta_assertion_full(
+        test_id, t1, "base_col",
+        expected_meta({"category": "integer_signed", "charset": None}, dict(BASELINE),
+                      "BIGINT" if expected == "SUCCESS" else "INT",
+                      overrides={"ordinal_position": 2}),
+        name="META"))
+    _text = "\n".join(lines)
+    _tag = ("-- @expect alter=%s%s build=SUCCESS assertions=2 alter_sha=%s column_type=%s"
+            % (expected, " errno=[1845,1846]" if expected == "FAIL" else "",
+               alter_sha(_vcol_alter),
+               column_type_of("BIGINT" if expected == "SUCCESS" else "INT")))
+    return _text.replace("-- @spe_vcol_placeholder@", _tag)
 
 
 def _build_column_attribute_test(test_id: str, transition: dict, algorithm: str,
@@ -1996,6 +2326,8 @@ def _build_column_attribute_test(test_id: str, transition: dict, algorithm: str,
     lines.append(f"-- Test Case: {test_id}")
     lines.append(f"-- Column attribute preservation: {attr_type}")
     lines.append(f"-- Type: {old_type} -> {new_type}, Algorithm: {algorithm}")
+    lines.append(f"-- Transition ID: {transition.get('id', '')}")
+    lines.append(f"-- @atr_placeholder@")
     lines.append(f"DROP TABLE IF EXISTS {t1}, {t2};")
 
     # Build column definition with specific attribute
@@ -2058,7 +2390,24 @@ def _build_column_attribute_test(test_id: str, transition: dict, algorithm: str,
 
     # Build alter with column def (may include COMMENT, CHARACTER SET, etc.)
     alter_col = "target" if attr_type != "AUTO_INCREMENT" else "id"
-    lines.append(_build_alter_stmt(t1, alter_col, new_def, algorithm))
+    # 实测（RDS MySQL 8.0.36，可复现）：AUTO_INCREMENT 列的类型加宽**不支持 INSTANT**，
+    # 一律 errno 1845 "ALGORITHM=INSTANT is not supported for this operation"，
+    # 与 SIGNED/UNSIGNED、是 PK 还是 UNIQUE 键都无关；INPLACE 与 COPY 均正常，
+    # 普通列（非 AUTO_INCREMENT）的 INSTANT 加宽也正常。
+    # 旧套件对本文件只断言 `extra LIKE '%auto_increment%'`（无论 ALTER 成败都为真），
+    # 因此把这 20 个实际失败的用例报成了 PASS。
+    _atr_exp_alter = "SUCCESS"
+    _atr_exp_errno = []
+    _atr_final_type = new_type
+    if attr_type == "AUTO_INCREMENT" and algorithm == "instant":
+        _atr_exp_alter = "FAIL"
+        _atr_exp_errno = [1845]
+        _atr_final_type = old_type
+    lines.append("-- Expected: ALTER %s%s"
+                 % (_atr_exp_alter,
+                    (" (errno %s)" % "/".join(str(e) for e in _atr_exp_errno)) if _atr_exp_errno else ""))
+    _atr_alter = _build_alter_stmt(t1, alter_col, new_def, algorithm)
+    lines.append(_atr_alter)
     if data["post_new_range"]:
         for v in data["post_new_range"][:3]:
             if attr_type == "AUTO_INCREMENT":
@@ -2105,7 +2454,33 @@ def _build_column_attribute_test(test_id: str, transition: dict, algorithm: str,
         lines.append(_build_compare_sql(test_id, t1, t2,
                                         ["id", "target"] if minimal else ["id", "target", "pad"]))
 
-    return "\n".join(lines)
+    # P1-1: 属性保持用例同样必须断言"列类型确实变成了新类型"。
+    # 旧实现只查单个属性（column_comment / character_set_name / ...），从不断言
+    # column_type，因此"ALTER 静默没生效"这类缺陷发现不了。
+    if attr_type == "AUTO_INCREMENT":
+        _meta = expected_meta(transition, dict(BASELINE), _atr_final_type, overrides={
+            "is_nullable": "NO", "has_default": 0, "charset": None,
+            "collation": None, "extra": "auto_increment", "ordinal_position": 1})
+        _col = "id"
+    else:
+        # ATR 用例的表结构是 (id, target, pad) => target 在第 2 位，
+        # 与常规用例的 (id, pad1, target, pad2) 第 3 位不同。
+        _ov = {"ordinal_position": 2}
+        if attr_type == "COLLATE":
+            # 该变体显式声明 `<charset>_bin`，不是字符集的默认排序规则
+            _cs_is = IS_CHARSET_NAME.get(transition.get("charset"))
+            if _cs_is:
+                _ov["collation"] = "%s_bin" % _cs_is
+        _meta = expected_meta(transition, dict(BASELINE), _atr_final_type, overrides=_ov)
+        _col = "target"
+    lines.append(build_meta_assertion_full(test_id, t1, _col, _meta))
+
+    _text = "\n".join(lines)
+    _tag = ("-- @expect alter=%s%s build=SUCCESS assertions=2 alter_sha=%s column_type=%s"
+            % (_atr_exp_alter,
+               (" errno=[%s]" % ",".join(str(e) for e in _atr_exp_errno)) if _atr_exp_errno else "",
+               alter_sha(_atr_alter), _meta["column_type"]))
+    return _text.replace("-- @atr_placeholder@", _tag)
 
 
 
@@ -2317,7 +2692,8 @@ def _gen_fk_tests_for_env(env: str, ids: CaseIdFactory) -> list:
 
     for fk_trans_item in fk_trans:
         for algorithm in ["instant", "inplace"]:
-            for scenario in ["child", "parent", "both", "non_fk"]:
+            for scenario in ["child", "parent", "both", "both_fkc0",
+                             "both_drop_fk", "non_fk"]:
                 test_id = ids.next(SCOPE_FK, algorithm)
                 sql = _build_fk_test(test_id, fk_trans_item, algorithm, scenario)
                 results.append(sql)

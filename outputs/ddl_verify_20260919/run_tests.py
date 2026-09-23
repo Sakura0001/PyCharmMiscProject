@@ -572,6 +572,64 @@ def check_negative_probes(case, errors):
     return out
 
 
+def check_alter_outcome(case, errors):
+    """P0-7 的核心：把用例声明的 ALTER 期望与实际结果对上。
+
+    生成器声明 `@expect alter=SUCCESS|FAIL alter_sha=<sha> errno=[...]`；
+    执行器按 sha 在错误记录里找那条 ALTER：
+      alter=SUCCESS -> 该 sha 必须**没有**报错
+      alter=FAIL    -> 该 sha 必须报错，且 errno 在声明集合内
+    旧执行器只是把 expected 写进 CSV，从不比对，所以"0 FAIL"仅代表
+    "产出了判定行的用例里数据对照没发现差异"。
+    """
+    tags = case.meta.get("expect_tags", {})
+    shas = set(tags.get("alter_sha") or [])
+    want = (tags.get("alter") or [None])[0]
+    if not shas or not want:
+        return [], None
+    matched = [e for e in errors if e.get("stmt_sha1") in shas]
+    # alter=SUCCESS -> 声明的所有 ALTER 都不能报错
+    # alter=FAIL    -> 至少一条报错且 errno 在声明集合内
+    actual = "FAIL" if matched else "SUCCESS"
+    actual_errno = matched[0].get("errno") if matched else None
+    want = want.upper()
+    ok = (actual == want)
+    detail = ""
+    if not ok:
+        detail = ("ALTER declared %s but actually %s%s"
+                  % (want, actual,
+                     (" (errno=%s %s)" % (actual_errno, (matched[0].get("error") or "")[:120]))
+                     if matched else " (statement succeeded)"))
+    elif want == "FAIL":
+        allowed = set()
+        for spec in tags.get("errno") or []:
+            allowed |= {int(x) for x in spec.strip("[]").split(",") if x.strip().lstrip("-").isdigit()}
+        if allowed and actual_errno not in allowed:
+            ok = False
+            detail = ("ALTER failed as declared but errno=%s not in %s: %s"
+                      % (actual_errno, sorted(allowed), (matched[0].get("error") or "")[:150]))
+    return [{"name": "ALTER_OUTCOME",
+             "assert_id": "%s#ALTER_OUTCOME" % case.test_id,
+             "result": "PASS" if ok else "FAIL",
+             "mismatch": detail[:600], "source": "runner"}], actual_errno
+
+
+def _declared_alter_shas(case):
+    return set(case.meta.get("expect_tags", {}).get("alter_sha") or [])
+
+
+def _alter_actual(case, errors):
+    if not _declared_alter_shas(case):
+        return ""
+    shas = _declared_alter_shas(case)
+    return "FAIL" if any(e.get("stmt_sha1") in shas for e in errors) else "SUCCESS"
+
+
+def _alter_errno(case, errors):
+    shas = _declared_alter_shas(case)
+    return next((e.get("errno") for e in errors if e.get("stmt_sha1") in shas), None)
+
+
 def aggregate(assertions):
     """聚合断言：任一 FAIL => FAIL；否则任一 MANUAL => MANUAL；否则任一未知 => UNKNOWN；全 PASS => PASS。"""
     if not assertions:
@@ -621,6 +679,8 @@ def classify_case(case, detail):
                     assertions, errors)
 
     assertions += check_negative_probes(case, errors)
+    alter_asserts, actual_errno = check_alter_outcome(case, errors)
+    assertions += alter_asserts
     status, result, mismatch = aggregate(assertions)
     if status is not None:
         return status, result, mismatch, assertions, errors
@@ -740,6 +800,9 @@ class Runner(object):
             "mismatch": mismatch[:1000],
             "assertions": assertions,
             "assertion_count": len(assertions),
+            "alter_expected": (case.meta.get("expect_tags", {}).get("alter") or [""])[0],
+            "alter_actual": _alter_actual(case, errors),
+            "alter_errno": _alter_errno(case, errors),
             "statement_count": detail.get("statement_count", 0),
             "duration_ms": detail.get("duration_ms", 0),
             "error_count": len(errors),
@@ -911,7 +974,8 @@ def write_outputs(runner, env, manifest, snapshot, out_dir):
     stamp = time.strftime("%Y%m%d_%H%M%S")
     csv_path = os.path.join(out_dir, "summary_%s.csv" % env)
     archive_csv = os.path.join(archive_dir, "summary_%s_%s.csv" % (env, stamp))
-    cols = ["test_id", "file", "case_index", "type", "algorithm", "expected", "result",
+    cols = ["test_id", "file", "case_index", "type", "algorithm", "expected",
+            "alter_expected", "alter_actual", "alter_errno", "result",
             "status", "assertion_count", "assertions", "error_count", "duration_ms",
             "mismatch", "factors", "partition", "partition_key"]
     ordered = sorted(runner.results, key=lambda x: (x["file"], x["case_index"], x["test_id"]))

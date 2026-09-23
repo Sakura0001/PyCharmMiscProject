@@ -564,19 +564,24 @@ def test_build_rejected_branch_asserts_table_absent(all_cases):
     assert n > 100, "BUILD_REJECTED 断言用例数异常: %d" % n
 
 
-def test_target_key_branch_asserts_type_after_alter(all_cases):
-    """P0-2：PTK 分支必须断言 ALTER 后的列类型（预期失败=>仍是旧类型；
+def test_target_key_branch_asserts_meta(all_cases):
+    """P0-2：PTK 分支必须断言 ALTER 后的完整列元数据（预期失败=>仍是旧类型；
     预期成功=>已是新类型）。没有这条断言就无法证明 ALTER 被拒/生效。"""
     n = 0
     for fname, c in all_cases:
-        if "-PTK-" not in c.test_id or "#TYPE_AFTER_ALTER" not in c.text:
+        if "-PTK-" not in c.test_id or "#META" not in c.text:
             continue
         n += 1
-        assert "information_schema.columns" in c.text
+        assert "information_schema.columns" in c.text, c.test_id
         assert "IFNULL(MAX(column_type)" in c.text, c.test_id
-        # 期望值必须写进断言里（column_type= 字面量）
-        assert _re.search(r"expect=', *'?[a-z]", c.text) or "expect=" in c.text
-    assert n > 1000, "TYPE_AFTER_ALTER 断言用例数异常: %d" % n
+        assert "want[type=" in c.text, c.test_id
+    assert n > 1000, "PTK META 断言用例数异常: %d" % n
+
+
+def test_no_legacy_type_only_assertion_left(all_cases):
+    """分区分支已升级为完整 META，不应再残留只查 column_type 的简版断言。"""
+    bad = [(f, c.test_id) for f, c in all_cases if "#TYPE_AFTER_ALTER" in c.text]
+    assert not bad, "仍有简版断言: %d 处，示例 %s" % (len(bad), bad[:3])
 
 
 def test_multi_assertion_cases_declare_count(all_cases):
@@ -1118,3 +1123,164 @@ def test_every_statement_has_balanced_quotes(all_cases):
             if st.count("(") != st.count(")"):
                 bad.append((fname, c.test_id, i, "括号不配对: " + st[:90]))
     assert not bad, "语句引号/括号不配对: %d 处，示例 %s" % (len(bad), bad[:3])
+
+
+# ================================================================
+# Step 7 (P0-7 + P1-1) 期望值机读化 + 每用例列类型断言
+# ================================================================
+
+import hashlib as _hashlib  # noqa: E402
+
+META_PROPS = ["column_type", "is_nullable", "column_default",
+              "character_set_name", "collation_name", "extra", "ordinal_position"]
+
+
+def test_every_regular_case_has_meta_assertion(all_cases):
+    """P1-1：REG / ATR / PTK / PNK 用例都必须断言 ALTER 之后的列元数据。
+
+    旧套件 238 条元数据断言里**没有一条**断言 column_type，
+    因此"类型对了但 NOT NULL/DEFAULT/charset/collation/COMMENT 被改坏"发现不了。
+    """
+    missing = []
+    n = 0
+    for fname, c in all_cases:
+        scope = c.test_id.split("-")[2]
+        if scope not in ("REG", "ATR", "PTK", "PNK", "SPE", "FK"):
+            continue
+        # BUILD_REJECTED 类用例根本不建表、不 ALTER，没有列可断言
+        if "#BUILD_REJECTED" in c.text:
+            continue
+        n += 1
+        if "#META" not in c.text and "#TYPE_AFTER_ALTER" not in c.text:
+            missing.append((fname, c.test_id))
+    total = _expected_total_cases()
+    n_rejected = sum(1 for _f, c in all_cases if "#BUILD_REJECTED" in c.text)
+    # 除"建表本应被拒绝"的负向用例外，其余每一个用例都必须有列元数据断言
+    assert n == total - n_rejected, \
+        "受检用例数 %d != 总数 %d - BUILD_REJECTED %d" % (n, total, n_rejected)
+    assert not missing, "缺少列元数据断言: %d 处，示例 %s" % (len(missing), missing[:4])
+
+
+def test_meta_assertion_covers_all_properties(all_cases):
+    """META 断言必须一次性校验 7 个属性，并给出 actual vs want。"""
+    bad = []
+    n = 0
+    for fname, c in all_cases:
+        m = _re.search(r"SELECT '[^']*#META' AS test_id,.*?;", c.text, _re.S)
+        if not m:
+            continue
+        n += 1
+        body = m.group(0)
+        for prop in META_PROPS:
+            if prop not in body:
+                bad.append((fname, c.test_id, "缺 %s" % prop))
+                break
+        if "actual[" not in body or "want[" not in body:
+            bad.append((fname, c.test_id, "mismatch 未同时给出 actual 与 want"))
+    total = _expected_total_cases()
+    assert n > total * 0.8, "META 断言数异常: %d / %d" % (n, total)
+    assert not bad, "META 断言不完整: %d 处，示例 %s" % (len(bad), bad[:4])
+
+
+def test_every_alter_case_declares_machine_readable_expectation(all_cases):
+    """P0-7：每条含 ALTER 的用例都必须声明 alter=SUCCESS|FAIL 与 alter_sha。"""
+    bad = []
+    n = 0
+    for fname, c in all_cases:
+        alters = [st for st in c.statements if st.upper().startswith("ALTER TABLE")]
+        if not alters:
+            continue
+        n += 1
+        tags = c.meta.get("expect_tags", {})
+        if not tags.get("alter") or not tags.get("alter_sha"):
+            bad.append((fname, c.test_id, "缺 alter=/alter_sha=", sorted(tags)))
+            continue
+        if tags["alter"][0].upper() == "FAIL" and not tags.get("errno"):
+            bad.append((fname, c.test_id, "alter=FAIL 但未声明允许的 errno"))
+    assert n > 8000, "含 ALTER 的用例数异常: %d" % n
+    assert not bad, "机读期望缺失: %d 处，示例 %s" % (len(bad), bad[:4])
+
+
+def test_declared_alter_sha_matches_actual_statement(all_cases):
+    """声明的 alter_sha 必须真的等于用例里那条 ALTER 语句的哈希（防止生成器漂移）。"""
+    bad = []
+    n = 0
+    for fname, c in all_cases:
+        sha = (c.meta.get("expect_tags", {}).get("alter_sha") or [None])[0]
+        if not sha:
+            continue
+        alters = [st for st in c.statements if st.upper().startswith("ALTER TABLE")]
+        if not alters:
+            bad.append((fname, c.test_id, "声明了 alter_sha 但没有 ALTER 语句"))
+            continue
+        n += 1
+        real = {_hashlib.sha1(a.rstrip().rstrip(";").encode("utf-8")).hexdigest()[:12]
+                for a in alters}
+        if sha not in real:
+            bad.append((fname, c.test_id, "sha %s 不在 %s" % (sha, sorted(real))))
+    assert n > 8000, "校验的 alter_sha 数异常: %d" % n
+    assert not bad, "alter_sha 与语句不匹配: %d 处，示例 %s" % (len(bad), bad[:3])
+
+
+# ---------------- runner: ALTER_OUTCOME 期望 vs 实际 ----------------
+
+def _alter_case(alter_decl, errno_decl=None):
+    sha = "deadbeef0001"
+    tag = "-- @expect alter=%s alter_sha=%s" % (alter_decl, sha)
+    if errno_decl:
+        tag += " errno=[%s]" % errno_decl
+    text = SAMPLE_CASE.replace(
+        "-- @expect alter=SUCCESS column_type=smallint nullable=YES", tag)
+    p = "/tmp/_alter.sql"
+    _write(p, text)
+    _pre, cases = R.split_cases(p, False)
+    return cases[0], sha
+
+
+def _alter_err(sha, errno=1846):
+    return {"stmt_index": 4, "errno": errno, "error": "ALGORITHM=INSTANT is not supported",
+            "statement": "ALTER TABLE ...", "stmt_sha1": sha, "duration_ms": 2}
+
+
+def test_alter_outcome_success_as_declared():
+    c, sha = _alter_case("SUCCESS")
+    a, errno = R.check_alter_outcome(c, [])
+    assert a[0]["result"] == "PASS" and errno is None
+
+
+def test_alter_outcome_declared_success_but_failed():
+    """P0-7 的核心：声明 SUCCESS 而实际失败，必须判 FAIL（旧执行器只写 CSV 从不比对）。"""
+    c, sha = _alter_case("SUCCESS")
+    a, errno = R.check_alter_outcome(c, [_alter_err(sha)])
+    assert a[0]["result"] == "FAIL"
+    assert "declared SUCCESS but actually FAIL" in a[0]["mismatch"]
+    assert errno == 1846
+
+
+def test_alter_outcome_declared_fail_but_succeeded():
+    c, sha = _alter_case("FAIL", "1845,1846")
+    a, errno = R.check_alter_outcome(c, [])
+    assert a[0]["result"] == "FAIL"
+    assert "declared FAIL but actually SUCCESS" in a[0]["mismatch"]
+
+
+def test_alter_outcome_wrong_errno():
+    c, sha = _alter_case("FAIL", "1845,1846")
+    a, errno = R.check_alter_outcome(c, [_alter_err(sha, 1064)])
+    assert a[0]["result"] == "FAIL"
+    assert "not in" in a[0]["mismatch"]
+
+
+def test_alter_outcome_right_errno():
+    c, sha = _alter_case("FAIL", "1845,1846")
+    a, errno = R.check_alter_outcome(c, [_alter_err(sha, 1845)])
+    assert a[0]["result"] == "PASS" and errno == 1845
+
+
+def test_alter_outcome_ignores_other_statement_errors():
+    """只有 alter_sha 那条语句的成败才算数，其它语句（负向探针等）报错不干扰。"""
+    c, sha = _alter_case("SUCCESS")
+    other = {"stmt_index": 9, "errno": 1406, "error": "Data too long",
+             "statement": "INSERT ...", "stmt_sha1": "ffff00001111", "duration_ms": 1}
+    a, errno = R.check_alter_outcome(c, [other])
+    assert a[0]["result"] == "PASS" and errno is None
