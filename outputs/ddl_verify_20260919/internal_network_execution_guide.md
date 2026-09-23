@@ -1,3 +1,14 @@
+> ⚠️ **本文档的结论已过期，仅作历史留档，请勿直接引用其中的数字。**
+> 唯一权威来源是 **`FIX_LOG.md`**（逐步修复与验证台账）与 **`test_gap_audit_20260923.md`**（原始审计）。
+>
+> 执行方式已变更，请按 `README.md` 的"如何运行"一节操作（同上）。
+> 内网侧 20 个文件 / 4,909 个用例中，`41_conversion_matrix_enhanced.sql` 与
+> `43_factor_matrix_enhanced.sql` 的 golden **尚未冻结**：第一轮会以 MEASURE 模式只记录实测结果，
+> 人工复核后 `python3 tools/promote_conversion_matrix.py --env internal [--kind factor]` 冻结。
+>
+> 当前套件规模：**37 个文件 / 10,731 个用例 / 用例 ID 全局唯一（重复 0）**；
+> 阿里云 RDS MySQL 8.0.36 最近一次全量：**5,228/5,228 PASS**（19,530 条断言，0 FAIL / 0 ERROR / 0 MANUAL / 0 MISSING）。
+
 # RDS MySQL DDL 秒级/在线修改列类型 — 内网执行指南
 
 > **文档日期**: 2026-09-21  

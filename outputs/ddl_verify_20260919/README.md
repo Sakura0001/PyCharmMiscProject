@@ -1,199 +1,151 @@
-# RDS MySQL DDL 秒级/在线修改列类型 — 纯 SQL 验证测试套件
+# RDS MySQL DDL 秒级/在线修改列类型 — 验证测试套件
 
-## 概述
+验证 RDS MySQL 8.0 的 **INSTANT（秒级）** 与 **INPLACE（在线）** 列类型修改能力：
+功能正确性、数据一致性、元数据保持、在线性、失败模式、崩溃恢复、复制一致性。
 
-本测试套件用于验证 RDS MySQL 8.0 的 INSTANT（秒级）和 INPLACE（在线）列类型修改功能。测试套件由 Python 生成器自动产生，覆盖所有支持的数据类型转换 × 全因子笛卡尔积（OFAT + 关键二元组）× 三种表类型（普通表 / 外键表 / 64种分区组合表）。通过 Oracle 对照表对比验证数据正确性。
+- **权威文档**：`FIX_LOG.md`（逐步修复与验证台账）、`test_gap_audit_20260923.md`（原始审计）
+- 其余 `*.md` 均为**历史留档**，顶部已标注过期点，不要直接引用其中数字
 
-## 测试环境
+---
 
-### 阿里云 RDS（已验证 ✅）
-- **实例**: `rm-uf65zzh9t461f8k64co.mysql.cn-shanghai.rds.aliyuncs.com:3306`
-- **版本**: MySQL 8.0.36
-- **数据库**: `ddl_test`
-- **覆盖类型**: 整数（SIGNED/UNSIGNED）、CHAR、VARCHAR — INSTANT + INPLACE
-- **测试结果**: ✅ **8094 用例，0 FAIL，100% 通过率（排除预期行为）**
+## 1. 当前规模与状态
 
-### 内网机器（增强类型）
-- **覆盖类型**: BINARY、VARBINARY、DECIMAL、TEXT、BLOB、BIT — INSTANT + INPLACE
-- **说明**: SQL 已生成在 `sql_internal/` 目录，需在内网环境执行
+| 项 | 值 |
+|---|---|
+| SQL 文件 | **37** 个（阿里云 17 / 内网 20） |
+| 用例总数 | **10,731**（阿里云 5,822 / 内网 4,909） |
+| 用例 ID | **全局唯一，重复 0**（`TC-<文件号>-<作用域>-<序号>-<算法>`） |
+| 阿里云 RDS 8.0.36 全量 | **5,228 / 5,228 PASS**（0 FAIL / 0 ERROR / 0 MANUAL / 0 MISSING） |
+| 断言规模 | **19,530 条**，平均 **3.74 条/用例**（SQL 11,564 + 执行器合成 7,966） |
+| 静态自检 | `selfcheck/test_runner.py` **90 项 pytest** |
+| 反向对照 | `selfcheck/negative_control.py` **6/6 类缺陷全部被捕获** |
+| 实测 golden 基线 | 转换矩阵 196 条、因子矩阵 198 条、分区兼容 24×17、外键矩阵 66 条 |
 
-## 测试结果汇总
-
-### 阿里云 RDS 全量结果
-
-| 指标 | 数量 | 说明 |
-|------|------|------|
-| **总用例数** | 8094 | 12个SQL文件 |
-| **PASS** | 5854 | 测试通过 |
-| **FAIL** | 0 | ❌ 无失败 |
-| **ERROR** | 1600 | 预期行为：分区策略不支持该类型作为分区键，建表失败 |
-| **MANUAL** | 640 | 预期行为：目标列是分区键，ALTER预期失败 |
-
-### 按文件明细
-
-| 文件 | 用例数 | PASS | FAIL | ERROR | MANUAL | 耗时 |
-|------|--------|------|------|-------|--------|------|
-| 01_integer_signed_instant.sql | 290 | 290 | 0 | 0 | 0 | 354s |
-| 02_integer_signed_inplace.sql | 340 | 340 | 0 | 0 | 0 | 377s |
-| 03_integer_unsigned_instant.sql | 300 | 300 | 0 | 0 | 0 | 211s |
-| 04_integer_unsigned_inplace.sql | 350 | 350 | 0 | 0 | 0 | 269s |
-| 05_char_instant.sql | 93 | 93 | 0 | 0 | 0 | 65s |
-| 06_char_inplace.sql | 108 | 108 | 0 | 0 | 0 | 71s |
-| 07_varchar_instant.sql | 217 | 217 | 0 | 0 | 0 | 132s |
-| 08_varchar_inplace.sql | 252 | 252 | 0 | 0 | 0 | 163s |
-| 09_auto_increment_pk.sql | 40 | 40 | 0 | 0 | 0 | 13s |
-| 10_special_patterns.sql | 8 | 8 | 0 | 0 | 0 | 4s |
-| 11_fk_table.sql | 16 | 16 | 0 | 0 | 0 | 10s |
-| 12_partition_64.sql | 6080 | 3840 | 0 | 1600 | 640 | 3390s |
-| **合计** | **8094** | **5854** | **0** | **1600** | **640** | **5059s** |
-
-## 文件结构
+## 2. 目录结构
 
 ```
-outputs/ddl_verify_20260919/
-├── README.md                          # 本文件
-├── generate_test_sql.py               # Python SQL 生成器 (~1977行)
-├── run_tests.py                       # Python 执行器 (~372行)
-├── config.example.ini                 # MySQL 连接配置模板
-├── risk_assessment.md                 # BIT/TEXT/BLOB 风险评估
-├── expected_results.md                # 预期结果汇总
-├── sql_aliyun/                        # 阿里云 RDS SQL 文件（12个文件）
-│   ├── 01_integer_signed_instant.sql     # 整数SIGNED INSTANT (290用例)
-│   ├── 02_integer_signed_inplace.sql     # 整数SIGNED INPLACE (340用例)
-│   ├── 03_integer_unsigned_instant.sql   # 整数UNSIGNED INSTANT (300用例)
-│   ├── 04_integer_unsigned_inplace.sql   # 整数UNSIGNED INPLACE (350用例)
-│   ├── 05_char_instant.sql               # CHAR INSTANT (93用例)
-│   ├── 06_char_inplace.sql               # CHAR INPLACE (108用例)
-│   ├── 07_varchar_instant.sql             # VARCHAR INSTANT (217用例)
-│   ├── 08_varchar_inplace.sql             # VARCHAR INPLACE (252用例)
-│   ├── 09_auto_increment_pk.sql          # AUTO_INCREMENT主键 (40用例)
-│   ├── 10_special_patterns.sql           # 特殊模式 (8用例)
-│   ├── 11_fk_table.sql                   # 外键表 (16用例)
-│   └── 12_partition_64.sql              # 64种分区组合 (6080用例)
-├── sql_internal/                     # 内网增强类型 SQL 文件（15个文件）
-│   ├── 15-26: BINARY/VARBINARY/DECIMAL/TEXT/BLOB/BIT 的 INSTANT+INPLACE
-│   ├── 27_fk_table_enhanced.sql          # 增强类型外键表
-│   ├── 28_special_patterns_enhanced.sql  # 增强类型特殊模式
-│   └── 29_partition_64_enhanced.sql      # 增强类型64种分区
-└── results/                          # 运行结果
-    ├── summary_aliyun.csv              # 阿里云结果汇总
-    └── failures.log                    # 失败详情（本次无失败）
+generate_test_sql.py            SQL 生成器（表驱动，含全局唯一性/产物入库自检）
+run_tests.py                    执行器 v3（pymysql 逐语句、按用例归因、并发/续跑/重试）
+selfcheck/test_runner.py        90 项静态守卫（pytest）
+selfcheck/negative_control.py   反向对照：故意注入 6 类缺陷，验证断言真的有牙齿
+tools/probe_partition_compat.py 分区兼容矩阵探针（24 策略 × 17 类型）
+tools/promote_conversion_matrix.py  把实测结果冻结为 golden 基线
+tools/{conversion,factor,partition_compat,fk}_matrix_aliyun.json  实测基线
+scenarios/online_ddl_failure_modes.py  MDL 阻塞 / 超时 / KILL / 并发 DDL / row log 溢出 / 外键并发
+scenarios/replication_and_crash.py     binlog 记录 / 备库一致性 / SIGKILL 崩溃恢复
+scenarios/session_variables.py         GIPK / sql_require_primary_key / innodb_strict_mode（需特权）
+concurrent_dml/                 并发 DML + DualWrite Oracle + QPS/延迟分位 + DDL Fuzz
+sql_aliyun/  sql_internal/      生成的 SQL（大文件以 .sql.gz 发布，执行器透明解压）
+results/                        运行结果；results/archive/ 为带时间戳的不可覆盖证据
 ```
 
-## 类型转换矩阵（50条转换 × 2算法 = 100组合）
+### 文件编号约定
+`01–12` 阿里云基础 · `15–29` 内网基础 · `30/32/34` 阿里云专项 · `31/33/35` 内网专项 ·
+`40/42` 阿里云矩阵 · `41/43` 内网矩阵。**文件号即用例 ID 的命名空间，全局唯一。**
 
-### 阿里云 RDS（30条转换）
+作用域：`REG` 普通表 OFAT · `ATR` 列属性保持 · `SPE` 特殊模式 · `FK` 外键 ·
+`PTK/PNK` 分区（目标列是/不是分区键）· `FRM` DDL 语句形态 · `TMG` 秒级计时 ·
+`IDX` 索引完整性 · `CONV` 转换兼容矩阵 · `FCT` 因子矩阵
 
-| 类别 | 转换数 | INSTANT | INPLACE |
-|------|--------|---------|---------|
-| 整数 SIGNED | 10 | ✅ | ✅ |
-| 整数 UNSIGNED | 10 | ✅ | ✅ |
-| CHAR | 3 | ✅ | ✅ |
-| VARCHAR | 7 | ✅ | ✅ |
+## 3. 如何运行
 
-### 内网增强类型（20条转换）
-
-| 类别 | 转换数 | INSTANT | INPLACE |
-|------|--------|---------|---------|
-| BINARY | 2 | ❌预期FAIL | ✅ |
-| VARBINARY | 2 | ❌预期FAIL | ✅ |
-| DECIMAL | 6 | ❌预期FAIL | ✅ |
-| TEXT | 3 | ✅ | ✅ |
-| BLOB | 3 | ✅ | ✅ |
-| BIT | 4 | ✅ | ✅ |
-
-## 因子覆盖
-
-| 因子 | 变化值 | 说明 |
-|------|--------|------|
-| row_format | DYNAMIC/COMPACT/REDUNDANT | 行格式 |
-| primary_key | CLUSTERED/COMPOSITE_PK/NO_EXPLICIT_PK | 主键类型 |
-| non_target_index | NONE/ONE_SECONDARY/MULTIPLE/UNIQUE/COMPOSITE_PREFIX | 非目标列索引 |
-| target_position | FIRST/MIDDLE/LAST | 目标列位置 |
-| target_attributes | NULL/NOT_NULL/CONSTANT_DEFAULT/NULL_DEFAULT/NOT_NULL_DEFAULT/INVISIBLE | 列属性 |
-| data_scale | 0/1/100 | 数据规模 |
-| data_distribution | TYPE_BOUNDARIES/UNIFORM/MONOTONIC | 数据分布 |
-| null_ratio | ZERO/SINGLE/TEN_PERCENT/ALL | NULL比例 |
-| dependencies | NONE/SECONDARY_INDEX/UNIQUE_INDEX/FOREIGN_KEY/CHECK | 依赖关系 |
-| sql_mode | STRICT/非严格 | SQL模式 |
-
-## Oracle 对照表验证逻辑
-
-### 成功路径（ALTER 成功）
-1. 创建原表（旧类型）→ 插入旧类型范围数据（含极值/边界值/空值/正负数）
-2. 执行 ALTER（成功）→ 插入新类型范围 + 旧类型范围数据
-3. 创建对照表（新类型）→ 插入相同数据
-4. 使用 `<=>`（NULL-safe比较）对比原表和对照表
-
-### 失败路径（ALTER 预期失败）
-1. 创建原表（旧类型）→ 插入旧类型范围数据
-2. 执行 ALTER（预期FAIL）→ 表保持旧类型
-3. 插入新类型范围数据（部分INSERT失败）+ 旧类型范围数据
-4. 创建对照表（旧类型）→ 插入相同数据
-5. 对比原表和对照表（应完全一致）
-
-## 使用方法
-
-### 1. 配置连接
 ```bash
-cp config.example.ini config.ini
-# 编辑 config.ini 填入实际的数据库连接信息
-```
+# 0) 配置（源码里不含任何凭据；config.ini 已被 .gitignore 排除）
+cp config.example.ini config.ini      # 填 [aliyun] / [internal] / [local]
+export MYSQL_PWD='<password>'         # 推荐：避免密码出现在 ps 与命令行
 
-### 2. 重新生成 SQL（可选）
-```bash
+# 1) 生成 SQL（含全局唯一性自检 + 产物入库自检 + 过期产物清理）
 python3 generate_test_sql.py
+python3 generate_test_sql.py --charvarchar-mode cross_only   # 切换 CHAR/VARCHAR 支持口径
+
+# 2) 不连库先看清单（文件/用例数/内容哈希/重复 ID）
+python3 run_tests.py --env aliyun --dry-run
+python3 run_tests.py --env aliyun --check-manifest results/manifest_aliyun.json
+
+# 3) 执行（自动解压 .sql.gz；按用例切分；逐语句归因 errno）
+python3 run_tests.py --env aliyun --workers 8                 # 全量，约 11 分钟
+python3 run_tests.py --env aliyun --files 07_varchar_instant.sql.gz --sample 20
+python3 run_tests.py --env internal --resume                  # 断点续跑
+
+# 4) 专项场景
+python3 scenarios/online_ddl_failure_modes.py --env aliyun --rows 200000
+python3 scenarios/replication_and_crash.py --env aliyun --only R1
+python3 scenarios/replication_and_crash.py --only C1 --crash-ddl copy_rebuild
+python3 scenarios/session_variables.py --env local
+
+# 5) 自检
+python3 -m pytest selfcheck/test_runner.py -q                 # 90 passed
+python3 selfcheck/negative_control.py --env aliyun            # 6/6 必须全部被捕获
+
+# 6) 兼容矩阵：测量 -> 复核 -> 冻结 -> 回归
+python3 run_tests.py --env aliyun --files 40_conversion_matrix.sql      # MEASURE 轮
+python3 tools/promote_conversion_matrix.py --env aliyun                 # 冻结 golden
+python3 tools/promote_conversion_matrix.py --env aliyun --kind factor
+python3 generate_test_sql.py                                            # 之后按 golden 硬断言
 ```
 
-### 3. 执行测试
-```bash
-# 阿里云环境（全部12个文件）
-python3 run_tests.py --env aliyun
+## 4. 一个用例验证什么
 
-# 指定文件
-python3 run_tests.py --env aliyun --files 01_integer_signed_instant.sql
+以常规用例为例，每条用例最多产出 **7 类独立断言**，任一 FAIL 即整例 FAIL：
 
-# 内网环境
-python3 run_tests.py --env internal
+| 断言 | 验证内容 |
+|---|---|
+| `PRIMARY` | 与 Oracle 对照表逐行 NULL-safe 比对（多余行/缺失行/数据不一致分别标注） |
+| `ALTER_OUTCOME` | 按 `alter_sha` 精确定位那条 ALTER，**声明 SUCCESS 就必须没报错、声明 FAIL 就必须报错且 errno 在声明集合内** |
+| `META` | ALTER 后的 `column_type` / `is_nullable` / `column_default` 有无 / `character_set_name` / `collation_name` / `extra` / `ordinal_position` **7 项**，mismatch 同时给出 `actual[]` 与 `want[]` |
+| `NEG_REJECTED` | 超上限值**同时**插入 t1 与对照表：STRICT 必须 0 行落库；非 STRICT 必须两表对称 |
+| `NEG_ERRNO#n` | 每条负向探针按语句 sha1 对账：STRICT 必须以声明的 errno 失败，非 STRICT 必须被接受 |
+| `BUILD_REJECTED` | "建表本应被拒"的负向用例真的没建出表（查 `information_schema.tables`） |
+| `IDX_*` / `CRC_ORACLE` / `FK_CONSTRAINT_PRESENT` / `FAST_PATH` | 索引存在性、索引扫描 vs 全表扫描一致性、逐行 CRC 对照、外键约束是否恢复、秒级差分计时 |
 
-# 两个环境都跑
-python3 run_tests.py --env both
-```
+执行器还会做**完整性核算**：选中的用例必须全部产出判定，否则记 `MISSING` 并以退出码 3 失败。
 
-### 4. 查看结果
-```bash
-cat results/summary_aliyun.csv
-cat results/failures.log  # 如果有失败的话
-```
+## 5. 环境能力画像
 
-## 关键发现
+不同实例支持范围不同，期望值表达为**数据**而非散落的 if：
 
-### 1. CHECK 约束行为是类型相关的
+| 环境 | CHAR/VARCHAR 口径 | 依据 |
+|---|---|---|
+| `aliyun` | `all`（同字节桶与跨字节桶都支持） | 实测 5,228/5,228 PASS |
+| `internal` | `cross_only`（**只支持跨字节桶**，同桶 INSTANT/INPLACE 均不支持） | 测试同学口径，待内网实测复核 |
 
-在 Aliyun RDS MySQL 8.0.36 上验证发现：
-- **CHAR/VARCHAR** 类型变更 + CHECK约束：ALTER 成功（INPLACE/INSTANT均可）
-- **整数类型** 变更 + CHECK约束：ALTER 失败（ERROR 1845: ALGORITHM=INPLACE is not supported）
+"字节桶"= VARCHAR/VARBINARY 长度前缀 1 字节（≤255 字节）/ 2 字节（>255 字节）；CHAR 按字节宽度同口径。
+`--charvarchar-mode {cross_only,same_only,all,none}` 可整体切换，无需改代码。
+命中画像规则的用例会在 `@expect` 头留下 `profile_rule=` 标记，可追溯。
 
-这说明 MySQL 对 CHECK 约束的处理依赖于列类型变更的方式，而非约束本身。
+> 已验证：画像与实例真实行为不符时，`PRIMARY` / `META` / `ALTER_OUTCOME` **三条独立断言会同时报出来**
+> （在 RDS 上故意用错画像，160 例全部被捕获，93 例跨桶转换保持全绿）。
 
-### 2. UTF8 字符集在 information_schema 中的表示
+## 6. 主要实测结论（阿里云 RDS MySQL 8.0.36）
 
-MySQL 8.0 在 `information_schema.columns` 中将 `utf8` 存储为 `utf8mb3`，`utf8_bin` 存储为 `utf8mb3_bin`。测试中需要使用正确的名称进行验证。
+| 结论 | errno |
+|---|---|
+| AUTO_INCREMENT 列的类型加宽**不支持 INSTANT**（INPLACE/COPY 正常；普通列 INSTANT 正常） | 1845 |
+| 一张表累积 **64 次** instant 加/删列后，第 65 次被拒（秒级能力失效，须 COPY/INPLACE） | **4092** |
+| 同一列反复 INSTANT **MODIFY** 类型 70 轮全部成功 → 4092 只约束 ADD/DROP COLUMN | — |
+| 外键列：INSTANT 一律失败（整数 3780 / 字符串 1845）；`foreign_key_checks=0` **无法**绕过 3780 | 3780/1845 |
+| 外键列：INPLACE 改 CHAR/VARCHAR/BINARY/VARBINARY **一律成功，连单侧改也成功** → 父 varchar(50) 与子 varchar(100) 能和活外键共存，MySQL 不复核兼容性 | — |
+| 改外键列类型的唯一可行序列：`DROP FOREIGN KEY` → 改两侧 → `ADD FOREIGN KEY` | — |
+| 分区键列改类型：INSTANT/INPLACE 均拒绝，**`ALGORITHM=COPY` 可以成功** | 1846 |
+| 分区键/索引列长度上限：`max_bytes(target) + 4 ≤ 3072`（latin1 VARCHAR 最大 3068、utf8mb4 最大 VARCHAR(767)） | 1071 |
+| 行宽上限（`id INT` + target 两列表）：`VARCHAR(16382)` utf8mb4 / `VARCHAR(65528)` latin1 / `VARBINARY(65528)` | 1118 |
+| `innodb_strict_mode` 管的是 InnoDB 半页(8126B)限制；server 级 65535 行宽上限**两种模式都报错** | 1118 |
+| INSTANT/INPLACE 支持的转换只是少数：兼容矩阵 49 个探针里 **仅 5 个**（ENUM/SET 末尾追加、FLOAT(M,D)、collation 变更） | 1846 |
+| 不写 `ALGORITHM` 时 44/49 探针成功 → **"能改"不等于"秒级"**，服务器静默回退 COPY（慢 20~38 倍） | — |
+| 缩窄转换在数据不丢失时**是成功的**（数据溢出才失败：整数 1264 / 字符串 1265） | 1264/1265 |
+| RDS 禁用 MyISAM / MEMORY 引擎；无 keyring 时 `ENCRYPTION='Y'` 建表失败 | 3161 / 3185 |
+| TEXT / BLOB **不能**作任何分区键；DECIMAL 只能 KEY / LINEAR KEY；BIT 支持 14/24 种策略 | 1170/1659 |
+| DDL 中途 SIGKILL（4,194,304 行 COPY 重建 / INPLACE 建索引两条路径）：行数、校验和、列类型全部一致，无 `#sql-` 残留，之后读写与 DDL 正常 | 1317 |
 
-### 3. UNSIGNED 属性检查大小写敏感性
+## 7. 安全边界
 
-`information_schema.columns.column_type` 的 LIKE 比较是大小写敏感的，`column_type LIKE '%UNSIGNED%'` 不匹配 `smallint unsigned`。需使用小写 `%unsigned%`。
+- 目标只允许 `config.ini` 里显式配置的授权测试实例；源码与文档中**不含任何真实凭据或地址**
+  （文档里的实例地址已替换为 `<RDS_ENDPOINT>` 占位符）
+- 崩溃恢复在 `ThrowawayInstance`（临时 datadir + 自动端口 + 独立 socket）上做，**不触碰任何在运行的实例**
+- 所有场景都有硬超时、并发上限、行数上限；`SET GLOBAL` 只在具备 SUPER 的实例上尝试，否则**明确 SKIP**
+- **按项目要求，测试表不做收尾清理**（用例只在自己开头 `DROP TABLE IF EXISTS` 自己的表）；
+  全量跑完 `ddl_test` 里会残留约 2 万张表，需要时手工清理
 
-### 4. 分区表行为
-
-- **目标列是分区键**：ALTER 预期失败（PRD规定"不支持修改分区键包含的列"）
-- **目标列非分区键**：ALTER 成功，行为与普通表一致
-- **不兼容的分区键类型**：建表即失败（如 RANGE 不支持 VARCHAR 作分区键）
-
-## 预计总用例数
-
-| 环境 | 文件数 | 用例数 |
-|------|--------|--------|
-| 阿里云 | 12 | 8,094 |
-| 内网 | 15 | ~8,020 |
-| **总计** | **27** | **~16,114** |
+> ⚠️ 历史遗留：旧版本曾在已入库的 `concurrent_dml/run_concurrent_tests.py` 里硬编码真实 RDS 口令，
+> 该口令存在于 git 历史的 2 个提交中。清理工作区**不能**清除历史 —— **请轮换该口令**；
+> 若仓库曾外发，还需用 `git filter-repo` 重写历史。

@@ -1,3 +1,17 @@
+> ⚠️ **本文档的结论已过期，仅作历史留档，请勿直接引用其中的数字。**
+> 唯一权威来源是 **`FIX_LOG.md`**（逐步修复与验证台账）与 **`test_gap_audit_20260923.md`**（原始审计）。
+>
+> 本文的主要过期点：
+> - §10 "本次未覆盖"清单与 `internal_execution_guide.md` §8 自相矛盾（表列数上限 / 连续 INSTANT /
+>   DDL Fuzz 实际已在 Phase 1 执行）
+> - "当前 100K 行" 与 `aliyun_test_results.md` 的 "58.9M 行" 口径冲突：前者是自动化矩阵的实跑规模，
+>   后者是 1 次手工验证。现由 `--rows-scale` 与结果里的 `declared_rows/row_count/run_mode` 强绑定
+> - 连续 INSTANT 只测到 50 轮，**恰好停在 64 行版本上限之前**；实测第 65 轮 errno **4092**
+>   "Maximum row versions reached … Please use COPY/INPLACE"（秒级能力失效）
+>
+> 当前套件规模：**37 个文件 / 10,731 个用例 / 用例 ID 全局唯一（重复 0）**；
+> 阿里云 RDS MySQL 8.0.36 最近一次全量：**5,228/5,228 PASS**（19,530 条断言，0 FAIL / 0 ERROR / 0 MANUAL / 0 MISSING）。
+
 # RDS MySQL DDL 大表并发DML验证报告
 
 ## 1. 测试概述

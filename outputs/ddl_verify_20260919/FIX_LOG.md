@@ -20,7 +20,7 @@
 | 12 | P2 类型转换兼容矩阵（49 探针 × 4 算法） | ✅ 已实现并冻结基线 | 196/196 PASS + golden 回归 |
 | 13 | P2 因子矩阵（22 因子 × 3 转换 × 3 算法）+ 会话变量专项 | ✅ 已实现并冻结基线 | 198/198 PASS + 本机 14/14 + RDS 明确 SKIP |
 | 14 | P2 concurrent_dml 四项 + 凭据外置 | ✅ 已修复并验证 | RDS 实跑：4092 边界 / 70 轮 MODIFY / 4000 DDL / 延迟分位 |
-| 15 | P3 工程与文档口径统一 | ⏳ 待办 | — |
+| 15 | P3 工程与文档口径统一 + 凭据清理 | ✅ 已完成 | 文档 endpoint 清零 / .bak 删除 / README 重写 |
 
 ---
 
@@ -724,7 +724,85 @@ errno 4092: Maximum row versions reached for table ddl_test/t_perf.
 `concurrent_dml/run_concurrent_tests.py` 里硬编码了真实 RDS 地址与 root 口令，且该文件**已入库**。
 改为 `_load_db_config()`：环境变量 > `config.ini` 的 `[env]` 段 > 占位符默认值，源码不留任何凭据。
 
-> ⚠️ **安全提示**：口令 `Taurus_123` 已存在于 git 历史的 2 个提交中
+> ⚠️ **安全提示**：真实 root 口令已存在于 git 历史的 2 个提交中
 > （`cdf1c3a879` 初始提交、`d419023ee3`）。清理工作区**不能**清除历史，
 > 必须**轮换该口令**；若仓库曾外发，还需用 `git filter-repo` 重写历史。
 > 真实 endpoint 仍出现在 4 份文档里，Step 15 统一替换为占位符。
+
+---
+
+## Step 15 — P3 工程与文档口径统一
+
+**改动**
+1. **明文凭据清理**：4 份文档里的真实 RDS endpoint 全部替换为 `<RDS_ENDPOINT>` 占位符
+   （`README.md` / `aliyun_test_results.md` / `test_coverage_report.md` /
+   `concurrent_dml/test_summary_report.md`）；`FIX_LOG.md` 里的口令字面量也已脱敏。
+   `config.ini` 保持 .gitignore 排除；执行器与场景模块都支持 `MYSQL_PWD` /
+   `MYSQL_DEFAULTS_EXTRA_FILE`，密码不再出现在命令行与 `ps` 里。
+2. **10 份历史文档加过期横幅**，逐份列出**具体的**过期点（不是笼统的"已过期"），
+   并指向 `FIX_LOG.md` 作为唯一权威来源。例如：
+   - `upper_limit_coverage_report.md`：VC-08/VC-09/VBIN-03 的 "✅SUCCESS" 结论错误（实测 1118）；
+     §3.1/§3.2 声称插入的超上限值实际被注释；§6.1 声称的 emoji×4095/你好×5460 数据在生成器里不存在
+   - `aliyun_test_results.md`：8094 用例中 1600 ERROR 是生成器缺陷而非"预期行为"、640 MANUAL 是空断言；
+     `09_auto_increment_pk` 的 40/40 里有 20 个实际失败；58.9M 行只是 1 次手工验证
+   - `test_coverage_report.md`：64 种分区组合实为 8 种 × 8 份重复、SUBPARTITION 为 0；
+     `dependencies=FOREIGN_KEY` 因子无实现
+3. **README.md 全量重写**为权威入口：当前规模、目录结构、文件编号与作用域约定、
+   运行方法（含 golden 矩阵的测量→冻结→回归流程）、7 类断言的含义、环境能力画像、
+   16 条主要实测结论、安全边界
+4. **删除 `.bak`**：`generate_test_sql.py.bak`、`concurrent_dml/dml_framework.py.bak`
+   （与正式版并存容易改错文件）
+5. 生成器新增 `_prune_stale_sql()`：文件改名/减量后清理旧产物，杜绝执行器跑到过期文件
+
+> ⚠️ **仍需人工处理的安全项**：真实 root 口令存在于 git 历史的 2 个提交
+> （`cdf1c3a879` 初始提交、`d419023ee3`）。清理工作区**不能**清除历史 ——
+> **请轮换该口令**；若仓库曾外发，还需 `git filter-repo` 重写历史。
+
+---
+
+## 最终验证（全部在阿里云 RDS MySQL 8.0.36 上实跑）
+
+```bash
+python3 -m pytest selfcheck/test_runner.py -q        # 90 passed
+python3 selfcheck/negative_control.py --env aliyun   # 6/6 类注入缺陷全部被捕获
+python3 run_tests.py --env aliyun --workers 8        # 5822/5822 PASS，12.6 分钟
+python3 scenarios/online_ddl_failure_modes.py --env aliyun --rows 200000   # 43 PASS / 0 FAIL / 1 SKIP
+python3 scenarios/replication_and_crash.py --env aliyun --only R1          # 7 PASS
+python3 scenarios/replication_and_crash.py --only C1 --crash-ddl copy_rebuild       # 14 PASS
+python3 scenarios/replication_and_crash.py --only C1 --crash-ddl inplace_add_index  # 14 PASS
+python3 scenarios/session_variables.py --env local   # 14 PASS（RDS 上 3 SKIP，errno 1227）
+```
+
+**最终套件规模**
+
+| 项 | 值 |
+|---|---|
+| SQL 文件 | 37（阿里云 17 / 内网 20） |
+| 用例总数 | **10,731**（阿里云 5,822 / 内网 4,909），用例 ID 全局唯一、重复 0 |
+| 阿里云全量结果 | **5,822 / 5,822 PASS**，0 FAIL / 0 ERROR / 0 MANUAL / 0 UNKNOWN / 0 MISSING |
+| 断言总数 | **21,514 条**（SQL 12,949 + 执行器合成 8,565），平均 **3.70 条/用例**，**21 种**断言 |
+| 证据归档 | `results/archive/summary_aliyun_20260923_183455.csv`（3.2 MB，带时间戳不可覆盖） |
+
+**断言分布（全部 PASS）**
+
+| 断言 | 条数 | 验证内容 |
+|---|---|---|
+| `ALTER_OUTCOME` | 5,373 | 声明 vs 实际的 ALTER 结果 + errno |
+| `META` / `META_TYPE` | 5,347 | 列类型等 7 项元数据 |
+| `PRIMARY` | 5,130 | 与 Oracle 对照表逐行 NULL-safe 比对 |
+| `NEG_ERRNO#n` | 3,192 | 每条负向探针按语句 sha1 对账 errno |
+| `NEG_REJECTED` | 1,458 | 超上限值不落库 / 两表对称 |
+| `BUILD_REJECTED` / `BUILD_CHECK` | 620 | 建表应被拒的负向用例 |
+| `IDX_PRESENT` / `IDX_CONSISTENT` / `IDX_SCAN_HASH` / `CRC_ORACLE` | 256 | 索引与约束完整性 |
+| `OLD_COL_GONE` / `FK_CONSTRAINT_PRESENT` / `FAST_PATH` / `META_CHILD_*` / `META_PARENT_FK` 等 | 134 | CHANGE 改名、外键恢复、秒级差分等 |
+
+**ALTER 声明与实际逐条对齐（5,373 条，无一条不符）**
+
+| 声明 | 实际 | errno | 条数 |
+|---|---|---|---|
+| SUCCESS | SUCCESS | — | 4,053 |
+| FAIL | FAIL | 1846 | 1,148 |
+| FAIL | FAIL | 1845 | 148 |
+| FAIL | FAIL | 3780 | 8 |
+| FAIL | FAIL | 1264 / 1265 / 1366 / 3140 | 16 |
+| N/A（建表即被拒，无 ALTER） | — | — | 449 |

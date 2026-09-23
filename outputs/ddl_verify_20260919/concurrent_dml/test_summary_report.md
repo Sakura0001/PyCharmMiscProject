@@ -5,7 +5,7 @@
 > **需求来源**: IVOC 客户声音（满帮集团）  
 > **Git 分支**: `codex/ddl-verify-20260919`  
 > **仓库**: `git@github.com:Sakura0001/PyCharmMiscProject.git`  
-> **RDS 实例**: `rm-uf65zzh9t461f8k64co.mysql.cn-shanghai.rds.aliyuncs.com:3306` (MySQL 8.0.36)
+> **RDS 实例**: `<RDS_ENDPOINT>:<PORT>` (MySQL 8.0.36)
 
 ---
 

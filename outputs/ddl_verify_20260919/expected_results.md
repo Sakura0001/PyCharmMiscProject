@@ -1,3 +1,14 @@
+> ⚠️ **本文档的结论已过期，仅作历史留档，请勿直接引用其中的数字。**
+> 唯一权威来源是 **`FIX_LOG.md`**（逐步修复与验证台账）与 **`test_gap_audit_20260923.md`**（原始审计）。
+>
+> 本文的预期结果表已被**实测 golden 基线**取代：
+> `tools/conversion_matrix_aliyun.json`（196 条）、`tools/factor_matrix_aliyun.json`（198 条）、
+> `tools/partition_compat_aliyun.json`（24 策略 × 17 类型）、`tools/fk_matrix_aliyun.json`（66 条）。
+> 期望值不再靠人写文档，而是"实测 → 冻结 → 每轮回归比对"。
+>
+> 当前套件规模：**37 个文件 / 10,731 个用例 / 用例 ID 全局唯一（重复 0）**；
+> 阿里云 RDS MySQL 8.0.36 最近一次全量：**5,228/5,228 PASS**（19,530 条断言，0 FAIL / 0 ERROR / 0 MANUAL / 0 MISSING）。
+
 # 预期结果汇总
 
 ## 阿里云环境 (整数 + CHAR + VARCHAR)

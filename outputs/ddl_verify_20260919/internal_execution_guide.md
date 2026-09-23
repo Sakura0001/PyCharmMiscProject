@@ -1,3 +1,16 @@
+> ⚠️ **本文档的结论已过期，仅作历史留档，请勿直接引用其中的数字。**
+> 唯一权威来源是 **`FIX_LOG.md`**（逐步修复与验证台账）与 **`test_gap_audit_20260923.md`**（原始审计）。
+>
+> 执行方式已变更，请按 `README.md` 的"如何运行"一节操作：
+> - 不要再手工 `mysql < xxx.sql`：**8 个大文件只以 `.sql.gz` 存在**，直接喂给 mysql 客户端会失败；
+>   用 `python3 run_tests.py --env internal`（自动解压、按用例切分、逐语句归因错误）
+> - §7 "阿里云 RDS 测试结果摘要（已完成）68 项" 的口径已过期，见 `FIX_LOG.md`
+> - 内网的 CHAR/VARCHAR 口径已通过**环境能力画像**表达：`ENV_PROFILES['internal'] = cross_only`
+>   （同字节桶变更 INSTANT/INPLACE 均不支持，跨字节桶支持），可用 `--charvarchar-mode` 切换
+>
+> 当前套件规模：**37 个文件 / 10,731 个用例 / 用例 ID 全局唯一（重复 0）**；
+> 阿里云 RDS MySQL 8.0.36 最近一次全量：**5,228/5,228 PASS**（19,530 条断言，0 FAIL / 0 ERROR / 0 MANUAL / 0 MISSING）。
+
 # 内网RDS DDL秒级/在线修改列类型 测试执行指南
 
 ## 1. 测试环境要求

@@ -1,8 +1,25 @@
+> ⚠️ **本文档的结论已过期，仅作历史留档，请勿直接引用其中的数字。**
+> 唯一权威来源是 **`FIX_LOG.md`**（逐步修复与验证台账）与 **`test_gap_audit_20260923.md`**（原始审计）。
+>
+> 本文的主要过期点：
+> - "8094 用例 0 FAIL" 的执行器只 glob `*.sql`，**84.8% 用例（含全部 VARCHAR / 分区）被静默跳过**；
+>   其中 1,600 个"ERROR（预期行为）"实为生成器缺陷（对照 SQL 引用不存在的 `b.pad`），
+>   640 个"MANUAL"是**无条件通过的常量断言**
+> - `09_auto_increment_pk.sql` 的 "40/40 PASS" 不成立：其中 **20 个 INSTANT 用例实际失败**
+>   （errno 1845，AUTO_INCREMENT 列不支持 INSTANT 加宽），旧断言只查 `extra LIKE '%auto_increment%'`
+> - "58.9M 行大表" 只有 **1 次手工 INT INPLACE**；自动化大表矩阵归档证据是 **68 条 × 100,000 行**
+>   （声明值为 1,000,000 行），新增 25 条上限类型当时**无任何执行结果**
+> - 外键结论需按实测矩阵更新：INSTANT 改 fk_col 一律失败（整数 3780 / 字符串 1845）；
+>   INPLACE 改字符串 fk_col **连单侧都成功**；`foreign_key_checks=0` **无法**绕过 3780
+>
+> 当前套件规模：**37 个文件 / 10,731 个用例 / 用例 ID 全局唯一（重复 0）**；
+> 阿里云 RDS MySQL 8.0.36 最近一次全量：**5,228/5,228 PASS**（19,530 条断言，0 FAIL / 0 ERROR / 0 MANUAL / 0 MISSING）。
+
 # 阿里云 RDS for MySQL 8.0 DDL 秒级/在线修改列类型 — 测试结果记录
 
 > **测试日期**: 2026-09-20 ~ 2026-09-21  
 > **测试环境**: 阿里云 RDS for MySQL 8.0.36  
-> **实例地址**: `rm-uf65zzh9t461f8k64co.mysql.cn-shanghai.rds.aliyuncs.com:3306`  
+> **实例地址**: `<RDS_ENDPOINT>:<PORT>`  
 > **测试数据库**: `ddl_test`  
 > **功能开关**: `innodb_instant_ddl_enabled=ON`, `rds_upgrade_datatype_instant_enable=ON`（默认开启）  
 > **Git 分支**: `codex/ddl-verify-20260919`  

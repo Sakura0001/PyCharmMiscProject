@@ -1,3 +1,18 @@
+> ⚠️ **本文档的结论已过期，仅作历史留档，请勿直接引用其中的数字。**
+> 唯一权威来源是 **`FIX_LOG.md`**（逐步修复与验证台账）与 **`test_gap_audit_20260923.md`**（原始审计）。
+>
+> 本文的主要过期点：
+> - "64 种分区组合"不成立：二级分区类型被丢弃，`SUBPARTITION` 出现 **0 次**，实为 **8 种 × 8 份重复**；
+>   现已改为 **24 种互不相同**的策略（8 一级 + 16 真组合分区），矩阵由 408 次实测探针得出
+> - "类型转换 50 条"已扩到 **59 条 + 49 个兼容矩阵探针 × 4 种算法**
+> - 因子维度已补：函数索引 / 降序索引 / 不可见索引 / FULLTEXT / SPATIAL / 触发器 / 视图 /
+>   STORED 与 VIRTUAL 生成列 / COMPRESSED / 页压缩 / 加密表 / 显式表空间 / 非 InnoDB 引擎 /
+>   4 档 sql_mode / 万行规模 / 200 列宽表（共 22 因子，实测冻结为 golden）
+> - `dependencies=FOREIGN_KEY` 因子在旧 `_build_create_table` 里**没有实现**（空壳覆盖），已由外键专项替代
+>
+> 当前套件规模：**37 个文件 / 10,731 个用例 / 用例 ID 全局唯一（重复 0）**；
+> 阿里云 RDS MySQL 8.0.36 最近一次全量：**5,228/5,228 PASS**（19,530 条断言，0 FAIL / 0 ERROR / 0 MANUAL / 0 MISSING）。
+
 # RDS MySQL DDL 秒级/在线修改列类型 — 测试覆盖总结文档
 
 > **文档版本**: 1.0  
@@ -43,7 +58,7 @@
 
 | 环境 | 主机 | 覆盖类型 | 状态 |
 |------|------|----------|------|
-| **阿里云 RDS** | `rm-uf65zzh9t461f8k64co.mysql.cn-shanghai.rds.aliyuncs.com:3306` | 整数(SIGNED/UNSIGNED)、CHAR、VARCHAR | ✅ 已完成全量验证 |
+| **阿里云 RDS** | `<RDS_ENDPOINT>:<PORT>` | 整数(SIGNED/UNSIGNED)、CHAR、VARCHAR | ✅ 已完成全量验证 |
 | **内网机器** | 待定 | BINARY、VARBINARY、DECIMAL、TEXT、BLOB、BIT | ⏳ SQL 已生成，待执行 |
 
 两个环境的所有功能开关默认开启，无需管理开关。
