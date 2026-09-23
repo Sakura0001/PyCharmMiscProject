@@ -5,7 +5,7 @@
 -- 覆盖算法: INSTANT + INPLACE
 -- ============================================================
 -- 本文件由 generate_test_sql.py 自动生成, 请勿手动修改
--- Suite-Revision: 3c46cd9910b1   (生成器源码哈希; 时间戳见 results/generation_manifest.json)
+-- Suite-Revision: 1186b16f779b   (生成器源码哈希; 时间戳见 results/generation_manifest.json)
 -- 用例 ID 规则: TC-<文件号>-<作用域>-<序号>-<IT|IP>  —— 全局唯一
 --   作用域 REG=普通表 OFAT/二元组, ATR=列属性保持, SPE=特殊模式,
 --          FK=外键, PTK=分区(目标列是分区键), PNK=分区(目标列非分区键)
@@ -88,7 +88,7 @@ SELECT 'TC-11-FK-0001-IT#META_CHILD_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=int nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
+              'want[type=int nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0001_it' AND column_name='fk_col';
 SELECT 'TC-11-FK-0001-IT#META_CHILD_DATA' AS test_id,
@@ -108,7 +108,7 @@ SELECT 'TC-11-FK-0001-IT#META_CHILD_DATA' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(20) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
+              'want[type=varchar(20) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0001_it' AND column_name='data';
 SELECT 'TC-11-FK-0001-IT#META_PARENT_FK' AS test_id,
@@ -128,7 +128,7 @@ SELECT 'TC-11-FK-0001-IT#META_PARENT_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=int nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
+              'want[type=int nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tp_tc_11_fk_0001_it' AND column_name='fk_col';
 SELECT 'TC-11-FK-0001-IT#FK_CONSTRAINT_PRESENT' AS test_id,
@@ -210,7 +210,7 @@ SELECT 'TC-11-FK-0002-IT#META_CHILD_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=int nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
+              'want[type=int nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0002_it' AND column_name='fk_col';
 SELECT 'TC-11-FK-0002-IT#META_CHILD_DATA' AS test_id,
@@ -230,7 +230,7 @@ SELECT 'TC-11-FK-0002-IT#META_CHILD_DATA' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(20) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
+              'want[type=varchar(20) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0002_it' AND column_name='data';
 SELECT 'TC-11-FK-0002-IT#META_PARENT_FK' AS test_id,
@@ -250,7 +250,7 @@ SELECT 'TC-11-FK-0002-IT#META_PARENT_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=int nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
+              'want[type=int nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tp_tc_11_fk_0002_it' AND column_name='fk_col';
 SELECT 'TC-11-FK-0002-IT#FK_CONSTRAINT_PRESENT' AS test_id,
@@ -334,7 +334,7 @@ SELECT 'TC-11-FK-0003-IT#META_CHILD_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=int nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
+              'want[type=int nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0003_it' AND column_name='fk_col';
 SELECT 'TC-11-FK-0003-IT#META_CHILD_DATA' AS test_id,
@@ -354,7 +354,7 @@ SELECT 'TC-11-FK-0003-IT#META_CHILD_DATA' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(20) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
+              'want[type=varchar(20) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0003_it' AND column_name='data';
 SELECT 'TC-11-FK-0003-IT#META_PARENT_FK' AS test_id,
@@ -374,7 +374,7 @@ SELECT 'TC-11-FK-0003-IT#META_PARENT_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=int nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
+              'want[type=int nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tp_tc_11_fk_0003_it' AND column_name='fk_col';
 SELECT 'TC-11-FK-0003-IT#FK_CONSTRAINT_PRESENT' AS test_id,
@@ -461,7 +461,7 @@ SELECT 'TC-11-FK-0004-IT#META_CHILD_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=int nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
+              'want[type=int nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0004_it' AND column_name='fk_col';
 SELECT 'TC-11-FK-0004-IT#META_CHILD_DATA' AS test_id,
@@ -481,7 +481,7 @@ SELECT 'TC-11-FK-0004-IT#META_CHILD_DATA' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(20) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
+              'want[type=varchar(20) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0004_it' AND column_name='data';
 SELECT 'TC-11-FK-0004-IT#META_PARENT_FK' AS test_id,
@@ -501,7 +501,7 @@ SELECT 'TC-11-FK-0004-IT#META_PARENT_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=int nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
+              'want[type=int nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tp_tc_11_fk_0004_it' AND column_name='fk_col';
 SELECT 'TC-11-FK-0004-IT#FK_CONSTRAINT_PRESENT' AS test_id,
@@ -588,7 +588,7 @@ SELECT 'TC-11-FK-0005-IT#META_CHILD_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=int nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
+              'want[type=int nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0005_it' AND column_name='fk_col';
 SELECT 'TC-11-FK-0005-IT#META_CHILD_DATA' AS test_id,
@@ -608,7 +608,7 @@ SELECT 'TC-11-FK-0005-IT#META_CHILD_DATA' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(20) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
+              'want[type=varchar(20) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0005_it' AND column_name='data';
 SELECT 'TC-11-FK-0005-IT#META_PARENT_FK' AS test_id,
@@ -628,7 +628,7 @@ SELECT 'TC-11-FK-0005-IT#META_PARENT_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=int nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
+              'want[type=int nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tp_tc_11_fk_0005_it' AND column_name='fk_col';
 SELECT 'TC-11-FK-0005-IT#FK_CONSTRAINT_PRESENT' AS test_id,
@@ -719,7 +719,7 @@ SELECT 'TC-11-FK-0006-IT#META_CHILD_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=int nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
+              'want[type=int nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0006_it' AND column_name='fk_col';
 SELECT 'TC-11-FK-0006-IT#META_CHILD_DATA' AS test_id,
@@ -739,7 +739,7 @@ SELECT 'TC-11-FK-0006-IT#META_CHILD_DATA' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(50) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
+              'want[type=varchar(50) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0006_it' AND column_name='data';
 SELECT 'TC-11-FK-0006-IT#META_PARENT_FK' AS test_id,
@@ -759,7 +759,7 @@ SELECT 'TC-11-FK-0006-IT#META_PARENT_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=int nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
+              'want[type=int nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tp_tc_11_fk_0006_it' AND column_name='fk_col';
 
@@ -835,7 +835,7 @@ SELECT 'TC-11-FK-0007-IP#META_CHILD_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=int nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
+              'want[type=int nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0007_ip' AND column_name='fk_col';
 SELECT 'TC-11-FK-0007-IP#META_CHILD_DATA' AS test_id,
@@ -855,7 +855,7 @@ SELECT 'TC-11-FK-0007-IP#META_CHILD_DATA' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(20) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
+              'want[type=varchar(20) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0007_ip' AND column_name='data';
 SELECT 'TC-11-FK-0007-IP#META_PARENT_FK' AS test_id,
@@ -875,7 +875,7 @@ SELECT 'TC-11-FK-0007-IP#META_PARENT_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=int nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
+              'want[type=int nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tp_tc_11_fk_0007_ip' AND column_name='fk_col';
 SELECT 'TC-11-FK-0007-IP#FK_CONSTRAINT_PRESENT' AS test_id,
@@ -957,7 +957,7 @@ SELECT 'TC-11-FK-0008-IP#META_CHILD_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=int nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
+              'want[type=int nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0008_ip' AND column_name='fk_col';
 SELECT 'TC-11-FK-0008-IP#META_CHILD_DATA' AS test_id,
@@ -977,7 +977,7 @@ SELECT 'TC-11-FK-0008-IP#META_CHILD_DATA' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(20) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
+              'want[type=varchar(20) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0008_ip' AND column_name='data';
 SELECT 'TC-11-FK-0008-IP#META_PARENT_FK' AS test_id,
@@ -997,7 +997,7 @@ SELECT 'TC-11-FK-0008-IP#META_PARENT_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=int nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
+              'want[type=int nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tp_tc_11_fk_0008_ip' AND column_name='fk_col';
 SELECT 'TC-11-FK-0008-IP#FK_CONSTRAINT_PRESENT' AS test_id,
@@ -1081,7 +1081,7 @@ SELECT 'TC-11-FK-0009-IP#META_CHILD_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=int nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
+              'want[type=int nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0009_ip' AND column_name='fk_col';
 SELECT 'TC-11-FK-0009-IP#META_CHILD_DATA' AS test_id,
@@ -1101,7 +1101,7 @@ SELECT 'TC-11-FK-0009-IP#META_CHILD_DATA' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(20) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
+              'want[type=varchar(20) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0009_ip' AND column_name='data';
 SELECT 'TC-11-FK-0009-IP#META_PARENT_FK' AS test_id,
@@ -1121,7 +1121,7 @@ SELECT 'TC-11-FK-0009-IP#META_PARENT_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=int nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
+              'want[type=int nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tp_tc_11_fk_0009_ip' AND column_name='fk_col';
 SELECT 'TC-11-FK-0009-IP#FK_CONSTRAINT_PRESENT' AS test_id,
@@ -1208,7 +1208,7 @@ SELECT 'TC-11-FK-0010-IP#META_CHILD_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=int nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
+              'want[type=int nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0010_ip' AND column_name='fk_col';
 SELECT 'TC-11-FK-0010-IP#META_CHILD_DATA' AS test_id,
@@ -1228,7 +1228,7 @@ SELECT 'TC-11-FK-0010-IP#META_CHILD_DATA' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(20) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
+              'want[type=varchar(20) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0010_ip' AND column_name='data';
 SELECT 'TC-11-FK-0010-IP#META_PARENT_FK' AS test_id,
@@ -1248,7 +1248,7 @@ SELECT 'TC-11-FK-0010-IP#META_PARENT_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=int nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
+              'want[type=int nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tp_tc_11_fk_0010_ip' AND column_name='fk_col';
 SELECT 'TC-11-FK-0010-IP#FK_CONSTRAINT_PRESENT' AS test_id,
@@ -1344,7 +1344,7 @@ SELECT 'TC-11-FK-0011-IP#META_CHILD_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=bigint nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
+              'want[type=bigint nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0011_ip' AND column_name='fk_col';
 SELECT 'TC-11-FK-0011-IP#META_CHILD_DATA' AS test_id,
@@ -1364,7 +1364,7 @@ SELECT 'TC-11-FK-0011-IP#META_CHILD_DATA' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(20) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
+              'want[type=varchar(20) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0011_ip' AND column_name='data';
 SELECT 'TC-11-FK-0011-IP#META_PARENT_FK' AS test_id,
@@ -1384,7 +1384,7 @@ SELECT 'TC-11-FK-0011-IP#META_PARENT_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=bigint nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
+              'want[type=bigint nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tp_tc_11_fk_0011_ip' AND column_name='fk_col';
 SELECT 'TC-11-FK-0011-IP#FK_CONSTRAINT_PRESENT' AS test_id,
@@ -1475,7 +1475,7 @@ SELECT 'TC-11-FK-0012-IP#META_CHILD_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=int nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
+              'want[type=int nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0012_ip' AND column_name='fk_col';
 SELECT 'TC-11-FK-0012-IP#META_CHILD_DATA' AS test_id,
@@ -1495,7 +1495,7 @@ SELECT 'TC-11-FK-0012-IP#META_CHILD_DATA' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(50) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
+              'want[type=varchar(50) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0012_ip' AND column_name='data';
 SELECT 'TC-11-FK-0012-IP#META_PARENT_FK' AS test_id,
@@ -1515,7 +1515,7 @@ SELECT 'TC-11-FK-0012-IP#META_PARENT_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=int nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
+              'want[type=int nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tp_tc_11_fk_0012_ip' AND column_name='fk_col';
 
@@ -1588,7 +1588,7 @@ SELECT 'TC-11-FK-0013-IT#META_CHILD_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(50) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
+              'want[type=varchar(50) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0013_it' AND column_name='fk_col';
 SELECT 'TC-11-FK-0013-IT#META_CHILD_DATA' AS test_id,
@@ -1608,7 +1608,7 @@ SELECT 'TC-11-FK-0013-IT#META_CHILD_DATA' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(20) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
+              'want[type=varchar(20) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0013_it' AND column_name='data';
 SELECT 'TC-11-FK-0013-IT#META_PARENT_FK' AS test_id,
@@ -1628,7 +1628,7 @@ SELECT 'TC-11-FK-0013-IT#META_PARENT_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(50) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
+              'want[type=varchar(50) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tp_tc_11_fk_0013_it' AND column_name='fk_col';
 SELECT 'TC-11-FK-0013-IT#FK_CONSTRAINT_PRESENT' AS test_id,
@@ -1707,7 +1707,7 @@ SELECT 'TC-11-FK-0014-IT#META_CHILD_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(50) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
+              'want[type=varchar(50) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0014_it' AND column_name='fk_col';
 SELECT 'TC-11-FK-0014-IT#META_CHILD_DATA' AS test_id,
@@ -1727,7 +1727,7 @@ SELECT 'TC-11-FK-0014-IT#META_CHILD_DATA' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(20) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
+              'want[type=varchar(20) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0014_it' AND column_name='data';
 SELECT 'TC-11-FK-0014-IT#META_PARENT_FK' AS test_id,
@@ -1747,7 +1747,7 @@ SELECT 'TC-11-FK-0014-IT#META_PARENT_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(50) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
+              'want[type=varchar(50) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tp_tc_11_fk_0014_it' AND column_name='fk_col';
 SELECT 'TC-11-FK-0014-IT#FK_CONSTRAINT_PRESENT' AS test_id,
@@ -1828,7 +1828,7 @@ SELECT 'TC-11-FK-0015-IT#META_CHILD_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(50) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
+              'want[type=varchar(50) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0015_it' AND column_name='fk_col';
 SELECT 'TC-11-FK-0015-IT#META_CHILD_DATA' AS test_id,
@@ -1848,7 +1848,7 @@ SELECT 'TC-11-FK-0015-IT#META_CHILD_DATA' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(20) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
+              'want[type=varchar(20) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0015_it' AND column_name='data';
 SELECT 'TC-11-FK-0015-IT#META_PARENT_FK' AS test_id,
@@ -1868,7 +1868,7 @@ SELECT 'TC-11-FK-0015-IT#META_PARENT_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(50) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
+              'want[type=varchar(50) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tp_tc_11_fk_0015_it' AND column_name='fk_col';
 SELECT 'TC-11-FK-0015-IT#FK_CONSTRAINT_PRESENT' AS test_id,
@@ -1952,7 +1952,7 @@ SELECT 'TC-11-FK-0016-IT#META_CHILD_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(50) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
+              'want[type=varchar(50) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0016_it' AND column_name='fk_col';
 SELECT 'TC-11-FK-0016-IT#META_CHILD_DATA' AS test_id,
@@ -1972,7 +1972,7 @@ SELECT 'TC-11-FK-0016-IT#META_CHILD_DATA' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(20) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
+              'want[type=varchar(20) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0016_it' AND column_name='data';
 SELECT 'TC-11-FK-0016-IT#META_PARENT_FK' AS test_id,
@@ -1992,7 +1992,7 @@ SELECT 'TC-11-FK-0016-IT#META_PARENT_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(50) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
+              'want[type=varchar(50) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tp_tc_11_fk_0016_it' AND column_name='fk_col';
 SELECT 'TC-11-FK-0016-IT#FK_CONSTRAINT_PRESENT' AS test_id,
@@ -2076,7 +2076,7 @@ SELECT 'TC-11-FK-0017-IT#META_CHILD_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(50) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
+              'want[type=varchar(50) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0017_it' AND column_name='fk_col';
 SELECT 'TC-11-FK-0017-IT#META_CHILD_DATA' AS test_id,
@@ -2096,7 +2096,7 @@ SELECT 'TC-11-FK-0017-IT#META_CHILD_DATA' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(20) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
+              'want[type=varchar(20) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0017_it' AND column_name='data';
 SELECT 'TC-11-FK-0017-IT#META_PARENT_FK' AS test_id,
@@ -2116,7 +2116,7 @@ SELECT 'TC-11-FK-0017-IT#META_PARENT_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(50) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
+              'want[type=varchar(50) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tp_tc_11_fk_0017_it' AND column_name='fk_col';
 SELECT 'TC-11-FK-0017-IT#FK_CONSTRAINT_PRESENT' AS test_id,
@@ -2201,7 +2201,7 @@ SELECT 'TC-11-FK-0018-IT#META_CHILD_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(50) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
+              'want[type=varchar(50) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0018_it' AND column_name='fk_col';
 SELECT 'TC-11-FK-0018-IT#META_CHILD_DATA' AS test_id,
@@ -2221,7 +2221,7 @@ SELECT 'TC-11-FK-0018-IT#META_CHILD_DATA' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(50) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
+              'want[type=varchar(50) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0018_it' AND column_name='data';
 SELECT 'TC-11-FK-0018-IT#META_PARENT_FK' AS test_id,
@@ -2241,7 +2241,7 @@ SELECT 'TC-11-FK-0018-IT#META_PARENT_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(50) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
+              'want[type=varchar(50) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tp_tc_11_fk_0018_it' AND column_name='fk_col';
 
@@ -2320,7 +2320,7 @@ SELECT 'TC-11-FK-0019-IP#META_CHILD_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(100) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
+              'want[type=varchar(100) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0019_ip' AND column_name='fk_col';
 SELECT 'TC-11-FK-0019-IP#META_CHILD_DATA' AS test_id,
@@ -2340,7 +2340,7 @@ SELECT 'TC-11-FK-0019-IP#META_CHILD_DATA' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(20) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
+              'want[type=varchar(20) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0019_ip' AND column_name='data';
 SELECT 'TC-11-FK-0019-IP#META_PARENT_FK' AS test_id,
@@ -2360,7 +2360,7 @@ SELECT 'TC-11-FK-0019-IP#META_PARENT_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(50) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
+              'want[type=varchar(50) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tp_tc_11_fk_0019_ip' AND column_name='fk_col';
 SELECT 'TC-11-FK-0019-IP#FK_CONSTRAINT_PRESENT' AS test_id,
@@ -2445,7 +2445,7 @@ SELECT 'TC-11-FK-0020-IP#META_CHILD_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(50) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
+              'want[type=varchar(50) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0020_ip' AND column_name='fk_col';
 SELECT 'TC-11-FK-0020-IP#META_CHILD_DATA' AS test_id,
@@ -2465,7 +2465,7 @@ SELECT 'TC-11-FK-0020-IP#META_CHILD_DATA' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(20) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
+              'want[type=varchar(20) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0020_ip' AND column_name='data';
 SELECT 'TC-11-FK-0020-IP#META_PARENT_FK' AS test_id,
@@ -2485,7 +2485,7 @@ SELECT 'TC-11-FK-0020-IP#META_PARENT_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(100) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
+              'want[type=varchar(100) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tp_tc_11_fk_0020_ip' AND column_name='fk_col';
 SELECT 'TC-11-FK-0020-IP#FK_CONSTRAINT_PRESENT' AS test_id,
@@ -2572,7 +2572,7 @@ SELECT 'TC-11-FK-0021-IP#META_CHILD_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(100) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
+              'want[type=varchar(100) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0021_ip' AND column_name='fk_col';
 SELECT 'TC-11-FK-0021-IP#META_CHILD_DATA' AS test_id,
@@ -2592,7 +2592,7 @@ SELECT 'TC-11-FK-0021-IP#META_CHILD_DATA' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(20) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
+              'want[type=varchar(20) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0021_ip' AND column_name='data';
 SELECT 'TC-11-FK-0021-IP#META_PARENT_FK' AS test_id,
@@ -2612,7 +2612,7 @@ SELECT 'TC-11-FK-0021-IP#META_PARENT_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(100) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
+              'want[type=varchar(100) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tp_tc_11_fk_0021_ip' AND column_name='fk_col';
 SELECT 'TC-11-FK-0021-IP#FK_CONSTRAINT_PRESENT' AS test_id,
@@ -2702,7 +2702,7 @@ SELECT 'TC-11-FK-0022-IP#META_CHILD_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(100) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
+              'want[type=varchar(100) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0022_ip' AND column_name='fk_col';
 SELECT 'TC-11-FK-0022-IP#META_CHILD_DATA' AS test_id,
@@ -2722,7 +2722,7 @@ SELECT 'TC-11-FK-0022-IP#META_CHILD_DATA' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(20) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
+              'want[type=varchar(20) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0022_ip' AND column_name='data';
 SELECT 'TC-11-FK-0022-IP#META_PARENT_FK' AS test_id,
@@ -2742,7 +2742,7 @@ SELECT 'TC-11-FK-0022-IP#META_PARENT_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(100) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
+              'want[type=varchar(100) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tp_tc_11_fk_0022_ip' AND column_name='fk_col';
 SELECT 'TC-11-FK-0022-IP#FK_CONSTRAINT_PRESENT' AS test_id,
@@ -2832,7 +2832,7 @@ SELECT 'TC-11-FK-0023-IP#META_CHILD_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(100) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
+              'want[type=varchar(100) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0023_ip' AND column_name='fk_col';
 SELECT 'TC-11-FK-0023-IP#META_CHILD_DATA' AS test_id,
@@ -2852,7 +2852,7 @@ SELECT 'TC-11-FK-0023-IP#META_CHILD_DATA' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(20) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
+              'want[type=varchar(20) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0023_ip' AND column_name='data';
 SELECT 'TC-11-FK-0023-IP#META_PARENT_FK' AS test_id,
@@ -2872,7 +2872,7 @@ SELECT 'TC-11-FK-0023-IP#META_PARENT_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(100) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
+              'want[type=varchar(100) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tp_tc_11_fk_0023_ip' AND column_name='fk_col';
 SELECT 'TC-11-FK-0023-IP#FK_CONSTRAINT_PRESENT' AS test_id,
@@ -2957,7 +2957,7 @@ SELECT 'TC-11-FK-0024-IP#META_CHILD_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(50) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
+              'want[type=varchar(50) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0024_ip' AND column_name='fk_col';
 SELECT 'TC-11-FK-0024-IP#META_CHILD_DATA' AS test_id,
@@ -2977,7 +2977,7 @@ SELECT 'TC-11-FK-0024-IP#META_CHILD_DATA' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(50) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
+              'want[type=varchar(50) nullable=YES has_default=1 charset=* collation=* extra= pos=3]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tc_tc_11_fk_0024_ip' AND column_name='data';
 SELECT 'TC-11-FK-0024-IP#META_PARENT_FK' AS test_id,
@@ -2997,7 +2997,7 @@ SELECT 'TC-11-FK-0024-IP#META_PARENT_FK' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(50) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
+              'want[type=varchar(50) nullable=YES has_default=0 charset=latin1 collation=latin1_swedish_ci extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='tp_tc_11_fk_0024_ip' AND column_name='fk_col';
 

@@ -5,7 +5,7 @@
 -- 覆盖算法: INSTANT + INPLACE (增强类型 INSTANT 预期成功: BINARY/VARBINARY/DECIMAL 已确认支持)
 -- ============================================================
 -- 本文件由 generate_test_sql.py 自动生成, 请勿手动修改
--- Suite-Revision: 3c46cd9910b1   (生成器源码哈希; 时间戳见 results/generation_manifest.json)
+-- Suite-Revision: 1186b16f779b   (生成器源码哈希; 时间戳见 results/generation_manifest.json)
 -- 用例 ID 规则: TC-<文件号>-<作用域>-<序号>-<IT|IP>  —— 全局唯一
 --   作用域 REG=普通表 OFAT/二元组, ATR=列属性保持, SPE=特殊模式,
 --          FK=外键, PTK=分区(目标列是分区键), PNK=分区(目标列非分区键)
@@ -94,7 +94,7 @@ SELECT 'TC-33-TMG-0001-XX#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=binary(20) nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
+              'want[type=binary(20) nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_33_tmg_0001_xx' AND column_name='target';
 
@@ -176,7 +176,7 @@ SELECT 'TC-33-TMG-0002-XX#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varbinary(40) nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
+              'want[type=varbinary(40) nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_33_tmg_0002_xx' AND column_name='target';
 
@@ -258,7 +258,7 @@ SELECT 'TC-33-TMG-0003-XX#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=decimal(12,2) nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
+              'want[type=decimal(12,2) nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_33_tmg_0003_xx' AND column_name='target';
 
@@ -340,7 +340,7 @@ SELECT 'TC-33-TMG-0004-XX#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=decimal(65,30) nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
+              'want[type=decimal(65,30) nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_33_tmg_0004_xx' AND column_name='target';
 
@@ -422,7 +422,7 @@ SELECT 'TC-33-TMG-0005-XX#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=decimal(65,0) nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
+              'want[type=decimal(65,0) nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_33_tmg_0005_xx' AND column_name='target';
 
@@ -504,7 +504,7 @@ SELECT 'TC-33-TMG-0006-XX#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=decimal(18,2) nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
+              'want[type=decimal(18,2) nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_33_tmg_0006_xx' AND column_name='target';
 
@@ -586,7 +586,7 @@ SELECT 'TC-33-TMG-0007-XX#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=mediumtext nullable=YES has_default=0 charset=utf8mb4 collation=utf8mb4_0900_ai_ci extra= pos=2]') AS mismatch
+              'want[type=mediumtext nullable=YES has_default=0 charset=utf8mb4 collation=utf8mb4_0900_ai_ci extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_33_tmg_0007_xx' AND column_name='target';
 
@@ -668,7 +668,7 @@ SELECT 'TC-33-TMG-0008-XX#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=mediumblob nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
+              'want[type=mediumblob nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_33_tmg_0008_xx' AND column_name='target';
 

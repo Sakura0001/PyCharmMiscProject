@@ -588,6 +588,16 @@ def check_alter_outcome(case, errors):
     if not shas or not want:
         return [], None
     matched = [e for e in errors if e.get("stmt_sha1") in shas]
+    if want.upper() == "MEASURE":
+        # 兼容矩阵尚未冻结基线：如实记录实测结果，交给 --promote 流程人工复核后固化。
+        # 绝不"默认通过"——记录本身会写进 results/conversion_matrix_<env>.json。
+        actual_m = "FAIL" if matched else "SUCCESS"
+        errno_m = matched[0].get("errno") if matched else None
+        return [{"name": "ALTER_MEASURED",
+                 "assert_id": "%s#ALTER_MEASURED" % case.test_id,
+                 "result": "PASS",
+                 "mismatch": "MEASURED alter=%s errno=%s（未冻结基线，仅记录）" % (actual_m, errno_m),
+                 "source": "runner", "measured": {"alter": actual_m, "errno": errno_m}}], errno_m
     # alter=SUCCESS -> 声明的所有 ALTER 都不能报错
     # alter=FAIL    -> 至少一条报错且 errno 在声明集合内
     actual = "FAIL" if matched else "SUCCESS"
@@ -800,6 +810,8 @@ class Runner(object):
             "mismatch": mismatch[:1000],
             "assertions": assertions,
             "assertion_count": len(assertions),
+            "conv_probe": (case.meta.get("expect_tags", {}).get("conv_probe") or [""])[0],
+            "conv_algo": (case.meta.get("expect_tags", {}).get("conv_algo") or [""])[0],
             "alter_expected": (case.meta.get("expect_tags", {}).get("alter") or [""])[0],
             "alter_actual": _alter_actual(case, errors),
             "alter_errno": _alter_errno(case, errors),
@@ -962,6 +974,44 @@ def select_files(files_arg, all_files, sql_dir):
     for m in dict.fromkeys(missing):
         print("  !! 指定的文件在 %s 中不存在（.sql / .sql.gz 都没有）: %s" % (sql_dir, m))
     return picked
+
+
+def write_measurement_matrix(runner, env, out_dir):
+    """把 alter=MEASURE 的实测结果汇总成兼容矩阵，供人工复核后 promote 成 golden。
+
+    输出: results/conversion_matrix_<env>.json
+    promote: python3 tools/promote_conversion_matrix.py --env <env>
+    """
+    matrix = {}
+    for r in runner.results:
+        if (r.get("alter_expected") or "").upper() != "MEASURE":
+            continue
+        pid, algo = r.get("conv_probe"), r.get("conv_algo")
+        if not pid or not algo:
+            continue
+        measured = next((a.get("measured") for a in (r.get("assertions") or [])
+                         if a.get("measured")), None)
+        if not measured:
+            continue
+        key = "%s|%s" % (pid, algo)
+        slot = matrix.setdefault(key, {"probe": pid, "algorithm": algo,
+                                       "alter": measured["alter"], "errnos": [],
+                                       "cases": 0})
+        slot["cases"] += 1
+        if measured.get("errno") is not None and measured["errno"] not in slot["errnos"]:
+            slot["errnos"].append(measured["errno"])
+        if slot["alter"] != measured["alter"]:
+            slot["alter"] = "INCONSISTENT"
+    if not matrix:
+        return None
+    path = os.path.join(out_dir, "conversion_matrix_%s.json" % env)
+    with open(path, "w", encoding="utf-8") as fh:
+        json.dump({"env": env, "generated_at": time.strftime("%Y-%m-%d %H:%M:%S"),
+                   "note": "MEASURE 模式实测结果；人工复核后用 tools/promote_conversion_matrix.py "
+                           "冻结为 tools/conversion_matrix_%s.json" % env,
+                   "count": len(matrix), "matrix": matrix}, fh, ensure_ascii=False, indent=1)
+    print("  实测兼容矩阵 %d 条 -> %s" % (len(matrix), path))
+    return path
 
 
 def write_outputs(runner, env, manifest, snapshot, out_dir):
@@ -1139,6 +1189,7 @@ def main():
                 runner._jsonl.close()
 
         csv_path = write_outputs(runner, env, manifest, snapshot, args.out_dir)
+        write_measurement_matrix(runner, env, args.out_dir)
         print("\n" + "=" * 72)
         print("SUMMARY (%s)" % env)
         print("=" * 72)

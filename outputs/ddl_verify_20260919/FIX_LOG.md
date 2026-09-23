@@ -17,7 +17,10 @@
 | 9 | P1-2/P1-3/P1-4 空表 + DDL 语句形态 + 索引完整性 | ✅ 已修复并验证 | pytest 90 + RDS 200/200 + 392/392 |
 | 10 | P1-5 在线 DDL 失败模式 | ✅ 已实现并验证 | RDS 43 PASS/0 FAIL/1 SKIP + 本机 S6 实测 1799 |
 | 11 | P1-6 binlog/备库一致性 + 崩溃恢复 | ✅ 已实现并验证 | R1 7/7 (RDS) + C1/C2 各 14/14 (SIGKILL 真实崩溃) |
-| 12+ | P2 类型/因子矩阵、concurrent_dml、P3 文档 | ⏳ 待办 | — |
+| 12 | P2 类型转换兼容矩阵（49 探针 × 4 算法） | ✅ 已实现并冻结基线 | 196/196 PASS + golden 回归 |
+| 13 | P2 因子矩阵（FULLTEXT/触发器/视图/GIPK/引擎/sql_mode…） | ⏳ 进行中 | — |
+| 14 | P2 concurrent_dml 四项 | ⏳ 待办 | — |
+| 15 | P3 工程与文档口径统一 | ⏳ 待办 | — |
 
 ---
 
@@ -556,3 +559,61 @@ python3 scenarios/replication_and_crash.py --only C1 --crash-rows 2000000 --cras
 python3 scenarios/replication_and_crash.py --only C1 --crash-rows 2000000 --crash-ddl inplace_add_index
 python3 scenarios/replication_and_crash.py --env aliyun --only R2 --replica-config replica.ini
 ```
+
+---
+
+## Step 12 — P2 类型转换兼容矩阵（49 探针 × 4 算法 = 196 用例/环境）
+
+**问题**：旧套件只覆盖"加宽且被支持"的转换，负向空间与整类类型族 **0 覆盖**：
+DECIMAL 只测 M 增大 D 不变、无符号↔有符号互转、无缩窄转换、无跨族转换、
+无 ENUM/SET、无 FLOAT/DOUBLE、无 DATE/TIME/DATETIME/TIMESTAMP(含 fsp)、无 YEAR、
+无 JSON、无 GEOMETRY、无"改类型同时改 charset/collation"。
+
+**方法论：兼容性矩阵不靠猜期望值，而是"测量 → 冻结基线 → 回归比对"**
+1. `tools/conversion_matrix_<env>.json` 不存在时，用例声明 `alter=MEASURE`，
+   执行器只**记录**实测结果（不判失败），并汇总写出 `results/conversion_matrix_<env>.json`
+2. 人工复核后 `python3 tools/promote_conversion_matrix.py --env aliyun` 冻结成 golden
+   （`alter=INCONSISTENT` 的条目会被拒绝并要求排查）
+3. 之后每次生成都按 golden 写死期望，任何行为变化都被 `ALTER_OUTCOME` 判 FAIL
+
+覆盖的 49 个探针（每个 × default/instant/inplace/copy 四种算法）：
+DECIMAL 变标度 5 个（D 增大 / D 减小 / M 减小 / M,D 同变 / D 到最大）、
+符号变化 4 个（含有负数、含无符号最大值溢出）、缩窄 10 个（含有数据溢出与不溢出两档）、
+跨族 9 个（INT↔DECIMAL、VARCHAR↔TEXT、CHAR↔VARCHAR、INT↔VARCHAR，含非法数据）、
+ENUM/SET 4 个（末尾追加 / 成员重排 / 删除成员 / SET 追加）、
+时间类型 6 个（DATETIME fsp 升降、TIMESTAMP→DATETIME、DATE→DATETIME、TIME fsp、YEAR→SMALLINT）、
+FLOAT/DOUBLE 3 个、JSON 3 个（含非法 JSON）、GEOMETRY 1 个、
+charset/collation 变更 4 个（latin1→utf8mb4、utf8mb4→latin1、general_ci→bin、bin→0900_ai_ci）。
+
+**实测结论（阿里云 RDS MySQL 8.0.36，已冻结为 golden）**
+
+| 结论 | 证据 |
+|---|---|
+| **INSTANT/INPLACE 只支持 5/49 个探针**：ENUM 末尾追加、SET 末尾追加、FLOAT→FLOAT(M,D)、collation 变更（两个方向） | 其余 44 个探针 INSTANT 与 INPLACE 一律 **errno 1846** |
+| **不写 ALGORITHM 时几乎全部成功**（44/49） | 说明"能改"不等于"秒级"——服务器静默回退到 COPY 重建，这正是 Step 9 计时专项量化的差异（20~38 倍） |
+| **缩窄转换在数据不丢失时是成功的**（`BIGINT→INT`、`VARCHAR(255)→VARCHAR(10)`、`CHAR(255)→CHAR(254)`、`VARBINARY(40)→(20)`、`BIT(64)→BIT(32)`、`LONGTEXT→TEXT`、`LONGBLOB→BLOB`） | 审计报告里"必须不支持缩窄"的预设**是错的**；数据溢出时才失败：整数 1264、字符串 1265、`BINARY(20)→BINARY(10)` 因定长补零也 1265 |
+| 有符号→无符号含负数 **1264**；无符号最大值→有符号 **1264** | 值域校验正确 |
+| `VARCHAR→INT` 数据非数字 **1366**；`LONGTEXT→JSON` 非法 JSON **3140** | 语义校验正确 |
+| DECIMAL 变标度：D 增大 / D 减小 / M,D 同变 / D 到最大 都只能走 default/COPY，INSTANT 与 INPLACE 均 1846 | 与"阿里云不支持 DECIMAL 改类型"一致 |
+
+**过程中自查出的 3 个缺陷（已修）**
+1. `build_meta_assertion_full` 的 `want[...]` 文本**未转义**就拼进 SQL 字符串字面量：
+   ENUM/SET 的 `column_type` 本身含单引号（`enum('a','b')`）→ errno 1064，16 个用例恒 ERROR。
+   普通类型没有引号，所以这个缺陷一直没暴露
+2. 把带 `CHARACTER SET latin1` 的原始类型串直接喂给 `column_type_of` →
+   期望值变成 `varchar(10) character set latin1`，与实测 `varchar(10)` 不符 → 66 个 META 假失败。
+   新增 `strip_cs_clause()`
+3. META 对**实例相关的隐式属性**写死期望：TIMESTAMP 实测为
+   `nullable=NO / has_default=1 / extra='DEFAULT_GENERATED on update CURRENT_TIMESTAMP'`
+   （取决于 `explicit_defaults_for_timestamp`）→ 环境相关的假失败。
+   兼容矩阵改用 `check="type"` 只断言列类型（属性保持由主套件的 META 负责，那里列定义完全显式）
+
+**验证**
+```bash
+python3 run_tests.py --env aliyun --files 40_conversion_matrix.sql --workers 6   # MEASURE 轮：196 条实测
+python3 tools/promote_conversion_matrix.py --env aliyun                          # 冻结 golden（196 条，0 条不一致）
+python3 generate_test_sql.py && python3 run_tests.py --env aliyun --files 40_conversion_matrix.sql --workers 6
+#   -> 196/196 PASS（ALTER_OUTCOME 196 + PRIMARY 196 + META 196）
+```
+内网侧 `41_conversion_matrix_enhanced.sql` 同一套探针、golden 尚未冻结，
+拿到内网实例后第一轮以 MEASURE 模式跑，复核后 promote 即可。

@@ -1,0 +1,1000 @@
+{
+ "env": "aliyun",
+ "source": "conversion_matrix_aliyun.json",
+ "promoted_at": "2026-09-23 17:14:53",
+ "count": 196,
+ "matrix": {
+  "DEC-D-UP|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "DEC-D-UP|default": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "DEC-D-UP|copy": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "DEC-D-UP|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "DEC-D-DOWN|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "DEC-D-DOWN|default": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "DEC-M-DOWN|default": {
+   "alter": "FAIL",
+   "errno": [
+    1264
+   ]
+  },
+  "DEC-M-DOWN|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "DEC-M-DOWN|copy": {
+   "alter": "FAIL",
+   "errno": [
+    1264
+   ]
+  },
+  "DEC-M-DOWN|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "DEC-D-DOWN|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "DEC-D-DOWN|copy": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "DEC-MD-BOTH|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "DEC-MD-BOTH|default": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "DEC-MD-BOTH|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "DEC-MD-BOTH|copy": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "DEC-D-MAX|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "DEC-D-MAX|default": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "DEC-D-MAX|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "DEC-D-MAX|copy": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "SIGN-S2U|default": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "SIGN-S2U|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "SIGN-S2U|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "SIGN-S2U|copy": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "SIGN-S2U-NEG|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "SIGN-S2U-NEG|default": {
+   "alter": "FAIL",
+   "errno": [
+    1264
+   ]
+  },
+  "SIGN-S2U-NEG|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "SIGN-S2U-NEG|copy": {
+   "alter": "FAIL",
+   "errno": [
+    1264
+   ]
+  },
+  "SIGN-U2S|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "SIGN-U2S|default": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "SIGN-U2S|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "SIGN-U2S-OVER|default": {
+   "alter": "FAIL",
+   "errno": [
+    1264
+   ]
+  },
+  "SIGN-U2S|copy": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "SIGN-U2S-OVER|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "SIGN-U2S-OVER|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "SIGN-U2S-OVER|copy": {
+   "alter": "FAIL",
+   "errno": [
+    1264
+   ]
+  },
+  "NARROW-BIG2INT|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "NARROW-BIG2INT|default": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "NARROW-BIG2INT|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "NARROW-BIG2INT|copy": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "NARROW-BIG2INT-OVER|default": {
+   "alter": "FAIL",
+   "errno": [
+    1264
+   ]
+  },
+  "NARROW-BIG2INT-OVER|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "NARROW-BIG2INT-OVER|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "NARROW-BIG2INT-OVER|copy": {
+   "alter": "FAIL",
+   "errno": [
+    1264
+   ]
+  },
+  "NARROW-VC|default": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "NARROW-VC|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "NARROW-VC|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "NARROW-VC|copy": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "NARROW-VC-OVER|default": {
+   "alter": "FAIL",
+   "errno": [
+    1265
+   ]
+  },
+  "NARROW-VC-OVER|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "NARROW-VC-OVER|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "NARROW-VC-OVER|copy": {
+   "alter": "FAIL",
+   "errno": [
+    1265
+   ]
+  },
+  "NARROW-CHAR|default": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "NARROW-CHAR|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "NARROW-CHAR|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "NARROW-CHAR|copy": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "NARROW-BIN|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "NARROW-BIN|default": {
+   "alter": "FAIL",
+   "errno": [
+    1265
+   ]
+  },
+  "NARROW-BIN|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "NARROW-BIN|copy": {
+   "alter": "FAIL",
+   "errno": [
+    1265
+   ]
+  },
+  "NARROW-VBIN|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "NARROW-VBIN|default": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "NARROW-VBIN|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "NARROW-VBIN|copy": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "NARROW-BIT|default": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "NARROW-BIT|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "NARROW-BIT|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "NARROW-BIT|copy": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "NARROW-TEXT|default": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "NARROW-TEXT|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "NARROW-TEXT|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "NARROW-TEXT|copy": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "NARROW-BLOB|default": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "NARROW-BLOB|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "NARROW-BLOB|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "NARROW-BLOB|copy": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "CROSS-INT2DEC|default": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "CROSS-INT2DEC|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "CROSS-DEC2BIG|default": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "CROSS-INT2DEC|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "CROSS-DEC2BIG|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "CROSS-INT2DEC|copy": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "CROSS-DEC2BIG|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "CROSS-VC2TEXT|default": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "CROSS-VC2TEXT|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "CROSS-DEC2BIG|copy": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "CROSS-VC2TEXT|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "CROSS-VC2TEXT|copy": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "CROSS-TEXT2VC|default": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "CROSS-TEXT2VC|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "CROSS-TEXT2VC|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "CROSS-TEXT2VC|copy": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "CROSS-CHAR2VC|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "CROSS-CHAR2VC|default": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "CROSS-CHAR2VC|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "CROSS-CHAR2VC|copy": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "CROSS-VC2CHAR|default": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "CROSS-VC2CHAR|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "CROSS-VC2CHAR|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "CROSS-VC2CHAR|copy": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "CROSS-INT2VC|default": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "CROSS-INT2VC|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "CROSS-INT2VC|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "CROSS-INT2VC|copy": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "CROSS-VC2INT|default": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "CROSS-VC2INT|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "CROSS-VC2INT|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "CROSS-VC2INT-BAD|default": {
+   "alter": "FAIL",
+   "errno": [
+    1366
+   ]
+  },
+  "CROSS-VC2INT-BAD|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "CROSS-VC2INT-BAD|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "CROSS-VC2INT|copy": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "CROSS-VC2INT-BAD|copy": {
+   "alter": "FAIL",
+   "errno": [
+    1366
+   ]
+  },
+  "ENUM-APPEND|default": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "ENUM-APPEND|instant": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "ENUM-APPEND|inplace": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "ENUM-APPEND|copy": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "ENUM-REORDER|default": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "ENUM-REORDER|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "ENUM-REMOVE|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "ENUM-REORDER|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "ENUM-REMOVE|default": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "ENUM-REORDER|copy": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "ENUM-REMOVE|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "ENUM-REMOVE|copy": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "TIME-DT-FSP-UP|default": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "SET-APPEND|default": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "SET-APPEND|instant": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "TIME-DT-FSP-UP|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "SET-APPEND|inplace": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "SET-APPEND|copy": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "TIME-DT-FSP-UP|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "TIME-DT-FSP-UP|copy": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "TIME-DT-FSP-DOWN|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "TIME-DT-FSP-DOWN|default": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "TIME-DT-FSP-DOWN|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "TIME-DT-FSP-DOWN|copy": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "TIME-TS2DT|default": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "TIME-TS2DT|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "TIME-TS2DT|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "TIME-TS2DT|copy": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "TIME-DATE2DT|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "TIME-DATE2DT|default": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "TIME-DATE2DT|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "TIME-DATE2DT|copy": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "TIME-TIME-FSP|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "TIME-TIME-FSP|default": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "TIME-TIME-FSP|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "TIME-TIME-FSP|copy": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "TIME-YEAR2INT|default": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "TIME-YEAR2INT|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "TIME-YEAR2INT|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "TIME-YEAR2INT|copy": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "FLT-2-DBL|default": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "FLT-2-DBL|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "FLT-2-DBL|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "FLT-2-DBL|copy": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "DBL-2-DEC|default": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "DBL-2-DEC|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "DBL-2-DEC|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "DBL-2-DEC|copy": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "FLT-PREC|default": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "FLT-PREC|instant": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "FLT-PREC|inplace": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "FLT-PREC|copy": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "JSON-2-TEXT|default": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "JSON-2-TEXT|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "JSON-2-TEXT|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "JSON-2-TEXT|copy": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "TEXT-2-JSON|default": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "TEXT-2-JSON|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "TEXT-2-JSON|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "TEXT-2-JSON|copy": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "TEXT-2-JSON-BAD|default": {
+   "alter": "FAIL",
+   "errno": [
+    3140
+   ]
+  },
+  "TEXT-2-JSON-BAD|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "TEXT-2-JSON-BAD|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "TEXT-2-JSON-BAD|copy": {
+   "alter": "FAIL",
+   "errno": [
+    3140
+   ]
+  },
+  "GEO-2-POINT|default": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "GEO-2-POINT|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "GEO-2-POINT|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "GEO-2-POINT|copy": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "CS-L1-2-U4|default": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "CS-L1-2-U4|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "CS-L1-2-U4|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "CS-U4-SHRINK-CS|default": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "CS-L1-2-U4|copy": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "CS-U4-SHRINK-CS|instant": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "CS-U4-SHRINK-CS|inplace": {
+   "alter": "FAIL",
+   "errno": [
+    1846
+   ]
+  },
+  "CS-U4-SHRINK-CS|copy": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "CO-GENERAL-2-BIN|default": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "CO-GENERAL-2-BIN|instant": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "CO-GENERAL-2-BIN|inplace": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "CO-GENERAL-2-BIN|copy": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "CO-BIN-2-AI|default": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "CO-BIN-2-AI|instant": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "CO-BIN-2-AI|inplace": {
+   "alter": "SUCCESS",
+   "errno": []
+  },
+  "CO-BIN-2-AI|copy": {
+   "alter": "SUCCESS",
+   "errno": []
+  }
+ }
+}

@@ -5,7 +5,7 @@
 -- 覆盖算法: INSTANT + INPLACE
 -- ============================================================
 -- 本文件由 generate_test_sql.py 自动生成, 请勿手动修改
--- Suite-Revision: 3c46cd9910b1   (生成器源码哈希; 时间戳见 results/generation_manifest.json)
+-- Suite-Revision: 1186b16f779b   (生成器源码哈希; 时间戳见 results/generation_manifest.json)
 -- 用例 ID 规则: TC-<文件号>-<作用域>-<序号>-<IT|IP>  —— 全局唯一
 --   作用域 REG=普通表 OFAT/二元组, ATR=列属性保持, SPE=特殊模式,
 --          FK=外键, PTK=分区(目标列是分区键), PNK=分区(目标列非分区键)
@@ -54,7 +54,7 @@ SELECT 'TC-09-ATR-0001-IT#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=tinyint nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
+              'want[type=tinyint nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_09_atr_0001_it' AND column_name='id';
 
@@ -96,7 +96,7 @@ SELECT 'TC-09-ATR-0002-IP#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=smallint nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
+              'want[type=smallint nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_09_atr_0002_ip' AND column_name='id';
 
@@ -138,7 +138,7 @@ SELECT 'TC-09-ATR-0003-IT#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=tinyint nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
+              'want[type=tinyint nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_09_atr_0003_it' AND column_name='id';
 
@@ -180,7 +180,7 @@ SELECT 'TC-09-ATR-0004-IP#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=mediumint nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
+              'want[type=mediumint nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_09_atr_0004_ip' AND column_name='id';
 
@@ -222,7 +222,7 @@ SELECT 'TC-09-ATR-0005-IT#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=tinyint nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
+              'want[type=tinyint nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_09_atr_0005_it' AND column_name='id';
 
@@ -264,7 +264,7 @@ SELECT 'TC-09-ATR-0006-IP#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=int nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
+              'want[type=int nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_09_atr_0006_ip' AND column_name='id';
 
@@ -306,7 +306,7 @@ SELECT 'TC-09-ATR-0007-IT#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=tinyint nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
+              'want[type=tinyint nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_09_atr_0007_it' AND column_name='id';
 
@@ -348,7 +348,7 @@ SELECT 'TC-09-ATR-0008-IP#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=bigint nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
+              'want[type=bigint nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_09_atr_0008_ip' AND column_name='id';
 
@@ -390,7 +390,7 @@ SELECT 'TC-09-ATR-0009-IT#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=smallint nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
+              'want[type=smallint nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_09_atr_0009_it' AND column_name='id';
 
@@ -432,7 +432,7 @@ SELECT 'TC-09-ATR-0010-IP#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=mediumint nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
+              'want[type=mediumint nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_09_atr_0010_ip' AND column_name='id';
 
@@ -474,7 +474,7 @@ SELECT 'TC-09-ATR-0011-IT#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=smallint nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
+              'want[type=smallint nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_09_atr_0011_it' AND column_name='id';
 
@@ -516,7 +516,7 @@ SELECT 'TC-09-ATR-0012-IP#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=int nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
+              'want[type=int nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_09_atr_0012_ip' AND column_name='id';
 
@@ -558,7 +558,7 @@ SELECT 'TC-09-ATR-0013-IT#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=smallint nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
+              'want[type=smallint nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_09_atr_0013_it' AND column_name='id';
 
@@ -600,7 +600,7 @@ SELECT 'TC-09-ATR-0014-IP#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=bigint nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
+              'want[type=bigint nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_09_atr_0014_ip' AND column_name='id';
 
@@ -642,7 +642,7 @@ SELECT 'TC-09-ATR-0015-IT#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=mediumint nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
+              'want[type=mediumint nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_09_atr_0015_it' AND column_name='id';
 
@@ -684,7 +684,7 @@ SELECT 'TC-09-ATR-0016-IP#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=int nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
+              'want[type=int nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_09_atr_0016_ip' AND column_name='id';
 
@@ -726,7 +726,7 @@ SELECT 'TC-09-ATR-0017-IT#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=mediumint nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
+              'want[type=mediumint nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_09_atr_0017_it' AND column_name='id';
 
@@ -768,7 +768,7 @@ SELECT 'TC-09-ATR-0018-IP#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=bigint nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
+              'want[type=bigint nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_09_atr_0018_ip' AND column_name='id';
 
@@ -810,7 +810,7 @@ SELECT 'TC-09-ATR-0019-IT#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=int nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
+              'want[type=int nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_09_atr_0019_it' AND column_name='id';
 
@@ -852,7 +852,7 @@ SELECT 'TC-09-ATR-0020-IP#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=bigint nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
+              'want[type=bigint nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_09_atr_0020_ip' AND column_name='id';
 
@@ -894,7 +894,7 @@ SELECT 'TC-09-ATR-0021-IT#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=tinyint unsigned nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
+              'want[type=tinyint unsigned nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_09_atr_0021_it' AND column_name='id';
 
@@ -936,7 +936,7 @@ SELECT 'TC-09-ATR-0022-IP#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=smallint unsigned nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
+              'want[type=smallint unsigned nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_09_atr_0022_ip' AND column_name='id';
 
@@ -978,7 +978,7 @@ SELECT 'TC-09-ATR-0023-IT#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=tinyint unsigned nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
+              'want[type=tinyint unsigned nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_09_atr_0023_it' AND column_name='id';
 
@@ -1020,7 +1020,7 @@ SELECT 'TC-09-ATR-0024-IP#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=mediumint unsigned nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
+              'want[type=mediumint unsigned nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_09_atr_0024_ip' AND column_name='id';
 
@@ -1062,7 +1062,7 @@ SELECT 'TC-09-ATR-0025-IT#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=tinyint unsigned nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
+              'want[type=tinyint unsigned nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_09_atr_0025_it' AND column_name='id';
 
@@ -1104,7 +1104,7 @@ SELECT 'TC-09-ATR-0026-IP#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=int unsigned nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
+              'want[type=int unsigned nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_09_atr_0026_ip' AND column_name='id';
 
@@ -1146,7 +1146,7 @@ SELECT 'TC-09-ATR-0027-IT#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=tinyint unsigned nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
+              'want[type=tinyint unsigned nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_09_atr_0027_it' AND column_name='id';
 
@@ -1188,7 +1188,7 @@ SELECT 'TC-09-ATR-0028-IP#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=bigint unsigned nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
+              'want[type=bigint unsigned nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_09_atr_0028_ip' AND column_name='id';
 
@@ -1230,7 +1230,7 @@ SELECT 'TC-09-ATR-0029-IT#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=smallint unsigned nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
+              'want[type=smallint unsigned nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_09_atr_0029_it' AND column_name='id';
 
@@ -1272,7 +1272,7 @@ SELECT 'TC-09-ATR-0030-IP#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=mediumint unsigned nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
+              'want[type=mediumint unsigned nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_09_atr_0030_ip' AND column_name='id';
 
@@ -1314,7 +1314,7 @@ SELECT 'TC-09-ATR-0031-IT#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=smallint unsigned nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
+              'want[type=smallint unsigned nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_09_atr_0031_it' AND column_name='id';
 
@@ -1356,7 +1356,7 @@ SELECT 'TC-09-ATR-0032-IP#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=int unsigned nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
+              'want[type=int unsigned nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_09_atr_0032_ip' AND column_name='id';
 
@@ -1398,7 +1398,7 @@ SELECT 'TC-09-ATR-0033-IT#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=smallint unsigned nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
+              'want[type=smallint unsigned nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_09_atr_0033_it' AND column_name='id';
 
@@ -1440,7 +1440,7 @@ SELECT 'TC-09-ATR-0034-IP#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=bigint unsigned nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
+              'want[type=bigint unsigned nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_09_atr_0034_ip' AND column_name='id';
 
@@ -1482,7 +1482,7 @@ SELECT 'TC-09-ATR-0035-IT#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=mediumint unsigned nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
+              'want[type=mediumint unsigned nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_09_atr_0035_it' AND column_name='id';
 
@@ -1524,7 +1524,7 @@ SELECT 'TC-09-ATR-0036-IP#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=int unsigned nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
+              'want[type=int unsigned nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_09_atr_0036_ip' AND column_name='id';
 
@@ -1566,7 +1566,7 @@ SELECT 'TC-09-ATR-0037-IT#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=mediumint unsigned nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
+              'want[type=mediumint unsigned nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_09_atr_0037_it' AND column_name='id';
 
@@ -1608,7 +1608,7 @@ SELECT 'TC-09-ATR-0038-IP#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=bigint unsigned nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
+              'want[type=bigint unsigned nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_09_atr_0038_ip' AND column_name='id';
 
@@ -1650,7 +1650,7 @@ SELECT 'TC-09-ATR-0039-IT#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=int unsigned nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
+              'want[type=int unsigned nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_09_atr_0039_it' AND column_name='id';
 
@@ -1692,7 +1692,7 @@ SELECT 'TC-09-ATR-0040-IP#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=bigint unsigned nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
+              'want[type=bigint unsigned nullable=NO has_default=0 charset=NULL collation=NULL extra=auto_increment pos=1]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_09_atr_0040_ip' AND column_name='id';
 

@@ -5,7 +5,7 @@
 -- 覆盖算法: INSTANT + INPLACE
 -- ============================================================
 -- 本文件由 generate_test_sql.py 自动生成, 请勿手动修改
--- Suite-Revision: 3c46cd9910b1   (生成器源码哈希; 时间戳见 results/generation_manifest.json)
+-- Suite-Revision: 1186b16f779b   (生成器源码哈希; 时间戳见 results/generation_manifest.json)
 -- 用例 ID 规则: TC-<文件号>-<作用域>-<序号>-<IT|IP>  —— 全局唯一
 --   作用域 REG=普通表 OFAT/二元组, ATR=列属性保持, SPE=特殊模式,
 --          FK=外键, PTK=分区(目标列是分区键), PNK=分区(目标列非分区键)
@@ -92,7 +92,7 @@ SELECT 'TC-10-SPE-0001-IT#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=bigint unsigned nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
+              'want[type=bigint unsigned nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_10_spe_0001_it' AND column_name='target';
 
@@ -172,7 +172,7 @@ SELECT 'TC-10-SPE-0002-IP#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=bigint unsigned nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
+              'want[type=bigint unsigned nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_10_spe_0002_ip' AND column_name='target';
 
@@ -254,7 +254,7 @@ SELECT 'TC-10-SPE-0003-IT#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=bigint nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
+              'want[type=bigint nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_10_spe_0003_it' AND column_name='target';
 
@@ -336,7 +336,7 @@ SELECT 'TC-10-SPE-0004-IP#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=bigint nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
+              'want[type=bigint nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_10_spe_0004_ip' AND column_name='target';
 
@@ -395,7 +395,7 @@ SELECT 'TC-10-SPE-0005-IT#META_COL_INT' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=bigint nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
+              'want[type=bigint nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_10_spe_0005_it' AND column_name='col_int';
 SELECT 'TC-10-SPE-0005-IT#META_COL_CHAR' AS test_id,
@@ -415,7 +415,7 @@ SELECT 'TC-10-SPE-0005-IT#META_COL_CHAR' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=char(20) nullable=YES has_default=0 charset=utf8mb4 collation=utf8mb4_0900_ai_ci extra= pos=3]') AS mismatch
+              'want[type=char(20) nullable=YES has_default=0 charset=utf8mb4 collation=utf8mb4_0900_ai_ci extra= pos=3]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_10_spe_0005_it' AND column_name='col_char';
 SELECT 'TC-10-SPE-0005-IT#META_COL_VARCHAR' AS test_id,
@@ -435,7 +435,7 @@ SELECT 'TC-10-SPE-0005-IT#META_COL_VARCHAR' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(100) nullable=YES has_default=0 charset=utf8mb4 collation=utf8mb4_0900_ai_ci extra= pos=4]') AS mismatch
+              'want[type=varchar(100) nullable=YES has_default=0 charset=utf8mb4 collation=utf8mb4_0900_ai_ci extra= pos=4]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_10_spe_0005_it' AND column_name='col_varchar';
 
@@ -494,7 +494,7 @@ SELECT 'TC-10-SPE-0006-IP#META_COL_INT' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=bigint nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
+              'want[type=bigint nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_10_spe_0006_ip' AND column_name='col_int';
 SELECT 'TC-10-SPE-0006-IP#META_COL_CHAR' AS test_id,
@@ -514,7 +514,7 @@ SELECT 'TC-10-SPE-0006-IP#META_COL_CHAR' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=char(20) nullable=YES has_default=0 charset=utf8mb4 collation=utf8mb4_0900_ai_ci extra= pos=3]') AS mismatch
+              'want[type=char(20) nullable=YES has_default=0 charset=utf8mb4 collation=utf8mb4_0900_ai_ci extra= pos=3]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_10_spe_0006_ip' AND column_name='col_char';
 SELECT 'TC-10-SPE-0006-IP#META_COL_VARCHAR' AS test_id,
@@ -534,7 +534,7 @@ SELECT 'TC-10-SPE-0006-IP#META_COL_VARCHAR' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=varchar(100) nullable=YES has_default=0 charset=utf8mb4 collation=utf8mb4_0900_ai_ci extra= pos=4]') AS mismatch
+              'want[type=varchar(100) nullable=YES has_default=0 charset=utf8mb4 collation=utf8mb4_0900_ai_ci extra= pos=4]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_10_spe_0006_ip' AND column_name='col_varchar';
 
@@ -589,7 +589,7 @@ SELECT 'TC-10-SPE-0007-IT#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=bigint nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
+              'want[type=bigint nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_10_spe_0007_it' AND column_name='base_col';
 
@@ -644,7 +644,7 @@ SELECT 'TC-10-SPE-0008-IP#META' AS test_id,
                      ' collation=',IFNULL(MAX(collation_name),'NULL'),
                      ' extra=',IFNULL(MAX(extra),'NULL'),
                      ' pos=',IFNULL(MAX(ordinal_position),-1),']',
-              ' want[type=bigint nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
+              'want[type=bigint nullable=YES has_default=0 charset=NULL collation=NULL extra= pos=2]') AS mismatch
 FROM information_schema.columns
 WHERE table_schema=DATABASE() AND table_name='t1_tc_10_spe_0008_ip' AND column_name='base_col';
 

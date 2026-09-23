@@ -848,26 +848,49 @@ DONT_CARE = "*"
 
 
 def build_meta_assertion_full(test_id: str, table: str, column: str, meta: dict,
-                              name: str = "META") -> str:
+                              name: str = "META", check: str = "full") -> str:
     """一次性断言列类型 + 可空性 + 默认值有无 + 字符集 + 排序规则 + extra + 列序。
 
     恒输出一行（聚合查询），mismatch 同时给出 actual 与 want，便于定位。
     这是 P1-1 的核心：旧套件 238 条元数据断言里，**没有一条**断言 ALTER 后的列类型。
+
+    check="type" 时只断言 column_type（用于类型兼容矩阵）：某些类型有**实例相关的
+    隐式属性** —— 实测 TIMESTAMP 在该 RDS 上是 nullable=NO / has_default=1 /
+    extra='DEFAULT_GENERATED on update CURRENT_TIMESTAMP'（取决于
+    explicit_defaults_for_timestamp），写死会造成环境相关的假失败。
+    属性保持的验证由主套件的 META（列定义完全显式）负责。
     """
     cs_cond = "1=1" if meta["charset"] == DONT_CARE else \
         "(MAX(character_set_name) <=> %s)" % _lit_or_null(meta["charset"])
     coll_cond = "1=1" if meta["collation"] == DONT_CARE else \
         "(MAX(collation_name) <=> %s)" % _lit_or_null(meta["collation"])
+    # want[...] 描述必须整体作为一个**已转义**的 SQL 字符串字面量拼进去：
+    # ENUM/SET 的 column_type 本身含单引号（enum('a','b')），直接内插会产生
+    # 引号不配对的 errno 1064。普通类型没有引号，所以这个缺陷一直没暴露。
+    want_desc = ("want[type=%s nullable=%s has_default=%d charset=%s collation=%s extra=%s pos=%d]"
+                 % (meta["column_type"], meta["is_nullable"], meta["has_default"],
+                    meta["charset"] if meta["charset"] == DONT_CARE else (meta["charset"] or "NULL"),
+                    meta["collation"] if meta["collation"] == DONT_CARE else (meta["collation"] or "NULL"),
+                    meta["extra"] or "", meta["ordinal_position"]))
+    if check == "type":
+        conds = "COUNT(*)=1\n          AND MAX(column_type)=%s" % sql_quote(meta["column_type"])
+        args = (test_id, name, conds, sql_quote(want_desc), sql_quote(table), sql_quote(column))
+    else:
+        conds = ("COUNT(*)=1\n"
+                 "          AND MAX(column_type)=%s\n"
+                 "          AND MAX(is_nullable)=%s\n"
+                 "          AND ((MAX(column_default) IS NOT NULL) = %d)\n"
+                 "          AND %s\n"
+                 "          AND %s\n"
+                 "          AND (MAX(extra) <=> %s)\n"
+                 "          AND MAX(ordinal_position)=%d"
+                 % (sql_quote(meta["column_type"]), sql_quote(meta["is_nullable"]),
+                    meta["has_default"], cs_cond, coll_cond,
+                    sql_quote(meta["extra"]), meta["ordinal_position"]))
+        args = (test_id, name, conds, sql_quote(want_desc), sql_quote(table), sql_quote(column))
     return (
         "SELECT '%s#%s' AS test_id,\n"
-        "       IF(COUNT(*)=1\n"
-        "          AND MAX(column_type)=%s\n"
-        "          AND MAX(is_nullable)=%s\n"
-        "          AND ((MAX(column_default) IS NOT NULL) = %d)\n"
-        "          AND %s\n"
-        "          AND %s\n"
-        "          AND (MAX(extra) <=> %s)\n"
-        "          AND MAX(ordinal_position)=%d,'PASS','FAIL') AS result,\n"
+        "       IF(%s,'PASS','FAIL') AS result,\n"
         "       CONCAT('rows=',COUNT(*),\n"
         "              ' actual[type=',IFNULL(MAX(column_type),'<missing>'),\n"
         "                     ' nullable=',IFNULL(MAX(is_nullable),'<missing>'),\n"
@@ -876,19 +899,10 @@ def build_meta_assertion_full(test_id: str, table: str, column: str, meta: dict,
         "                     ' collation=',IFNULL(MAX(collation_name),'NULL'),\n"
         "                     ' extra=',IFNULL(MAX(extra),'NULL'),\n"
         "                     ' pos=',IFNULL(MAX(ordinal_position),-1),']',\n"
-        "              ' want[type=%s nullable=%s has_default=%d charset=%s collation=%s"
-        " extra=%s pos=%d]') AS mismatch\n"
+        "              %s) AS mismatch\n"
         "FROM information_schema.columns\n"
         "WHERE table_schema=DATABASE() AND table_name=%s AND column_name=%s;"
-        % (test_id, name,
-           sql_quote(meta["column_type"]), sql_quote(meta["is_nullable"]),
-           meta["has_default"], cs_cond, coll_cond,
-           sql_quote(meta["extra"]), meta["ordinal_position"],
-           meta["column_type"], meta["is_nullable"], meta["has_default"],
-           (meta["charset"] if meta["charset"] == DONT_CARE else (meta["charset"] or "NULL")),
-           (meta["collation"] if meta["collation"] == DONT_CARE else (meta["collation"] or "NULL")),
-           meta["extra"] or "", meta["ordinal_position"],
-           sql_quote(table), sql_quote(column))
+        % args
     )
 
 
@@ -3008,6 +3022,225 @@ def build_index_integrity_case(test_id: str, transition: dict, env: str, kind: s
 
 
 # ============================================================
+# Section 7c: 类型转换兼容矩阵（P2：DECIMAL 变标度 / 缩窄 / 跨族 / 符号 /
+#             ENUM-SET / 时间类型 fsp / FLOAT-DOUBLE / JSON / GEOMETRY /
+#             charset-collation 变更）
+# ============================================================
+# 方法论：兼容性矩阵**不靠猜期望值**，而是"测量 -> 冻结为基线 -> 后续回归比对"。
+#   1) tools/conversion_matrix_<env>.json 不存在时，用例声明 `alter=MEASURE`，
+#      执行器只记录实测结果（不算失败），并汇总写出 results/conversion_matrix_<env>.json
+#   2) 人工复核后把结果 promote 成 tools/conversion_matrix_<env>.json（golden 基线）
+#   3) 之后每次生成都按 golden 写死期望，任何行为变化都会被 ALTER_OUTCOME 判 FAIL
+# 这样既不会用错误的期望掩盖问题，也能长期守住已确认的行为。
+
+CONVERSION_PROBES = [
+    # (probe_id, old_type, new_type, charset, 代表值, 说明)
+    # --- DECIMAL 标度变化（旧套件只测了 M 增大、D 不变）---
+    ("DEC-D-UP",   "DECIMAL(10,2)", "DECIMAL(12,4)", None, ["12345678.12", "0.00", "-1.5"],
+     "D 增大：整数位容量从 8 位缩到 8 位，小数位扩展"),
+    ("DEC-D-DOWN", "DECIMAL(10,4)", "DECIMAL(10,2)", None, ["1234.5678", "0.0001", "-9.9999"],
+     "D 减小：既有小数位必须被舍入（strict 下可能报错）"),
+    ("DEC-M-DOWN", "DECIMAL(12,2)", "DECIMAL(10,2)", None, ["1234567890.12", "1.00"],
+     "M 减小：整数位容量缩小，既有数据可能溢出"),
+    ("DEC-MD-BOTH", "DECIMAL(10,2)", "DECIMAL(12,6)", None, ["1234.56", "0.01"],
+     "M 与 D 同时增大"),
+    ("DEC-D-MAX",  "DECIMAL(65,0)", "DECIMAL(65,30)", None, ["12345678901234567890123456789012345", "0"],
+     "M 不变、D 从 0 到最大：整数位容量从 65 缩到 35"),
+    # --- 符号变化（旧套件 0 覆盖）---
+    ("SIGN-S2U",   "INT", "INT UNSIGNED", None, ["0", "1", "2147483647"],
+     "有符号 -> 无符号（数据里没有负数）"),
+    ("SIGN-S2U-NEG", "INT", "INT UNSIGNED", None, ["-1", "-2147483648"],
+     "有符号 -> 无符号且**含负数**：strict 下必须拒绝"),
+    ("SIGN-U2S",   "INT UNSIGNED", "BIGINT", None, ["0", "4294967295"],
+     "无符号 -> 更宽的有符号（值域可容纳）"),
+    ("SIGN-U2S-OVER", "BIGINT UNSIGNED", "BIGINT", None, ["18446744073709551615"],
+     "无符号最大值 -> 有符号：必然溢出"),
+    # --- 缩窄（旧套件 0 覆盖，必须显式验证"不支持缩窄"）---
+    ("NARROW-BIG2INT", "BIGINT", "INT", None, ["1", "2147483647"],
+     "整数缩窄，数据在新值域内"),
+    ("NARROW-BIG2INT-OVER", "BIGINT", "INT", None, ["2147483648", "9223372036854775807"],
+     "整数缩窄，数据**超出**新值域"),
+    ("NARROW-VC", "VARCHAR(255) CHARACTER SET latin1", "VARCHAR(10) CHARACTER SET latin1", "latin1",
+     ["'abc'", "'0123456789'"], "VARCHAR 缩窄，数据在新长度内"),
+    ("NARROW-VC-OVER", "VARCHAR(255) CHARACTER SET latin1", "VARCHAR(3) CHARACTER SET latin1", "latin1",
+     ["'abcdef'"], "VARCHAR 缩窄，数据**超出**新长度"),
+    ("NARROW-CHAR", "CHAR(255) CHARACTER SET utf8mb4", "CHAR(254) CHARACTER SET utf8mb4", "utf8mb4",
+     ["'a'"], "CHAR 缩窄"),
+    ("NARROW-BIN", "BINARY(20)", "BINARY(10)", None, ["X'00'"], "BINARY 缩窄"),
+    ("NARROW-VBIN", "VARBINARY(40)", "VARBINARY(20)", None, ["X'00'"], "VARBINARY 缩窄"),
+    ("NARROW-BIT", "BIT(64)", "BIT(32)", None, ["1"], "BIT 缩窄"),
+    ("NARROW-TEXT", "LONGTEXT CHARACTER SET utf8mb4", "TEXT CHARACTER SET utf8mb4", "utf8mb4",
+     ["'abc'"], "TEXT 族缩窄"),
+    ("NARROW-BLOB", "LONGBLOB", "BLOB", None, ["X'00'"], "BLOB 族缩窄"),
+    # --- 跨族（旧套件 0 覆盖）---
+    ("CROSS-INT2DEC", "INT", "DECIMAL(10,0)", None, ["1", "-1", "2147483647"], "整数 -> DECIMAL"),
+    ("CROSS-DEC2BIG", "DECIMAL(10,2)", "BIGINT", None, ["1.00", "-99.99"], "DECIMAL -> 整数（含小数）"),
+    ("CROSS-VC2TEXT", "VARCHAR(20) CHARACTER SET utf8mb4", "TEXT CHARACTER SET utf8mb4", "utf8mb4",
+     ["'abc'"], "VARCHAR -> TEXT"),
+    ("CROSS-TEXT2VC", "TEXT CHARACTER SET utf8mb4", "VARCHAR(100) CHARACTER SET utf8mb4", "utf8mb4",
+     ["'abc'"], "TEXT -> VARCHAR"),
+    ("CROSS-CHAR2VC", "CHAR(10) CHARACTER SET utf8mb4", "VARCHAR(10) CHARACTER SET utf8mb4", "utf8mb4",
+     ["'ab'"], "CHAR -> VARCHAR（尾空格语义变化）"),
+    ("CROSS-VC2CHAR", "VARCHAR(10) CHARACTER SET utf8mb4", "CHAR(10) CHARACTER SET utf8mb4", "utf8mb4",
+     ["'ab'"], "VARCHAR -> CHAR"),
+    ("CROSS-INT2VC", "INT", "VARCHAR(20) CHARACTER SET utf8mb4", "utf8mb4", ["12", "-7"],
+     "整数 -> VARCHAR"),
+    ("CROSS-VC2INT", "VARCHAR(20) CHARACTER SET utf8mb4", "INT", "utf8mb4", ["'12'", "'-7'"],
+     "VARCHAR -> 整数"),
+    ("CROSS-VC2INT-BAD", "VARCHAR(20) CHARACTER SET utf8mb4", "INT", "utf8mb4", ["'abc'"],
+     "VARCHAR -> 整数但数据非数字"),
+    # --- ENUM / SET（MySQL 经典 INPLACE 场景：末尾追加成员）---
+    ("ENUM-APPEND", "ENUM('a','b')", "ENUM('a','b','c')", None, ["'a'", "'b'"],
+     "ENUM 末尾追加成员（文档记载为 INPLACE 不重建）"),
+    ("ENUM-REORDER", "ENUM('a','b','c')", "ENUM('a','c','b')", None, ["'a'", "'b'", "'c'"],
+     "ENUM 成员重排（必须重建，否则值会错乱）"),
+    ("ENUM-REMOVE", "ENUM('a','b','c')", "ENUM('a','b')", None, ["'a'", "'b'"],
+     "ENUM 删除末尾成员（数据里没有该成员）"),
+    ("SET-APPEND", "SET('a','b')", "SET('a','b','c')", None, ["'a'", "'a,b'"],
+     "SET 末尾追加成员"),
+    # --- 时间类型与小数秒精度 fsp（旧套件 0 覆盖）---
+    ("TIME-DT-FSP-UP", "DATETIME", "DATETIME(3)", None, ["'2026-09-23 10:00:00'"],
+     "DATETIME fsp 0 -> 3"),
+    ("TIME-DT-FSP-DOWN", "DATETIME(6)", "DATETIME(3)", None, ["'2026-09-23 10:00:00.123456'"],
+     "DATETIME fsp 6 -> 3（精度丢失）"),
+    ("TIME-TS2DT", "TIMESTAMP", "DATETIME", None, ["'2026-09-23 10:00:00'"],
+     "TIMESTAMP -> DATETIME（时区语义变化）"),
+    ("TIME-DATE2DT", "DATE", "DATETIME", None, ["'2026-09-23'"], "DATE -> DATETIME"),
+    ("TIME-TIME-FSP", "TIME", "TIME(3)", None, ["'10:00:00'"], "TIME fsp 0 -> 3"),
+    ("TIME-YEAR2INT", "YEAR", "SMALLINT", None, ["2026"], "YEAR -> SMALLINT"),
+    # --- FLOAT / DOUBLE（旧套件 0 覆盖）---
+    ("FLT-2-DBL", "FLOAT", "DOUBLE", None, ["1.5", "-0.25"], "FLOAT -> DOUBLE"),
+    ("DBL-2-DEC", "DOUBLE", "DECIMAL(20,4)", None, ["1.5", "-0.25"], "DOUBLE -> DECIMAL"),
+    ("FLT-PREC", "FLOAT", "FLOAT(10,2)", None, ["1.5"], "FLOAT -> FLOAT(M,D)（8.0.17 起弃用）"),
+    # --- JSON / GEOMETRY（旧套件 0 覆盖）---
+    ("JSON-2-TEXT", "JSON", "LONGTEXT CHARACTER SET utf8mb4", "utf8mb4",
+     ["CAST('{\"a\":1}' AS JSON)"], "JSON -> LONGTEXT"),
+    ("TEXT-2-JSON", "LONGTEXT CHARACTER SET utf8mb4", "JSON", "utf8mb4",
+     ["'{\"a\":1}'"], "LONGTEXT -> JSON（数据是合法 JSON）"),
+    ("TEXT-2-JSON-BAD", "LONGTEXT CHARACTER SET utf8mb4", "JSON", "utf8mb4",
+     ["'not-json'"], "LONGTEXT -> JSON（数据非法，必须拒绝）"),
+    ("GEO-2-POINT", "GEOMETRY", "POINT", None,
+     ["ST_GeomFromText('POINT(1 1)')"], "GEOMETRY -> POINT"),
+    # --- 改类型的同时改字符集 / 排序规则（旧套件 0 覆盖，数据正确性高危）---
+    ("CS-L1-2-U4", "VARCHAR(10) CHARACTER SET latin1", "VARCHAR(20) CHARACTER SET utf8mb4", "utf8mb4",
+     ["'abc'", "'a\\u00e9'"], "latin1 -> utf8mb4 同时扩容"),
+    ("CS-U4-SHRINK-CS", "VARCHAR(20) CHARACTER SET utf8mb4", "VARCHAR(20) CHARACTER SET latin1", "latin1",
+     ["'abc'"], "utf8mb4 -> latin1（长度不变，只改字符集）"),
+    ("CO-GENERAL-2-BIN", "VARCHAR(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
+     "VARCHAR(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin", "utf8mb4",
+     ["'abc'", "'ABC'"], "改排序规则为区分大小写（影响唯一索引与比较语义）"),
+    ("CO-BIN-2-AI", "VARCHAR(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin",
+     "VARCHAR(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci", "utf8mb4",
+     ["'abc'", "'ABC'"], "区分大小写 -> 不区分（唯一索引可能冲突）"),
+]
+
+CONV_ALGORITHMS = ["default", "instant", "inplace", "copy"]
+
+
+def strip_cs_clause(type_def: str) -> str:
+    """去掉类型定义里的 CHARACTER SET / COLLATE 子句，只留 information_schema
+    的 column_type 形态（如 `VARCHAR(10) CHARACTER SET latin1` -> `varchar(10)`）。
+
+    直接把原始定义喂给 column_type_of 会得到
+    `varchar(10) character set latin1`，与实测的 `varchar(10)` 不符 -> META 假失败。
+    """
+    t = _re.sub(r"\s+CHARACTER SET\s+\w+", "", str(type_def), flags=_re.I)
+    t = _re.sub(r"\s+COLLATE\s+\w+", "", t, flags=_re.I)
+    return t.strip()
+
+
+def load_conversion_golden(env: str) -> dict:
+    """读取已冻结的兼容矩阵基线（golden）。不存在则返回空 -> 用例走 MEASURE。"""
+    path = os.path.join(OUTPUT_DIR, "tools", "conversion_matrix_%s.json" % env)
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return data.get("matrix", data) or {}
+    except Exception:
+        return {}
+
+
+CONV_GOLDEN_CACHE: Dict[str, dict] = {}
+
+
+def conv_golden(env: str) -> dict:
+    if env not in CONV_GOLDEN_CACHE:
+        CONV_GOLDEN_CACHE[env] = load_conversion_golden(env)
+    return CONV_GOLDEN_CACHE[env]
+
+
+def build_conversion_case(test_id: str, probe: tuple, algorithm: str, env: str) -> str:
+    """生成一个类型转换兼容矩阵用例。"""
+    pid, old_type, new_type, charset, values, note = probe
+    golden = conv_golden(env)
+    key = "%s|%s" % (pid, algorithm)
+    g = golden.get(key)
+
+    suf = id_to_suffix(test_id)
+    t1, t2 = "t1_" + suf, "t2_" + suf
+    cs_clause = (" CHARACTER SET %s" % ("utf8" if charset == "utf8mb3" else charset)) \
+        if charset and _re.match(r"^(VAR)?CHAR", old_type.upper()) else ""
+    old_def = old_type if "CHARACTER SET" in old_type.upper() or not cs_clause else old_type + cs_clause
+
+    if g:
+        exp = g.get("alter", "MEASURE")
+        errnos = g.get("errno") or []
+    else:
+        exp, errnos = "MEASURE", []
+    final_type = new_type if exp == "SUCCESS" else old_def
+
+    if algorithm == "default":
+        alter_stmt = "ALTER TABLE %s MODIFY target %s;" % (t1, new_type)
+    else:
+        alter_stmt = "ALTER TABLE %s MODIFY target %s, ALGORITHM=%s;" % (t1, new_type, algorithm.upper())
+
+    lines = []
+    lines.append("-- Test Case: %s" % test_id)
+    lines.append("-- Conversion probe: %s" % pid)
+    lines.append("-- Type: %s -> %s, Algorithm: %s, Expected: %s" % (old_type, new_type, algorithm, exp))
+    lines.append("-- Probe note: %s" % note)
+    lines.append("-- Golden: %s" % ("frozen" if g else "MEASURE (未冻结，本轮只记录实测结果)"))
+    tag = ("-- @expect alter=%s build=SUCCESS assertions=2 alter_sha=%s conv_probe=%s conv_algo=%s"
+           % (exp, alter_sha(alter_stmt), pid, algorithm))
+    if errnos:
+        tag += " errno=[%s]" % ",".join(str(e) for e in errnos)
+    lines.append(tag)
+    lines.append("DROP TABLE IF EXISTS %s, %s;" % (t1, t2))
+    lines.append("SET SESSION sql_mode = 'STRICT_TRANS_TABLES';")
+    lines.append("CREATE TABLE %s (\n  id INT NOT NULL AUTO_INCREMENT,\n  target %s,\n"
+                 "  pad VARCHAR(20) DEFAULT 'pad', PRIMARY KEY (id)\n) ENGINE=InnoDB;"
+                 % (t1, old_def))
+    for v in values:
+        lines.append("INSERT INTO %s (target) VALUES (%s);" % (t1, v))
+    lines.append("-- ALTER expected %s" % exp)
+    lines.append(alter_stmt)
+
+    # 对照表：期望成功则用新类型，否则保持旧类型
+    t2_def = new_type if exp == "SUCCESS" else old_def
+    lines.append("-- Oracle table: %s" % t2_def)
+    lines.append("CREATE TABLE %s (\n  id INT NOT NULL AUTO_INCREMENT,\n  target %s,\n"
+                 "  pad VARCHAR(20) DEFAULT 'pad', PRIMARY KEY (id)\n) ENGINE=InnoDB;"
+                 % (t2, t2_def))
+    for v in values:
+        lines.append("INSERT INTO %s (target) VALUES (%s);" % (t2, v))
+    lines.append(_build_compare_sql(test_id, t1, t2, ["id", "target", "pad"]))
+    # MEASURE 模式下不断言列类型（还不知道该是什么）；golden 冻结后才断言
+    if exp in ("SUCCESS", "FAIL"):
+        lines.append(build_meta_assertion_full(
+            test_id, t1, "target",
+            expected_meta({"category": "varchar", "charset": charset}, dict(BASELINE),
+                          strip_cs_clause(new_type if exp == "SUCCESS" else old_def),
+                          overrides={"ordinal_position": 2, "charset": DONT_CARE,
+                                     "collation": DONT_CARE}),
+            name="META", check="type"))
+    else:
+        lines.append("SELECT '%s#META' AS test_id, 'PASS' AS result, "
+                     "'MEASURE mode: column_type not asserted' AS mismatch;" % test_id)
+    return "\n".join(lines)
+
+
+
+# ============================================================
 # Section 8: File Writers & Main Function
 # ============================================================
 
@@ -3478,6 +3711,22 @@ def generate_all(profile_report: Optional[list] = None):
     _emit(I, "35_index_integrity_enhanced.sql", header_internal,
           "索引与约束完整性复验 (SECONDARY / UNIQUE)",
           index_integrity("internal", internal_trans), registry)
+
+    def conv_matrix(env, _trans):
+        def build(ids):
+            out = []
+            for probe in CONVERSION_PROBES:
+                for algo in CONV_ALGORITHMS:
+                    out.append(build_conversion_case(ids.next("CONV", algo), probe, algo, env))
+            return out
+        return build
+
+    _emit(A, "40_conversion_matrix.sql", header_aliyun,
+          "类型转换兼容矩阵 (DECIMAL 变标度/缩窄/跨族/符号/ENUM-SET/时间 fsp/FLOAT/JSON/GEOMETRY/字符集)",
+          conv_matrix("aliyun", aliyun_trans), registry)
+    _emit(I, "41_conversion_matrix_enhanced.sql", header_internal,
+          "类型转换兼容矩阵 (增强类型侧同一套探针，用于内网实例)",
+          conv_matrix("internal", internal_trans), registry)
 
     # ---------------- .gitignore 同步（P0-1: 产物/跟踪一致） ----------------
     _sync_gitignore()
