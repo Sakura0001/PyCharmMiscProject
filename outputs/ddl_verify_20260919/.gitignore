@@ -3,6 +3,19 @@ __pycache__/
 config.ini
 results/
 
+
+# 运行产物与缓存：证据以 results/archive/ 里的时间戳文件保存在磁盘上，
+# 只挑选需要长期入库的基线证据单独 git add -f，避免把上百 MB 结果灌进仓库。
+results/*
+!results/summary_aliyun.csv
+!results/archive/
+results/archive/*
+!results/archive/summary_aliyun_20260920_v2runner_baseline.csv
+.pytest_cache/
+__pycache__/
+config.ini
+*.bak
+
 # BEGIN auto-generated: 以 .sql.gz 发布的文件，其明文 .sql 不入库
 sql_aliyun/01_integer_signed_instant.sql
 sql_aliyun/02_integer_signed_inplace.sql
@@ -33,15 +46,3 @@ sql_internal/29_partition_strategies_enhanced.sql
 sql_internal/31_ddl_forms_enhanced.sql
 sql_internal/35_index_integrity_enhanced.sql
 # END auto-generated
-
-# 运行产物与缓存：证据以 results/archive/ 里的时间戳文件保存在磁盘上，
-# 只挑选需要长期入库的基线证据单独 git add -f，避免把上百 MB 结果灌进仓库。
-results/*
-!results/summary_aliyun.csv
-!results/archive/
-results/archive/*
-!results/archive/summary_aliyun_20260920_v2runner_baseline.csv
-.pytest_cache/
-__pycache__/
-config.ini
-*.bak
