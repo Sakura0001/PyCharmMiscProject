@@ -85,10 +85,22 @@ gunzip -c generated/type_upgrade_consistency/inplace_suite.sql.gz > inplace_suit
 gunzip -c generated/type_upgrade_consistency/instant_suite.sql.gz > instant_suite.sql
 ```
 
-Run each suite in an isolated internal QA schema. For every expected-success
-case, the final schema, existing data, post-DDL data, indexes, constraints,
-and dependency behavior must match the reference expectation. For every
-expected-reject case, the DDL must fail without partially changing the table.
+Run each suite in an isolated internal QA schema. Negative cases intentionally
+return SQL errors, so use `mysql --force` to continue after expected rejects and
+then inspect the verification output. Every case emits `OK` or `FAIL`.
+
+```bash
+mysql --login-path=your_internal_profile   --batch --raw --force   qa_type_upgrade < inplace_suite.sql   > inplace.results.tsv 2> inplace.errors.log
+
+grep -n $'\tFAIL\t\|^FAIL\b' inplace.results.tsv || true
+```
+
+Repeat the same steps for `instant_suite.sql`. The error log is expected to
+contain the planned negative DDL errors; the result file must not contain
+`FAIL`. For every expected-success case, the final schema, existing data,
+post-DDL data, indexes, constraints, and dependency behavior must match the
+reference expectation. For every expected-reject case, the DDL must fail
+without partially changing the table.
 
 A difference between `INPLACE` and `INSTANT` is an algorithm difference and
 must be reported unless the product contract explicitly permits it.
