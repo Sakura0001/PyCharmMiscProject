@@ -725,3 +725,11 @@ def test_generated_artifact_readme_marks_new_merge_batch() -> None:
     assert "BATCH_ID: 2026-10-13-type-upgrade-consistency" in readme
     assert "BATCH_KIND: NEW_MERGE" in readme
     assert "This batch is separate from previous DDL verification cases." in readme
+    assert "## Internal AI execution instructions" in readme
+    assert "Execute only this batch" in readme
+    assert "Do not mix it with previous DDL verification cases" in readme
+    assert "cases.jsonl.gz" in readme
+    assert "inplace_suite.sql.gz" in readme
+    assert "instant_suite.sql.gz" in readme
+    assert "mysql --force" in readme
+    assert "FAIL_CRASH" in readme
