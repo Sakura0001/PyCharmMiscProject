@@ -13,6 +13,9 @@ from pathlib import Path
 
 from mysql_case_factory.type_upgrade_consistency import (
     FORBIDDEN_TYPE_TOKENS,
+    TYPE_UPGRADE_BATCH_ID,
+    TYPE_UPGRADE_BATCH_KIND,
+    TYPE_UPGRADE_CASE_PREFIX,
     generate_cases,
     render_suite,
     suite_manifest,
@@ -67,12 +70,24 @@ def generate(output: Path) -> dict[str, object]:
         *(f"sql_mode\t{key}\t{value}" for key, value in sorted(sql_modes.items())),
     ]
     _write_text(output / "coverage.tsv", "\n".join(lines) + "\n")
+    readme = (
+        "# Type-upgrade consistency batch\n\n"
+        f"BATCH_ID: {TYPE_UPGRADE_BATCH_ID}\n"
+        f"BATCH_KIND: {TYPE_UPGRADE_BATCH_KIND.upper()}\n"
+        f"CASE_COUNT: {len(cases)}\n"
+        f"CASE_PREFIX: {TYPE_UPGRADE_CASE_PREFIX}\n\n"
+        "This batch is separate from previous DDL verification cases.\n"
+        "It was merged into `codex/ddl-verify-20260919` as a new type-upgrade consistency suite.\n"
+    )
+    _write_text(output / "README.md", readme)
+
     artifact_names = (
         "cases.jsonl.gz",
         "copy_suite.sql.gz",
         "inplace_suite.sql.gz",
         "instant_suite.sql.gz",
         "coverage.tsv",
+        "README.md",
     )
     artifacts = {
         name: {
@@ -81,8 +96,12 @@ def generate(output: Path) -> dict[str, object]:
         }
         for name in artifact_names
     }
+
     manifest = {
         "format_version": 1,
+        "batch_id": TYPE_UPGRADE_BATCH_ID,
+        "batch_kind": TYPE_UPGRADE_BATCH_KIND,
+        "case_id_prefix": TYPE_UPGRADE_CASE_PREFIX,
         "case_count": len(cases),
         "profiles": manifests,
         "forbidden_type_tokens": list(FORBIDDEN_TYPE_TOKENS),

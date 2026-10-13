@@ -5,6 +5,18 @@ correctness, and consistency between the local `COPY` oracle and internal
 `INPLACE` / `INSTANT` profiles. It intentionally excludes temporal, floating
 point, `ENUM`, `SET`, JSON, spatial, vector, FULLTEXT, and SPATIAL factors.
 
+## New-merge batch identity
+
+This suite is a newly merged batch and is intentionally separated from previous DDL verification cases.
+
+- **BATCH_ID:** `2026-10-13-type-upgrade-consistency`
+- **BATCH_KIND:** `new_merge`
+- **CASE_PREFIX:** `TUC`
+- **CASE_COUNT:** 8,270
+- **Merged branch:** `codex/ddl-verify-20260919`
+
+Every case in `cases.jsonl.gz`, every case header in the generated SQL suites, every result row produced by the runner, `manifest.json`, and `README.md` carries this batch identity. Older DDL verification cases do not carry this batch ID.
+
 ## Scope
 
 Retained type families:

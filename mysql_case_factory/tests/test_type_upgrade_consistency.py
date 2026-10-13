@@ -686,3 +686,42 @@ def test_foreign_key_oracle_compares_actual_constraint_tables() -> None:
         for statement in multi_case.verify_sql
         if "information_schema.statistics" in statement
     ), multi_case
+
+
+def test_new_merge_batch_metadata_distinguishes_generated_cases() -> None:
+    batch_id = "2026-10-13-type-upgrade-consistency"
+    cases = generate_cases()
+
+    assert cases
+    for case in cases:
+        assert case.batch_id == batch_id, case
+        assert case.batch_kind == "new_merge", case
+        payload = case.to_json()
+        assert payload["batch_id"] == batch_id, case
+        assert payload["batch_kind"] == "new_merge", case
+
+
+def test_suite_and_manifest_expose_new_merge_batch() -> None:
+    batch_id = "2026-10-13-type-upgrade-consistency"
+    cases = generate_cases()[:2]
+    suite = render_suite(cases, "copy")
+    manifest = suite_manifest(cases, "copy")
+
+    assert suite.count(f"-- BATCH_ID: {batch_id}") == len(cases)
+    assert manifest["batch_id"] == batch_id
+    assert manifest["batch_kind"] == "new_merge"
+    assert manifest["case_id_prefix"] == "TUC"
+
+
+def test_generated_artifact_readme_marks_new_merge_batch() -> None:
+    import json
+
+    output = Path(__file__).parents[1] / "generated" / "type_upgrade_consistency"
+    manifest = json.loads((output / "manifest.json").read_text(encoding="utf-8"))
+    readme = (output / "README.md").read_text(encoding="utf-8")
+
+    assert manifest["batch_id"] == "2026-10-13-type-upgrade-consistency"
+    assert manifest["batch_kind"] == "new_merge"
+    assert "BATCH_ID: 2026-10-13-type-upgrade-consistency" in readme
+    assert "BATCH_KIND: NEW_MERGE" in readme
+    assert "This batch is separate from previous DDL verification cases." in readme

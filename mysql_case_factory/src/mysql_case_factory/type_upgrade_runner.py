@@ -19,7 +19,13 @@ from hashlib import sha256
 from pathlib import Path
 from typing import Any, Protocol, Sequence
 
-from mysql_case_factory.type_upgrade_consistency import TypeUpgradeCase, effective_sql_mode, suite_manifest
+from mysql_case_factory.type_upgrade_consistency import (
+    TYPE_UPGRADE_BATCH_ID,
+    TYPE_UPGRADE_BATCH_KIND,
+    TypeUpgradeCase,
+    effective_sql_mode,
+    suite_manifest,
+)
 
 
 class CaseOutcome(str, Enum):
@@ -35,6 +41,8 @@ class CaseOutcome(str, Enum):
 @dataclass
 class CaseResult:
     case_id: str
+    batch_id: str
+    batch_kind: str
     profile: str
     outcome: CaseOutcome
     error: str | None = None
@@ -45,6 +53,8 @@ class CaseResult:
     def to_json(self) -> dict[str, Any]:
         return {
             "case_id": self.case_id,
+            "batch_id": self.batch_id,
+            "batch_kind": self.batch_kind,
             "profile": self.profile,
             "outcome": self.outcome.value,
             "error": self.error,
@@ -169,6 +179,8 @@ def execute_case(case: TypeUpgradeCase, connection: Connection, profile: str) ->
     elapsed_ms = int((time.monotonic() - started) * 1000)
     return CaseResult(
         case_id=case.case_id,
+        batch_id=case.batch_id,
+        batch_kind=case.batch_kind,
         profile=profile,
         outcome=outcome,
         error=result_error if outcome is not CaseOutcome.PASS else result_error,
@@ -259,6 +271,8 @@ def _load_cases(path: Path) -> dict[str, TypeUpgradeCase]:
             payload = json.loads(line)
             cases[payload["case_id"]] = TypeUpgradeCase(
                 case_id=payload["case_id"],
+                batch_id=payload["batch_id"],
+                batch_kind=payload["batch_kind"],
                 cluster=payload["cluster"],
                 family=payload["family"],
                 source_type=payload["source_type"],
@@ -328,7 +342,11 @@ def verify_case_artifacts(cases_path: Path) -> dict[str, Any]:
     computed = suite_manifest(list(cases.values()), "copy")
     if computed["sha256"] != copy_manifest.get("sha256"):
         raise ValueError("case manifest SHA-256 does not match cases payload")
+    if manifest.get("batch_id") != TYPE_UPGRADE_BATCH_ID or manifest.get("batch_kind") != TYPE_UPGRADE_BATCH_KIND:
+        raise ValueError("manifest batch identity does not match this new-merge suite")
     return {
+        "batch_id": manifest["batch_id"],
+        "batch_kind": manifest["batch_kind"],
         "case_count": len(cases),
         "case_manifest_sha256": copy_manifest["sha256"],
         "cases_artifact_sha256": actual_hash,
@@ -394,6 +412,8 @@ def run_local(
     summary = {
         "format_version": 1,
         "profile": "copy",
+        "batch_id": artifact_metadata["batch_id"],
+        "batch_kind": artifact_metadata["batch_kind"],
         "case_manifest_sha256": artifact_metadata["case_manifest_sha256"],
         "cases_artifact_sha256": artifact_metadata["cases_artifact_sha256"],
         "cases_artifact_bytes": artifact_metadata["cases_artifact_bytes"],
@@ -424,6 +444,8 @@ def render_summary_markdown(summary: dict[str, Any]) -> str:
         "# MySQL type-upgrade COPY local verification\n\n"
         f"**Result:** {result}\n\n"
         f"- **Profile:** {summary.get('profile', 'copy')}\n"
+        f"- **Batch ID:** `{summary.get('batch_id', 'unknown')}`\n"
+        f"- **Batch kind:** {summary.get('batch_kind', 'unknown')}\n"
         f"- **Selected cases:** {summary.get('selected_count', 0)}\n"
         f"- **Executed cases:** {summary.get('executed_count', 0)}\n"
         f"- **Outcome counts:** {counts}\n"

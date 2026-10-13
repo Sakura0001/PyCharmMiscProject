@@ -1,18 +1,20 @@
 {
   "all_pass": true,
   "artifact_integrity_verified": true,
-  "case_manifest_sha256": "ffade24109946d8ddfe422039e277b09a887f7224740c5d5a8bad71146773abe",
-  "cases_artifact_bytes": 1941411,
-  "cases_artifact_sha256": "753e4febca993cc4be4ee8458207767d581a383f0d49c800f23f2b9cabd100b8",
+  "batch_id": "2026-10-13-type-upgrade-consistency",
+  "batch_kind": "new_merge",
+  "case_manifest_sha256": "bd10f8c7347cfba2fccf4d7fa6b2a37b5243008a1405eed794feb0176b53dfef",
+  "cases_artifact_bytes": 1964856,
+  "cases_artifact_sha256": "9cbbd81f4df8233041b3b91ca88bcd271e76cf16cebcaed069720ac8b82e7b09",
   "counts": {
     "PASS": 8270
   },
   "executed_count": 8270,
-  "finished_at": "2026-10-12T18:47:46.613246+00:00",
+  "finished_at": "2026-10-13T06:44:52.170558+00:00",
   "format_version": 1,
   "mysqld_version": "8.0.45",
   "profile": "copy",
   "selected_count": 8270,
-  "started_at": "2026-10-12T18:45:39.590243+00:00",
+  "started_at": "2026-10-13T06:43:10.319091+00:00",
   "stopped_early": false
 }

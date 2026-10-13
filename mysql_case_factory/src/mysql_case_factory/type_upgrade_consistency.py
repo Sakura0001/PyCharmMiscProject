@@ -41,6 +41,9 @@ FORBIDDEN_TYPE_TOKENS: tuple[str, ...] = (
 )
 
 _ALLOWED_PROFILES = {"copy", "inplace", "instant"}
+TYPE_UPGRADE_BATCH_ID = "2026-10-13-type-upgrade-consistency"
+TYPE_UPGRADE_BATCH_KIND = "new_merge"
+TYPE_UPGRADE_CASE_PREFIX = "TUC"
 
 
 def effective_sql_mode(sql_mode: str) -> str:
@@ -236,6 +239,8 @@ class FactorCatalog:
 @dataclass(frozen=True)
 class TypeUpgradeCase:
     case_id: str
+    batch_id: str
+    batch_kind: str
     cluster: str
     family: str
     source_type: str
@@ -264,6 +269,8 @@ class TypeUpgradeCase:
     def to_json(self) -> dict[str, Any]:
         return {
             "case_id": self.case_id,
+            "batch_id": self.batch_id,
+            "batch_kind": self.batch_kind,
             "cluster": self.cluster,
             "family": self.family,
             "source_type": self.source_type,
@@ -1403,7 +1410,9 @@ def _build_case(
             cleanup_statements.append(f"DROP PROCEDURE IF EXISTS tuc_proc_{prefix}_{case_no}")
 
     return TypeUpgradeCase(
-        case_id=f"TUC-{case_no:06d}",
+        case_id=f"{TYPE_UPGRADE_CASE_PREFIX}-{case_no:06d}",
+        batch_id=TYPE_UPGRADE_BATCH_ID,
+        batch_kind=TYPE_UPGRADE_BATCH_KIND,
         cluster=cluster,
         family=transition.family,
         source_type=transition.source_type,
@@ -1622,7 +1631,13 @@ def generate_cases() -> list[TypeUpgradeCase]:
 def render_case_sql(case: TypeUpgradeCase, profile: str) -> str:
     if profile not in _ALLOWED_PROFILES:
         raise ValueError(f"unsupported profile: {profile}")
-    statements: list[str] = ["SET foreign_key_checks=ON", f"SET SESSION sql_mode='{effective_sql_mode(case.sql_mode)}'"]
+    statements: list[str] = [
+        f"-- CASE_ID: {case.case_id}",
+        f"-- BATCH_ID: {case.batch_id}",
+        f"-- BATCH_KIND: {case.batch_kind}",
+        "SET foreign_key_checks=ON",
+        f"SET SESSION sql_mode='{effective_sql_mode(case.sql_mode)}'",
+    ]
     statements.extend(case.cleanup_sql)
     statements.extend(case.setup_sql)
     statements.append(case.ddl_sql.replace("${ALGORITHM}", profile.upper()))
@@ -1657,6 +1672,9 @@ def suite_manifest(cases: Sequence[TypeUpgradeCase], profile: str) -> dict[str, 
     forbidden_absent = all(token not in serialized for token in FORBIDDEN_TYPE_TOKENS)
     return {
         "profile": profile,
+        "batch_id": TYPE_UPGRADE_BATCH_ID,
+        "batch_kind": TYPE_UPGRADE_BATCH_KIND,
+        "case_id_prefix": TYPE_UPGRADE_CASE_PREFIX,
         "case_count": len(cases),
         "sha256": digest,
         "clusters": clusters,

@@ -1,27 +1,34 @@
 {
   "artifacts": {
+    "README.md": {
+      "bytes": 286,
+      "sha256": "8f95c81b6b4e51e10619c74ffb90ec1caed3e531a01d7d46af1025f3c02819f5"
+    },
     "cases.jsonl.gz": {
-      "bytes": 1941411,
-      "sha256": "753e4febca993cc4be4ee8458207767d581a383f0d49c800f23f2b9cabd100b8"
+      "bytes": 1964856,
+      "sha256": "9cbbd81f4df8233041b3b91ca88bcd271e76cf16cebcaed069720ac8b82e7b09"
     },
     "copy_suite.sql.gz": {
-      "bytes": 1485806,
-      "sha256": "429450933c1a95ca5e6dfdf4725140de1e5187db2026c84215f06f53538c5ca1"
+      "bytes": 1529414,
+      "sha256": "7a1c053c4f1bf8139bf2e0c9df16b0ecb034372c9cea4f8d5dc923305b3e1441"
     },
     "coverage.tsv": {
       "bytes": 2049,
       "sha256": "12b79d91c2b317fcdab958ad18ab8288877c71f76c51d3f2c4d78c4252434b73"
     },
     "inplace_suite.sql.gz": {
-      "bytes": 1487123,
-      "sha256": "3b1a0d9a5fe6b4989580f94bba9a34ba5338e6c510c6e0a2b7e3fd7e8e65cc89"
+      "bytes": 1529498,
+      "sha256": "63af3d7af28227861d09a2c8b64ed12996fdb5ee37546ec11b11093697f89225"
     },
     "instant_suite.sql.gz": {
-      "bytes": 1486810,
-      "sha256": "1b8ee5d5198f71c3d8ef1029e9b8cf2355a0a14c3834e8c1770a51170e1ca26d"
+      "bytes": 1529286,
+      "sha256": "2389ddc2a535ffaebc55c24eceb159167aa89ea05f3fa97b3f8d78cd65e3e09c"
     }
   },
+  "batch_id": "2026-10-13-type-upgrade-consistency",
+  "batch_kind": "new_merge",
   "case_count": 8270,
+  "case_id_prefix": "TUC",
   "forbidden_type_tokens": [
     "FLOAT",
     "DOUBLE",
@@ -50,7 +57,10 @@
   "format_version": 1,
   "profiles": {
     "copy": {
+      "batch_id": "2026-10-13-type-upgrade-consistency",
+      "batch_kind": "new_merge",
       "case_count": 8270,
+      "case_id_prefix": "TUC",
       "clusters": {
         "binary_base": 131,
         "bit_base": 56,
@@ -73,10 +83,13 @@
       },
       "forbidden_types_absent": true,
       "profile": "copy",
-      "sha256": "ffade24109946d8ddfe422039e277b09a887f7224740c5d5a8bad71146773abe"
+      "sha256": "bd10f8c7347cfba2fccf4d7fa6b2a37b5243008a1405eed794feb0176b53dfef"
     },
     "inplace": {
+      "batch_id": "2026-10-13-type-upgrade-consistency",
+      "batch_kind": "new_merge",
       "case_count": 8270,
+      "case_id_prefix": "TUC",
       "clusters": {
         "binary_base": 131,
         "bit_base": 56,
@@ -99,10 +112,13 @@
       },
       "forbidden_types_absent": true,
       "profile": "inplace",
-      "sha256": "ffade24109946d8ddfe422039e277b09a887f7224740c5d5a8bad71146773abe"
+      "sha256": "bd10f8c7347cfba2fccf4d7fa6b2a37b5243008a1405eed794feb0176b53dfef"
     },
     "instant": {
+      "batch_id": "2026-10-13-type-upgrade-consistency",
+      "batch_kind": "new_merge",
       "case_count": 8270,
+      "case_id_prefix": "TUC",
       "clusters": {
         "binary_base": 131,
         "bit_base": 56,
@@ -125,7 +141,7 @@
       },
       "forbidden_types_absent": true,
       "profile": "instant",
-      "sha256": "ffade24109946d8ddfe422039e277b09a887f7224740c5d5a8bad71146773abe"
+      "sha256": "bd10f8c7347cfba2fccf4d7fa6b2a37b5243008a1405eed794feb0176b53dfef"
     }
   }
 }

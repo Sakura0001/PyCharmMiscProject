@@ -202,3 +202,15 @@ def test_verify_case_artifacts_checks_manifest_hash_and_count() -> None:
     assert metadata["case_count"] > 0
     assert metadata["case_manifest_sha256"]
     assert metadata["cases_artifact_sha256"]
+
+
+def test_case_results_include_new_merge_batch_id() -> None:
+    case = _case("success")
+    connection = FakeConnection(invalid_statements=set(case.invalid_post_ddl_sql))
+    result = execute_case(case, connection, "copy")
+
+    assert result.batch_id == "2026-10-13-type-upgrade-consistency"
+    assert result.batch_kind == "new_merge"
+    payload = json.loads(json.dumps(result.to_json()))
+    assert payload["batch_id"] == "2026-10-13-type-upgrade-consistency"
+    assert payload["batch_kind"] == "new_merge"
