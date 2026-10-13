@@ -1,0 +1,18 @@
+{
+  "all_pass": true,
+  "artifact_integrity_verified": true,
+  "case_manifest_sha256": "ffade24109946d8ddfe422039e277b09a887f7224740c5d5a8bad71146773abe",
+  "cases_artifact_bytes": 1941411,
+  "cases_artifact_sha256": "753e4febca993cc4be4ee8458207767d581a383f0d49c800f23f2b9cabd100b8",
+  "counts": {
+    "PASS": 8270
+  },
+  "executed_count": 8270,
+  "finished_at": "2026-10-12T18:47:46.613246+00:00",
+  "format_version": 1,
+  "mysqld_version": "8.0.45",
+  "profile": "copy",
+  "selected_count": 8270,
+  "started_at": "2026-10-12T18:45:39.590243+00:00",
+  "stopped_early": false
+}

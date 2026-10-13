@@ -62,6 +62,16 @@ The audit fails closed on missing statements, uncovered factors or values,
 manifest digest drift, incomplete review status, and unreviewed version
 deltas.
 
+## Type-upgrade consistency suite
+
+The SQL-direct type-upgrade consistency suite covers integer, DECIMAL,
+character, binary, and BIT upgrades with indexes, foreign keys, generated
+columns, views, triggers, functions, procedures, prepared statements, table
+forms, and relevant SQL modes. Local verification uses an isolated MySQL 8.0.45
+`COPY` run; the same deterministic case IDs are rendered for internal
+`INPLACE` and `INSTANT` validation. See
+[docs/type_upgrade_consistency.md](docs/type_upgrade_consistency.md).
+
 ## Test and smoke environments
 
 ```bash
