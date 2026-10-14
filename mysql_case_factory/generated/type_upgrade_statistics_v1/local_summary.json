@@ -1,0 +1,20 @@
+{
+  "all_pass": true,
+  "artifact_integrity_verified": true,
+  "batch_id": "2026-10-14-type-upgrade-statistics-and-chain-v1",
+  "batch_kind": "statistics_and_chain_extension",
+  "case_manifest_sha256": "030b6c2bfdf1286904224d273f510f54219cf0100b25e81f180bee1421a96b4c",
+  "cases_artifact_bytes": 19929,
+  "cases_artifact_sha256": "f5b27a1e127ab4043437a0a6ee70bf4b19e2b9baf2802d743a8ef10fa1234f2d",
+  "counts": {
+    "PASS": 47
+  },
+  "executed_count": 47,
+  "finished_at": "2026-10-14T09:49:18.430948+00:00",
+  "format_version": 1,
+  "mysqld_version": "8.0.45",
+  "profile": "copy",
+  "selected_count": 47,
+  "started_at": "2026-10-14T09:49:14.876993+00:00",
+  "stopped_early": false
+}
