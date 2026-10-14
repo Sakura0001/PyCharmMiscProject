@@ -1,0 +1,157 @@
+{
+  "artifacts": {
+    "README.md": {
+      "bytes": 1707,
+      "sha256": "4c7f771ee997c2d0c567392a5d2622ca911845a6f91a9521d9a45e36e1e6d7a4"
+    },
+    "cases.jsonl.gz": {
+      "bytes": 3397493,
+      "sha256": "bcb76489fc419b3e36711d213999c8707f43ad4e51d94e8064bac9183484c30b"
+    },
+    "copy_suite.sql.gz": {
+      "bytes": 2577948,
+      "sha256": "09497c697434ab311a06fedc347fb91a493bfbba8102fb9f9e4cc9bc13bda444"
+    },
+    "coverage.tsv": {
+      "bytes": 510,
+      "sha256": "01257cd7ba13fdb06477b53412c591819dda7f06e2c89ba46bec552db96b47c4"
+    },
+    "inplace_suite.sql.gz": {
+      "bytes": 2578602,
+      "sha256": "41937c9f079f0509ad435f32f24ce25de23e0b19839effd21d91f40b7e46ecdf"
+    },
+    "instant_suite.sql.gz": {
+      "bytes": 2578373,
+      "sha256": "86d35021fcc4ad29ea61470fe29fc0e792346db75670ecb0ae2a6c4e21935987"
+    }
+  },
+  "batch_id": "2026-10-13-type-upgrade-consistency-extension-v1",
+  "batch_kind": "extension",
+  "case_count": 13721,
+  "case_id_prefix": "TUCX",
+  "forbidden_type_tokens": [
+    "FLOAT",
+    "DOUBLE",
+    "REAL(",
+    " DATE",
+    " TIME(",
+    "DATETIME",
+    "TIMESTAMP",
+    " YEAR(",
+    "ENUM(",
+    "SET(",
+    " JSON",
+    "GEOMETRY",
+    "POINT(",
+    "LINESTRING",
+    "POLYGON",
+    "MULTIPOINT",
+    "MULTILINESTRING",
+    "MULTIPOLYGON",
+    "GEOMETRYCOLLECTION",
+    "VECTOR",
+    "FULLTEXT",
+    "SPATIAL"
+  ],
+  "forbidden_types_absent": true,
+  "format_version": 1,
+  "parent_batch_id": "2026-10-13-type-upgrade-consistency",
+  "profiles": {
+    "copy": {
+      "batch_id": "2026-10-13-type-upgrade-consistency-extension-v1",
+      "batch_kind": "extension",
+      "case_count": 13721,
+      "case_id_prefix": "TUCX",
+      "clusters": {
+        "extension_data_behavior": 4116,
+        "extension_fk_action": 3440,
+        "extension_index_pk": 2400,
+        "extension_multi_column": 1518,
+        "extension_query_oracle": 2247
+      },
+      "families": {
+        "binary": 1615,
+        "bit": 476,
+        "character": 7196,
+        "decimal": 1836,
+        "integer": 1080,
+        "mixed": 1518
+      },
+      "forbidden_types_absent": true,
+      "gap_counts": {
+        "GAP-DATA-BEHAVIOR": 4116,
+        "GAP-DDL-MULTI-COLUMN": 1518,
+        "GAP-FK-ACTION": 3440,
+        "GAP-INDEX-PK": 2400,
+        "GAP-QUERY-ORACLE": 2247
+      },
+      "parent_batch_id": "2026-10-13-type-upgrade-consistency",
+      "profile": "copy",
+      "sha256": "0b09bbdc783bf42c4dad76164818d70bcf5cf8ab3bba8ff7717214299c30ace1"
+    },
+    "inplace": {
+      "batch_id": "2026-10-13-type-upgrade-consistency-extension-v1",
+      "batch_kind": "extension",
+      "case_count": 13721,
+      "case_id_prefix": "TUCX",
+      "clusters": {
+        "extension_data_behavior": 4116,
+        "extension_fk_action": 3440,
+        "extension_index_pk": 2400,
+        "extension_multi_column": 1518,
+        "extension_query_oracle": 2247
+      },
+      "families": {
+        "binary": 1615,
+        "bit": 476,
+        "character": 7196,
+        "decimal": 1836,
+        "integer": 1080,
+        "mixed": 1518
+      },
+      "forbidden_types_absent": true,
+      "gap_counts": {
+        "GAP-DATA-BEHAVIOR": 4116,
+        "GAP-DDL-MULTI-COLUMN": 1518,
+        "GAP-FK-ACTION": 3440,
+        "GAP-INDEX-PK": 2400,
+        "GAP-QUERY-ORACLE": 2247
+      },
+      "parent_batch_id": "2026-10-13-type-upgrade-consistency",
+      "profile": "inplace",
+      "sha256": "0b09bbdc783bf42c4dad76164818d70bcf5cf8ab3bba8ff7717214299c30ace1"
+    },
+    "instant": {
+      "batch_id": "2026-10-13-type-upgrade-consistency-extension-v1",
+      "batch_kind": "extension",
+      "case_count": 13721,
+      "case_id_prefix": "TUCX",
+      "clusters": {
+        "extension_data_behavior": 4116,
+        "extension_fk_action": 3440,
+        "extension_index_pk": 2400,
+        "extension_multi_column": 1518,
+        "extension_query_oracle": 2247
+      },
+      "families": {
+        "binary": 1615,
+        "bit": 476,
+        "character": 7196,
+        "decimal": 1836,
+        "integer": 1080,
+        "mixed": 1518
+      },
+      "forbidden_types_absent": true,
+      "gap_counts": {
+        "GAP-DATA-BEHAVIOR": 4116,
+        "GAP-DDL-MULTI-COLUMN": 1518,
+        "GAP-FK-ACTION": 3440,
+        "GAP-INDEX-PK": 2400,
+        "GAP-QUERY-ORACLE": 2247
+      },
+      "parent_batch_id": "2026-10-13-type-upgrade-consistency",
+      "profile": "instant",
+      "sha256": "0b09bbdc783bf42c4dad76164818d70bcf5cf8ab3bba8ff7717214299c30ace1"
+    }
+  }
+}
