@@ -16,11 +16,13 @@ class FakeConnection:
         *,
         ddl_error: Exception | None = None,
         check_value: str = "OK",
+        explain_value: str = '{"query_block":{"table":{"key":"idx_target"}}}',
         invalid_statements: set[str] | None = None,
     ) -> None:
         self.executed: list[str] = []
         self.ddl_error = ddl_error
         self.check_value = check_value
+        self.explain_value = explain_value
         self.invalid_statements = invalid_statements or set()
 
     def execute(self, sql: str) -> None:
@@ -31,6 +33,8 @@ class FakeConnection:
             raise self.ddl_error
 
     def fetchone(self) -> tuple[str]:
+        if self.executed and self.executed[-1].startswith("EXPLAIN"):
+            return (self.explain_value,)
         return (self.check_value,)
 
     def close(self) -> None:
@@ -214,3 +218,49 @@ def test_case_results_include_new_merge_batch_id() -> None:
     payload = json.loads(json.dumps(result.to_json()))
     assert payload["batch_id"] == "2026-10-13-type-upgrade-consistency"
     assert payload["batch_kind"] == "new_merge"
+
+
+def test_verify_case_artifacts_accepts_extension_batch(tmp_path: Path) -> None:
+    import subprocess
+    import sys
+
+    from mysql_case_factory.type_upgrade_extension import EXTENSION_BATCH_ID, EXTENSION_BATCH_KIND, PARENT_BATCH_ID
+
+    output = tmp_path / "type_upgrade_consistency_extension_v1"
+    tool = Path(__file__).parents[1] / "tools" / "generate_type_upgrade_extension.py"
+    subprocess.run([sys.executable, str(tool), "--output", str(output)], check=True)
+    from mysql_case_factory.type_upgrade_runner import verify_case_artifacts
+
+    metadata = verify_case_artifacts(output / "cases.jsonl.gz")
+
+    assert metadata["batch_id"] == EXTENSION_BATCH_ID
+    assert metadata["batch_kind"] == EXTENSION_BATCH_KIND
+    assert metadata["parent_batch_id"] == PARENT_BATCH_ID
+    assert metadata["case_count"] > 0
+
+
+def test_local_mysql_server_cleans_owned_directory_when_startup_fails() -> None:
+    from mysql_case_factory.type_upgrade_runner import LocalMySQLServer
+
+    server = LocalMySQLServer(mysqld="/opt/homebrew/opt/mysql@8.0/bin/mysqld")
+    server.data_dir.write_text("not a directory", encoding="utf-8")
+
+    with pytest.raises(FileExistsError):
+        server.start()
+
+    assert not server.base_dir.exists()
+
+
+def test_execute_case_parses_nested_explain_json_key() -> None:
+    case = _case("success")
+    object.__setattr__(
+        case,
+        "query_plans",
+        (("EXPLAIN FORMAT=JSON SELECT 1", "idx_target"),),
+    )
+    connection = FakeConnection(
+        explain_value='{"query_block":{"table":{"key":"idx_target"}}}',
+        invalid_statements=set(case.invalid_post_ddl_sql),
+    )
+    result = execute_case(case, connection, "copy")
+    assert result.outcome is CaseOutcome.PASS

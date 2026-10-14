@@ -184,7 +184,7 @@ class FactorCatalog:
     )
 
     def to_json(self) -> dict[str, Any]:
-        return {
+        payload: dict[str, Any] = {
             "integer_transitions": [
                 {
                     "source": item.source_type,
@@ -265,9 +265,15 @@ class TypeUpgradeCase:
     invalid_post_ddl_sql: tuple[str, ...]
     verify_sql: tuple[str, ...]
     cleanup_sql: tuple[str, ...]
+    parent_batch_id: str | None = None
+    priority: str | None = None
+    gap_id: str | None = None
+    coverage_tags: tuple[str, ...] = ()
+    interaction_rank: int | None = None
+    query_plans: tuple[tuple[str, str], ...] = ()
 
     def to_json(self) -> dict[str, Any]:
-        return {
+        payload: dict[str, Any] = {
             "case_id": self.case_id,
             "batch_id": self.batch_id,
             "batch_kind": self.batch_kind,
@@ -296,6 +302,22 @@ class TypeUpgradeCase:
             "verify_sql": list(self.verify_sql),
             "cleanup_sql": list(self.cleanup_sql),
         }
+        if self.parent_batch_id is not None:
+            payload["parent_batch_id"] = self.parent_batch_id
+        if self.priority is not None:
+            payload["priority"] = self.priority
+        if self.gap_id is not None:
+            payload["gap_id"] = self.gap_id
+        if self.coverage_tags:
+            payload["coverage_tags"] = list(self.coverage_tags)
+        if self.interaction_rank is not None:
+            payload["interaction_rank"] = self.interaction_rank
+        if self.query_plans:
+            payload["query_plans"] = [
+                {"sql": sql, "expected_index": expected_index}
+                for sql, expected_index in self.query_plans
+            ]
+        return payload
 
 
 _INTEGER_RANKS = {
@@ -1642,6 +1664,7 @@ def render_case_sql(case: TypeUpgradeCase, profile: str) -> str:
     statements.extend(case.setup_sql)
     statements.append(case.ddl_sql.replace("${ALGORITHM}", profile.upper()))
     statements.extend(case.post_ddl_sql)
+    statements.extend(sql for sql, _ in case.query_plans)
     statements.extend(case.verify_sql)
     statements.extend(case.cleanup_sql)
     statements.append("SET SESSION sql_mode=DEFAULT")

@@ -104,7 +104,7 @@ Compare more than metadata:
 
 - Full-table/primary-key ordered result.
 - `FORCE INDEX` result.
-- `EXPLAIN` access-path evidence.
+- `EXPLAIN FORMAT=JSON` access-path evidence for reference and algorithm tables.
 - Unique-conflict behavior.
 - Descending and prefix-index ordering.
 

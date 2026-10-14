@@ -76,8 +76,16 @@ instructions in
 [generated/type_upgrade_consistency/README.md](generated/type_upgrade_consistency/README.md):
 execute only `TUC-*` cases carrying this batch ID, verify the manifest first,
 run `INPLACE` and `INSTANT` separately with `mysql --force`, and never mix this
-batch with previous DDL verification cases. See also
-[docs/type_upgrade_consistency.md](docs/type_upgrade_consistency.md).
+batch with previous DDL verification cases.
+
+An independent child extension batch is available as
+`2026-10-13-type-upgrade-consistency-extension-v1`. It contains 13,721 `TUCX-*`
+cases covering P0 data behavior, target-column primary keys, multi-column ALTER,
+foreign-key actions, and query oracles. Internal AI executors must keep `TUC`
+and `TUCX` results separate. See
+[docs/type_upgrade_consistency_extension_v1.md](docs/type_upgrade_consistency_extension_v1.md)
+and
+[generated/type_upgrade_consistency_extension_v1/README.md](generated/type_upgrade_consistency_extension_v1/README.md).
 
 ## Test and smoke environments
 

@@ -20,8 +20,6 @@ from pathlib import Path
 from typing import Any, Protocol, Sequence
 
 from mysql_case_factory.type_upgrade_consistency import (
-    TYPE_UPGRADE_BATCH_ID,
-    TYPE_UPGRADE_BATCH_KIND,
     TypeUpgradeCase,
     effective_sql_mode,
     suite_manifest,
@@ -148,6 +146,32 @@ def execute_case(case: TypeUpgradeCase, connection: Connection, profile: str) ->
                 break
 
         if outcome is CaseOutcome.PASS:
+            for plan_no, (statement, expected_index) in enumerate(case.query_plans, 1):
+                try:
+                    connection.execute(statement)
+                    row = connection.fetchone()
+                except Exception as error:
+                    outcome = CaseOutcome.FAIL_CRASH if _is_connection_loss(error) else CaseOutcome.FAIL_ORACLE
+                    result_error = f"query plan {plan_no} raised: {error}"
+                    errno, sqlstate = _error_metadata(error)
+                    break
+                try:
+                    plan = json.loads(row[0] if row else "")
+                    query_block = plan.get("query_block", {})
+                    table = query_block.get("table", {})
+                    actual_index = table.get("key")
+                except (TypeError, json.JSONDecodeError):
+                    outcome = CaseOutcome.FAIL_ORACLE
+                    result_error = f"query plan {plan_no} did not return EXPLAIN JSON"
+                    break
+                if actual_index != expected_index:
+                    outcome = CaseOutcome.FAIL_ORACLE
+                    result_error = (
+                        f"query plan {plan_no} used {actual_index!r}, expected {expected_index!r}"
+                    )
+                    break
+
+        if outcome is CaseOutcome.PASS:
             for check_no, statement in enumerate(case.verify_sql, 1):
                 try:
                     connection.execute(statement)
@@ -208,50 +232,53 @@ class LocalMySQLServer:
         self._owns_directory = base_dir is None
 
     def start(self, timeout: float = 60.0) -> None:
-        if not Path(self.mysqld).exists():
-            raise FileNotFoundError(f"MySQL server not found: {self.mysqld}")
-        self.base_dir.mkdir(parents=True, exist_ok=True)
-        self.data_dir.mkdir(parents=True, exist_ok=True)
-        common = [
-            self.mysqld,
-            "--no-defaults",
-            f"--datadir={self.data_dir}",
-            f"--socket={self.socket_path}",
-            f"--pid-file={self.pid_file}",
-            f"--log-error={self.error_log}",
-            "--skip-networking",
-            "--innodb-buffer-pool-size=64M",
-        ]
-        if not any(self.data_dir.iterdir()):
-            subprocess.run([*common, "--initialize-insecure"], check=True, timeout=timeout)
-        self.process = subprocess.Popen(
-            [*common, "--lower-case-table-names=2"],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
-        deadline = time.monotonic() + timeout
-        while time.monotonic() < deadline:
-            if self.process.poll() is not None:
-                raise RuntimeError(f"mysqld exited during startup: {self.error_log.read_text(errors='replace')}")
-            try:
-                with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as probe:
-                    probe.connect(str(self.socket_path))
-                    return
-            except OSError:
-                time.sleep(0.2)
-        raise TimeoutError(f"MySQL server did not become ready: {self.error_log}")
+        try:
+            if not Path(self.mysqld).exists():
+                raise FileNotFoundError(f"MySQL server not found: {self.mysqld}")
+            self.base_dir.mkdir(parents=True, exist_ok=True)
+            self.data_dir.mkdir(parents=True, exist_ok=True)
+            common = [
+                self.mysqld,
+                "--no-defaults",
+                f"--datadir={self.data_dir}",
+                f"--socket={self.socket_path}",
+                f"--pid-file={self.pid_file}",
+                f"--log-error={self.error_log}",
+                "--skip-networking",
+                "--innodb-buffer-pool-size=64M",
+            ]
+            if not any(self.data_dir.iterdir()):
+                subprocess.run([*common, "--initialize-insecure"], check=True, timeout=timeout)
+            self.process = subprocess.Popen(
+                [*common, "--lower-case-table-names=2"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            deadline = time.monotonic() + timeout
+            while time.monotonic() < deadline:
+                if self.process.poll() is not None:
+                    raise RuntimeError(f"mysqld exited during startup: {self.error_log.read_text(errors='replace')}")
+                try:
+                    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as probe:
+                        probe.connect(str(self.socket_path))
+                        return
+                except OSError:
+                    time.sleep(0.2)
+            raise TimeoutError(f"MySQL server did not become ready: {self.error_log}")
+        except BaseException:
+            self.stop()
+            raise
 
     def stop(self, timeout: float = 30.0) -> None:
-        if self.process is None:
-            return
-        if self.process.poll() is None:
-            self.process.send_signal(signal.SIGTERM)
-            try:
-                self.process.wait(timeout=timeout)
-            except subprocess.TimeoutExpired:
-                self.process.kill()
-                self.process.wait(timeout=timeout)
-        self.process = None
+        if self.process is not None:
+            if self.process.poll() is None:
+                self.process.send_signal(signal.SIGTERM)
+                try:
+                    self.process.wait(timeout=timeout)
+                except subprocess.TimeoutExpired:
+                    self.process.kill()
+                    self.process.wait(timeout=timeout)
+            self.process = None
         if self._owns_directory:
             shutil.rmtree(self.base_dir, ignore_errors=True)
 
@@ -297,6 +324,15 @@ def _load_cases(path: Path) -> dict[str, TypeUpgradeCase]:
                 invalid_post_ddl_sql=tuple(payload["invalid_post_ddl_sql"]),
                 verify_sql=tuple(payload["verify_sql"]),
                 cleanup_sql=tuple(payload["cleanup_sql"]),
+                parent_batch_id=payload.get("parent_batch_id"),
+                priority=payload.get("priority"),
+                gap_id=payload.get("gap_id"),
+                coverage_tags=tuple(payload.get("coverage_tags", ())),
+                interaction_rank=payload.get("interaction_rank"),
+                query_plans=tuple(
+                    (item["sql"], item["expected_index"])
+                    for item in payload.get("query_plans", [])
+                ),
             )
     return cases
 
@@ -321,6 +357,16 @@ def select_cases(
     return selected
 
 
+def _canonical_case_sha256(cases: list[TypeUpgradeCase]) -> str:
+    payload = json.dumps(
+        [case.to_json() for case in cases],
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+    )
+    return sha256(payload.encode("utf-8")).hexdigest()
+
+
 def verify_case_artifacts(cases_path: Path) -> dict[str, Any]:
     manifest_path = cases_path.with_name("manifest.json")
     if not manifest_path.exists():
@@ -339,14 +385,35 @@ def verify_case_artifacts(cases_path: Path) -> dict[str, Any]:
     if len(cases) != manifest.get("case_count"):
         raise ValueError("manifest case count does not match cases.jsonl.gz")
     copy_manifest = manifest.get("profiles", {}).get("copy", {})
-    computed = suite_manifest(list(cases.values()), "copy")
-    if computed["sha256"] != copy_manifest.get("sha256"):
+    computed_sha256 = _canonical_case_sha256(list(cases.values()))
+    if computed_sha256 != copy_manifest.get("sha256"):
         raise ValueError("case manifest SHA-256 does not match cases payload")
-    if manifest.get("batch_id") != TYPE_UPGRADE_BATCH_ID or manifest.get("batch_kind") != TYPE_UPGRADE_BATCH_KIND:
-        raise ValueError("manifest batch identity does not match this new-merge suite")
+
+    batch_id = manifest.get("batch_id")
+    batch_kind = manifest.get("batch_kind")
+    case_id_prefix = manifest.get("case_id_prefix")
+    if not batch_id or not batch_kind or not case_id_prefix:
+        raise ValueError("manifest batch identity is incomplete")
+    if copy_manifest.get("case_count") != len(cases):
+        raise ValueError("copy profile case count does not match cases payload")
+    if any(not case.case_id.startswith(f"{case_id_prefix}-") for case in cases.values()):
+        raise ValueError("case ID prefix does not match manifest")
+    if any(case.batch_id != batch_id or case.batch_kind != batch_kind for case in cases.values()):
+        raise ValueError("case batch identity does not match manifest")
+    if batch_kind == "extension":
+        parent_batch_id = manifest.get("parent_batch_id")
+        if not parent_batch_id:
+            raise ValueError("extension manifest is missing parent_batch_id")
+        if any(case.parent_batch_id != parent_batch_id for case in cases.values()):
+            raise ValueError("extension case parent batch identity does not match manifest")
+    else:
+        parent_batch_id = None
+
     return {
-        "batch_id": manifest["batch_id"],
-        "batch_kind": manifest["batch_kind"],
+        "batch_id": batch_id,
+        "batch_kind": batch_kind,
+        "parent_batch_id": parent_batch_id,
+        "case_id_prefix": case_id_prefix,
         "case_count": len(cases),
         "case_manifest_sha256": copy_manifest["sha256"],
         "cases_artifact_sha256": actual_hash,
