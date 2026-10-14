@@ -1,0 +1,136 @@
+{
+  "artifacts": {
+    "README.md": {
+      "bytes": 959,
+      "sha256": "ef30b8fe9a17d3aaa5034b0d587230bce5cca42cb9639708a6a1eef46eb53419"
+    },
+    "cases.jsonl.gz": {
+      "bytes": 19929,
+      "sha256": "f5b27a1e127ab4043437a0a6ee70bf4b19e2b9baf2802d743a8ef10fa1234f2d"
+    },
+    "copy_suite.sql.gz": {
+      "bytes": 15774,
+      "sha256": "3a007f0b11d22b9970de67e51e76bca6983b8cda735badc31ad613603a3efb68"
+    },
+    "coverage.tsv": {
+      "bytes": 503,
+      "sha256": "ee53f478f73833c7f3e8ae9c4a6dedb7fb3ca62919ad6b6a3575c45296512eb8"
+    },
+    "inplace_suite.sql.gz": {
+      "bytes": 15779,
+      "sha256": "4deb126f2b27a682aab4ee1f13dd4010038b6c04fb584da63c5289262aeb56f0"
+    },
+    "instant_suite.sql.gz": {
+      "bytes": 15776,
+      "sha256": "be68daaa2f8034a26b81420699d9cfb3caf5dd2b3f1646bf5eea6e2d391596d9"
+    }
+  },
+  "batch_id": "2026-10-14-type-upgrade-statistics-and-chain-v1",
+  "batch_kind": "statistics_and_chain_extension",
+  "case_count": 47,
+  "case_id_prefix": "TUCS",
+  "forbidden_type_tokens": [
+    "FLOAT",
+    "DOUBLE",
+    "REAL(",
+    " DATE",
+    " TIME(",
+    "DATETIME",
+    "TIMESTAMP",
+    " YEAR(",
+    "ENUM(",
+    "SET(",
+    " JSON",
+    "GEOMETRY",
+    "POINT(",
+    "LINESTRING",
+    "POLYGON",
+    "MULTIPOINT",
+    "MULTILINESTRING",
+    "MULTIPOLYGON",
+    "GEOMETRYCOLLECTION",
+    "VECTOR",
+    "FULLTEXT",
+    "SPATIAL"
+  ],
+  "forbidden_types_absent": true,
+  "format_version": 1,
+  "parent_batch_id": "2026-10-13-type-upgrade-consistency-extension-v1",
+  "profiles": {
+    "copy": {
+      "batch_id": "2026-10-14-type-upgrade-statistics-and-chain-v1",
+      "batch_kind": "statistics_and_chain_extension",
+      "case_count": 47,
+      "case_id_prefix": "TUCS",
+      "families": {
+        "binary": 9,
+        "bit": 8,
+        "character": 9,
+        "decimal": 8,
+        "integer": 13
+      },
+      "gap_counts": {
+        "GAP-CHAIN-UPGRADE": 4,
+        "GAP-DUPLICATE-MODIFY": 1,
+        "GAP-STATS-EXPLAIN": 5,
+        "GAP-STATS-INDEX": 6,
+        "GAP-STATS-INFORMATION-SCHEMA": 5,
+        "GAP-STATS-PARTITION": 20,
+        "GAP-STATS-TABLE": 6
+      },
+      "parent_batch_id": "2026-10-13-type-upgrade-consistency-extension-v1",
+      "profile": "copy",
+      "sha256": "030b6c2bfdf1286904224d273f510f54219cf0100b25e81f180bee1421a96b4c"
+    },
+    "inplace": {
+      "batch_id": "2026-10-14-type-upgrade-statistics-and-chain-v1",
+      "batch_kind": "statistics_and_chain_extension",
+      "case_count": 47,
+      "case_id_prefix": "TUCS",
+      "families": {
+        "binary": 9,
+        "bit": 8,
+        "character": 9,
+        "decimal": 8,
+        "integer": 13
+      },
+      "gap_counts": {
+        "GAP-CHAIN-UPGRADE": 4,
+        "GAP-DUPLICATE-MODIFY": 1,
+        "GAP-STATS-EXPLAIN": 5,
+        "GAP-STATS-INDEX": 6,
+        "GAP-STATS-INFORMATION-SCHEMA": 5,
+        "GAP-STATS-PARTITION": 20,
+        "GAP-STATS-TABLE": 6
+      },
+      "parent_batch_id": "2026-10-13-type-upgrade-consistency-extension-v1",
+      "profile": "inplace",
+      "sha256": "030b6c2bfdf1286904224d273f510f54219cf0100b25e81f180bee1421a96b4c"
+    },
+    "instant": {
+      "batch_id": "2026-10-14-type-upgrade-statistics-and-chain-v1",
+      "batch_kind": "statistics_and_chain_extension",
+      "case_count": 47,
+      "case_id_prefix": "TUCS",
+      "families": {
+        "binary": 9,
+        "bit": 8,
+        "character": 9,
+        "decimal": 8,
+        "integer": 13
+      },
+      "gap_counts": {
+        "GAP-CHAIN-UPGRADE": 4,
+        "GAP-DUPLICATE-MODIFY": 1,
+        "GAP-STATS-EXPLAIN": 5,
+        "GAP-STATS-INDEX": 6,
+        "GAP-STATS-INFORMATION-SCHEMA": 5,
+        "GAP-STATS-PARTITION": 20,
+        "GAP-STATS-TABLE": 6
+      },
+      "parent_batch_id": "2026-10-13-type-upgrade-consistency-extension-v1",
+      "profile": "instant",
+      "sha256": "030b6c2bfdf1286904224d273f510f54219cf0100b25e81f180bee1421a96b4c"
+    }
+  }
+}

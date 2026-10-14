@@ -105,6 +105,8 @@ def execute_case(case: TypeUpgradeCase, connection: Connection, profile: str) ->
             connection.execute(statement)
 
         try:
+            for statement in case.pre_ddl_sql:
+                connection.execute(statement.replace("${ALGORITHM}", profile.upper()))
             connection.execute(case.ddl_sql.replace("${ALGORITHM}", profile.upper()))
         except Exception as error:  # PyMySQL exceptions are dynamic.
             ddl_error = error
@@ -146,6 +148,53 @@ def execute_case(case: TypeUpgradeCase, connection: Connection, profile: str) ->
                 break
 
         if outcome is CaseOutcome.PASS:
+            for phase_no, statement in enumerate(case.stats_pre_analyze_sql, 1):
+                try:
+                    connection.execute(statement)
+                    row = connection.fetchone()
+                except Exception as error:
+                    outcome = CaseOutcome.FAIL_CRASH if _is_connection_loss(error) else CaseOutcome.FAIL_ORACLE
+                    result_error = f"pre-analyze stats check {phase_no} raised: {error}"
+                    errno, sqlstate = _error_metadata(error)
+                    break
+                if not row or row[0] != "OK":
+                    outcome = CaseOutcome.FAIL_ORACLE
+                    result_error = (
+                        f"pre-analyze stats check {phase_no} returned {row[0] if row else 'no row'}, expected OK"
+                    )
+                    break
+
+        if outcome is CaseOutcome.PASS:
+            for statement_no, statement in enumerate(case.analyze_sql, 1):
+                try:
+                    connection.execute(statement)
+                except Exception as error:
+                    if _is_connection_loss(error):
+                        outcome = CaseOutcome.FAIL_CRASH
+                    else:
+                        outcome = CaseOutcome.FAIL_ORACLE
+                    result_error = f"analyze statement {statement_no} failed: {error}"
+                    errno, sqlstate = _error_metadata(error)
+                    break
+
+        if outcome is CaseOutcome.PASS:
+            for phase_no, statement in enumerate(case.stats_post_analyze_sql, 1):
+                try:
+                    connection.execute(statement)
+                    row = connection.fetchone()
+                except Exception as error:
+                    outcome = CaseOutcome.FAIL_CRASH if _is_connection_loss(error) else CaseOutcome.FAIL_ORACLE
+                    result_error = f"post-analyze stats check {phase_no} raised: {error}"
+                    errno, sqlstate = _error_metadata(error)
+                    break
+                if not row or row[0] != "OK":
+                    outcome = CaseOutcome.FAIL_ORACLE
+                    result_error = (
+                        f"post-analyze stats check {phase_no} returned {row[0] if row else 'no row'}, expected OK"
+                    )
+                    break
+
+        if outcome is CaseOutcome.PASS:
             for plan_no, (statement, expected_index) in enumerate(case.query_plans, 1):
                 try:
                     connection.execute(statement)
@@ -160,6 +209,8 @@ def execute_case(case: TypeUpgradeCase, connection: Connection, profile: str) ->
                     query_block = plan.get("query_block", {})
                     table = query_block.get("table", {})
                     actual_index = table.get("key")
+                    rows_examined = table.get("rows_examined_per_scan")
+                    rows_produced = table.get("rows_produced_per_join")
                 except (TypeError, json.JSONDecodeError):
                     outcome = CaseOutcome.FAIL_ORACLE
                     result_error = f"query plan {plan_no} did not return EXPLAIN JSON"
@@ -168,6 +219,20 @@ def execute_case(case: TypeUpgradeCase, connection: Connection, profile: str) ->
                     outcome = CaseOutcome.FAIL_ORACLE
                     result_error = (
                         f"query plan {plan_no} used {actual_index!r}, expected {expected_index!r}"
+                    )
+                    break
+                if not isinstance(rows_examined, (int, float)) or rows_examined <= 0:
+                    outcome = CaseOutcome.FAIL_ORACLE
+                    result_error = (
+                        f"query plan {plan_no} has non-positive EXPLAIN row estimates: "
+                        f"rows_examined_per_scan={rows_examined!r}"
+                    )
+                    break
+                if not isinstance(rows_produced, (int, float)) or rows_produced <= 0:
+                    outcome = CaseOutcome.FAIL_ORACLE
+                    result_error = (
+                        f"query plan {plan_no} has non-positive EXPLAIN row estimates: "
+                        f"rows_produced_per_join={rows_produced!r}"
                     )
                     break
 
@@ -187,7 +252,7 @@ def execute_case(case: TypeUpgradeCase, connection: Connection, profile: str) ->
                     break
     except Exception as error:
         if outcome is CaseOutcome.PASS:
-            outcome = CaseOutcome.FAIL_SETUP
+            outcome = CaseOutcome.FAIL_CRASH if _is_connection_loss(error) else CaseOutcome.FAIL_SETUP
         result_error = result_error or str(error)
         errno, sqlstate = _error_metadata(error)
     finally:
@@ -197,8 +262,9 @@ def execute_case(case: TypeUpgradeCase, connection: Connection, profile: str) ->
             connection.execute("SET SESSION sql_mode=DEFAULT")
         except Exception as error:
             if outcome is CaseOutcome.PASS:
-                outcome = CaseOutcome.FAIL_SETUP
+                outcome = CaseOutcome.FAIL_CRASH if _is_connection_loss(error) else CaseOutcome.FAIL_SETUP
                 result_error = f"cleanup failed: {error}"
+            errno, sqlstate = _error_metadata(error)
 
     elapsed_ms = int((time.monotonic() - started) * 1000)
     return CaseResult(
@@ -333,6 +399,10 @@ def _load_cases(path: Path) -> dict[str, TypeUpgradeCase]:
                     (item["sql"], item["expected_index"])
                     for item in payload.get("query_plans", [])
                 ),
+                pre_ddl_sql=tuple(payload.get("pre_ddl_sql", ())),
+                stats_pre_analyze_sql=tuple(payload.get("stats_pre_analyze_sql", ())),
+                analyze_sql=tuple(payload.get("analyze_sql", ())),
+                stats_post_analyze_sql=tuple(payload.get("stats_post_analyze_sql", ())),
             )
     return cases
 
@@ -384,11 +454,25 @@ def verify_case_artifacts(cases_path: Path) -> dict[str, Any]:
     cases = _load_cases(cases_path)
     if len(cases) != manifest.get("case_count"):
         raise ValueError("manifest case count does not match cases.jsonl.gz")
-    copy_manifest = manifest.get("profiles", {}).get("copy", {})
+    profiles = manifest.get("profiles", {})
+    required_profiles = {"copy", "inplace", "instant"}
+    missing_profiles = sorted(required_profiles - set(profiles))
+    if missing_profiles:
+        raise ValueError(f"manifest is missing required profiles: {', '.join(missing_profiles)}")
     computed_sha256 = _canonical_case_sha256(list(cases.values()))
-    if computed_sha256 != copy_manifest.get("sha256"):
-        raise ValueError("case manifest SHA-256 does not match cases payload")
+    for profile_name, profile_manifest in profiles.items():
+        if computed_sha256 != profile_manifest.get("sha256"):
+            raise ValueError(f"profile SHA-256 does not match cases payload: {profile_name}")
+        if profile_manifest.get("case_count") != len(cases):
+            raise ValueError(f"profile case count does not match cases payload: {profile_name}")
+        if profile_manifest.get("batch_id") != manifest.get("batch_id"):
+            raise ValueError(f"profile batch identity does not match manifest: {profile_name}")
+        if profile_manifest.get("batch_kind") != manifest.get("batch_kind"):
+            raise ValueError(f"profile batch kind does not match manifest: {profile_name}")
+        if profile_manifest.get("case_id_prefix") != manifest.get("case_id_prefix"):
+            raise ValueError(f"profile case prefix does not match manifest: {profile_name}")
 
+    copy_manifest = profiles["copy"]
     batch_id = manifest.get("batch_id")
     batch_kind = manifest.get("batch_kind")
     case_id_prefix = manifest.get("case_id_prefix")

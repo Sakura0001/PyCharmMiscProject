@@ -87,6 +87,15 @@ and `TUCX` results separate. See
 and
 [generated/type_upgrade_consistency_extension_v1/README.md](generated/type_upgrade_consistency_extension_v1/README.md).
 
+A third independent batch,
+`2026-10-14-type-upgrade-statistics-and-chain-v1`, contains 47 `TUCS-*` cases
+covering InnoDB table/index statistics, information-schema metadata,
+partition statistics, EXPLAIN plans, chained `SMALLINT -> INT -> BIGINT`
+upgrades, and duplicate-MODIFY rejection. See
+[docs/type_upgrade_statistics_and_chain_v1.md](docs/type_upgrade_statistics_and_chain_v1.md)
+and
+[generated/type_upgrade_statistics_v1/README.md](generated/type_upgrade_statistics_v1/README.md).
+
 ## Test and smoke environments
 
 ```bash

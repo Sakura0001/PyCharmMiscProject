@@ -259,8 +259,131 @@ def test_execute_case_parses_nested_explain_json_key() -> None:
         (("EXPLAIN FORMAT=JSON SELECT 1", "idx_target"),),
     )
     connection = FakeConnection(
-        explain_value='{"query_block":{"table":{"key":"idx_target"}}}',
+        explain_value='{"query_block":{"table":{"key":"idx_target","rows_examined_per_scan":1,"rows_produced_per_join":1}}}',
         invalid_statements=set(case.invalid_post_ddl_sql),
     )
     result = execute_case(case, connection, "copy")
     assert result.outcome is CaseOutcome.PASS
+
+
+def test_execute_case_runs_pre_ddl_stats_and_analyze_in_order() -> None:
+    case = _case("success")
+    object.__setattr__(case, "pre_ddl_sql", ("ALTER TABLE chain MODIFY c INT",))
+    object.__setattr__(case, "stats_pre_analyze_sql", ("SELECT 'PRE_STATS_OK'",))
+    object.__setattr__(case, "analyze_sql", ("ANALYZE TABLE chain",))
+    object.__setattr__(case, "stats_post_analyze_sql", ("SELECT 'POST_STATS_OK'",))
+    object.__setattr__(case, "invalid_post_ddl_sql", ())
+    connection = FakeConnection()
+
+    result = execute_case(case, connection, "copy")
+
+    assert result.outcome is CaseOutcome.PASS
+    order = {
+        "pre": connection.executed.index("ALTER TABLE chain MODIFY c INT"),
+        "ddl": connection.executed.index(case.ddl_sql.replace("${ALGORITHM}", "COPY")),
+        "pre_stats": connection.executed.index("SELECT 'PRE_STATS_OK'"),
+        "analyze": connection.executed.index("ANALYZE TABLE chain"),
+        "post_stats": connection.executed.index("SELECT 'POST_STATS_OK'"),
+    }
+    assert order["pre"] < order["ddl"] < order["pre_stats"] < order["analyze"] < order["post_stats"]
+
+
+def test_execute_case_classifies_pre_ddl_failure_as_ddl_failure() -> None:
+    case = _case("success")
+    object.__setattr__(case, "pre_ddl_sql", ("ALTER TABLE chain MODIFY c INT",))
+    object.__setattr__(case, "invalid_post_ddl_sql", ())
+    connection = FakeConnection(ddl_error=Exception("pre-ddl rejected"))
+
+    result = execute_case(case, connection, "copy")
+
+    assert result.outcome is CaseOutcome.FAIL_DDL
+    assert result.error == "pre-ddl rejected"
+
+
+def test_case_json_and_suite_include_new_phase_fields() -> None:
+    from mysql_case_factory.type_upgrade_consistency import render_suite
+
+    case = _case("success")
+    object.__setattr__(case, "pre_ddl_sql", ("ALTER TABLE chain MODIFY c INT",))
+    object.__setattr__(case, "stats_pre_analyze_sql", ("SELECT 'PRE_STATS_OK'",))
+    object.__setattr__(case, "analyze_sql", ("ANALYZE TABLE chain",))
+    object.__setattr__(case, "stats_post_analyze_sql", ("SELECT 'POST_STATS_OK'",))
+
+    payload = case.to_json()
+    assert payload["pre_ddl_sql"] == ["ALTER TABLE chain MODIFY c INT"]
+    assert payload["stats_pre_analyze_sql"] == ["SELECT 'PRE_STATS_OK'"]
+    assert payload["analyze_sql"] == ["ANALYZE TABLE chain"]
+    assert payload["stats_post_analyze_sql"] == ["SELECT 'POST_STATS_OK'"]
+
+    suite = render_suite([case], "copy")
+    assert "ALTER TABLE chain MODIFY c INT" in suite
+    assert "SELECT 'PRE_STATS_OK'" in suite
+    assert "ANALYZE TABLE chain" in suite
+    assert "SELECT 'POST_STATS_OK'" in suite
+
+
+def test_execute_case_requires_positive_explain_row_estimates() -> None:
+    case = _case("success")
+    object.__setattr__(
+        case,
+        "query_plans",
+        (("EXPLAIN FORMAT=JSON SELECT 1", "idx_target"),),
+    )
+    connection = FakeConnection(
+        explain_value='{"query_block":{"table":{"key":"idx_target","rows_examined_per_scan":0,"rows_produced_per_join":0}}}',
+        invalid_statements=set(case.invalid_post_ddl_sql),
+    )
+    result = execute_case(case, connection, "copy")
+    assert result.outcome is CaseOutcome.FAIL_ORACLE
+    assert "positive EXPLAIN row estimates" in result.error
+
+
+def test_connection_loss_during_setup_is_fail_crash() -> None:
+    case = _case("success")
+
+    class SetupLossConnection(FakeConnection):
+        def execute(self, sql: str) -> None:
+            if sql.startswith("DROP TABLE"):
+                raise Exception("(2013, 'Lost connection to MySQL server during query')")
+            super().execute(sql)
+
+    result = execute_case(case, SetupLossConnection(), "copy")
+    assert result.outcome is CaseOutcome.FAIL_CRASH
+    assert result.errno == 2013
+
+
+def test_connection_loss_during_cleanup_is_fail_crash() -> None:
+    case = _case("success")
+
+    class CleanupLossConnection(FakeConnection):
+        def __init__(self) -> None:
+            super().__init__(invalid_statements=set(case.invalid_post_ddl_sql))
+
+        def execute(self, sql: str) -> None:
+            if sql.startswith("SET SESSION sql_mode=DEFAULT"):
+                raise Exception("(2013, 'Lost connection to MySQL server during query')")
+            super().execute(sql)
+
+    result = execute_case(case, CleanupLossConnection(), "copy")
+    assert result.outcome is CaseOutcome.FAIL_CRASH
+    assert result.errno == 2013
+
+
+def test_verify_case_artifacts_validates_every_profile_hash_and_identity(tmp_path: Path) -> None:
+    import shutil
+
+    import pytest
+
+    from mysql_case_factory.type_upgrade_statistics import STATISTICS_BATCH_ID
+    from mysql_case_factory.type_upgrade_runner import verify_case_artifacts
+
+    source = Path(__file__).parents[1] / "generated" / "type_upgrade_statistics_v1"
+    copied = tmp_path / "statistics"
+    shutil.copytree(source, copied)
+    manifest_path = copied / "manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["profiles"]["inplace"]["sha256"] = "0" * 64
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="profile SHA-256 does not match cases payload: inplace"):
+        verify_case_artifacts(copied / "cases.jsonl.gz")

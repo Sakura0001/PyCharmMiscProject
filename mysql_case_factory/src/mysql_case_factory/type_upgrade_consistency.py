@@ -271,6 +271,10 @@ class TypeUpgradeCase:
     coverage_tags: tuple[str, ...] = ()
     interaction_rank: int | None = None
     query_plans: tuple[tuple[str, str], ...] = ()
+    pre_ddl_sql: tuple[str, ...] = ()
+    stats_pre_analyze_sql: tuple[str, ...] = ()
+    analyze_sql: tuple[str, ...] = ()
+    stats_post_analyze_sql: tuple[str, ...] = ()
 
     def to_json(self) -> dict[str, Any]:
         payload: dict[str, Any] = {
@@ -317,6 +321,14 @@ class TypeUpgradeCase:
                 {"sql": sql, "expected_index": expected_index}
                 for sql, expected_index in self.query_plans
             ]
+        if self.pre_ddl_sql:
+            payload["pre_ddl_sql"] = list(self.pre_ddl_sql)
+        if self.stats_pre_analyze_sql:
+            payload["stats_pre_analyze_sql"] = list(self.stats_pre_analyze_sql)
+        if self.analyze_sql:
+            payload["analyze_sql"] = list(self.analyze_sql)
+        if self.stats_post_analyze_sql:
+            payload["stats_post_analyze_sql"] = list(self.stats_post_analyze_sql)
         return payload
 
 
@@ -1662,8 +1674,12 @@ def render_case_sql(case: TypeUpgradeCase, profile: str) -> str:
     ]
     statements.extend(case.cleanup_sql)
     statements.extend(case.setup_sql)
+    statements.extend(statement.replace("${ALGORITHM}", profile.upper()) for statement in case.pre_ddl_sql)
     statements.append(case.ddl_sql.replace("${ALGORITHM}", profile.upper()))
     statements.extend(case.post_ddl_sql)
+    statements.extend(case.stats_pre_analyze_sql)
+    statements.extend(case.analyze_sql)
+    statements.extend(case.stats_post_analyze_sql)
     statements.extend(sql for sql, _ in case.query_plans)
     statements.extend(case.verify_sql)
     statements.extend(case.cleanup_sql)
