@@ -96,6 +96,16 @@ upgrades, and duplicate-MODIFY rejection. See
 and
 [generated/type_upgrade_statistics_v1/README.md](generated/type_upgrade_statistics_v1/README.md).
 
+A fourth independent condensed batch,
+`2026-10-15-type-upgrade-pipeline-v1`, contains 50 `TUCP-*` pipeline scenarios.
+It renders 150 individual SQL files: 50 each for `COPY`, `INPLACE`, and
+`INSTANT`. Every scenario has deterministic output, globally unique table
+names, table-scoped unique index names with globally unique qualified
+`table.index` identifiers, no session-variable setup, and exact expected-output
+files. See
+[docs/type_upgrade_pipeline_v1.md](docs/type_upgrade_pipeline_v1.md) and
+[generated/type_upgrade_pipeline_v1/README.md](generated/type_upgrade_pipeline_v1/README.md).
+
 ## Test and smoke environments
 
 ```bash

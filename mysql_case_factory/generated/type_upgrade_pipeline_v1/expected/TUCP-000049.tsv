@@ -1,0 +1,7 @@
+qa_type_upgrade_pipeline.tab_tucp_049_ref	analyze	status	OK
+qa_type_upgrade_pipeline.tab_tucp_049_algo	analyze	status	OK
+TUCP-000049|SCHEMA|OK
+TUCP-000049|DATA|OK
+TUCP-000049|INDEX|OK
+TUCP-000049|PARTITION_STATS_TAB_TUCP_049_REF|OK
+TUCP-000049|PARTITION_STATS_TAB_TUCP_049_ALGO|OK
