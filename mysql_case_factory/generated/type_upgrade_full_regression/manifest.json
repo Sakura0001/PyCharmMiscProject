@@ -1,0 +1,25 @@
+{
+  "regression_id": "2026-10-15-type-upgrade-full-regression-v1",
+  "policy": "MANDATORY_ALL_BATCHES_ALL_PROFILES",
+  "batch_count": 5,
+  "case_count": 22838,
+  "profile_execution_count": 68514,
+  "execution_stream_count": 15,
+  "sql_artifact_count": 2409,
+  "profiles": [
+    "copy",
+    "inplace",
+    "instant"
+  ],
+  "batch_order": [
+    "2026-10-13-type-upgrade-consistency",
+    "2026-10-13-type-upgrade-consistency-extension-v1",
+    "2026-10-14-type-upgrade-statistics-and-chain-v1",
+    "2026-10-15-type-upgrade-pipeline-v1",
+    "2026-10-15-type-upgrade-boundary-v1"
+  ],
+  "inventory": "inventory.tsv",
+  "required": true,
+  "selective_regression_allowed": false,
+  "expected_output_may_be_rewritten_after_execution": false
+}

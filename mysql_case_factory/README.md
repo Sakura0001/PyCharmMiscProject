@@ -118,6 +118,27 @@ index addition after a zero-length source becomes indexable. See
 [docs/type_upgrade_boundary_v1.md](docs/type_upgrade_boundary_v1.md) and
 [generated/type_upgrade_boundary_v1/README.md](generated/type_upgrade_boundary_v1/README.md).
 
+### Mandatory full type-upgrade regression
+
+Every type-upgrade regression must run all five current batches and all three
+profiles. Selective regression is not accepted.
+
+```text
+5 batches x 3 profiles = 15 execution streams
+22,838 cases/scenarios
+68,514 case/profile executions
+2,409 SQL artifacts
+```
+
+The required order and complete SQL inventory are in
+[docs/type_upgrade_full_regression.md](docs/type_upgrade_full_regression.md).
+The machine-readable checklist is
+[generated/type_upgrade_full_regression/inventory.tsv](generated/type_upgrade_full_regression/inventory.tsv),
+and the release-gate manifest is
+[generated/type_upgrade_full_regression/manifest.json](generated/type_upgrade_full_regression/manifest.json).
+A regression is `PASS` only when all 15 execution units are present and every
+batch-specific oracle passes; otherwise it is `INCOMPLETE` or `FAIL`.
+
 ## Test and smoke environments
 
 ```bash
