@@ -1,0 +1,67 @@
+{
+  "algorithm_counts_ok": true,
+  "artifact_hashes_ok": true,
+  "batch_id": "2026-10-15-type-upgrade-boundary-v1",
+  "case_count": 750,
+  "case_ids_match": true,
+  "category_counts": {
+    "alias_normalization": 32,
+    "decimal_max": 64,
+    "variable_max": 20,
+    "variable_overflow": 10,
+    "zero_core": 512,
+    "zero_cross": 112
+  },
+  "duplicate_table_names": [],
+  "expected_category_counts": {
+    "alias_normalization": 32,
+    "decimal_max": 64,
+    "variable_max": 20,
+    "variable_overflow": 10,
+    "zero_core": 512,
+    "zero_cross": 112
+  },
+  "expected_no_fail": true,
+  "expected_output_ok": true,
+  "forbidden_types_absent": true,
+  "local_all_pass": true,
+  "local_metadata_ok": true,
+  "local_required": true,
+  "local_result_count": 752,
+  "local_result_counts": {
+    "PASS": 752
+  },
+  "parent_case_id_overlap": [],
+  "parent_case_id_overlap_count": 0,
+  "passed": true,
+  "profile_counts": {
+    "copy": 750,
+    "inplace": 750,
+    "instant": 750
+  },
+  "profile_counts_match": true,
+  "semantic_checks": {
+    "alias_sources": true,
+    "attribute_matrix": true,
+    "binary_zero_chain": true,
+    "decimal_63_64_65_scale_30": true,
+    "decimal_numeric_cross": true,
+    "fk_subset": true,
+    "four_zero_sources": true,
+    "index_modes": true,
+    "position_matrix": true,
+    "row_format_matrix": true,
+    "stats_subset": true,
+    "variable_max_matrix": true,
+    "variable_overflow": true,
+    "zero_cross_and_lob": true
+  },
+  "semantic_coverage_ok": true,
+  "sql_line_count_max": 186,
+  "sql_line_count_min": 174,
+  "structural_ok": true,
+  "table_sets_match": true,
+  "two_stage_with_intermediate_insert": true,
+  "unique_case_ids": true,
+  "unique_table_count": 1520
+}
