@@ -6,11 +6,11 @@
     "PASS": 752
   },
   "executed_count": 750,
-  "finished_at": "2026-10-15T08:01:08.838174+00:00",
+  "finished_at": "2026-10-15T08:15:25.804943+00:00",
   "format_version": 1,
   "manifest_sha256": "f71efc3cb19297d59022a82c399f9c855c8d4fbe79d711fc403a23d08f58ae39",
   "mysqld_version": "8.0.45",
   "profile": "copy",
   "selected_count": 750,
-  "started_at": "2026-10-15T08:00:22.163201+00:00"
+  "started_at": "2026-10-15T08:14:39.015387+00:00"
 }
