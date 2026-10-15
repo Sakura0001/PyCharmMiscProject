@@ -1,0 +1,7 @@
+qa_type_upgrade_boundary.tab_tucz_145_ref	analyze	status	OK
+qa_type_upgrade_boundary.tab_tucz_145_algo	analyze	status	OK
+TUCZ-000145|SCHEMA|OK
+TUCZ-000145|DATA|OK
+TUCZ-000145|INDEX|OK
+TUCZ-000145|TABLE_STATS_TAB_TUCZ_145_REF|OK
+TUCZ-000145|TABLE_STATS_TAB_TUCZ_145_ALGO|OK

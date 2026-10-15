@@ -106,6 +106,18 @@ files. See
 [docs/type_upgrade_pipeline_v1.md](docs/type_upgrade_pipeline_v1.md) and
 [generated/type_upgrade_pipeline_v1/README.md](generated/type_upgrade_pipeline_v1/README.md).
 
+A fifth independent boundary batch,
+`2026-10-15-type-upgrade-boundary-v1`, contains 750 `TUCZ-*` scenarios and
+2,250 profile-specific SQL files. Every scenario performs two upgrades, inserts
+new data between them, and compares pre-upgrade rows, post-upgrade rows,
+schema, indexes, selected foreign keys, and selected statistics against a
+direct final-shape reference table. It covers zero-length character/binary
+types, maximum DECIMAL precision/scale, variable row-size limits, LOB overflow,
+aliases, `AFTER` positions, nullability/default transitions, row formats, and
+index addition after a zero-length source becomes indexable. See
+[docs/type_upgrade_boundary_v1.md](docs/type_upgrade_boundary_v1.md) and
+[generated/type_upgrade_boundary_v1/README.md](generated/type_upgrade_boundary_v1/README.md).
+
 ## Test and smoke environments
 
 ```bash
