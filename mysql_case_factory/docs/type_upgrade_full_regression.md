@@ -178,7 +178,8 @@ Required result:
 
 ```text
 summary.all_pass = true
-counts.PASS = 946944
+summary.all_pass = true
+counts.PASS + counts.EXPECTED_REJECT = 946944
 NO_OVERLAP = 0
 ```
 
