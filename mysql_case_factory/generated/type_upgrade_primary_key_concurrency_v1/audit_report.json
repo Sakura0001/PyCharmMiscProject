@@ -1,0 +1,47 @@
+{
+  "across_all_pass": true,
+  "across_result_count": 3,
+  "artifact_hashes_ok": true,
+  "batch_id": "2026-10-19-type-upgrade-primary-key-concurrency-v1",
+  "char_varchar_instant_matrix_ok": true,
+  "during_all_pass": true,
+  "during_overlap_count": 10,
+  "during_result_count": 10,
+  "during_result_counts": {
+    "PASS": 10
+  },
+  "expected_reject_all_pass": true,
+  "expected_reject_result_count": 1,
+  "forbidden_types_absent": true,
+  "local_all_pass": true,
+  "local_required": true,
+  "local_result_count": 107,
+  "local_result_counts": {
+    "PASS": 107
+  },
+  "multi_row_all_pass": true,
+  "multi_row_result_count": 2,
+  "parent_case_id_overlap_count": 0,
+  "passed": true,
+  "pre_during_post_all_pass": true,
+  "pre_during_post_result_count": 3,
+  "profile_counts": {
+    "copy": 946944,
+    "inplace": 946944,
+    "instant": 946944
+  },
+  "retry_all_pass": true,
+  "retry_result_count": 1,
+  "retry_source_range_retries": 2,
+  "scenario_count": 946944,
+  "smoke_case_count": 107,
+  "smoke_case_prefix": "TUCPKS",
+  "strict_post_all_pass": true,
+  "strict_post_overlap_count": 0,
+  "strict_post_result_count": 3,
+  "text_blob_prefix_matrix_ok": true,
+  "transition_count": 107,
+  "unique_smoke_ids": true,
+  "unique_transitions": true,
+  "usage_documented": true
+}

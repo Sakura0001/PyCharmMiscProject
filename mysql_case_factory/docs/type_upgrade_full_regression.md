@@ -21,10 +21,10 @@ generated/type_upgrade_full_regression/manifest.json
 Every regression must run:
 
 ```text
-all 5 batches
+all 6 batches
 x all 3 profiles
-= 15 execution streams
-= 68,514 case/profile executions
+= 18 execution streams
+= 2,909,346 case/profile executions
 ```
 
 Selective regression is not accepted. If any batch, profile, or SQL artifact is
@@ -34,11 +34,11 @@ skipped, the regression is incomplete and must be reported as not run.
 
 | Metric | Value |
 | --- | ---: |
-| Batches | 5 |
-| Unique cases/scenarios | 22,838 |
+| Batches | 6 |
+| Unique cases/scenarios | 969,782 |
 | Profiles | 3 |
-| Case/profile executions | 68,514 |
-| Execution streams | 15 |
+| Case/profile executions | 2,909,346 |
+| Execution streams | 18 |
 | SQL artifacts | 2,409 |
 
 ## Required batch order
@@ -50,6 +50,7 @@ Run batches in this order:
 3. `TUCS`
 4. `TUCP`
 5. `TUCZ`
+6. `TUCPK`
 
 Within every batch, run profiles in this order:
 
@@ -57,7 +58,7 @@ Within every batch, run profiles in this order:
 2. `INPLACE`
 3. `INSTANT`
 
-This produces the 15 required execution units below.
+This produces the 18 required execution units below.
 
 ## Full execution inventory
 
@@ -78,6 +79,9 @@ This produces the 15 required execution units below.
 | 13 | `2026-10-15-type-upgrade-boundary-v1` | `TUCZ` | 750 | `COPY` | `generated/type_upgrade_boundary_v1/copy/*.sql` | `qa_type_upgrade_boundary` |
 | 14 | `2026-10-15-type-upgrade-boundary-v1` | `TUCZ` | 750 | `INPLACE` | `generated/type_upgrade_boundary_v1/inplace/*.sql` | `qa_type_upgrade_boundary` |
 | 15 | `2026-10-15-type-upgrade-boundary-v1` | `TUCZ` | 750 | `INSTANT` | `generated/type_upgrade_boundary_v1/instant/*.sql` | `qa_type_upgrade_boundary` |
+| 16 | `2026-10-19-type-upgrade-primary-key-concurrency-v1` | `TUCPK` | 946,944 | `COPY` | `tools/run_type_upgrade_primary_key_concurrency.py --profile copy --all` | `qa_type_upgrade_primary_key` |
+| 17 | `2026-10-19-type-upgrade-primary-key-concurrency-v1` | `TUCPK` | 946,944 | `INPLACE` | `tools/run_type_upgrade_primary_key_concurrency.py --profile inplace --all` | `qa_type_upgrade_primary_key` |
+| 18 | `2026-10-19-type-upgrade-primary-key-concurrency-v1` | `TUCPK` | 946,944 | `INSTANT` | `tools/run_type_upgrade_primary_key_concurrency.py --profile instant --all` | `qa_type_upgrade_primary_key` |
 
 ## Output and failure policy
 
@@ -145,9 +149,44 @@ test ! -s regression_results/TUCP/copy.stderr.log
 
 Repeat the same pattern for all six `TUCP` and `TUCZ` profile directories.
 
+## `TUCPK` virtual runner batch
+
+`TUCPK` is not a single SQL stream. It uses a concurrent Python runner because
+it must start multiple worker connections around the DDL and record overlap
+evidence.
+
+Command pattern:
+
+```bash
+export TUCPK_MYSQL_PASSWORD='...'
+
+PYTHONPATH=src .venv312/bin/python tools/run_type_upgrade_primary_key_concurrency.py \
+  --cases generated/type_upgrade_primary_key_concurrency_v1 \
+  --results regression_results/TUCPK/<profile>.jsonl \
+  --summary regression_results/TUCPK/<profile>.json \
+  --profile <profile> \
+  --all \
+  --filler-rows 1024 \
+  --external \
+  --host <internal-host> \
+  --port 3306 \
+  --user <internal-user> \
+  --password-env TUCPK_MYSQL_PASSWORD
+```
+
+Required result:
+
+```text
+summary.all_pass = true
+counts.PASS = 946944
+NO_OVERLAP = 0
+```
+
+Preserve both the JSONL worker evidence and the JSON summary.
+
 ## Required evidence
 
-For every one of the 15 execution units, preserve:
+For every one of the 18 execution units, preserve:
 
 ```text
 batch ID
@@ -180,6 +219,7 @@ generated/type_upgrade_consistency_extension_v1/manifest.json
 generated/type_upgrade_statistics_v1/manifest.json
 generated/type_upgrade_pipeline_v1/manifest.json
 generated/type_upgrade_boundary_v1/manifest.json
+generated/type_upgrade_primary_key_concurrency_v1/manifest.json
 generated/type_upgrade_full_regression/manifest.json
 ```
 
@@ -189,7 +229,7 @@ process defect.
 
 ## Non-negotiable completion rule
 
-A regression report may say `PASS` only when all 15 execution units are present
+A regression report may say `PASS` only when all 18 execution units are present
 and every batch-specific oracle passes. If any item is missing, the only valid
 status is:
 

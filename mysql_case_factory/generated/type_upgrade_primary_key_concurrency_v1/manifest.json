@@ -1,0 +1,29 @@
+{
+  "artifacts_sha256": {
+    "coverage.tsv": "600c5caa133d0994c4e7bfc43ad3a530c798b293d982c23de8c7295d75df30b4",
+    "smoke_cases.jsonl.gz": "6df1f78cc6ab2c14581f9a075b389a5e05302f324a04dc4b61ffaa3632160975"
+  },
+  "batch_id": "2026-10-19-type-upgrade-primary-key-concurrency-v1",
+  "batch_kind": "primary_key_concurrency_extension",
+  "case_count": 946944,
+  "case_id_prefix": "TUCPK",
+  "database": "qa_type_upgrade_primary_key",
+  "forbidden_types_absent": true,
+  "materialization": "virtual_lazy_runner",
+  "parent_batch_id": "2026-10-15-type-upgrade-boundary-v1",
+  "profile_counts": {
+    "copy": 946944,
+    "inplace": 946944,
+    "instant": 946944
+  },
+  "profile_execution_count": 2840832,
+  "profiles": [
+    "copy",
+    "inplace",
+    "instant"
+  ],
+  "scenario_count": 946944,
+  "smoke_case_count": 107,
+  "smoke_case_id_prefix": "TUCPKS",
+  "transition_count": 107
+}
