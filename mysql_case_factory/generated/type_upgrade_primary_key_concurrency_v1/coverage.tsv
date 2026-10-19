@@ -1,0 +1,108 @@
+transition_key	family	source_type	target_type	length_boundary	auto_increment	pk_prefix_length	inplace_expected	instant_expected
+TINYINT->TINYINT UNSIGNED	integer	TINYINT	TINYINT UNSIGNED	not_applicable	true	-	true	true
+TINYINT->SMALLINT	integer	TINYINT	SMALLINT	not_applicable	true	-	true	true
+TINYINT->SMALLINT UNSIGNED	integer	TINYINT	SMALLINT UNSIGNED	not_applicable	true	-	true	true
+TINYINT->MEDIUMINT	integer	TINYINT	MEDIUMINT	not_applicable	true	-	true	true
+TINYINT->MEDIUMINT UNSIGNED	integer	TINYINT	MEDIUMINT UNSIGNED	not_applicable	true	-	true	true
+TINYINT->INT	integer	TINYINT	INT	not_applicable	true	-	true	true
+TINYINT->INT UNSIGNED	integer	TINYINT	INT UNSIGNED	not_applicable	true	-	true	true
+TINYINT->BIGINT	integer	TINYINT	BIGINT	not_applicable	true	-	true	true
+TINYINT->BIGINT UNSIGNED	integer	TINYINT	BIGINT UNSIGNED	not_applicable	true	-	true	true
+TINYINT UNSIGNED->SMALLINT	integer	TINYINT UNSIGNED	SMALLINT	not_applicable	true	-	true	true
+TINYINT UNSIGNED->SMALLINT UNSIGNED	integer	TINYINT UNSIGNED	SMALLINT UNSIGNED	not_applicable	true	-	true	true
+TINYINT UNSIGNED->MEDIUMINT	integer	TINYINT UNSIGNED	MEDIUMINT	not_applicable	true	-	true	true
+TINYINT UNSIGNED->MEDIUMINT UNSIGNED	integer	TINYINT UNSIGNED	MEDIUMINT UNSIGNED	not_applicable	true	-	true	true
+TINYINT UNSIGNED->INT	integer	TINYINT UNSIGNED	INT	not_applicable	true	-	true	true
+TINYINT UNSIGNED->INT UNSIGNED	integer	TINYINT UNSIGNED	INT UNSIGNED	not_applicable	true	-	true	true
+TINYINT UNSIGNED->BIGINT	integer	TINYINT UNSIGNED	BIGINT	not_applicable	true	-	true	true
+TINYINT UNSIGNED->BIGINT UNSIGNED	integer	TINYINT UNSIGNED	BIGINT UNSIGNED	not_applicable	true	-	true	true
+SMALLINT->SMALLINT UNSIGNED	integer	SMALLINT	SMALLINT UNSIGNED	not_applicable	true	-	true	true
+SMALLINT->MEDIUMINT	integer	SMALLINT	MEDIUMINT	not_applicable	true	-	true	true
+SMALLINT->MEDIUMINT UNSIGNED	integer	SMALLINT	MEDIUMINT UNSIGNED	not_applicable	true	-	true	true
+SMALLINT->INT	integer	SMALLINT	INT	not_applicable	true	-	true	true
+SMALLINT->INT UNSIGNED	integer	SMALLINT	INT UNSIGNED	not_applicable	true	-	true	true
+SMALLINT->BIGINT	integer	SMALLINT	BIGINT	not_applicable	true	-	true	true
+SMALLINT->BIGINT UNSIGNED	integer	SMALLINT	BIGINT UNSIGNED	not_applicable	true	-	true	true
+SMALLINT UNSIGNED->MEDIUMINT	integer	SMALLINT UNSIGNED	MEDIUMINT	not_applicable	true	-	true	true
+SMALLINT UNSIGNED->MEDIUMINT UNSIGNED	integer	SMALLINT UNSIGNED	MEDIUMINT UNSIGNED	not_applicable	true	-	true	true
+SMALLINT UNSIGNED->INT	integer	SMALLINT UNSIGNED	INT	not_applicable	true	-	true	true
+SMALLINT UNSIGNED->INT UNSIGNED	integer	SMALLINT UNSIGNED	INT UNSIGNED	not_applicable	true	-	true	true
+SMALLINT UNSIGNED->BIGINT	integer	SMALLINT UNSIGNED	BIGINT	not_applicable	true	-	true	true
+SMALLINT UNSIGNED->BIGINT UNSIGNED	integer	SMALLINT UNSIGNED	BIGINT UNSIGNED	not_applicable	true	-	true	true
+MEDIUMINT->MEDIUMINT UNSIGNED	integer	MEDIUMINT	MEDIUMINT UNSIGNED	not_applicable	true	-	true	true
+MEDIUMINT->INT	integer	MEDIUMINT	INT	not_applicable	true	-	true	true
+MEDIUMINT->INT UNSIGNED	integer	MEDIUMINT	INT UNSIGNED	not_applicable	true	-	true	true
+MEDIUMINT->BIGINT	integer	MEDIUMINT	BIGINT	not_applicable	true	-	true	true
+MEDIUMINT->BIGINT UNSIGNED	integer	MEDIUMINT	BIGINT UNSIGNED	not_applicable	true	-	true	true
+MEDIUMINT UNSIGNED->INT	integer	MEDIUMINT UNSIGNED	INT	not_applicable	true	-	true	true
+MEDIUMINT UNSIGNED->INT UNSIGNED	integer	MEDIUMINT UNSIGNED	INT UNSIGNED	not_applicable	true	-	true	true
+MEDIUMINT UNSIGNED->BIGINT	integer	MEDIUMINT UNSIGNED	BIGINT	not_applicable	true	-	true	true
+MEDIUMINT UNSIGNED->BIGINT UNSIGNED	integer	MEDIUMINT UNSIGNED	BIGINT UNSIGNED	not_applicable	true	-	true	true
+INT->INT UNSIGNED	integer	INT	INT UNSIGNED	not_applicable	true	-	true	true
+INT->BIGINT	integer	INT	BIGINT	not_applicable	true	-	true	true
+INT->BIGINT UNSIGNED	integer	INT	BIGINT UNSIGNED	not_applicable	true	-	true	true
+INT UNSIGNED->BIGINT	integer	INT UNSIGNED	BIGINT	not_applicable	true	-	true	true
+INT UNSIGNED->BIGINT UNSIGNED	integer	INT UNSIGNED	BIGINT UNSIGNED	not_applicable	true	-	true	true
+BIGINT->BIGINT UNSIGNED	integer	BIGINT	BIGINT UNSIGNED	not_applicable	true	-	true	true
+DECIMAL(1,0)->DECIMAL(2,0)	decimal	DECIMAL(1,0)	DECIMAL(2,0)	not_applicable	false	-	true	true
+DECIMAL(8,0)->DECIMAL(9,0)	decimal	DECIMAL(8,0)	DECIMAL(9,0)	not_applicable	false	-	true	true
+DECIMAL(9,0)->DECIMAL(10,0)	decimal	DECIMAL(9,0)	DECIMAL(10,0)	not_applicable	false	-	true	true
+DECIMAL(18,0)->DECIMAL(19,0)	decimal	DECIMAL(18,0)	DECIMAL(19,0)	not_applicable	false	-	true	true
+DECIMAL(27,0)->DECIMAL(28,0)	decimal	DECIMAL(27,0)	DECIMAL(28,0)	not_applicable	false	-	true	true
+DECIMAL(36,0)->DECIMAL(37,0)	decimal	DECIMAL(36,0)	DECIMAL(37,0)	not_applicable	false	-	true	true
+DECIMAL(64,0)->DECIMAL(65,0)	decimal	DECIMAL(64,0)	DECIMAL(65,0)	not_applicable	false	-	true	true
+DECIMAL(10,2)->DECIMAL(11,2)	decimal	DECIMAL(10,2)	DECIMAL(11,2)	not_applicable	false	-	true	true
+DECIMAL(18,6)->DECIMAL(19,6)	decimal	DECIMAL(18,6)	DECIMAL(19,6)	not_applicable	false	-	true	true
+DECIMAL(27,9)->DECIMAL(28,9)	decimal	DECIMAL(27,9)	DECIMAL(28,9)	not_applicable	false	-	true	true
+DECIMAL(36,18)->DECIMAL(37,18)	decimal	DECIMAL(36,18)	DECIMAL(37,18)	not_applicable	false	-	true	true
+DECIMAL(63,30)->DECIMAL(64,30)	decimal	DECIMAL(63,30)	DECIMAL(64,30)	not_applicable	false	-	true	true
+DECIMAL(18,6)->NUMERIC(19,6)	decimal	DECIMAL(18,6)	NUMERIC(19,6)	not_applicable	false	-	true	true
+NUMERIC(18,6)->DECIMAL(19,6)	decimal	NUMERIC(18,6)	DECIMAL(19,6)	not_applicable	false	-	true	true
+BIT(1)->BIT(2)	bit	BIT(1)	BIT(2)	not_applicable	false	-	true	true
+BIT(4)->BIT(8)	bit	BIT(4)	BIT(8)	not_applicable	false	-	true	true
+BIT(7)->BIT(8)	bit	BIT(7)	BIT(8)	not_applicable	false	-	true	true
+BIT(8)->BIT(16)	bit	BIT(8)	BIT(16)	not_applicable	false	-	true	true
+BIT(15)->BIT(16)	bit	BIT(15)	BIT(16)	not_applicable	false	-	true	true
+BIT(16)->BIT(24)	bit	BIT(16)	BIT(24)	not_applicable	false	-	true	true
+BIT(24)->BIT(32)	bit	BIT(24)	BIT(32)	not_applicable	false	-	true	true
+BIT(31)->BIT(32)	bit	BIT(31)	BIT(32)	not_applicable	false	-	true	true
+BIT(32)->BIT(40)	bit	BIT(32)	BIT(40)	not_applicable	false	-	true	true
+BIT(63)->BIT(64)	bit	BIT(63)	BIT(64)	not_applicable	false	-	true	true
+CHAR(16)->CHAR(32)	character	CHAR(16)	CHAR(32)	pre_256	false	-	true	false
+CHAR(128)->CHAR(255)	character	CHAR(128)	CHAR(255)	pre_256	false	-	true	false
+VARCHAR(16)->VARCHAR(32)	character	VARCHAR(16)	VARCHAR(32)	pre_256	false	-	true	false
+VARCHAR(128)->VARCHAR(255)	character	VARCHAR(128)	VARCHAR(255)	pre_256	false	-	true	false
+VARCHAR(255)->VARCHAR(256)	character	VARCHAR(255)	VARCHAR(256)	cross_256	false	-	true	true
+CHAR(255)->VARCHAR(256)	character	CHAR(255)	VARCHAR(256)	cross_256	false	-	true	true
+VARCHAR(255)->VARCHAR(257)	character	VARCHAR(255)	VARCHAR(257)	cross_256	false	-	true	true
+CHAR(255)->VARCHAR(257)	character	CHAR(255)	VARCHAR(257)	cross_256	false	-	true	true
+VARCHAR(128)->VARCHAR(256)	character	VARCHAR(128)	VARCHAR(256)	cross_256	false	-	true	true
+CHAR(128)->VARCHAR(256)	character	CHAR(128)	VARCHAR(256)	cross_256	false	-	true	true
+VARCHAR(256)->VARCHAR(257)	character	VARCHAR(256)	VARCHAR(257)	post_256	false	-	true	false
+VARCHAR(2047)->VARCHAR(2048)	character	VARCHAR(2047)	VARCHAR(2048)	post_256	false	-	true	false
+BINARY(16)->BINARY(32)	binary	BINARY(16)	BINARY(32)	pre_256	false	-	true	true
+BINARY(128)->BINARY(255)	binary	BINARY(128)	BINARY(255)	pre_256	false	-	true	true
+VARBINARY(16)->VARBINARY(32)	binary	VARBINARY(16)	VARBINARY(32)	pre_256	false	-	true	true
+VARBINARY(128)->VARBINARY(255)	binary	VARBINARY(128)	VARBINARY(255)	pre_256	false	-	true	true
+VARBINARY(255)->VARBINARY(256)	binary	VARBINARY(255)	VARBINARY(256)	cross_256	false	-	true	true
+BINARY(255)->VARBINARY(256)	binary	BINARY(255)	VARBINARY(256)	cross_256	false	-	true	true
+VARBINARY(255)->VARBINARY(257)	binary	VARBINARY(255)	VARBINARY(257)	cross_256	false	-	true	true
+BINARY(255)->VARBINARY(257)	binary	BINARY(255)	VARBINARY(257)	cross_256	false	-	true	true
+VARBINARY(128)->VARBINARY(256)	binary	VARBINARY(128)	VARBINARY(256)	cross_256	false	-	true	true
+BINARY(128)->VARBINARY(256)	binary	BINARY(128)	VARBINARY(256)	cross_256	false	-	true	true
+VARBINARY(256)->VARBINARY(257)	binary	VARBINARY(256)	VARBINARY(257)	post_256	false	-	true	true
+VARBINARY(511)->VARBINARY(512)	binary	VARBINARY(511)	VARBINARY(512)	post_256	false	-	true	true
+VARBINARY(1023)->VARBINARY(1024)	binary	VARBINARY(1023)	VARBINARY(1024)	post_256	false	-	true	true
+VARBINARY(2047)->VARBINARY(2048)	binary	VARBINARY(2047)	VARBINARY(2048)	post_256	false	-	true	true
+TINYTEXT->TEXT	text	TINYTEXT	TEXT	not_applicable	false	32	true	true
+TINYTEXT->MEDIUMTEXT	text	TINYTEXT	MEDIUMTEXT	not_applicable	false	32	true	true
+TINYTEXT->LONGTEXT	text	TINYTEXT	LONGTEXT	not_applicable	false	32	true	true
+TEXT->MEDIUMTEXT	text	TEXT	MEDIUMTEXT	not_applicable	false	32	true	true
+TEXT->LONGTEXT	text	TEXT	LONGTEXT	not_applicable	false	32	true	true
+MEDIUMTEXT->LONGTEXT	text	MEDIUMTEXT	LONGTEXT	not_applicable	false	32	true	true
+TINYBLOB->BLOB	blob	TINYBLOB	BLOB	not_applicable	false	32	true	true
+TINYBLOB->MEDIUMBLOB	blob	TINYBLOB	MEDIUMBLOB	not_applicable	false	32	true	true
+TINYBLOB->LONGBLOB	blob	TINYBLOB	LONGBLOB	not_applicable	false	32	true	true
+BLOB->MEDIUMBLOB	blob	BLOB	MEDIUMBLOB	not_applicable	false	32	true	true
+BLOB->LONGBLOB	blob	BLOB	LONGBLOB	not_applicable	false	32	true	true
+MEDIUMBLOB->LONGBLOB	blob	MEDIUMBLOB	LONGBLOB	not_applicable	false	32	true	true

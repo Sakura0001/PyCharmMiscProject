@@ -118,15 +118,28 @@ index addition after a zero-length source becomes indexable. See
 [docs/type_upgrade_boundary_v1.md](docs/type_upgrade_boundary_v1.md) and
 [generated/type_upgrade_boundary_v1/README.md](generated/type_upgrade_boundary_v1/README.md).
 
+A sixth independent concurrency batch,
+`2026-10-19-type-upgrade-primary-key-concurrency-v1`, contains 107 `TUCPK-*`
+type transitions and a virtual matrix of 946,944 scenarios. It covers integer,
+DECIMAL, BIT, character, binary, TEXT, and BLOB primary keys; `AUTO_INCREMENT`
+inserts that omit the PK column; extreme counters; DDL-time and post-DDL
+concurrent inserts; and explicit all-column verification. `CHAR`/`VARCHAR`
+cases enforce the product contract that only 256-crossing upgrades support
+`INSTANT`, while pre-256 and post-256 upgrades use `INPLACE` and expect
+`INSTANT` rejection. See
+[docs/type_upgrade_primary_key_concurrency_v1.md](docs/type_upgrade_primary_key_concurrency_v1.md)
+and
+[generated/type_upgrade_primary_key_concurrency_v1/README.md](generated/type_upgrade_primary_key_concurrency_v1/README.md).
+
 ### Mandatory full type-upgrade regression
 
-Every type-upgrade regression must run all five current batches and all three
+Every type-upgrade regression must run all six current batches and all three
 profiles. Selective regression is not accepted.
 
 ```text
-5 batches x 3 profiles = 15 execution streams
-22,838 cases/scenarios
-68,514 case/profile executions
+6 batches x 3 profiles = 18 execution streams
+969,782 cases/scenarios
+2,909,346 case/profile executions
 2,409 SQL artifacts
 ```
 
@@ -136,7 +149,7 @@ The machine-readable checklist is
 [generated/type_upgrade_full_regression/inventory.tsv](generated/type_upgrade_full_regression/inventory.tsv),
 and the release-gate manifest is
 [generated/type_upgrade_full_regression/manifest.json](generated/type_upgrade_full_regression/manifest.json).
-A regression is `PASS` only when all 15 execution units are present and every
+A regression is `PASS` only when all 18 execution units are present and every
 batch-specific oracle passes; otherwise it is `INCOMPLETE` or `FAIL`.
 
 ## Test and smoke environments

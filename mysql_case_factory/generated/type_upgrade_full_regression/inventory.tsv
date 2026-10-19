@@ -14,3 +14,6 @@ order	profile	batch_id	prefix	case_count	database	artifact	artifact_kind	output_
 13	copy	2026-10-15-type-upgrade-boundary-v1	TUCZ	750	qa_type_upgrade_boundary	generated/type_upgrade_boundary_v1/copy/*.sql	sql_directory	EXACT_DIFF	MUST_BE_EMPTY	generated/type_upgrade_boundary_v1/expected_output.tsv
 14	inplace	2026-10-15-type-upgrade-boundary-v1	TUCZ	750	qa_type_upgrade_boundary	generated/type_upgrade_boundary_v1/inplace/*.sql	sql_directory	EXACT_DIFF	MUST_BE_EMPTY	generated/type_upgrade_boundary_v1/expected_output.tsv
 15	instant	2026-10-15-type-upgrade-boundary-v1	TUCZ	750	qa_type_upgrade_boundary	generated/type_upgrade_boundary_v1/instant/*.sql	sql_directory	EXACT_DIFF	MUST_BE_EMPTY	generated/type_upgrade_boundary_v1/expected_output.tsv
+16	copy	2026-10-19-type-upgrade-primary-key-concurrency-v1	TUCPK	946944	qa_type_upgrade_primary_key	tools/run_type_upgrade_primary_key_concurrency.py	virtual_runner	RUNNER_ALL_PASS	RUNNER_EVIDENCE	-
+17	inplace	2026-10-19-type-upgrade-primary-key-concurrency-v1	TUCPK	946944	qa_type_upgrade_primary_key	tools/run_type_upgrade_primary_key_concurrency.py	virtual_runner	RUNNER_ALL_PASS	RUNNER_EVIDENCE	-
+18	instant	2026-10-19-type-upgrade-primary-key-concurrency-v1	TUCPK	946944	qa_type_upgrade_primary_key	tools/run_type_upgrade_primary_key_concurrency.py	virtual_runner	RUNNER_ALL_PASS	RUNNER_EVIDENCE	-

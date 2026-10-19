@@ -1,0 +1,16 @@
+{
+  "all_pass": true,
+  "batch_id": "2026-10-19-type-upgrade-primary-key-concurrency-v1",
+  "batch_kind": "primary_key_concurrency_extension",
+  "counts": {
+    "PASS": 3
+  },
+  "executed_count": 3,
+  "finished_at": "2026-10-19T08:25:54.477755+00:00",
+  "format_version": 1,
+  "manifest_sha256": "608c25780754642528f103a179d8f75ed9cc7010ec384888db38c04d30851193",
+  "mysqld_version": "8.0.45",
+  "profile": "copy",
+  "selected_count": 3,
+  "started_at": "2026-10-19T08:25:51.965499+00:00"
+}
