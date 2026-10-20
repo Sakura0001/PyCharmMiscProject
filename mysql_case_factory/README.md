@@ -142,16 +142,26 @@ AUTO_INCREMENT, and the final schema. See
 [docs/inplace_unique_conflict_v1.md](docs/inplace_unique_conflict_v1.md) and
 [generated/inplace_unique_conflict_v1/README.md](generated/inplace_unique_conflict_v1/README.md).
 
+An eighth independent FK-consistency batch,
+`2026-10-20-fk-type-expansion-consistency-v1`, contains 568 `TUCFK-*`
+scenarios. It covers 71 type transitions across integer, character, binary,
+DECIMAL, and BIT columns, both `INPLACE` and `INSTANT`, and all four foreign
+key actions. Every scenario performs full-table INSERT, UPDATE, and DELETE and
+checks parent/child counts, orphan rows, FK existence, and the final column
+type. See [docs/fk_type_expansion_v1.md](docs/fk_type_expansion_v1.md) and
+[generated/fk_type_expansion_v1/README.md](generated/fk_type_expansion_v1/README.md).
+
 ### Mandatory full type-upgrade regression
 
-Every type-upgrade regression must run all seven current batches and all three
-profiles. Selective regression is not accepted.
+Every type-upgrade regression must run all eight current batches and every
+profile defined by each batch. Selective regression is not accepted.
 
 ```text
-7 batches x 3 profiles = 21 execution streams
-972,086 cases/scenarios
-2,916,258 case/profile executions
-2,409 SQL artifacts
+8 batches
+23 execution streams
+972,654 cases/scenarios
+2,917,394 case/profile executions
+2,411 SQL artifacts
 ```
 
 The required order and complete SQL inventory are in
@@ -160,7 +170,7 @@ The machine-readable checklist is
 [generated/type_upgrade_full_regression/inventory.tsv](generated/type_upgrade_full_regression/inventory.tsv),
 and the release-gate manifest is
 [generated/type_upgrade_full_regression/manifest.json](generated/type_upgrade_full_regression/manifest.json).
-A regression is `PASS` only when all 21 execution units are present and every
+A regression is `PASS` only when all 23 execution units are present and every
 batch-specific oracle passes; otherwise it is `INCOMPLETE` or `FAIL`.
 
 ## Test and smoke environments

@@ -1,21 +1,20 @@
 # Mandatory full type-upgrade regression
 
 This inventory integrates every current type-upgrade SQL batch. It is the
-required regression scope. A regression is not complete unless all seven batches
-and all three profiles are executed.
+required regression scope. A regression is not complete unless all eight batches and every profile defined by each batch are executed.
 
 - **Regression ID:** `2026-10-15-type-upgrade-full-regression-v1`
-- **Batches:** 7
-- **Cases/scenarios:** 972,086
-- **Profile executions:** 2,916,258
-- **Execution streams:** 21
-- **SQL artifacts:** 2,409
+- **Batches:** 8
+- **Cases/scenarios:** 972,654
+- **Profile executions:** 2,917,394
+- **Execution streams:** 23
+- **SQL artifacts:** 2,411
 - **Selective regression allowed:** no
 
-There are 21 execution streams in total.
+There are 23 execution streams in total.
 
 Use `inventory.tsv` as the machine-readable execution checklist. The fixed
-order is TUC, TUCX, TUCS, TUCP, TUCZ, TUCPK, TUCUI; within each batch run `COPY`, `INPLACE`,
+order is TUC, TUCX, TUCS, TUCP, TUCZ, TUCPK, TUCUI, TUCFK; within each batch run `COPY`, `INPLACE`,
 then `INSTANT`.
 
 ## Full inventory
@@ -29,11 +28,12 @@ then `INSTANT`.
 | 5 | `2026-10-15-type-upgrade-boundary-v1` | `TUCZ` | 750 | `copy/*.sql` | `inplace/*.sql` | `instant/*.sql` | `qa_type_upgrade_boundary` |
 | 6 | `2026-10-19-type-upgrade-primary-key-concurrency-v1` | `TUCPK` | 946,944 | virtual runner | virtual runner | virtual runner | `qa_type_upgrade_primary_key` |
 | 7 | `2026-10-20-inplace-ddl-unique-conflict-v1` | `TUCUI` | 2,304 | virtual runner | virtual runner | virtual runner | `qa_inplace_unique_conflict` |
+| 8 | `2026-10-20-fk-type-expansion-consistency-v1` | `TUCFK` | 568 | — | `inplace_suite.sql.gz` | `instant_suite.sql.gz` | `qa_fk_type_expansion` |
 
 ## Execution rules
 
 1. Verify each source batch `manifest.json` before execution.
-2. Execute all 21 rows in `inventory.tsv`; skipping any row makes the
+2. Execute all 23 rows in `inventory.tsv`; skipping any row makes the
    regression incomplete.
 3. Run profiles separately and never mix output files.
 4. Use an isolated internal QA database for each batch.
@@ -121,3 +121,21 @@ PYTHONPATH=src python3 tools/run_inplace_unique_conflict.py \
   --user <authorized-user> \
   --password-env TUCUI_MYSQL_PASSWORD
 ```
+
+`TUCFK` uses compressed SQL suites with exact expected output:
+
+```bash
+gunzip -c generated/fk_type_expansion_v1/<profile>_suite.sql.gz |
+  mysql --login-path="$MYSQL_LOGIN_PATH" \
+    --batch --raw --skip-column-names --binary-mode --force \
+    qa_fk_type_expansion \
+    > regression_results/TUCFK/<profile>.tsv \
+    2> regression_results/TUCFK/<profile>.stderr.log
+
+diff -u \
+  generated/fk_type_expansion_v1/expected_output_<profile>.tsv \
+  regression_results/TUCFK/<profile>.tsv
+```
+
+`TUCFK` has planned negative DDL errors in stderr. A crash, assertion, signal,
+timeout, MySQL 2013/2006, or lost connection is still a failure.

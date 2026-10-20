@@ -1,0 +1,32 @@
+{
+  "artifacts_sha256": {
+    "cases.jsonl.gz": "cc263146ab41fad04e94405355644f8e0ecdcca6be014abbbf4a95a8b2a42f46",
+    "coverage.tsv": "ba9cfb6c3dac52e36fc00f239a0b9a68916223abef85ddfcc97d30490ec6cdb1",
+    "expected_output_inplace.tsv": "40e88fc8f9c2cf9cfbc37bb72f52551fc3a06857edd9603d676113e955424843",
+    "expected_output_instant.tsv": "a29baef8bf8fa0a3a78fc1604b8299d4361e11c1499434975d2d175d6d9c4dde",
+    "inplace_suite.sql.gz": "fa92dee37015e35dfb6a656699da3802226f1344635c0e2f7d593fb51b6e560b",
+    "instant_suite.sql.gz": "392376a5da462600080527f66b8882f9432e832836110327d86a0772e0687b3e"
+  },
+  "batch_id": "2026-10-20-fk-type-expansion-consistency-v1",
+  "batch_kind": "fk_type_expansion_consistency",
+  "case_count": 568,
+  "case_id_prefix": "TUCFK",
+  "database": "qa_fk_type_expansion",
+  "fk_actions": [
+    "RESTRICT",
+    "NO ACTION",
+    "CASCADE",
+    "SET NULL"
+  ],
+  "forbidden_types_absent": true,
+  "materialization": "sql_suite",
+  "profile_counts": {
+    "inplace": 284,
+    "instant": 284
+  },
+  "profiles": [
+    "inplace",
+    "instant"
+  ],
+  "transition_count": 71
+}

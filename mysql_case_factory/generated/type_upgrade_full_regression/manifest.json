@@ -1,5 +1,5 @@
 {
-  "batch_count": 7,
+  "batch_count": 8,
   "batch_order": [
     "2026-10-13-type-upgrade-consistency",
     "2026-10-13-type-upgrade-consistency-extension-v1",
@@ -7,14 +7,15 @@
     "2026-10-15-type-upgrade-pipeline-v1",
     "2026-10-15-type-upgrade-boundary-v1",
     "2026-10-19-type-upgrade-primary-key-concurrency-v1",
-    "2026-10-20-inplace-ddl-unique-conflict-v1"
+    "2026-10-20-inplace-ddl-unique-conflict-v1",
+    "2026-10-20-fk-type-expansion-consistency-v1"
   ],
-  "case_count": 972086,
-  "execution_stream_count": 21,
+  "case_count": 972654,
+  "execution_stream_count": 23,
   "expected_output_may_be_rewritten_after_execution": false,
   "inventory": "inventory.tsv",
   "policy": "MANDATORY_ALL_BATCHES_ALL_PROFILES",
-  "profile_execution_count": 2916258,
+  "profile_execution_count": 2917394,
   "profiles": [
     "copy",
     "inplace",
@@ -23,5 +24,5 @@
   "regression_id": "2026-10-15-type-upgrade-full-regression-v1",
   "required": true,
   "selective_regression_allowed": false,
-  "sql_artifact_count": 2409
+  "sql_artifact_count": 2411
 }
