@@ -1,0 +1,101 @@
+{
+  "artifacts_sha256": {
+    "README.md": "83f5daf71997b1f0a253fad541bb8e8d6d076c55414362b8fcf47b4794540b5b",
+    "coverage.tsv": "8d76b9da010292c1460744b91d0dbbaace03285fa18c8542150969c1719029be",
+    "smoke_cases.jsonl.gz": "5359a85afbda1079eecd51975316e02ba82c130e78196b9408633c50a2f9232f"
+  },
+  "batch_id": "2026-10-20-inplace-ddl-unique-conflict-v1",
+  "batch_kind": "inplace_unique_conflict_extension",
+  "case_count": 2304,
+  "case_id_prefix": "TUCUI",
+  "database": "qa_inplace_unique_conflict",
+  "factor_counts": {
+    "conflict_patterns": {
+      "boundary_duplicate": 576,
+      "concurrent_duplicate": 576,
+      "seed_duplicate": 576,
+      "semantic_collision": 576
+    },
+    "conflict_surfaces": {
+      "composite_unique": 576,
+      "existing_unique": 576,
+      "new_unique": 576,
+      "nullable_unique": 576
+    },
+    "data_states": {
+      "boundary": 1152,
+      "normal": 1152
+    },
+    "operations": {
+      "add_column": 192,
+      "add_foreign_key": 192,
+      "add_index": 192,
+      "add_unique": 192,
+      "drop_check": 192,
+      "drop_column": 192,
+      "drop_foreign_key": 192,
+      "drop_generated": 192,
+      "drop_index": 192,
+      "drop_unique": 192,
+      "rename_column": 192,
+      "rename_index": 192
+    },
+    "phases": {
+      "across_ddl_transaction": 768,
+      "before_and_during_ddl": 768,
+      "during_ddl": 768
+    },
+    "worker_counts": {
+      "16": 1152,
+      "4": 1152
+    }
+  },
+  "forbidden_ddl_types": [
+    "MODIFY",
+    "CHANGE"
+  ],
+  "forbidden_types_absent": true,
+  "materialization": "virtual_lazy_runner",
+  "operation_count": 12,
+  "operation_ids": [
+    "add_index",
+    "drop_index",
+    "add_unique",
+    "drop_unique",
+    "rename_index",
+    "add_column",
+    "drop_column",
+    "rename_column",
+    "add_foreign_key",
+    "drop_foreign_key",
+    "drop_check",
+    "drop_generated"
+  ],
+  "profile_counts": {
+    "copy": 2304,
+    "inplace": 2304,
+    "instant": 2304
+  },
+  "profile_execution_count": 6912,
+  "profiles": [
+    "copy",
+    "inplace",
+    "instant"
+  ],
+  "scenario_count": 2304,
+  "smoke_case_count": 12,
+  "smoke_case_ids": [
+    "TUCUI-000001",
+    "TUCUI-000193",
+    "TUCUI-000385",
+    "TUCUI-000577",
+    "TUCUI-000769",
+    "TUCUI-000961",
+    "TUCUI-001153",
+    "TUCUI-001345",
+    "TUCUI-001537",
+    "TUCUI-001729",
+    "TUCUI-001921",
+    "TUCUI-002113"
+  ]
+}

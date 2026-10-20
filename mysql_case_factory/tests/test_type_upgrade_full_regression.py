@@ -14,6 +14,7 @@ EXPECTED_BATCHES = {
     "generated/type_upgrade_pipeline_v1": ("TUCP", 50),
     "generated/type_upgrade_boundary_v1": ("TUCZ", 750),
     "generated/type_upgrade_primary_key_concurrency_v1": ("TUCPK", 946944),
+    "generated/inplace_unique_conflict_v1": ("TUCUI", 2304),
 }
 
 
@@ -29,21 +30,21 @@ def test_full_regression_manifest_totals_and_policy() -> None:
     assert manifest["required"] is True
     assert manifest["selective_regression_allowed"] is False
     assert manifest["expected_output_may_be_rewritten_after_execution"] is False
-    assert manifest["batch_count"] == 6
-    assert manifest["case_count"] == 969782
-    assert manifest["profile_execution_count"] == 2909346
-    assert manifest["execution_stream_count"] == 18
+    assert manifest["batch_count"] == 7
+    assert manifest["case_count"] == 972086
+    assert manifest["profile_execution_count"] == 2916258
+    assert manifest["execution_stream_count"] == 21
     assert manifest["sql_artifact_count"] == 2409
     assert manifest["profiles"] == ["copy", "inplace", "instant"]
 
 
 def test_full_regression_inventory_contains_every_batch_and_profile() -> None:
     rows = _inventory()
-    assert len(rows) == 18
-    assert [int(row["order"]) for row in rows] == list(range(1, 19))
+    assert len(rows) == 21
+    assert [int(row["order"]) for row in rows] == list(range(1, 22))
     assert {row["profile"] for row in rows} == {"copy", "inplace", "instant"}
-    assert {row["prefix"] for row in rows} == {"TUC", "TUCX", "TUCS", "TUCP", "TUCZ", "TUCPK"}
-    assert sum(int(row["case_count"]) for row in rows) == 2909346
+    assert {row["prefix"] for row in rows} == {"TUC", "TUCX", "TUCS", "TUCP", "TUCZ", "TUCPK", "TUCUI"}
+    assert sum(int(row["case_count"]) for row in rows) == 2916258
 
     for directory, (prefix, count) in EXPECTED_BATCHES.items():
         batch_rows = [row for row in rows if row["prefix"] == prefix]
@@ -96,10 +97,10 @@ def test_full_regression_policy_is_documented_in_readme_and_docs() -> None:
 
     for text in (root_readme, doc, artifact_readme):
         assert "Selective regression" in text or "selective regression" in text
-        assert "18 execution streams" in text or "18 execution units" in text
-        assert "969,782" in text
-        assert "2,909,346" in text
-        for prefix in ("TUC", "TUCX", "TUCS", "TUCP", "TUCZ", "TUCPK"):
+        assert "21 execution streams" in text or "21 execution units" in text
+        assert "972,086" in text
+        assert "2,916,258" in text
+        for prefix in ("TUC", "TUCX", "TUCS", "TUCP", "TUCZ", "TUCPK", "TUCUI"):
             assert prefix in text
 
     assert "docs/type_upgrade_full_regression.md" in root_readme

@@ -21,10 +21,10 @@ generated/type_upgrade_full_regression/manifest.json
 Every regression must run:
 
 ```text
-all 6 batches
+all 7 batches
 x all 3 profiles
-= 18 execution streams
-= 2,909,346 case/profile executions
+= 21 execution streams
+= 2,916,258 case/profile executions
 ```
 
 Selective regression is not accepted. If any batch, profile, or SQL artifact is
@@ -34,11 +34,11 @@ skipped, the regression is incomplete and must be reported as not run.
 
 | Metric | Value |
 | --- | ---: |
-| Batches | 6 |
-| Unique cases/scenarios | 969,782 |
+| Batches | 7 |
+| Unique cases/scenarios | 972,086 |
 | Profiles | 3 |
-| Case/profile executions | 2,909,346 |
-| Execution streams | 18 |
+| Case/profile executions | 2,916,258 |
+| Execution streams | 21 |
 | SQL artifacts | 2,409 |
 
 ## Required batch order
@@ -51,6 +51,7 @@ Run batches in this order:
 4. `TUCP`
 5. `TUCZ`
 6. `TUCPK`
+7. `TUCUI`
 
 Within every batch, run profiles in this order:
 
@@ -58,7 +59,7 @@ Within every batch, run profiles in this order:
 2. `INPLACE`
 3. `INSTANT`
 
-This produces the 18 required execution units below.
+This produces the 21 required execution units below.
 
 ## Full execution inventory
 
@@ -82,6 +83,9 @@ This produces the 18 required execution units below.
 | 16 | `2026-10-19-type-upgrade-primary-key-concurrency-v1` | `TUCPK` | 946,944 | `COPY` | `tools/run_type_upgrade_primary_key_concurrency.py --profile copy --all` | `qa_type_upgrade_primary_key` |
 | 17 | `2026-10-19-type-upgrade-primary-key-concurrency-v1` | `TUCPK` | 946,944 | `INPLACE` | `tools/run_type_upgrade_primary_key_concurrency.py --profile inplace --all` | `qa_type_upgrade_primary_key` |
 | 18 | `2026-10-19-type-upgrade-primary-key-concurrency-v1` | `TUCPK` | 946,944 | `INSTANT` | `tools/run_type_upgrade_primary_key_concurrency.py --profile instant --all` | `qa_type_upgrade_primary_key` |
+| 19 | `2026-10-20-inplace-ddl-unique-conflict-v1` | `TUCUI` | 2,304 | `COPY` | `tools/run_inplace_unique_conflict.py --profile copy --all` | `qa_inplace_unique_conflict` |
+| 20 | `2026-10-20-inplace-ddl-unique-conflict-v1` | `TUCUI` | 2,304 | `INPLACE` | `tools/run_inplace_unique_conflict.py --profile inplace --all` | `qa_inplace_unique_conflict` |
+| 21 | `2026-10-20-inplace-ddl-unique-conflict-v1` | `TUCUI` | 2,304 | `INSTANT` | `tools/run_inplace_unique_conflict.py --profile instant --all` | `qa_inplace_unique_conflict` |
 
 ## Output and failure policy
 
@@ -185,9 +189,43 @@ NO_OVERLAP = 0
 
 Preserve both the JSONL worker evidence and the JSON summary.
 
+## `TUCUI` virtual runner batch
+
+`TUCUI` is also a concurrent runner batch. It is not a plain SQL stream because
+it must keep multiple duplicate-DML workers active around the DDL and prove
+real overlap. Detailed design and evidence are in
+[docs/inplace_unique_conflict_v1.md](inplace_unique_conflict_v1.md).
+
+Command pattern:
+
+```bash
+export TUCUI_MYSQL_PASSWORD='...'
+
+PYTHONPATH=src python3 tools/run_inplace_unique_conflict.py \
+  --profile <profile> \
+  --all \
+  --results regression_results/TUCUI/<profile>.jsonl \
+  --summary regression_results/TUCUI/<profile>.json \
+  --external \
+  --host <authorized-host> \
+  --port 3306 \
+  --user <authorized-user> \
+  --password-env TUCUI_MYSQL_PASSWORD
+```
+
+Required result:
+
+```text
+summary.all_pass = true
+counts.PASS + counts.EXPECTED_REJECT = 2304
+NO_OVERLAP = 0
+```
+
+Preserve both the JSONL worker evidence and the JSON summary.
+
 ## Required evidence
 
-For every one of the 18 execution units, preserve:
+For every one of the 21 execution units, preserve:
 
 ```text
 batch ID
@@ -221,6 +259,7 @@ generated/type_upgrade_statistics_v1/manifest.json
 generated/type_upgrade_pipeline_v1/manifest.json
 generated/type_upgrade_boundary_v1/manifest.json
 generated/type_upgrade_primary_key_concurrency_v1/manifest.json
+generated/inplace_unique_conflict_v1/manifest.json
 generated/type_upgrade_full_regression/manifest.json
 ```
 
@@ -230,7 +269,7 @@ process defect.
 
 ## Non-negotiable completion rule
 
-A regression report may say `PASS` only when all 18 execution units are present
+A regression report may say `PASS` only when all 21 execution units are present
 and every batch-specific oracle passes. If any item is missing, the only valid
 status is:
 

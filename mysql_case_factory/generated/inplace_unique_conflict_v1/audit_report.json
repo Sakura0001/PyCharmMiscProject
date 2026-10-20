@@ -1,0 +1,29 @@
+{
+  "artifact_hashes_ok": true,
+  "batch_id": "2026-10-20-inplace-ddl-unique-conflict-v1",
+  "batch_kind": "inplace_unique_conflict_extension",
+  "ddl_sql_ok": true,
+  "forbidden_tokens_absent": true,
+  "local_all_pass": true,
+  "local_conflict_count": 12,
+  "local_overlap_count": 12,
+  "local_profile": "copy",
+  "local_required": true,
+  "local_result_count": 12,
+  "local_result_counts": {
+    "PASS": 12
+  },
+  "mysqld_version": "8.0.45",
+  "operation_count": 12,
+  "passed": true,
+  "profile_counts": {
+    "copy": 2304,
+    "inplace": 2304,
+    "instant": 2304
+  },
+  "scenario_count": 2304,
+  "smoke_case_count": 12,
+  "unique_operations": true,
+  "unique_smoke_ids": true,
+  "usage_documented": true
+}

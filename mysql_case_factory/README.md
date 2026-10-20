@@ -131,15 +131,26 @@ cases enforce the product contract that only 256-crossing upgrades support
 and
 [generated/type_upgrade_primary_key_concurrency_v1/README.md](generated/type_upgrade_primary_key_concurrency_v1/README.md).
 
+A seventh independent DDL-concurrency batch,
+`2026-10-20-inplace-ddl-unique-conflict-v1`, contains 2,304 virtual `TUCUI-*`
+scenarios. It covers twelve non-`MODIFY`/non-`CHANGE` operations that support
+`INPLACE, LOCK=NONE`, four unique-key conflict surfaces, four duplicate
+patterns, three DDL/DML phases, four and sixteen workers, and normal and
+boundary data. The runner proves real time overlap, verifies duplicate inserts
+fail without interrupting DDL, and checks all stable columns, row count,
+AUTO_INCREMENT, and the final schema. See
+[docs/inplace_unique_conflict_v1.md](docs/inplace_unique_conflict_v1.md) and
+[generated/inplace_unique_conflict_v1/README.md](generated/inplace_unique_conflict_v1/README.md).
+
 ### Mandatory full type-upgrade regression
 
-Every type-upgrade regression must run all six current batches and all three
+Every type-upgrade regression must run all seven current batches and all three
 profiles. Selective regression is not accepted.
 
 ```text
-6 batches x 3 profiles = 18 execution streams
-969,782 cases/scenarios
-2,909,346 case/profile executions
+7 batches x 3 profiles = 21 execution streams
+972,086 cases/scenarios
+2,916,258 case/profile executions
 2,409 SQL artifacts
 ```
 
@@ -149,7 +160,7 @@ The machine-readable checklist is
 [generated/type_upgrade_full_regression/inventory.tsv](generated/type_upgrade_full_regression/inventory.tsv),
 and the release-gate manifest is
 [generated/type_upgrade_full_regression/manifest.json](generated/type_upgrade_full_regression/manifest.json).
-A regression is `PASS` only when all 18 execution units are present and every
+A regression is `PASS` only when all 21 execution units are present and every
 batch-specific oracle passes; otherwise it is `INCOMPLETE` or `FAIL`.
 
 ## Test and smoke environments

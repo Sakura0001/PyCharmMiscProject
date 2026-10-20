@@ -1,21 +1,21 @@
 # Mandatory full type-upgrade regression
 
 This inventory integrates every current type-upgrade SQL batch. It is the
-required regression scope. A regression is not complete unless all six batches
+required regression scope. A regression is not complete unless all seven batches
 and all three profiles are executed.
 
 - **Regression ID:** `2026-10-15-type-upgrade-full-regression-v1`
-- **Batches:** 6
-- **Cases/scenarios:** 969,782
-- **Profile executions:** 2,909,346
-- **Execution streams:** 18
+- **Batches:** 7
+- **Cases/scenarios:** 972,086
+- **Profile executions:** 2,916,258
+- **Execution streams:** 21
 - **SQL artifacts:** 2,409
 - **Selective regression allowed:** no
 
-There are 18 execution streams in total.
+There are 21 execution streams in total.
 
 Use `inventory.tsv` as the machine-readable execution checklist. The fixed
-order is TUC, TUCX, TUCS, TUCP, TUCZ, TUCPK; within each batch run `COPY`, `INPLACE`,
+order is TUC, TUCX, TUCS, TUCP, TUCZ, TUCPK, TUCUI; within each batch run `COPY`, `INPLACE`,
 then `INSTANT`.
 
 ## Full inventory
@@ -28,11 +28,12 @@ then `INSTANT`.
 | 4 | `2026-10-15-type-upgrade-pipeline-v1` | `TUCP` | 50 | `copy/*.sql` | `inplace/*.sql` | `instant/*.sql` | `qa_type_upgrade_pipeline` |
 | 5 | `2026-10-15-type-upgrade-boundary-v1` | `TUCZ` | 750 | `copy/*.sql` | `inplace/*.sql` | `instant/*.sql` | `qa_type_upgrade_boundary` |
 | 6 | `2026-10-19-type-upgrade-primary-key-concurrency-v1` | `TUCPK` | 946,944 | virtual runner | virtual runner | virtual runner | `qa_type_upgrade_primary_key` |
+| 7 | `2026-10-20-inplace-ddl-unique-conflict-v1` | `TUCUI` | 2,304 | virtual runner | virtual runner | virtual runner | `qa_inplace_unique_conflict` |
 
 ## Execution rules
 
 1. Verify each source batch `manifest.json` before execution.
-2. Execute all 18 rows in `inventory.tsv`; skipping any row makes the
+2. Execute all 21 rows in `inventory.tsv`; skipping any row makes the
    regression incomplete.
 3. Run profiles separately and never mix output files.
 4. Use an isolated internal QA database for each batch.
@@ -104,4 +105,19 @@ PYTHONPATH=src .venv312/bin/python tools/run_type_upgrade_primary_key_concurrenc
   --port 3306 \
   --user <internal-user> \
   --password-env TUCPK_MYSQL_PASSWORD
+```
+
+`TUCUI` uses the concurrent unique-conflict runner:
+
+```bash
+PYTHONPATH=src python3 tools/run_inplace_unique_conflict.py \
+  --profile <profile> \
+  --all \
+  --results regression_results/TUCUI/<profile>.jsonl \
+  --summary regression_results/TUCUI/<profile>.json \
+  --external \
+  --host <authorized-host> \
+  --port 3306 \
+  --user <authorized-user> \
+  --password-env TUCUI_MYSQL_PASSWORD
 ```
