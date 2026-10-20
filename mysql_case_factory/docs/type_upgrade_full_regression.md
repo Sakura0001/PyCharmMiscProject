@@ -21,10 +21,10 @@ generated/type_upgrade_full_regression/manifest.json
 Every regression must run:
 
 ```text
-all 8 batches
+all 9 batches
 x all profiles defined by each batch
-= 23 execution streams
-= 2,917,394 case/profile executions
+= 24 execution streams
+= 2,917,586 case/profile executions
 ```
 
 Selective regression is not accepted. If any batch, profile, or SQL artifact is
@@ -34,11 +34,11 @@ skipped, the regression is incomplete and must be reported as not run.
 
 | Metric | Value |
 | --- | ---: |
-| Batches | 8 |
-| Unique cases/scenarios | 972,654 |
+| Batches | 9 |
+| Unique cases/scenarios | 972,846 |
 | Profiles | 3 |
-| Case/profile executions | 2,917,394 |
-| Execution streams | 23 |
+| Case/profile executions | 2,917,586 |
+| Execution streams | 24 |
 | SQL artifacts | 2,411 |
 
 ## Required batch order
@@ -53,6 +53,7 @@ Run batches in this order:
 6. `TUCPK`
 7. `TUCUI`
 8. `TUCFK`
+9. `TUCUD`
 
 Within every batch, run profiles in this order:
 
@@ -60,7 +61,7 @@ Within every batch, run profiles in this order:
 2. `INPLACE`
 3. `INSTANT`
 
-This produces the 23 required execution units below.
+This produces the 24 required execution units below.
 
 ## Full execution inventory
 
@@ -89,6 +90,7 @@ This produces the 23 required execution units below.
 | 21 | `2026-10-20-inplace-ddl-unique-conflict-v1` | `TUCUI` | 2,304 | `INSTANT` | `tools/run_inplace_unique_conflict.py --profile instant --all` | `qa_inplace_unique_conflict` |
 | 22 | `2026-10-20-fk-type-expansion-consistency-v1` | `TUCFK` | 568 | `INPLACE` | `generated/fk_type_expansion_v1/inplace_suite.sql.gz` | `qa_fk_type_expansion` |
 | 23 | `2026-10-20-fk-type-expansion-consistency-v1` | `TUCFK` | 568 | `INSTANT` | `generated/fk_type_expansion_v1/instant_suite.sql.gz` | `qa_fk_type_expansion` |
+| 24 | `2026-10-20-unique-ddl-expected-error-v1` | `TUCUD` | 192 | `INPLACE` | `tools/run_unique_ddl_expected_error.py --all` | `qa_unique_ddl_expected_error` |
 
 ## Output and failure policy
 
@@ -255,9 +257,37 @@ orphan_count = 0 in every row
 fk_exists = 1 in every row
 ```
 
+## `TUCUD` virtual runner batch
+
+`TUCUD` verifies that unique secondary-index DDL fails when concurrent DML
+introduces a duplicate after the DDL starts.
+
+```bash
+export UNIQUE_DDL_MYSQL_PASSWORD='...'
+
+PYTHONPATH=src python3 tools/run_unique_ddl_expected_error.py \
+  --all \
+  --results regression_results/TUCUD/inplace.jsonl \
+  --summary regression_results/TUCUD/inplace.json \
+  --external \
+  --host <authorized-host> \
+  --port 3306 \
+  --user <authorized-user> \
+  --password-env UNIQUE_DDL_MYSQL_PASSWORD
+```
+
+Required result:
+
+```text
+summary.all_pass = true
+counts.PASS = 192
+NO_OVERLAP = 0
+FAIL_DDL_SUCCESS = 0
+```
+
 ## Required evidence
 
-For every one of the 23 execution units, preserve:
+For every one of the 24 execution units, preserve:
 
 ```text
 batch ID
@@ -293,6 +323,7 @@ generated/type_upgrade_boundary_v1/manifest.json
 generated/type_upgrade_primary_key_concurrency_v1/manifest.json
 generated/inplace_unique_conflict_v1/manifest.json
 generated/fk_type_expansion_v1/manifest.json
+generated/unique_ddl_expected_error_v1/manifest.json
 generated/type_upgrade_full_regression/manifest.json
 ```
 
@@ -302,7 +333,7 @@ process defect.
 
 ## Non-negotiable completion rule
 
-A regression report may say `PASS` only when all 23 execution units are present
+A regression report may say `PASS` only when all 24 execution units are present
 and every batch-specific oracle passes. If any item is missing, the only valid
 status is:
 

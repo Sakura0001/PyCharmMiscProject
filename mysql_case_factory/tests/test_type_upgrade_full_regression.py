@@ -16,6 +16,7 @@ EXPECTED_BATCHES = {
     "generated/type_upgrade_primary_key_concurrency_v1": ("TUCPK", 946944),
     "generated/inplace_unique_conflict_v1": ("TUCUI", 2304),
     "generated/fk_type_expansion_v1": ("TUCFK", 568),
+    "generated/unique_ddl_expected_error_v1": ("TUCUD", 192),
 }
 
 
@@ -31,25 +32,25 @@ def test_full_regression_manifest_totals_and_policy() -> None:
     assert manifest["required"] is True
     assert manifest["selective_regression_allowed"] is False
     assert manifest["expected_output_may_be_rewritten_after_execution"] is False
-    assert manifest["batch_count"] == 8
-    assert manifest["case_count"] == 972654
-    assert manifest["profile_execution_count"] == 2917394
-    assert manifest["execution_stream_count"] == 23
+    assert manifest["batch_count"] == 9
+    assert manifest["case_count"] == 972846
+    assert manifest["profile_execution_count"] == 2917586
+    assert manifest["execution_stream_count"] == 24
     assert manifest["sql_artifact_count"] == 2411
     assert manifest["profiles"] == ["copy", "inplace", "instant"]
 
 
 def test_full_regression_inventory_contains_every_batch_and_profile() -> None:
     rows = _inventory()
-    assert len(rows) == 23
-    assert [int(row["order"]) for row in rows] == list(range(1, 24))
+    assert len(rows) == 24
+    assert [int(row["order"]) for row in rows] == list(range(1, 25))
     assert {row["profile"] for row in rows} == {"copy", "inplace", "instant"}
-    assert {row["prefix"] for row in rows} == {"TUC", "TUCX", "TUCS", "TUCP", "TUCZ", "TUCPK", "TUCUI", "TUCFK"}
-    assert sum(int(row["case_count"]) for row in rows) == 2917394
+    assert {row["prefix"] for row in rows} == {"TUC", "TUCX", "TUCS", "TUCP", "TUCZ", "TUCPK", "TUCUI", "TUCFK", "TUCUD"}
+    assert sum(int(row["case_count"]) for row in rows) == 2917586
 
     for directory, (prefix, count) in EXPECTED_BATCHES.items():
         batch_rows = [row for row in rows if row["prefix"] == prefix]
-        expected_profiles = {"inplace", "instant"} if prefix == "TUCFK" else {"copy", "inplace", "instant"}
+        expected_profiles = {"inplace"} if prefix == "TUCUD" else ({"inplace", "instant"} if prefix == "TUCFK" else {"copy", "inplace", "instant"})
         assert len(batch_rows) == len(expected_profiles)
         assert all(int(row["case_count"]) == count for row in batch_rows)
         assert {row["profile"] for row in batch_rows} == expected_profiles
@@ -99,10 +100,10 @@ def test_full_regression_policy_is_documented_in_readme_and_docs() -> None:
 
     for text in (root_readme, doc, artifact_readme):
         assert "Selective regression" in text or "selective regression" in text
-        assert "23 execution streams" in text or "23 execution units" in text
-        assert "972,654" in text
-        assert "2,917,394" in text
-        for prefix in ("TUC", "TUCX", "TUCS", "TUCP", "TUCZ", "TUCPK", "TUCUI", "TUCFK"):
+        assert "24 execution streams" in text or "24 execution units" in text
+        assert "972,846" in text
+        assert "2,917,586" in text
+        for prefix in ("TUC", "TUCX", "TUCS", "TUCP", "TUCZ", "TUCPK", "TUCUI", "TUCFK", "TUCUD"):
             assert prefix in text
 
     assert "docs/type_upgrade_full_regression.md" in root_readme

@@ -1,0 +1,26 @@
+{
+  "artifacts_sha256": {
+    "cases.jsonl.gz": "589a1b2397c5862bbce82087e84ef977f878bd8db82bc4f4e3bbe026200d4f28",
+    "coverage.tsv": "24912a80546cdbcd6acb24055d64ebdb94e6097c6be98d031528d6063d6efd66",
+    "smoke_cases.jsonl.gz": "7e7efc5df2527bfc76da0ca792e63155b9a66236418adbdab61bb7a34007e55a"
+  },
+  "batch_id": "2026-10-20-unique-ddl-expected-error-v1",
+  "batch_kind": "unique_ddl_expected_error",
+  "case_count": 192,
+  "case_id_prefix": "TUCUD",
+  "database": "qa_unique_ddl_expected_error",
+  "ddl_form_count": 4,
+  "dml_type_count": 8,
+  "expected_error_codes": [
+    1062,
+    1859
+  ],
+  "index_shape_count": 6,
+  "materialization": "virtual_runner",
+  "profile": "inplace",
+  "profile_counts": {
+    "inplace": 192
+  },
+  "rows_per_shape": 200000,
+  "smoke_case_count": 6
+}

@@ -151,16 +151,25 @@ checks parent/child counts, orphan rows, FK existence, and the final column
 type. See [docs/fk_type_expansion_v1.md](docs/fk_type_expansion_v1.md) and
 [generated/fk_type_expansion_v1/README.md](generated/fk_type_expansion_v1/README.md).
 
+A ninth independent expected-error batch,
+`2026-10-20-unique-ddl-expected-error-v1`, contains 192 virtual `TUCUD-*`
+scenarios. It covers four unique secondary-index DDL forms, six index shapes,
+and eight duplicate-producing DML statements. Every case proves real DDL/DML
+overlap, successful duplicate DML, and DDL failure with MySQL 1062 or 1859.
+See [docs/unique_ddl_expected_error_v1.md](docs/unique_ddl_expected_error_v1.md)
+and
+[generated/unique_ddl_expected_error_v1/README.md](generated/unique_ddl_expected_error_v1/README.md).
+
 ### Mandatory full type-upgrade regression
 
-Every type-upgrade regression must run all eight current batches and every
+Every type-upgrade regression must run all nine current batches and every
 profile defined by each batch. Selective regression is not accepted.
 
 ```text
-8 batches
-23 execution streams
-972,654 cases/scenarios
-2,917,394 case/profile executions
+9 batches
+24 execution streams
+972,846 cases/scenarios
+2,917,586 case/profile executions
 2,411 SQL artifacts
 ```
 
@@ -170,7 +179,7 @@ The machine-readable checklist is
 [generated/type_upgrade_full_regression/inventory.tsv](generated/type_upgrade_full_regression/inventory.tsv),
 and the release-gate manifest is
 [generated/type_upgrade_full_regression/manifest.json](generated/type_upgrade_full_regression/manifest.json).
-A regression is `PASS` only when all 23 execution units are present and every
+A regression is `PASS` only when all 24 execution units are present and every
 batch-specific oracle passes; otherwise it is `INCOMPLETE` or `FAIL`.
 
 ## Test and smoke environments
