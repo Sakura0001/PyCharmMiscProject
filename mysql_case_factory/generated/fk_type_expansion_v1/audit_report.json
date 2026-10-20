@@ -1,0 +1,27 @@
+{
+  "artifact_hashes_ok": true,
+  "batch_id": "2026-10-20-fk-type-expansion-consistency-v1",
+  "batch_kind": "fk_type_expansion_consistency",
+  "case_count": 568,
+  "case_prefix_ok": true,
+  "coverage_ok": true,
+  "expected_output_ok": true,
+  "family_counts": {
+    "binary": 96,
+    "bit": 104,
+    "character": 112,
+    "decimal": 80,
+    "integer": 176
+  },
+  "local_metadata_ok": true,
+  "local_required": false,
+  "passed": true,
+  "profile_counts": {
+    "inplace": 284,
+    "instant": 284
+  },
+  "sql_oracle_ok": true,
+  "transition_count": 71,
+  "unique_case_ids": true,
+  "usage_documented": true
+}

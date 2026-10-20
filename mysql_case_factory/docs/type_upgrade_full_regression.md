@@ -21,10 +21,10 @@ generated/type_upgrade_full_regression/manifest.json
 Every regression must run:
 
 ```text
-all 7 batches
-x all 3 profiles
-= 21 execution streams
-= 2,916,258 case/profile executions
+all 8 batches
+x all profiles defined by each batch
+= 23 execution streams
+= 2,917,394 case/profile executions
 ```
 
 Selective regression is not accepted. If any batch, profile, or SQL artifact is
@@ -34,12 +34,12 @@ skipped, the regression is incomplete and must be reported as not run.
 
 | Metric | Value |
 | --- | ---: |
-| Batches | 7 |
-| Unique cases/scenarios | 972,086 |
+| Batches | 8 |
+| Unique cases/scenarios | 972,654 |
 | Profiles | 3 |
-| Case/profile executions | 2,916,258 |
-| Execution streams | 21 |
-| SQL artifacts | 2,409 |
+| Case/profile executions | 2,917,394 |
+| Execution streams | 23 |
+| SQL artifacts | 2,411 |
 
 ## Required batch order
 
@@ -52,6 +52,7 @@ Run batches in this order:
 5. `TUCZ`
 6. `TUCPK`
 7. `TUCUI`
+8. `TUCFK`
 
 Within every batch, run profiles in this order:
 
@@ -59,7 +60,7 @@ Within every batch, run profiles in this order:
 2. `INPLACE`
 3. `INSTANT`
 
-This produces the 21 required execution units below.
+This produces the 23 required execution units below.
 
 ## Full execution inventory
 
@@ -86,6 +87,8 @@ This produces the 21 required execution units below.
 | 19 | `2026-10-20-inplace-ddl-unique-conflict-v1` | `TUCUI` | 2,304 | `COPY` | `tools/run_inplace_unique_conflict.py --profile copy --all` | `qa_inplace_unique_conflict` |
 | 20 | `2026-10-20-inplace-ddl-unique-conflict-v1` | `TUCUI` | 2,304 | `INPLACE` | `tools/run_inplace_unique_conflict.py --profile inplace --all` | `qa_inplace_unique_conflict` |
 | 21 | `2026-10-20-inplace-ddl-unique-conflict-v1` | `TUCUI` | 2,304 | `INSTANT` | `tools/run_inplace_unique_conflict.py --profile instant --all` | `qa_inplace_unique_conflict` |
+| 22 | `2026-10-20-fk-type-expansion-consistency-v1` | `TUCFK` | 568 | `INPLACE` | `generated/fk_type_expansion_v1/inplace_suite.sql.gz` | `qa_fk_type_expansion` |
+| 23 | `2026-10-20-fk-type-expansion-consistency-v1` | `TUCFK` | 568 | `INSTANT` | `generated/fk_type_expansion_v1/instant_suite.sql.gz` | `qa_fk_type_expansion` |
 
 ## Output and failure policy
 
@@ -223,9 +226,38 @@ NO_OVERLAP = 0
 
 Preserve both the JSONL worker evidence and the JSON summary.
 
+## `TUCFK` compressed SQL batch
+
+`TUCFK` verifies FK type-expansion consistency with exact expected output. It
+contains planned negative DDL errors, so execute it with `--force`.
+
+```bash
+gunzip -c generated/fk_type_expansion_v1/inplace_suite.sql.gz |
+  mysql --login-path=internal_qa \
+    --batch --raw --skip-column-names --binary-mode --force \
+    qa_fk_type_expansion \
+    > regression_results/TUCFK/inplace.tsv \
+    2> regression_results/TUCFK/inplace.stderr.log
+
+diff -u \
+  generated/fk_type_expansion_v1/expected_output_inplace.tsv \
+  regression_results/TUCFK/inplace.tsv
+```
+
+Repeat with `instant_suite.sql.gz` and `expected_output_instant.tsv`.
+
+Required result:
+
+```text
+stdout matches expected TSV exactly
+no row ends with FAIL
+orphan_count = 0 in every row
+fk_exists = 1 in every row
+```
+
 ## Required evidence
 
-For every one of the 21 execution units, preserve:
+For every one of the 23 execution units, preserve:
 
 ```text
 batch ID
@@ -260,6 +292,7 @@ generated/type_upgrade_pipeline_v1/manifest.json
 generated/type_upgrade_boundary_v1/manifest.json
 generated/type_upgrade_primary_key_concurrency_v1/manifest.json
 generated/inplace_unique_conflict_v1/manifest.json
+generated/fk_type_expansion_v1/manifest.json
 generated/type_upgrade_full_regression/manifest.json
 ```
 
@@ -269,7 +302,7 @@ process defect.
 
 ## Non-negotiable completion rule
 
-A regression report may say `PASS` only when all 21 execution units are present
+A regression report may say `PASS` only when all 23 execution units are present
 and every batch-specific oracle passes. If any item is missing, the only valid
 status is:
 

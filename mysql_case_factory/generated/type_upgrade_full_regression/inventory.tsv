@@ -20,3 +20,5 @@ order	profile	batch_id	prefix	case_count	database	artifact	artifact_kind	output_
 19	copy	2026-10-20-inplace-ddl-unique-conflict-v1	TUCUI	2304	qa_inplace_unique_conflict	tools/run_inplace_unique_conflict.py	virtual_runner	RUNNER_ALL_PASS	RUNNER_EVIDENCE	-
 20	inplace	2026-10-20-inplace-ddl-unique-conflict-v1	TUCUI	2304	qa_inplace_unique_conflict	tools/run_inplace_unique_conflict.py	virtual_runner	RUNNER_ALL_PASS	RUNNER_EVIDENCE	-
 21	instant	2026-10-20-inplace-ddl-unique-conflict-v1	TUCUI	2304	qa_inplace_unique_conflict	tools/run_inplace_unique_conflict.py	virtual_runner	RUNNER_ALL_PASS	RUNNER_EVIDENCE	-
+22	inplace	2026-10-20-fk-type-expansion-consistency-v1	TUCFK	568	qa_fk_type_expansion	generated/fk_type_expansion_v1/inplace_suite.sql.gz	compressed_suite	NO_FAIL	PLANNED_NEGATIVE_ERRORS_ALLOWED	generated/fk_type_expansion_v1/expected_output_inplace.tsv
+23	instant	2026-10-20-fk-type-expansion-consistency-v1	TUCFK	568	qa_fk_type_expansion	generated/fk_type_expansion_v1/instant_suite.sql.gz	compressed_suite	NO_FAIL	PLANNED_NEGATIVE_ERRORS_ALLOWED	generated/fk_type_expansion_v1/expected_output_instant.tsv
