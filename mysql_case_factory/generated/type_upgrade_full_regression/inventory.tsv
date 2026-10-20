@@ -17,3 +17,6 @@ order	profile	batch_id	prefix	case_count	database	artifact	artifact_kind	output_
 16	copy	2026-10-19-type-upgrade-primary-key-concurrency-v1	TUCPK	946944	qa_type_upgrade_primary_key	tools/run_type_upgrade_primary_key_concurrency.py	virtual_runner	RUNNER_ALL_PASS	RUNNER_EVIDENCE	-
 17	inplace	2026-10-19-type-upgrade-primary-key-concurrency-v1	TUCPK	946944	qa_type_upgrade_primary_key	tools/run_type_upgrade_primary_key_concurrency.py	virtual_runner	RUNNER_ALL_PASS	RUNNER_EVIDENCE	-
 18	instant	2026-10-19-type-upgrade-primary-key-concurrency-v1	TUCPK	946944	qa_type_upgrade_primary_key	tools/run_type_upgrade_primary_key_concurrency.py	virtual_runner	RUNNER_ALL_PASS	RUNNER_EVIDENCE	-
+19	copy	2026-10-20-inplace-ddl-unique-conflict-v1	TUCUI	2304	qa_inplace_unique_conflict	tools/run_inplace_unique_conflict.py	virtual_runner	RUNNER_ALL_PASS	RUNNER_EVIDENCE	-
+20	inplace	2026-10-20-inplace-ddl-unique-conflict-v1	TUCUI	2304	qa_inplace_unique_conflict	tools/run_inplace_unique_conflict.py	virtual_runner	RUNNER_ALL_PASS	RUNNER_EVIDENCE	-
+21	instant	2026-10-20-inplace-ddl-unique-conflict-v1	TUCUI	2304	qa_inplace_unique_conflict	tools/run_inplace_unique_conflict.py	virtual_runner	RUNNER_ALL_PASS	RUNNER_EVIDENCE	-

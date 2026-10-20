@@ -1,0 +1,15 @@
+{
+  "all_pass": true,
+  "batch_id": "2026-10-20-inplace-ddl-unique-conflict-v1",
+  "batch_kind": "inplace_unique_conflict_extension",
+  "counts": {
+    "EXPECTED_REJECT": 7,
+    "PASS": 5
+  },
+  "executed_count": 12,
+  "finished_at": "2026-10-20T03:49:14.801720+00:00",
+  "mysqld_version": "8.0.45",
+  "profile": "instant",
+  "selected_count": 12,
+  "started_at": "2026-10-20T03:48:34.786451+00:00"
+}
