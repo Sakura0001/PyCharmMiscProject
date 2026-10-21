@@ -26,3 +26,4 @@ order	profile	batch_id	prefix	case_count	database	artifact	artifact_kind	output_
 25	copy	2026-10-20-virtual-function-type-upgrade-v1	TUCVF	5136	qa_virtual_function_type_upgrade	tools/run_virtual_function_type_upgrade.py	virtual_runner	RUNNER_ALL_PASS	RUNNER_EVIDENCE	-
 26	inplace	2026-10-20-virtual-function-type-upgrade-v1	TUCVF	5136	qa_virtual_function_type_upgrade	tools/run_virtual_function_type_upgrade.py	virtual_runner	RUNNER_ALL_PASS	RUNNER_EVIDENCE	-
 27	instant	2026-10-20-virtual-function-type-upgrade-v1	TUCVF	5136	qa_virtual_function_type_upgrade	tools/run_virtual_function_type_upgrade.py	virtual_runner	RUNNER_ALL_PASS	RUNNER_EVIDENCE	-
+28	performance	2026-10-21-type-upgrade-performance-v1	TUCPF	7	qa_type_upgrade_performance	tools/run_type_upgrade_performance.py	virtual_runner	RUNNER_ALL_PASS	RUNNER_EVIDENCE	-

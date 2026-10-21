@@ -169,16 +169,25 @@ change algorithm behavior or corrupt data during base-column expansion. See
 and
 [generated/virtual_function_type_upgrade_v1/README.md](generated/virtual_function_type_upgrade_v1/README.md).
 
+An eleventh independent performance batch,
+`2026-10-21-type-upgrade-performance-v1`, contains seven `TUCPF-*` scenarios
+and 31 upgradeable columns. It compares source, direct target reference,
+`COPY`, `INPLACE`, `INSTANT`, and mixed-algorithm large-table performance. The
+runner supports adaptive row-count calibration to a 300-second full scan and
+records DDL, full-scan, and DML timings. See
+[docs/type_upgrade_performance_v1.md](docs/type_upgrade_performance_v1.md) and
+[generated/type_upgrade_performance_v1/README.md](generated/type_upgrade_performance_v1/README.md).
+
 ### Mandatory full type-upgrade regression
 
-Every type-upgrade regression must run all ten current batches and every
+Every type-upgrade regression must run all eleven current batches and every
 profile defined by each batch. Selective regression is not accepted.
 
 ```text
-10 batches
-27 execution streams
-977,982 cases/scenarios
-2,932,994 case/profile executions
+11 batches
+28 execution streams
+977,989 cases/scenarios
+2,933,001 case/profile executions
 2,411 SQL artifacts
 ```
 
@@ -188,7 +197,7 @@ The machine-readable checklist is
 [generated/type_upgrade_full_regression/inventory.tsv](generated/type_upgrade_full_regression/inventory.tsv),
 and the release-gate manifest is
 [generated/type_upgrade_full_regression/manifest.json](generated/type_upgrade_full_regression/manifest.json).
-A regression is `PASS` only when all 27 execution units are present and every
+A regression is `PASS` only when all 28 execution units are present and every
 batch-specific oracle passes; otherwise it is `INCOMPLETE` or `FAIL`.
 
 ## Test and smoke environments

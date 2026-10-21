@@ -1,0 +1,32 @@
+family	source_type	target_type	column
+integer	TINYINT	SMALLINT	i_tiny
+integer	TINYINT UNSIGNED	SMALLINT UNSIGNED	i_tiny_unsigned
+integer	SMALLINT	MEDIUMINT	i_small
+integer	SMALLINT UNSIGNED	MEDIUMINT UNSIGNED	i_small_unsigned
+integer	MEDIUMINT	INT	i_medium
+integer	MEDIUMINT UNSIGNED	INT UNSIGNED	i_medium_unsigned
+integer	INT	BIGINT	i_int
+integer	INT UNSIGNED	BIGINT UNSIGNED	i_int_unsigned
+integer	BIGINT	BIGINT	i_bigint
+integer	BIGINT UNSIGNED	BIGINT UNSIGNED	i_bigint_unsigned
+decimal	DECIMAL(10,2)	DECIMAL(20,2)	dec_10_2
+decimal	DECIMAL(18,6)	DECIMAL(38,6)	dec_18_6
+decimal	DECIMAL(38,18)	DECIMAL(65,18)	dec_38_18
+bit	BIT(8)	BIT(16)	bit_8
+bit	BIT(32)	BIT(64)	bit_32
+character	CHAR(16)	CHAR(255)	char_16
+character	CHAR(255)	VARCHAR(256)	char_255
+character	VARCHAR(16)	VARCHAR(255)	varchar_16
+character	VARCHAR(255)	VARCHAR(256)	varchar_255
+character	VARCHAR(256)	VARCHAR(1024)	varchar_256
+binary	BINARY(16)	BINARY(255)	binary_16
+binary	BINARY(255)	VARBINARY(256)	binary_255
+binary	VARBINARY(16)	VARBINARY(255)	varbinary_16
+binary	VARBINARY(255)	VARBINARY(256)	varbinary_255
+binary	VARBINARY(256)	VARBINARY(1024)	varbinary_256
+text	TINYTEXT	TEXT	tinytext
+text	TEXT	MEDIUMTEXT	text
+text	MEDIUMTEXT	LONGTEXT	mediumtext
+blob	TINYBLOB	BLOB	tinyblob
+blob	BLOB	MEDIUMBLOB	blob
+blob	MEDIUMBLOB	LONGBLOB	mediumblob

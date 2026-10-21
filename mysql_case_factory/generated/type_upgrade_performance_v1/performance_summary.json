@@ -1,0 +1,18 @@
+{
+  "all_pass": true,
+  "batch_id": "2026-10-21-type-upgrade-performance-v1",
+  "batch_kind": "type_upgrade_performance",
+  "calibration_rows": 100000,
+  "calibration_seconds": 0.0,
+  "counts": {
+    "PASS": 3
+  },
+  "executed_count": 3,
+  "finished_at": "2026-10-21T03:04:07.844368+00:00",
+  "mysqld_version": "8.0.45",
+  "profile": "performance",
+  "rows": 1000,
+  "selected_count": 3,
+  "started_at": "2026-10-21T03:04:07.521412+00:00",
+  "target_scan_seconds": 300.0
+}

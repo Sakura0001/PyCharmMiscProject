@@ -1,0 +1,19 @@
+{
+  "artifacts_sha256": {
+    "cases.jsonl.gz": "151f8b89eccbdb8a2bdd07d74ca31a188af3eea283c683a328086e842dcb31e3",
+    "coverage.tsv": "a7bb1351016bd9c1add9a31b23e80c231ee9ad75d36b76ccdb355f6fb15529c9"
+  },
+  "batch_id": "2026-10-21-type-upgrade-performance-v1",
+  "batch_kind": "type_upgrade_performance",
+  "case_count": 7,
+  "case_id_prefix": "TUCPF",
+  "database": "qa_type_upgrade_performance",
+  "materialization": "virtual_runner",
+  "noise_column_count": 4,
+  "profile": "performance",
+  "profile_counts": {
+    "performance": 7
+  },
+  "scenario_count": 7,
+  "upgrade_column_count": 31
+}

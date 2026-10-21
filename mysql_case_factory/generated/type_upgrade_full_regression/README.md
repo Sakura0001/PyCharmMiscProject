@@ -1,20 +1,20 @@
 # Mandatory full type-upgrade regression
 
 This inventory integrates every current type-upgrade SQL batch. It is the
-required regression scope. A regression is not complete unless all ten batches and every profile defined by each batch are executed.
+required regression scope. A regression is not complete unless all eleven batches and every profile defined by each batch are executed.
 
 - **Regression ID:** `2026-10-15-type-upgrade-full-regression-v1`
-- **Batches:** 10
-- **Cases/scenarios:** 977,982
-- **Profile executions:** 2,932,994
-- **Execution streams:** 27
+- **Batches:** 11
+- **Cases/scenarios:** 977,989
+- **Profile executions:** 2,933,001
+- **Execution streams:** 28
 - **SQL artifacts:** 2,411
 - **Selective regression allowed:** no
 
-There are 27 execution streams in total.
+There are 28 execution streams in total.
 
 Use `inventory.tsv` as the machine-readable execution checklist. The fixed
-order is TUC, TUCX, TUCS, TUCP, TUCZ, TUCPK, TUCUI, TUCFK, TUCUD, TUCVF; within each batch run `COPY`, `INPLACE`,
+order is TUC, TUCX, TUCS, TUCP, TUCZ, TUCPK, TUCUI, TUCFK, TUCUD, TUCVF, TUCPF; within each batch run `COPY`, `INPLACE`,
 then `INSTANT`.
 
 ## Full inventory
@@ -31,11 +31,12 @@ then `INSTANT`.
 | 8 | `2026-10-20-fk-type-expansion-consistency-v1` | `TUCFK` | 568 | — | `inplace_suite.sql.gz` | `instant_suite.sql.gz` | `qa_fk_type_expansion` |
 | 9 | `2026-10-20-unique-ddl-expected-error-v1` | `TUCUD` | 192 | — | virtual runner | — | `qa_unique_ddl_expected_error` |
 | 10 | `2026-10-20-virtual-function-type-upgrade-v1` | `TUCVF` | 5,136 | virtual runner | virtual runner | virtual runner | `qa_virtual_function_type_upgrade` |
+| 11 | `2026-10-21-type-upgrade-performance-v1` | `TUCPF` | 7 | — | virtual runner | — | `qa_type_upgrade_performance` |
 
 ## Execution rules
 
 1. Verify each source batch `manifest.json` before execution.
-2. Execute all 27 rows in `inventory.tsv`; skipping any row makes the
+2. Execute all 28 rows in `inventory.tsv`; skipping any row makes the
    regression incomplete.
 3. Run profiles separately and never mix output files.
 4. Use an isolated internal QA database for each batch.
@@ -169,4 +170,22 @@ PYTHONPATH=src python3 tools/run_virtual_function_type_upgrade.py \
   --port 3306 \
   --user <authorized-user> \
   --password-env VIRTUAL_FUNCTION_MYSQL_PASSWORD
+```
+
+`TUCPF` uses the adaptive performance runner:
+
+```bash
+PYTHONPATH=src python3 tools/run_type_upgrade_performance.py \
+  --all \
+  --rows 0 \
+  --calibration-rows 100000 \
+  --target-scan-seconds 300 \
+  --max-rows 20000000 \
+  --results regression_results/TUCPF/performance.jsonl \
+  --summary regression_results/TUCPF/performance.json \
+  --external \
+  --host <authorized-host> \
+  --port 3306 \
+  --user <authorized-user> \
+  --password-env TYPE_PERFORMANCE_MYSQL_PASSWORD
 ```

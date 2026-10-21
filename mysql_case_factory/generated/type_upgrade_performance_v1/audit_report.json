@@ -1,0 +1,22 @@
+{
+  "artifact_hashes_ok": true,
+  "batch_id": "2026-10-21-type-upgrade-performance-v1",
+  "batch_kind": "type_upgrade_performance",
+  "case_count": 7,
+  "coverage_ok": true,
+  "local_all_pass": true,
+  "local_metadata_ok": true,
+  "local_pass_count": 3,
+  "local_required": true,
+  "local_result_count": 3,
+  "mysqld_version": "8.0.45",
+  "noise_column_count": 4,
+  "passed": true,
+  "rows": 1000,
+  "scenario_count": 7,
+  "scenario_ok": true,
+  "type_families_ok": true,
+  "unique_case_ids": true,
+  "upgrade_column_count": 31,
+  "usage_documented": true
+}
