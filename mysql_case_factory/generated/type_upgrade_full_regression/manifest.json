@@ -1,5 +1,5 @@
 {
-  "batch_count": 10,
+  "batch_count": 11,
   "batch_order": [
     "2026-10-13-type-upgrade-consistency",
     "2026-10-13-type-upgrade-consistency-extension-v1",
@@ -10,14 +10,15 @@
     "2026-10-20-inplace-ddl-unique-conflict-v1",
     "2026-10-20-fk-type-expansion-consistency-v1",
     "2026-10-20-unique-ddl-expected-error-v1",
-    "2026-10-20-virtual-function-type-upgrade-v1"
+    "2026-10-20-virtual-function-type-upgrade-v1",
+    "2026-10-21-type-upgrade-performance-v1"
   ],
-  "case_count": 977982,
-  "execution_stream_count": 27,
+  "case_count": 977989,
+  "execution_stream_count": 28,
   "expected_output_may_be_rewritten_after_execution": false,
   "inventory": "inventory.tsv",
   "policy": "MANDATORY_ALL_BATCHES_ALL_PROFILES",
-  "profile_execution_count": 2932994,
+  "profile_execution_count": 2933001,
   "profiles": [
     "copy",
     "inplace",
