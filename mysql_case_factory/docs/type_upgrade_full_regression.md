@@ -21,10 +21,10 @@ generated/type_upgrade_full_regression/manifest.json
 Every regression must run:
 
 ```text
-all 9 batches
+all 10 batches
 x all profiles defined by each batch
-= 24 execution streams
-= 2,917,586 case/profile executions
+= 27 execution streams
+= 2,932,994 case/profile executions
 ```
 
 Selective regression is not accepted. If any batch, profile, or SQL artifact is
@@ -34,11 +34,11 @@ skipped, the regression is incomplete and must be reported as not run.
 
 | Metric | Value |
 | --- | ---: |
-| Batches | 9 |
-| Unique cases/scenarios | 972,846 |
+| Batches | 10 |
+| Unique cases/scenarios | 977,982 |
 | Profiles | 3 |
-| Case/profile executions | 2,917,586 |
-| Execution streams | 24 |
+| Case/profile executions | 2,932,994 |
+| Execution streams | 27 |
 | SQL artifacts | 2,411 |
 
 ## Required batch order
@@ -54,6 +54,7 @@ Run batches in this order:
 7. `TUCUI`
 8. `TUCFK`
 9. `TUCUD`
+10. `TUCVF`
 
 Within every batch, run profiles in this order:
 
@@ -61,7 +62,7 @@ Within every batch, run profiles in this order:
 2. `INPLACE`
 3. `INSTANT`
 
-This produces the 24 required execution units below.
+This produces the 27 required execution units below.
 
 ## Full execution inventory
 
@@ -91,6 +92,9 @@ This produces the 24 required execution units below.
 | 22 | `2026-10-20-fk-type-expansion-consistency-v1` | `TUCFK` | 568 | `INPLACE` | `generated/fk_type_expansion_v1/inplace_suite.sql.gz` | `qa_fk_type_expansion` |
 | 23 | `2026-10-20-fk-type-expansion-consistency-v1` | `TUCFK` | 568 | `INSTANT` | `generated/fk_type_expansion_v1/instant_suite.sql.gz` | `qa_fk_type_expansion` |
 | 24 | `2026-10-20-unique-ddl-expected-error-v1` | `TUCUD` | 192 | `INPLACE` | `tools/run_unique_ddl_expected_error.py --all` | `qa_unique_ddl_expected_error` |
+| 25 | `2026-10-20-virtual-function-type-upgrade-v1` | `TUCVF` | 5,136 | `COPY` | `tools/run_virtual_function_type_upgrade.py --profile copy --all` | `qa_virtual_function_type_upgrade` |
+| 26 | `2026-10-20-virtual-function-type-upgrade-v1` | `TUCVF` | 5,136 | `INPLACE` | `tools/run_virtual_function_type_upgrade.py --profile inplace --all` | `qa_virtual_function_type_upgrade` |
+| 27 | `2026-10-20-virtual-function-type-upgrade-v1` | `TUCVF` | 5,136 | `INSTANT` | `tools/run_virtual_function_type_upgrade.py --profile instant --all` | `qa_virtual_function_type_upgrade` |
 
 ## Output and failure policy
 
@@ -285,9 +289,40 @@ NO_OVERLAP = 0
 FAIL_DDL_SUCCESS = 0
 ```
 
+## `TUCVF` virtual runner batch
+
+`TUCVF` verifies that virtual generated columns, stored generated columns, and
+functional indexes do not change algorithm behavior or corrupt data during
+base-column type expansion.
+
+```bash
+export VIRTUAL_FUNCTION_MYSQL_PASSWORD='...'
+
+PYTHONPATH=src python3 tools/run_virtual_function_type_upgrade.py \
+  --profile <profile> \
+  --all \
+  --results regression_results/TUCVF/<profile>.jsonl \
+  --summary regression_results/TUCVF/<profile>.json \
+  --external \
+  --host <authorized-host> \
+  --port 3306 \
+  --user <authorized-user> \
+  --password-env VIRTUAL_FUNCTION_MYSQL_PASSWORD
+```
+
+Required result:
+
+```text
+summary.all_pass = true
+counts.PASS = 1712
+FAIL_ALGORITHM = 0
+FAIL_DATA = 0
+FAIL_UNCHANGED = 0
+```
+
 ## Required evidence
 
-For every one of the 24 execution units, preserve:
+For every one of the 27 execution units, preserve:
 
 ```text
 batch ID
@@ -324,6 +359,7 @@ generated/type_upgrade_primary_key_concurrency_v1/manifest.json
 generated/inplace_unique_conflict_v1/manifest.json
 generated/fk_type_expansion_v1/manifest.json
 generated/unique_ddl_expected_error_v1/manifest.json
+generated/virtual_function_type_upgrade_v1/manifest.json
 generated/type_upgrade_full_regression/manifest.json
 ```
 
@@ -333,7 +369,7 @@ process defect.
 
 ## Non-negotiable completion rule
 
-A regression report may say `PASS` only when all 24 execution units are present
+A regression report may say `PASS` only when all 27 execution units are present
 and every batch-specific oracle passes. If any item is missing, the only valid
 status is:
 

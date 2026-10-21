@@ -23,3 +23,6 @@ order	profile	batch_id	prefix	case_count	database	artifact	artifact_kind	output_
 22	inplace	2026-10-20-fk-type-expansion-consistency-v1	TUCFK	568	qa_fk_type_expansion	generated/fk_type_expansion_v1/inplace_suite.sql.gz	compressed_suite	NO_FAIL	PLANNED_NEGATIVE_ERRORS_ALLOWED	generated/fk_type_expansion_v1/expected_output_inplace.tsv
 23	instant	2026-10-20-fk-type-expansion-consistency-v1	TUCFK	568	qa_fk_type_expansion	generated/fk_type_expansion_v1/instant_suite.sql.gz	compressed_suite	NO_FAIL	PLANNED_NEGATIVE_ERRORS_ALLOWED	generated/fk_type_expansion_v1/expected_output_instant.tsv
 24	inplace	2026-10-20-unique-ddl-expected-error-v1	TUCUD	192	qa_unique_ddl_expected_error	tools/run_unique_ddl_expected_error.py	virtual_runner	RUNNER_ALL_PASS	RUNNER_EVIDENCE	-
+25	copy	2026-10-20-virtual-function-type-upgrade-v1	TUCVF	5136	qa_virtual_function_type_upgrade	tools/run_virtual_function_type_upgrade.py	virtual_runner	RUNNER_ALL_PASS	RUNNER_EVIDENCE	-
+26	inplace	2026-10-20-virtual-function-type-upgrade-v1	TUCVF	5136	qa_virtual_function_type_upgrade	tools/run_virtual_function_type_upgrade.py	virtual_runner	RUNNER_ALL_PASS	RUNNER_EVIDENCE	-
+27	instant	2026-10-20-virtual-function-type-upgrade-v1	TUCVF	5136	qa_virtual_function_type_upgrade	tools/run_virtual_function_type_upgrade.py	virtual_runner	RUNNER_ALL_PASS	RUNNER_EVIDENCE	-

@@ -160,16 +160,25 @@ See [docs/unique_ddl_expected_error_v1.md](docs/unique_ddl_expected_error_v1.md)
 and
 [generated/unique_ddl_expected_error_v1/README.md](generated/unique_ddl_expected_error_v1/README.md).
 
+A tenth independent dependency batch,
+`2026-10-20-virtual-function-type-upgrade-v1`, contains 5,136 virtual
+`TUCVF-*` scenarios. It reuses 107 type transitions and verifies that virtual
+generated columns, stored generated columns, and functional indexes do not
+change algorithm behavior or corrupt data during base-column expansion. See
+[docs/virtual_function_type_upgrade_v1.md](docs/virtual_function_type_upgrade_v1.md)
+and
+[generated/virtual_function_type_upgrade_v1/README.md](generated/virtual_function_type_upgrade_v1/README.md).
+
 ### Mandatory full type-upgrade regression
 
-Every type-upgrade regression must run all nine current batches and every
+Every type-upgrade regression must run all ten current batches and every
 profile defined by each batch. Selective regression is not accepted.
 
 ```text
-9 batches
-24 execution streams
-972,846 cases/scenarios
-2,917,586 case/profile executions
+10 batches
+27 execution streams
+977,982 cases/scenarios
+2,932,994 case/profile executions
 2,411 SQL artifacts
 ```
 
@@ -179,7 +188,7 @@ The machine-readable checklist is
 [generated/type_upgrade_full_regression/inventory.tsv](generated/type_upgrade_full_regression/inventory.tsv),
 and the release-gate manifest is
 [generated/type_upgrade_full_regression/manifest.json](generated/type_upgrade_full_regression/manifest.json).
-A regression is `PASS` only when all 24 execution units are present and every
+A regression is `PASS` only when all 27 execution units are present and every
 batch-specific oracle passes; otherwise it is `INCOMPLETE` or `FAIL`.
 
 ## Test and smoke environments
