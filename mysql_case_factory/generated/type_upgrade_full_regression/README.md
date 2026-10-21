@@ -1,20 +1,20 @@
 # Mandatory full type-upgrade regression
 
 This inventory integrates every current type-upgrade SQL batch. It is the
-required regression scope. A regression is not complete unless all nine batches and every profile defined by each batch are executed.
+required regression scope. A regression is not complete unless all ten batches and every profile defined by each batch are executed.
 
 - **Regression ID:** `2026-10-15-type-upgrade-full-regression-v1`
-- **Batches:** 9
-- **Cases/scenarios:** 972,846
-- **Profile executions:** 2,917,586
-- **Execution streams:** 24
+- **Batches:** 10
+- **Cases/scenarios:** 977,982
+- **Profile executions:** 2,932,994
+- **Execution streams:** 27
 - **SQL artifacts:** 2,411
 - **Selective regression allowed:** no
 
-There are 24 execution streams in total.
+There are 27 execution streams in total.
 
 Use `inventory.tsv` as the machine-readable execution checklist. The fixed
-order is TUC, TUCX, TUCS, TUCP, TUCZ, TUCPK, TUCUI, TUCFK, TUCUD; within each batch run `COPY`, `INPLACE`,
+order is TUC, TUCX, TUCS, TUCP, TUCZ, TUCPK, TUCUI, TUCFK, TUCUD, TUCVF; within each batch run `COPY`, `INPLACE`,
 then `INSTANT`.
 
 ## Full inventory
@@ -30,11 +30,12 @@ then `INSTANT`.
 | 7 | `2026-10-20-inplace-ddl-unique-conflict-v1` | `TUCUI` | 2,304 | virtual runner | virtual runner | virtual runner | `qa_inplace_unique_conflict` |
 | 8 | `2026-10-20-fk-type-expansion-consistency-v1` | `TUCFK` | 568 | — | `inplace_suite.sql.gz` | `instant_suite.sql.gz` | `qa_fk_type_expansion` |
 | 9 | `2026-10-20-unique-ddl-expected-error-v1` | `TUCUD` | 192 | — | virtual runner | — | `qa_unique_ddl_expected_error` |
+| 10 | `2026-10-20-virtual-function-type-upgrade-v1` | `TUCVF` | 5,136 | virtual runner | virtual runner | virtual runner | `qa_virtual_function_type_upgrade` |
 
 ## Execution rules
 
 1. Verify each source batch `manifest.json` before execution.
-2. Execute all 24 rows in `inventory.tsv`; skipping any row makes the
+2. Execute all 27 rows in `inventory.tsv`; skipping any row makes the
    regression incomplete.
 3. Run profiles separately and never mix output files.
 4. Use an isolated internal QA database for each batch.
@@ -153,4 +154,19 @@ PYTHONPATH=src python3 tools/run_unique_ddl_expected_error.py \
   --port 3306 \
   --user <authorized-user> \
   --password-env UNIQUE_DDL_MYSQL_PASSWORD
+```
+
+`TUCVF` uses the virtual/function dependency runner:
+
+```bash
+PYTHONPATH=src python3 tools/run_virtual_function_type_upgrade.py \
+  --profile <profile> \
+  --all \
+  --results regression_results/TUCVF/<profile>.jsonl \
+  --summary regression_results/TUCVF/<profile>.json \
+  --external \
+  --host <authorized-host> \
+  --port 3306 \
+  --user <authorized-user> \
+  --password-env VIRTUAL_FUNCTION_MYSQL_PASSWORD
 ```

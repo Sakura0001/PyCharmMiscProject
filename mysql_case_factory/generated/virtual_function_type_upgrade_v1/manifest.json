@@ -1,0 +1,26 @@
+{
+  "artifacts_sha256": {
+    "cases.jsonl.gz": "e69637a7a8b4e8188c4cd96a012120bf1958233d33c9fa763a4aa7041788921d",
+    "coverage.tsv": "e136bdd5e2022b91f393caae87093328e491232c16e6f8bb299b0b5fcdcb4bd7",
+    "smoke_cases.jsonl.gz": "b845c7afb72e024dd5ce79c2b4d3ba29b5ccc31d9145c80868521fd1f95e6864"
+  },
+  "batch_id": "2026-10-20-virtual-function-type-upgrade-v1",
+  "batch_kind": "virtual_function_type_upgrade",
+  "case_count": 5136,
+  "case_id_prefix": "TUCVF",
+  "database": "qa_virtual_function_type_upgrade",
+  "dependency_mode_count": 4,
+  "materialization": "virtual_runner",
+  "profile_counts": {
+    "copy": 1712,
+    "inplace": 1712,
+    "instant": 1712
+  },
+  "profiles": [
+    "copy",
+    "inplace",
+    "instant"
+  ],
+  "smoke_case_count": 84,
+  "transition_count": 107
+}

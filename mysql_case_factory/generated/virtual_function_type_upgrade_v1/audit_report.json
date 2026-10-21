@@ -1,0 +1,32 @@
+{
+  "artifact_hashes_ok": true,
+  "batch_id": "2026-10-20-virtual-function-type-upgrade-v1",
+  "batch_kind": "virtual_function_type_upgrade",
+  "case_count": 5136,
+  "case_prefix_ok": true,
+  "dependency_count": 4,
+  "local_metadata_ok": true,
+  "local_pass_counts": {
+    "copy": 1712,
+    "inplace": 1712,
+    "instant": 1712
+  },
+  "local_required": true,
+  "local_result_counts": {
+    "copy": 1712,
+    "inplace": 1712,
+    "instant": 1712
+  },
+  "matrix_ok": true,
+  "passed": true,
+  "profile_counts": {
+    "copy": 1712,
+    "inplace": 1712,
+    "instant": 1712
+  },
+  "smoke_case_count": 84,
+  "smoke_ok": true,
+  "transition_count": 107,
+  "unique_case_ids": true,
+  "usage_documented": true
+}

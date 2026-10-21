@@ -1,0 +1,14 @@
+{
+  "all_pass": true,
+  "batch_id": "2026-10-20-virtual-function-type-upgrade-v1",
+  "batch_kind": "virtual_function_type_upgrade",
+  "counts": {
+    "PASS": 1712
+  },
+  "executed_count": 1712,
+  "finished_at": "2026-10-20T12:33:06.781247+00:00",
+  "mysqld_version": "8.0.45",
+  "profile": "inplace",
+  "selected_count": 1712,
+  "started_at": "2026-10-20T12:32:54.068241+00:00"
+}
