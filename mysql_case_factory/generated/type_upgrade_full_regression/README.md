@@ -1,20 +1,20 @@
 # Mandatory full type-upgrade regression
 
 This inventory integrates every current type-upgrade SQL batch. It is the
-required regression scope. A regression is not complete unless all eleven batches and every profile defined by each batch are executed.
+required regression scope. A regression is not complete unless all twelve batches and every profile defined by each batch are executed.
 
 - **Regression ID:** `2026-10-15-type-upgrade-full-regression-v1`
-- **Batches:** 11
-- **Cases/scenarios:** 977,989
-- **Profile executions:** 2,933,001
-- **Execution streams:** 28
+- **Batches:** 12
+- **Cases/scenarios:** 978,109
+- **Profile executions:** 2,933,121
+- **Execution streams:** 29
 - **SQL artifacts:** 2,411
 - **Selective regression allowed:** no
 
-There are 28 execution streams in total.
+There are 29 execution streams in total.
 
 Use `inventory.tsv` as the machine-readable execution checklist. The fixed
-order is TUC, TUCX, TUCS, TUCP, TUCZ, TUCPK, TUCUI, TUCFK, TUCUD, TUCVF, TUCPF; within each batch run `COPY`, `INPLACE`,
+order is TUC, TUCX, TUCS, TUCP, TUCZ, TUCPK, TUCUI, TUCFK, TUCUD, TUCVF, TUCPF, TUCR; within each batch run `COPY`, `INPLACE`,
 then `INSTANT`.
 
 ## Full inventory
@@ -32,11 +32,12 @@ then `INSTANT`.
 | 9 | `2026-10-20-unique-ddl-expected-error-v1` | `TUCUD` | 192 | — | virtual runner | — | `qa_unique_ddl_expected_error` |
 | 10 | `2026-10-20-virtual-function-type-upgrade-v1` | `TUCVF` | 5,136 | virtual runner | virtual runner | virtual runner | `qa_virtual_function_type_upgrade` |
 | 11 | `2026-10-21-type-upgrade-performance-v1` | `TUCPF` | 7 | — | virtual runner | — | `qa_type_upgrade_performance` |
+| 12 | `2026-10-27-type-upgrade-condensed-120-v1` | `TUCR` | 120 | — | `sql/*.sql` | — | `qa_type_upgrade_condensed_120` |
 
 ## Execution rules
 
 1. Verify each source batch `manifest.json` before execution.
-2. Execute all 28 rows in `inventory.tsv`; skipping any row makes the
+2. Execute all 29 rows in `inventory.tsv`; skipping any row makes the
    regression incomplete.
 3. Run profiles separately and never mix output files.
 4. Use an isolated internal QA database for each batch.
@@ -188,4 +189,19 @@ PYTHONPATH=src python3 tools/run_type_upgrade_performance.py \
   --port 3306 \
   --user <authorized-user> \
   --password-env TYPE_PERFORMANCE_MYSQL_PASSWORD
+```
+
+`TUCR` executes 120 combined SQL files:
+
+```bash
+for file in generated/type_upgrade_condensed_120_v1/sql/*.sql; do
+  mysql --login-path="$MYSQL_LOGIN_PATH" \
+    --batch --raw --skip-column-names --binary-mode --force \
+    qa_type_upgrade_condensed_120 \
+    < "$file"
+done > regression_results/TUCR/combined.tsv
+
+diff -u \
+  generated/type_upgrade_condensed_120_v1/expected_output.tsv \
+  regression_results/TUCR/combined.tsv
 ```

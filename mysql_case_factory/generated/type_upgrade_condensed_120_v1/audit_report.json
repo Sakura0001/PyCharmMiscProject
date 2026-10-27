@@ -1,0 +1,21 @@
+{
+  "artifact_hashes_ok": true,
+  "batch_id": "2026-10-27-type-upgrade-condensed-120-v1",
+  "batch_kind": "type_upgrade_condensed_sql",
+  "case_count": 120,
+  "expected_algorithms_ok": true,
+  "expected_output_line_count": 240,
+  "expected_output_ok": true,
+  "local_copy_pass_count": 224,
+  "local_copy_result_line_count": 224,
+  "local_metadata_ok": true,
+  "local_required": true,
+  "mysqld_version": "8.0.45",
+  "passed": true,
+  "sql_case_ids_ok": true,
+  "sql_contract_ok": true,
+  "sql_count_ok": true,
+  "sql_file_count": 120,
+  "unique_case_ids": true,
+  "usage_documented": true
+}

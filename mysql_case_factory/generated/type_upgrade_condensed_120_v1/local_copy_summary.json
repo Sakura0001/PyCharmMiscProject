@@ -1,0 +1,11 @@
+{
+  "all_pass": true,
+  "batch_id": "2026-10-27-type-upgrade-condensed-120-v1",
+  "batch_kind": "type_upgrade_condensed_sql",
+  "fail_count": 0,
+  "mysqld_version": "8.0.45",
+  "note": "Native MySQL COPY oracle; 8 FK cases are reserved for internal INPLACE/INSTANT because native COPY cannot alter FK columns.",
+  "pass_count": 224,
+  "result_line_count": 224,
+  "scope": "non_foreign_key_cases"
+}

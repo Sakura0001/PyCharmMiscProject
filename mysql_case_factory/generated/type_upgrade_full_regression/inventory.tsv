@@ -27,3 +27,4 @@ order	profile	batch_id	prefix	case_count	database	artifact	artifact_kind	output_
 26	inplace	2026-10-20-virtual-function-type-upgrade-v1	TUCVF	5136	qa_virtual_function_type_upgrade	tools/run_virtual_function_type_upgrade.py	virtual_runner	RUNNER_ALL_PASS	RUNNER_EVIDENCE	-
 27	instant	2026-10-20-virtual-function-type-upgrade-v1	TUCVF	5136	qa_virtual_function_type_upgrade	tools/run_virtual_function_type_upgrade.py	virtual_runner	RUNNER_ALL_PASS	RUNNER_EVIDENCE	-
 28	performance	2026-10-21-type-upgrade-performance-v1	TUCPF	7	qa_type_upgrade_performance	tools/run_type_upgrade_performance.py	virtual_runner	RUNNER_ALL_PASS	RUNNER_EVIDENCE	-
+29	combined	2026-10-27-type-upgrade-condensed-120-v1	TUCR	120	qa_type_upgrade_condensed_120	generated/type_upgrade_condensed_120_v1/sql/*.sql	sql_directory	EXACT_DIFF	MUST_BE_EMPTY	generated/type_upgrade_condensed_120_v1/expected_output.tsv

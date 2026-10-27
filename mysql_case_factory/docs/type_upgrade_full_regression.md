@@ -21,10 +21,10 @@ generated/type_upgrade_full_regression/manifest.json
 Every regression must run:
 
 ```text
-all 11 batches
+all 12 batches
 x all profiles defined by each batch
-= 28 execution streams
-= 2,933,001 case/profile executions
+= 29 execution streams
+= 2,933,121 case/profile executions
 ```
 
 Selective regression is not accepted. If any batch, profile, or SQL artifact is
@@ -34,12 +34,12 @@ skipped, the regression is incomplete and must be reported as not run.
 
 | Metric | Value |
 | --- | ---: |
-| Batches | 11 |
-| Unique cases/scenarios | 977,989 |
+| Batches | 12 |
+| Unique cases/scenarios | 978,109 |
 | Profiles | 3 |
-| Case/profile executions | 2,933,001 |
-| Execution streams | 28 |
-| SQL artifacts | 2,411 |
+| Case/profile executions | 2,933,121 |
+| Execution streams | 29 |
+| SQL artifacts | 2,531 |
 
 ## Required batch order
 
@@ -56,6 +56,7 @@ Run batches in this order:
 9. `TUCUD`
 10. `TUCVF`
 11. `TUCPF`
+12. `TUCR`
 
 Within every batch, run profiles in this order:
 
@@ -63,7 +64,7 @@ Within every batch, run profiles in this order:
 2. `INPLACE`
 3. `INSTANT`
 
-This produces the 28 required execution units below.
+This produces the 29 required execution units below.
 
 ## Full execution inventory
 
@@ -97,6 +98,7 @@ This produces the 28 required execution units below.
 | 26 | `2026-10-20-virtual-function-type-upgrade-v1` | `TUCVF` | 5,136 | `INPLACE` | `tools/run_virtual_function_type_upgrade.py --profile inplace --all` | `qa_virtual_function_type_upgrade` |
 | 27 | `2026-10-20-virtual-function-type-upgrade-v1` | `TUCVF` | 5,136 | `INSTANT` | `tools/run_virtual_function_type_upgrade.py --profile instant --all` | `qa_virtual_function_type_upgrade` |
 | 28 | `2026-10-21-type-upgrade-performance-v1` | `TUCPF` | 7 | `PERFORMANCE` | `tools/run_type_upgrade_performance.py --all` | `qa_type_upgrade_performance` |
+| 29 | `2026-10-27-type-upgrade-condensed-120-v1` | `TUCR` | 120 | `COMBINED` | `generated/type_upgrade_condensed_120_v1/sql/*.sql` | `qa_type_upgrade_condensed_120` |
 
 ## Output and failure policy
 
@@ -352,9 +354,39 @@ summary.all_pass = true
 counts.PASS = 7
 ```
 
+## `TUCR` combined SQL batch
+
+`TUCR` contains exactly 120 SQL files. Each file executes both `INPLACE` and
+`INSTANT`, performs deterministic partial-row DML, and compares each candidate
+with a direct target-type reference table.
+
+```bash
+for file in generated/type_upgrade_condensed_120_v1/sql/*.sql; do
+  mysql --login-path=internal_qa \
+    --batch --raw --skip-column-names --binary-mode --force \
+    qa_type_upgrade_condensed_120 \
+    < "$file"
+done > regression_results/TUCR/combined.tsv
+```
+
+Compare:
+
+```bash
+diff -u generated/type_upgrade_condensed_120_v1/expected_output.tsv \
+  regression_results/TUCR/combined.tsv
+```
+
+Required result:
+
+```text
+240 result rows
+all rows end with PASS
+stderr is empty
+```
+
 ## Required evidence
 
-For every one of the 28 execution units, preserve:
+For every one of the 29 execution units, preserve:
 
 ```text
 batch ID
@@ -393,6 +425,7 @@ generated/fk_type_expansion_v1/manifest.json
 generated/unique_ddl_expected_error_v1/manifest.json
 generated/virtual_function_type_upgrade_v1/manifest.json
 generated/type_upgrade_performance_v1/manifest.json
+generated/type_upgrade_condensed_120_v1/manifest.json
 generated/type_upgrade_full_regression/manifest.json
 ```
 
@@ -402,7 +435,7 @@ process defect.
 
 ## Non-negotiable completion rule
 
-A regression report may say `PASS` only when all 28 execution units are present
+A regression report may say `PASS` only when all 29 execution units are present
 and every batch-specific oracle passes. If any item is missing, the only valid
 status is:
 

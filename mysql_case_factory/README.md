@@ -178,17 +178,26 @@ records DDL, full-scan, and DML timings. See
 [docs/type_upgrade_performance_v1.md](docs/type_upgrade_performance_v1.md) and
 [generated/type_upgrade_performance_v1/README.md](generated/type_upgrade_performance_v1/README.md).
 
+A twelfth condensed SQL batch,
+`2026-10-27-type-upgrade-condensed-120-v1`, contains exactly 120 `TUCR-*`
+SQL files. Every file executes both `INPLACE` and `INSTANT`, performs
+deterministic partial-row DML, and compares each candidate with a direct
+target-type reference table. Output is restricted to 240 stable PASS/FAIL
+rows. See [docs/type_upgrade_condensed_120_v1.md](docs/type_upgrade_condensed_120_v1.md)
+and
+[generated/type_upgrade_condensed_120_v1/README.md](generated/type_upgrade_condensed_120_v1/README.md).
+
 ### Mandatory full type-upgrade regression
 
-Every type-upgrade regression must run all eleven current batches and every
+Every type-upgrade regression must run all twelve current batches and every
 profile defined by each batch. Selective regression is not accepted.
 
 ```text
-11 batches
-28 execution streams
-977,989 cases/scenarios
-2,933,001 case/profile executions
-2,411 SQL artifacts
+12 batches
+29 execution streams
+978,109 cases/scenarios
+2,933,121 case/profile executions
+2,531 SQL artifacts
 ```
 
 The required order and complete SQL inventory are in
@@ -197,7 +206,7 @@ The machine-readable checklist is
 [generated/type_upgrade_full_regression/inventory.tsv](generated/type_upgrade_full_regression/inventory.tsv),
 and the release-gate manifest is
 [generated/type_upgrade_full_regression/manifest.json](generated/type_upgrade_full_regression/manifest.json).
-A regression is `PASS` only when all 28 execution units are present and every
+A regression is `PASS` only when all 29 execution units are present and every
 batch-specific oracle passes; otherwise it is `INCOMPLETE` or `FAIL`.
 
 ## Test and smoke environments
